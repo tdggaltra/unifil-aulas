@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 9 - Relacionamentos e JOINs | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--unifil-dark);
+            color: #00ff00;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+            animation: fadeInUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+            border: 2px solid var(--unifil-orange);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .key-takeaway {
+            background: #FFF3E0;
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .key-takeaway h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .relationship-diagram {
+            background: white;
+            border: 3px solid var(--unifil-orange);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .table-box {
+            background: #E3F2FD;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .table-box h4 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--unifil-orange);
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: scale(1.05);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            color: var(--unifil-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .slide-header h1 { font-size: 1.8rem; }
+            .slide-header h2 { font-size: 1.4rem; }
+            .two-column, .three-column { grid-template-columns: 1fr; }
+            .slide-body { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>📱 Desenvolvimento de Aplicativos Móveis</h1>
+                    <p>Criação de API REST Básica</p>
+                </div>
+                <div class="slide-body">
+                    <div style="text-align: center; margin-top: 80px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px; animation: fadeInUp 0.6s ease-out;">
+                            Aula 9
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 40px; animation: fadeInUp 0.6s ease-out 0.2s; opacity: 0; animation-fill-mode: forwards;">
+                            Relacionamentos e JOINs
+                        </h3>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 60px;">
+                        <div class="content-box">
+                            <h3>📅 Informações</h3>
+                            <ul>
+                                <li><strong>Data:</strong> Segunda, 09/03/2026</li>
+                                <li><strong>Duração:</strong> 1,5 horas</li>
+                                <li><strong>Formato:</strong> Teórico + Prático</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Objetivos</h3>
+                            <ul>
+                                <li>Entender relacionamentos</li>
+                                <li>Criar Foreign Keys</li>
+                                <li>Dominar JOINs</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📚 Agenda de Hoje</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <strong>🔗 Parte 1 (30min)</strong><br>
+                                Tipos de relacionamentos
+                            </div>
+                            <div>
+                                <strong>🔑 Parte 2 (30min)</strong><br>
+                                Foreign Keys e estrutura
+                            </div>
+                            <div>
+                                <strong>🔀 Parte 3 (30min)</strong><br>
+                                JOINs na prática
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="big-idea">
+                        "Hoje conectamos tabelas! Dados relacionados! 🔗"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: PROBLEMA TABELA ÚNICA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>❌ Problema: Tudo em Uma Tabela</h2>
+                    <p>Por que precisamos de relacionamentos?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>📚 Analogia: Biblioteca Organizada vs Bagunçada</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>Uma tabela gigante = Todos os livros empilhados no chão 📚</strong><br>
+                            → Informação repetida em cada livro<br>
+                            → Difícil de encontrar e atualizar<br>
+                            → Espaço desperdiçado<br><br>
+                            <strong>Tabelas relacionadas = Estantes organizadas por categoria 🗄️</strong><br>
+                            → Cada coisa no seu lugar<br>
+                            → Fácil de encontrar e manter<br>
+                            → Eficiente e organizado
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>❌ Tabela NÃO Normalizada (Ruim)</h4>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>id</th>
+                                <th>nome_produto</th>
+                                <th>preco</th>
+                                <th>categoria_nome</th>
+                                <th>categoria_descricao</th>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>Notebook Dell</td>
+                                <td>3500</td>
+                                <td style="background: #FFEBEE;">Informática</td>
+                                <td style="background: #FFEBEE;">Produtos de tecnologia</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Mouse Logitech</td>
+                                <td>150</td>
+                                <td style="background: #FFEBEE;">Informática</td>
+                                <td style="background: #FFEBEE;">Produtos de tecnologia</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Teclado RGB</td>
+                                <td>450</td>
+                                <td style="background: #FFEBEE;">Informática</td>
+                                <td style="background: #FFEBEE;">Produtos de tecnologia</td>
+                            </tr>
+                        </table>
+                        <p style="color: #F44336; font-weight: bold; margin-top: 15px;">
+                            ⚠️ "Informática" e "Produtos de tecnologia" REPETIDOS 3 vezes!
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>❌ Problemas</h3>
+                            <ul>
+                                <li><strong>Redundância</strong><br>Mesma info repetida N vezes</li>
+                                <li><strong>Desperdício de espaço</strong><br>Banco fica gigante</li>
+                                <li><strong>Inconsistência</strong><br>Atualizar = atualizar em 100 lugares</li>
+                                <li><strong>Erros de digitação</strong><br>"Informática" vs "informatica"</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>✅ Solução: Relacionamentos</h3>
+                            <ul>
+                                <li><strong>Separar em tabelas</strong><br>produtos + categorias</li>
+                                <li><strong>Evitar redundância</strong><br>Categoria aparece 1× só</li>
+                                <li><strong>Facilitar manutenção</strong><br>Atualiza em 1 lugar</li>
+                                <li><strong>Garantir consistência</strong><br>Valor único, sem erros</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Normalização</h4>
+                        <p>Processo de organizar dados em <strong>múltiplas tabelas relacionadas</strong><br>
+                        para eliminar redundância e garantir integridade.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: TIPOS DE RELACIONAMENTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔗 Tipos de Relacionamentos</h2>
+                    <p>1:1, 1:N e N:N</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="content-box">
+                            <h3>1️⃣:1️⃣ Um para Um</h3>
+                            <p style="margin-top: 15px; line-height: 1.7;">
+                                <strong>Conceito:</strong> Um registro em A corresponde a exatamente UM em B.<br><br>
+                                <strong>Exemplo:</strong><br>
+                                • Pessoa ↔ CPF<br>
+                                • Usuário ↔ Perfil<br>
+                                • Produto ↔ Código de barras<br><br>
+                                <strong>Uso:</strong> Raro! Geralmente dá para juntar na mesma tabela.
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>1️⃣:N Um para Muitos</h3>
+                            <p style="margin-top: 15px; line-height: 1.7;">
+                                <strong>Conceito:</strong> Um registro em A corresponde a VÁRIOS em B.<br><br>
+                                <strong>Exemplo:</strong><br>
+                                • Categoria ↔ Produtos<br>
+                                • Cliente ↔ Pedidos<br>
+                                • Professor ↔ Disciplinas<br><br>
+                                <strong>Uso:</strong> MUITO COMUM! 80% dos casos.
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.4s;">
+                            <h3>N:N Muitos para Muitos</h3>
+                            <p style="margin-top: 15px; line-height: 1.7;">
+                                <strong>Conceito:</strong> Vários em A correspondem a VÁRIOS em B.<br><br>
+                                <strong>Exemplo:</strong><br>
+                                • Alunos ↔ Disciplinas<br>
+                                • Produtos ↔ Tags<br>
+                                • Autores ↔ Livros<br><br>
+                                <strong>Uso:</strong> Precisa tabela intermediária!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="relationship-diagram">
+                        <h3 style="color: var(--unifil-orange); text-align: center; margin-bottom: 30px;">
+                            📊 Exemplo Visual: Categoria → Produtos (1:N)
+                        </h3>
+                        
+                        <div class="two-column">
+                            <div class="table-box">
+                                <h4>📁 Tabela: categorias</h4>
+                                <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                                    <tr style="background: #2196F3; color: white;">
+                                        <th style="padding: 10px;">id</th>
+                                        <th style="padding: 10px;">nome</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">1</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Informática</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">2</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Livros</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="table-box">
+                                <h4>📦 Tabela: produtos</h4>
+                                <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                                    <tr style="background: #2196F3; color: white;">
+                                        <th style="padding: 10px;">id</th>
+                                        <th style="padding: 10px;">nome</th>
+                                        <th style="padding: 10px;">categoria_id</th>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">1</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Notebook</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; background: #FFF9C4;">1</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">2</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Mouse</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; background: #FFF9C4;">1</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">3</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">JavaScript Book</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; background: #C8E6C9;">2</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <p style="text-align: center; margin-top: 20px; color: var(--unifil-orange); font-weight: bold; font-size: 1.2rem;">
+                            Uma categoria (1) tem VÁRIOS produtos (N)
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Nossa Aula</h4>
+                        <p>Vamos focar em <strong>1:N (Um para Muitos)</strong> - o mais comum!<br>
+                        Exemplo: Categorias → Produtos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: FOREIGN KEYS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔑 Foreign Keys (Chaves Estrangeiras)</h2>
+                    <p>Conectando tabelas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🔗 Analogia: Cartão de Biblioteca</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            Imagine uma biblioteca:<br><br>
+                            <strong>Você (tabela usuários):</strong> Tem um cartão com ID único #42<br>
+                            <strong>Livros emprestados (tabela empréstimos):</strong> Cada empréstimo tem SEU ID #42<br><br>
+                            O <code>usuario_id = 42</code> nos empréstimos é a <strong>FOREIGN KEY</strong>!<br>
+                            Ela "aponta" para VOCÊ na tabela de usuários.
+                        </p>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>🎯 O que é Foreign Key?</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>Foreign Key (FK)</strong> = Campo que referencia a Primary Key de OUTRA tabela<br><br>
+                            <strong>Primary Key (PK):</strong> Identificador único NESTA tabela<br>
+                            <strong>Foreign Key (FK):</strong> Referência a PK de OUTRA tabela
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Criando Tabelas com Foreign Key</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.88rem;">
+<span style="color: #6A9955;">-- 1. Criar tabela categorias (PRIMEIRO!)</span>
+<span style="color: #569cd6;">CREATE TABLE</span> categorias (
+    id <span style="color: #569cd6;">INTEGER PRIMARY KEY AUTOINCREMENT</span>,
+    nome <span style="color: #569cd6;">VARCHAR</span>(<span style="color: #B5CEA8;">50</span>) <span style="color: #569cd6;">NOT NULL UNIQUE</span>,
+    descricao <span style="color: #569cd6;">TEXT</span>
+);
+
+<span style="color: #6A9955;">-- 2. Criar tabela produtos (DEPOIS!)</span>
+<span style="color: #569cd6;">CREATE TABLE</span> produtos (
+    id <span style="color: #569cd6;">INTEGER PRIMARY KEY AUTOINCREMENT</span>,
+    nome <span style="color: #569cd6;">VARCHAR</span>(<span style="color: #B5CEA8;">100</span>) <span style="color: #569cd6;">NOT NULL</span>,
+    preco <span style="color: #569cd6;">DECIMAL</span>(<span style="color: #B5CEA8;">10</span>,<span style="color: #B5CEA8;">2</span>) <span style="color: #569cd6;">NOT NULL</span>,
+    estoque <span style="color: #569cd6;">INTEGER DEFAULT</span> <span style="color: #B5CEA8;">0</span>,
+    categoria_id <span style="color: #569cd6;">INTEGER NOT NULL</span>,
+    
+    <span style="color: #6A9955;">-- Definir Foreign Key</span>
+    <span style="color: #569cd6;">FOREIGN KEY</span> (categoria_id) <span style="color: #569cd6;">REFERENCES</span> categorias(id)
+        <span style="color: #569cd6;">ON DELETE RESTRICT</span>
+        <span style="color: #569cd6;">ON UPDATE CASCADE</span>
+);
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📏 Regras Importantes</h3>
+                            <ul>
+                                <li><strong>Ordem de criação</strong><br>Criar tabela referenciada PRIMEIRO</li>
+                                <li><strong>Tipos compatíveis</strong><br>FK e PK devem ser mesmo tipo</li>
+                                <li><strong>NOT NULL comum</strong><br>Geralmente FK é obrigatória</li>
+                                <li><strong>Validação automática</strong><br>BD não aceita ID inexistente</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>⚙️ ON DELETE / ON UPDATE</h3>
+                            <ul>
+                                <li><strong>RESTRICT</strong><br>Impede deletar se tiver produtos</li>
+                                <li><strong>CASCADE</strong><br>Deleta produtos junto</li>
+                                <li><strong>SET NULL</strong><br>Seta FK como NULL</li>
+                                <li><strong>NO ACTION</strong><br>Não faz nada</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Integridade Referencial</h4>
+                        <p>Foreign Key garante que categoria_id sempre aponte para categoria EXISTENTE!<br>
+                        Tenta inserir categoria_id = 999 (não existe)? Banco REJEITA! 🛡️</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: IMPLEMENTAÇÃO PRÁTICA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🛠️ Implementação Prática</h2>
+                    <p>Criando estrutura no SQLite</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 database.js - Estrutura Completa</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem;">
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">Database</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'better-sqlite3'</span>);
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">db</span> = <span style="color: #C586C0;">new</span> <span style="color: #DCDCAA;">Database</span>(<span style="color: #CE9178;">'loja.db'</span>);
+
+<span style="color: #6A9955;">// Habilitar Foreign Keys (IMPORTANTE no SQLite!)</span>
+db.<span style="color: #DCDCAA;">exec</span>(<span style="color: #CE9178;">'PRAGMA foreign_keys = ON'</span>);
+
+<span style="color: #6A9955;">// 1. Criar tabela categorias</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">createCategorias</span> = <span style="color: #CE9178;">`
+    CREATE TABLE IF NOT EXISTS categorias (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome VARCHAR(50) NOT NULL UNIQUE,
+        descricao TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`</span>;
+
+db.<span style="color: #DCDCAA;">exec</span>(createCategorias);
+
+<span style="color: #6A9955;">// 2. Criar tabela produtos (com FK)</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">createProdutos</span> = <span style="color: #CE9178;">`
+    CREATE TABLE IF NOT EXISTS produtos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome VARCHAR(100) NOT NULL,
+        preco DECIMAL(10,2) NOT NULL,
+        estoque INTEGER DEFAULT 0,
+        categoria_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        
+        FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE
+    )
+`</span>;
+
+db.<span style="color: #DCDCAA;">exec</span>(createProdutos);
+
+<span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(<span style="color: #CE9178;">'✅ Tabelas criadas com relacionamento!'</span>);
+
+<span style="color: #9CDCFE;">module</span>.<span style="color: #9CDCFE;">exports</span> = db;
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📝 Populando com Dados Iniciais</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem;">
+<span style="color: #6A9955;">// Inserir categorias</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">categorias</span> = [
+    { <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">'Informática'</span>, <span style="color: #9CDCFE;">descricao</span>: <span style="color: #CE9178;">'Produtos de tecnologia'</span> },
+    { <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">'Livros'</span>, <span style="color: #9CDCFE;">descricao</span>: <span style="color: #CE9178;">'Livros e publicações'</span> },
+    { <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">'Eletrônicos'</span>, <span style="color: #9CDCFE;">descricao</span>: <span style="color: #CE9178;">'Aparelhos eletrônicos'</span> }
+];
+
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">stmtCat</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+    <span style="color: #CE9178;">'INSERT OR IGNORE INTO categorias (nome, descricao) VALUES (?, ?)'</span>
+);
+
+categorias.<span style="color: #DCDCAA;">forEach</span>(<span style="color: #9CDCFE;">cat</span> => {
+    stmtCat.<span style="color: #DCDCAA;">run</span>(cat.<span style="color: #9CDCFE;">nome</span>, cat.<span style="color: #9CDCFE;">descricao</span>);
+});
+
+<span style="color: #6A9955;">// Inserir produtos (com categoria_id!)</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtos</span> = [
+    { <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">'Notebook Dell'</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">3500</span>, <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">10</span>, <span style="color: #9CDCFE;">categoria_id</span>: <span style="color: #B5CEA8;">1</span> },
+    { <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">'Mouse Logitech'</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">150</span>, <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">50</span>, <span style="color: #9CDCFE;">categoria_id</span>: <span style="color: #B5CEA8;">1</span> },
+    { <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">'JavaScript: The Good Parts'</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">89</span>, <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">30</span>, <span style="color: #9CDCFE;">categoria_id</span>: <span style="color: #B5CEA8;">2</span> }
+];
+
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">stmtProd</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+    <span style="color: #CE9178;">'INSERT INTO produtos (nome, preco, estoque, categoria_id) VALUES (?, ?, ?, ?)'</span>
+);
+
+produtos.<span style="color: #DCDCAA;">forEach</span>(<span style="color: #9CDCFE;">p</span> => {
+    stmtProd.<span style="color: #DCDCAA;">run</span>(p.<span style="color: #9CDCFE;">nome</span>, p.<span style="color: #9CDCFE;">preco</span>, p.<span style="color: #9CDCFE;">estoque</span>, p.<span style="color: #9CDCFE;">categoria_id</span>);
+});
+
+<span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(<span style="color: #CE9178;">'✅ Dados iniciais inseridos!'</span>);
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>⚠️ CRÍTICO: PRAGMA foreign_keys = ON</h4>
+                        <p>No SQLite, Foreign Keys estão DESABILITADAS por padrão!<br>
+                        Sempre executar <code>PRAGMA foreign_keys = ON</code> ao conectar!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: INNER JOIN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔀 INNER JOIN - Juntando Dados</h2>
+                    <p>O JOIN mais comum</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🧩 Analogia: Quebra-Cabeça</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>JOIN = Encaixar peças de quebra-cabeça 🧩</strong><br><br>
+                            Você tem duas caixas de peças:<br>
+                            📦 Caixa A (produtos): id, nome, categoria_id<br>
+                            📦 Caixa B (categorias): id, nome<br><br>
+                            JOIN = Encaixar peças que COMBINAM (categoria_id = id)<br>
+                            Resultado = Imagem completa: produto COM nome da categoria!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 INNER JOIN - Sintaxe SQL</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #569cd6;">SELECT</span> 
+    produtos.id,
+    produtos.nome <span style="color: #569cd6;">AS</span> produto_nome,
+    produtos.preco,
+    categorias.nome <span style="color: #569cd6;">AS</span> categoria_nome,
+    categorias.descricao <span style="color: #569cd6;">AS</span> categoria_descricao
+<span style="color: #569cd6;">FROM</span> produtos
+<span style="color: #569cd6;">INNER JOIN</span> categorias 
+    <span style="color: #569cd6;">ON</span> produtos.categoria_id = categorias.id;
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📊 Resultado do JOIN</h4>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>id</th>
+                                <th>produto_nome</th>
+                                <th>preco</th>
+                                <th>categoria_nome</th>
+                                <th>categoria_descricao</th>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>Notebook Dell</td>
+                                <td>3500</td>
+                                <td style="background: #E8F5E9;">Informática</td>
+                                <td style="background: #E8F5E9;">Produtos de tecnologia</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Mouse Logitech</td>
+                                <td>150</td>
+                                <td style="background: #E8F5E9;">Informática</td>
+                                <td style="background: #E8F5E9;">Produtos de tecnologia</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>JavaScript Book</td>
+                                <td>89</td>
+                                <td style="background: #FFF9C4;">Livros</td>
+                                <td style="background: #FFF9C4;">Livros e publicações</td>
+                            </tr>
+                        </table>
+                        <p style="color: #4CAF50; font-weight: bold; margin-top: 15px;">
+                            ✅ Dados de DUAS tabelas combinados em UMA query!
+                        </p>
+                    </div>
+
+                    <div class="timeline" style="margin-top: 30px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">1️⃣ FROM produtos</h4>
+                            <p>Começa com tabela produtos</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">2️⃣ INNER JOIN categorias</h4>
+                            <p>Junta com tabela categorias</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">3️⃣ ON produtos.categoria_id = categorias.id</h4>
+                            <p>Condição: onde categoria_id corresponde ao id</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">4️⃣ SELECT campos</h4>
+                            <p>Escolhe quais colunas retornar (de ambas tabelas!)</p>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 INNER JOIN</h4>
+                        <p>Retorna APENAS linhas onde há CORRESPONDÊNCIA em AMBAS as tabelas.<br>
+                        Produto sem categoria? NÃO aparece! Categoria sem produto? NÃO aparece!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: LEFT JOIN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⬅️ LEFT JOIN - Incluindo Órfãos</h2>
+                    <p>Quando precisamos de TODOS os registros da esquerda</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="example-card">
+                            <h4>🔀 INNER JOIN</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+<span style="color: #569cd6;">SELECT</span> * 
+<span style="color: #569cd6;">FROM</span> produtos
+<span style="color: #569cd6;">INNER JOIN</span> categorias
+  <span style="color: #569cd6;">ON</span> produtos.categoria_id 
+     = categorias.id;
+
+<span style="color: #6A9955;">Resultado:</span>
+Só produtos que TÊM categoria
+
+<span style="color: #6A9955;">Produto sem categoria?</span>
+❌ NÃO aparece!
+                            </div>
+                        </div>
+
+                        <div class="example-card" style="animation-delay: 0.2s;">
+                            <h4>⬅️ LEFT JOIN</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+<span style="color: #569cd6;">SELECT</span> * 
+<span style="color: #569cd6;">FROM</span> produtos
+<span style="color: #569cd6;">LEFT JOIN</span> categorias
+  <span style="color: #569cd6;">ON</span> produtos.categoria_id 
+     = categorias.id;
+
+<span style="color: #6A9955;">Resultado:</span>
+TODOS os produtos
+
+<span style="color: #6A9955;">Produto sem categoria?</span>
+✅ Aparece (categoria = NULL)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 Comparação Visual</h4>
+                        <table class="comparison-table">
+                            <tr>
+                                <th colspan="5" style="text-align: center;">INNER JOIN - Só com correspondência</th>
+                            </tr>
+                            <tr>
+                                <th>id</th>
+                                <th>produto</th>
+                                <th>preco</th>
+                                <th>categoria_id</th>
+                                <th>categoria_nome</th>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>Notebook</td>
+                                <td>3500</td>
+                                <td>1</td>
+                                <td>Informática</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Mouse</td>
+                                <td>150</td>
+                                <td>1</td>
+                                <td>Informática</td>
+                            </tr>
+                        </table>
+
+                        <table class="comparison-table" style="margin-top: 20px;">
+                            <tr>
+                                <th colspan="5" style="text-align: center;">LEFT JOIN - Todos da esquerda</th>
+                            </tr>
+                            <tr>
+                                <th>id</th>
+                                <th>produto</th>
+                                <th>preco</th>
+                                <th>categoria_id</th>
+                                <th>categoria_nome</th>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>Notebook</td>
+                                <td>3500</td>
+                                <td>1</td>
+                                <td>Informática</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Mouse</td>
+                                <td>150</td>
+                                <td>1</td>
+                                <td>Informática</td>
+                            </tr>
+                            <tr style="background: #FFF3E0;">
+                                <td>3</td>
+                                <td>Produto Órfão</td>
+                                <td>99</td>
+                                <td style="color: #F44336;">NULL</td>
+                                <td style="color: #F44336;">NULL</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Quando usar cada um?</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>INNER JOIN:</strong> Só registros relacionados (padrão, mais comum)<br>
+                            <strong>LEFT JOIN:</strong> Todos da tabela da esquerda + correspondentes da direita<br>
+                            <strong>RIGHT JOIN:</strong> Todos da direita + correspondentes da esquerda (raro)<br>
+                            <strong>FULL JOIN:</strong> Todos de ambas (SQLite não suporta nativo)
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Nossa API</h4>
+                        <p>Vamos usar principalmente <strong>INNER JOIN</strong>!<br>
+                        Com Foreign Key NOT NULL, todo produto TEM categoria obrigatória.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: GET COM JOIN NA API -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔀 GET com JOIN na API</h2>
+                    <p>Retornando dados relacionados</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 GET /api/produtos - Com Dados da Categoria</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem;">
+<span style="color: #6A9955;">// GET /api/produtos - Listar com categoria</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">try</span> {
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">stmt</span> = db.<span style="color: #DCDCAA;">prepare</span>(<span style="color: #CE9178;">`
+            SELECT 
+                p.id,
+                p.nome,
+                p.preco,
+                p.estoque,
+                p.created_at,
+                c.id AS categoria_id,
+                c.nome AS categoria_nome,
+                c.descricao AS categoria_descricao
+            FROM produtos p
+            INNER JOIN categorias c ON p.categoria_id = c.id
+            ORDER BY p.nome
+        `</span>);
+        
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtos</span> = stmt.<span style="color: #DCDCAA;">all</span>();
+        
+        <span style="color: #6A9955;">// Opcional: Reformatar resposta</span>
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtosFormatados</span> = produtos.<span style="color: #DCDCAA;">map</span>(<span style="color: #9CDCFE;">p</span> => ({
+            <span style="color: #9CDCFE;">id</span>: p.<span style="color: #9CDCFE;">id</span>,
+            <span style="color: #9CDCFE;">nome</span>: p.<span style="color: #9CDCFE;">nome</span>,
+            <span style="color: #9CDCFE;">preco</span>: p.<span style="color: #9CDCFE;">preco</span>,
+            <span style="color: #9CDCFE;">estoque</span>: p.<span style="color: #9CDCFE;">estoque</span>,
+            <span style="color: #9CDCFE;">categoria</span>: {
+                <span style="color: #9CDCFE;">id</span>: p.<span style="color: #9CDCFE;">categoria_id</span>,
+                <span style="color: #9CDCFE;">nome</span>: p.<span style="color: #9CDCFE;">categoria_nome</span>,
+                <span style="color: #9CDCFE;">descricao</span>: p.<span style="color: #9CDCFE;">categoria_descricao</span>
+            },
+            <span style="color: #9CDCFE;">created_at</span>: p.<span style="color: #9CDCFE;">created_at</span>
+        }));
+        
+        res.<span style="color: #DCDCAA;">json</span>(produtosFormatados);
+    } <span style="color: #C586C0;">catch</span> (<span style="color: #9CDCFE;">error</span>) {
+        <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">error</span>(error);
+        res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">500</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">'Erro ao buscar produtos'</span> });
+    }
+});
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📤 Resposta da API</h4>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.88rem;">
+GET /api/produtos
+
+<span style="color: #4CAF50;">200 OK</span>
+[
+    {
+        "id": 1,
+        "nome": "Notebook Dell",
+        "preco": 3500,
+        "estoque": 10,
+        "categoria": {
+            "id": 1,
+            "nome": "Informática",
+            "descricao": "Produtos de tecnologia"
+        },
+        "created_at": "2026-03-09 10:30:00"
+    },
+    {
+        "id": 2,
+        "nome": "Mouse Logitech",
+        "preco": 150,
+        "estoque": 50,
+        "categoria": {
+            "id": 1,
+            "nome": "Informática",
+            "descricao": "Produtos de tecnologia"
+        },
+        "created_at": "2026-03-09 10:31:00"
+    }
+]
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Vantagens do JOIN na API</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ <strong>Uma query só</strong> - Mais rápido!</li>
+                            <li style="padding: 8px 0;">✅ <strong>Dados completos</strong> - Cliente recebe tudo</li>
+                            <li style="padding: 8px 0;">✅ <strong>Menos requisições</strong> - Melhor performance</li>
+                            <li style="padding: 8px 0;">✅ <strong>Response rico</strong> - Melhor UX</li>
+                        </ul>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Alias (AS)</h4>
+                        <p>Use alias para evitar ambiguidade!<br>
+                        <code>p.nome</code> = produtos.nome<br>
+                        <code>c.nome AS categoria_nome</code> = renomeia coluna</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: POST COM VALIDAÇÃO DE FK -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>✍️ POST - Validando Foreign Key</h2>
+                    <p>Garantindo integridade</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 POST /api/produtos - Com Validação de Categoria</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.82rem;">
+<span style="color: #6A9955;">// POST /api/produtos - Criar produto</span>
+app.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">try</span> {
+        <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">preco</span>, <span style="color: #9CDCFE;">estoque</span> = <span style="color: #B5CEA8;">0</span>, <span style="color: #9CDCFE;">categoria_id</span> } = req.<span style="color: #9CDCFE;">body</span>;
+        
+        <span style="color: #6A9955;">// Validações básicas</span>
+        <span style="color: #C586C0;">if</span> (!nome || !preco || !categoria_id) {
+            <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({ 
+                <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">'Campos obrigatórios: nome, preco, categoria_id'</span> 
+            });
+        }
+        
+        <span style="color: #6A9955;">// VALIDAR SE CATEGORIA EXISTE!</span>
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">categoriaExiste</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+            <span style="color: #CE9178;">'SELECT id FROM categorias WHERE id = ?'</span>
+        ).<span style="color: #DCDCAA;">get</span>(categoria_id);
+        
+        <span style="color: #C586C0;">if</span> (!categoriaExiste) {
+            <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({ 
+                <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">'Categoria não existe'</span> 
+            });
+        }
+        
+        <span style="color: #6A9955;">// Inserir produto</span>
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">stmt</span> = db.<span style="color: #DCDCAA;">prepare</span>(<span style="color: #CE9178;">`
+            INSERT INTO produtos (nome, preco, estoque, categoria_id)
+            VALUES (?, ?, ?, ?)
+        `</span>);
+        
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">result</span> = stmt.<span style="color: #DCDCAA;">run</span>(nome, preco, estoque, categoria_id);
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">id</span> = result.<span style="color: #9CDCFE;">lastInsertRowid</span>;
+        
+        <span style="color: #6A9955;">// Buscar produto criado COM categoria (JOIN!)</span>
+        <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtoCriado</span> = db.<span style="color: #DCDCAA;">prepare</span>(<span style="color: #CE9178;">`
+            SELECT 
+                p.*,
+                c.nome AS categoria_nome
+            FROM produtos p
+            INNER JOIN categorias c ON p.categoria_id = c.id
+            WHERE p.id = ?
+        `</span>).<span style="color: #DCDCAA;">get</span>(id);
+        
+        res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">201</span>).<span style="color: #DCDCAA;">json</span>(produtoCriado);
+    } <span style="color: #C586C0;">catch</span> (<span style="color: #9CDCFE;">error</span>) {
+        <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">error</span>(error);
+        res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">500</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">'Erro ao criar produto'</span> });
+    }
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Categoria Válida</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+POST /api/produtos
+
+{
+    "nome": "Teclado RGB",
+    "preco": 450,
+    "estoque": 20,
+    "categoria_id": 1
+}
+
+<span style="color: #4CAF50;">201 Created</span>
+{
+    "id": 4,
+    "nome": "Teclado RGB",
+    "preco": 450,
+    "estoque": 20,
+    "categoria_id": 1,
+    "categoria_nome": "Informática"
+}
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>❌ Categoria Inexistente</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+POST /api/produtos
+
+{
+    "nome": "Produto X",
+    "preco": 100,
+    "categoria_id": 999
+}
+
+<span style="color: #F44336;">400 Bad Request</span>
+{
+    "erro": "Categoria não existe"
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Dupla Proteção</h4>
+                        <p><strong>1. Validação na API:</strong> Verificar se categoria existe (melhor UX)<br>
+                        <strong>2. Foreign Key no BD:</strong> Banco também rejeita (segurança extra)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: CRUD CATEGORIAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📁 CRUD de Categorias</h2>
+                    <p>Gerenciando a tabela relacionada</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 Endpoints de Categorias</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem;">
+<span style="color: #6A9955;">// GET /api/categorias - Listar todas</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/categorias'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">categorias</span> = db.<span style="color: #DCDCAA;">prepare</span>(<span style="color: #CE9178;">'SELECT * FROM categorias'</span>).<span style="color: #DCDCAA;">all</span>();
+    res.<span style="color: #DCDCAA;">json</span>(categorias);
+});
+
+<span style="color: #6A9955;">// GET /api/categorias/:id - Buscar por ID (com produtos!)</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/categorias/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">id</span> = <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>);
+    
+    <span style="color: #6A9955;">// Buscar categoria</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">categoria</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+        <span style="color: #CE9178;">'SELECT * FROM categorias WHERE id = ?'</span>
+    ).<span style="color: #DCDCAA;">get</span>(id);
+    
+    <span style="color: #C586C0;">if</span> (!categoria) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">'Categoria não encontrada'</span> });
+    }
+    
+    <span style="color: #6A9955;">// Buscar produtos desta categoria</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtos</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+        <span style="color: #CE9178;">'SELECT * FROM produtos WHERE categoria_id = ?'</span>
+    ).<span style="color: #DCDCAA;">all</span>(id);
+    
+    <span style="color: #6A9955;">// Retornar categoria + produtos</span>
+    res.<span style="color: #DCDCAA;">json</span>({
+        ...categoria,
+        <span style="color: #9CDCFE;">produtos</span>: produtos
+    });
+});
+
+<span style="color: #6A9955;">// POST /api/categorias - Criar categoria</span>
+app.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/api/categorias'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">descricao</span> } = req.<span style="color: #9CDCFE;">body</span>;
+    
+    <span style="color: #C586C0;">if</span> (!nome) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">'Nome obrigatório'</span> });
+    }
+    
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">result</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+        <span style="color: #CE9178;">'INSERT INTO categorias (nome, descricao) VALUES (?, ?)'</span>
+    ).<span style="color: #DCDCAA;">run</span>(nome, descricao);
+    
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">categoria</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+        <span style="color: #CE9178;">'SELECT * FROM categorias WHERE id = ?'</span>
+    ).<span style="color: #DCDCAA;">get</span>(result.<span style="color: #9CDCFE;">lastInsertRowid</span>);
+    
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">201</span>).<span style="color: #DCDCAA;">json</span>(categoria);
+});
+
+<span style="color: #6A9955;">// DELETE /api/categorias/:id - Com validação!</span>
+app.<span style="color: #DCDCAA;">delete</span>(<span style="color: #CE9178;">'/api/categorias/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">id</span> = <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>);
+    
+    <span style="color: #6A9955;">// Verificar se tem produtos</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">temProdutos</span> = db.<span style="color: #DCDCAA;">prepare</span>(
+        <span style="color: #CE9178;">'SELECT COUNT(*) as total FROM produtos WHERE categoria_id = ?'</span>
+    ).<span style="color: #DCDCAA;">get</span>(id);
+    
+    <span style="color: #C586C0;">if</span> (temProdutos.<span style="color: #9CDCFE;">total</span> > <span style="color: #B5CEA8;">0</span>) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({ 
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">`Não pode deletar. Categoria tem </span><span style="color: #F44336;">${temProdutos.total}</span><span style="color: #CE9178;"> produtos`</span>
+        });
+    }
+    
+    db.<span style="color: #DCDCAA;">prepare</span>(<span style="color: #CE9178;">'DELETE FROM categorias WHERE id = ?'</span>).<span style="color: #DCDCAA;">run</span>(id);
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">204</span>).<span style="color: #DCDCAA;">send</span>();
+});
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>⚠️ Deletar Categoria</h4>
+                        <p>SEMPRE verificar se tem produtos antes de deletar!<br>
+                        Foreign Key com ON DELETE RESTRICT impede, mas melhor validar na API.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que conquistamos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Dados relacionados = Banco de dados profissional! 🔗
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Hoje Dominamos</h3>
+                            <ul>
+                                <li>Tipos de relacionamentos</li>
+                                <li>Foreign Keys (FK)</li>
+                                <li>Integridade referencial</li>
+                                <li>INNER JOIN</li>
+                                <li>LEFT JOIN</li>
+                                <li>GET com JOIN</li>
+                                <li>POST validando FK</li>
+                                <li>CRUD de 2 tabelas</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Agora Você Sabe</h3>
+                            <ul>
+                                <li>Normalizar dados</li>
+                                <li>Criar relacionamentos 1:N</li>
+                                <li>Fazer JOINs em SQL</li>
+                                <li>Retornar dados relacionados</li>
+                                <li>Validar Foreign Keys</li>
+                                <li>Proteger integridade</li>
+                                <li>API multi-tabelas! 🎉</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para Próxima Aula</h3>
+                        <div style="margin-top: 20px; font-size: 1.1rem;">
+                            <p><strong>Sexta, 13/03/2026:</strong> Autenticação e Segurança</p>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">• JWT (JSON Web Tokens)</li>
+                                <li style="padding: 8px 0;">• Login e registro de usuários</li>
+                                <li style="padding: 8px 0;">• Proteção de rotas</li>
+                                <li style="padding: 8px 0;">• Bcrypt para senhas</li>
+                                <li style="padding: 8px 0;">• Middlewares de autenticação</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px; background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);">
+                        <h3>⏰ LEMBRETE: PROJETO FINAL</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>Entrega: Segunda, 16/03/2026</strong><br><br>
+                            • API REST completa<br>
+                            • CRUD + Relacionamentos<br>
+                            • Queries avançadas<br>
+                            • Documentação completa<br>
+                            • Vale 50 pontos!
+                        </p>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Relacionamentos = Superpoder dos bancos relacionais!" 💪
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.2rem;">Excelente progresso! 🙌</p>
+                        <p style="font-size: 1rem; margin-top: 10px;">Próxima: Autenticação e segurança!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 11</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .code-block, .big-idea, .key-takeaway, .comparison-table, .analogy-box, .timeline-item, .relationship-diagram, .table-box');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

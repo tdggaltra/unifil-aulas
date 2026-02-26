@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 3 - Implementação de Endpoints GET | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 100px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--unifil-dark);
+            color: #00ff00;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+            animation: fadeInUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+            border: 2px solid var(--unifil-orange);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .rest-principle {
+            background: var(--unifil-light);
+            padding: 20px 25px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid var(--unifil-orange);
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .rest-principle h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .key-takeaway {
+            background: #FFF3E0;
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .key-takeaway h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .interactive-demo {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px dashed var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .interactive-demo button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .interactive-demo button:hover {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .endpoint-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .endpoint-card .method {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+            background: #4CAF50;
+        }
+
+        .endpoint-card .url {
+            font-family: 'Courier New', monospace;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: scale(1.05);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            color: var(--unifil-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .slide-header h1 { font-size: 1.8rem; }
+            .slide-header h2 { font-size: 1.4rem; }
+            .two-column, .three-column { grid-template-columns: 1fr; }
+            .slide-body { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>📱 Desenvolvimento de Aplicativos Móveis</h1>
+                    <p>Criação de API REST Básica</p>
+                </div>
+                <div class="slide-body">
+                    <div style="text-align: center; margin-top: 80px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px; animation: fadeInUp 0.6s ease-out;">
+                            Aula 3
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 40px; animation: fadeInUp 0.6s ease-out 0.2s; opacity: 0; animation-fill-mode: forwards;">
+                            Implementação de Endpoints GET
+                        </h3>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 60px;">
+                        <div class="content-box">
+                            <h3>📅 Informações</h3>
+                            <ul>
+                                <li><strong>Data:</strong> Segunda, 16/02/2026</li>
+                                <li><strong>Duração:</strong> 1,5 horas</li>
+                                <li><strong>Formato:</strong> Hands-on intenso!</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Objetivos</h3>
+                            <ul>
+                                <li>Implementar rotas GET completas</li>
+                                <li>Trabalhar com dados em memória</li>
+                                <li>Dominar parâmetros</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📚 Agenda de Hoje</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <strong>🔄 Parte 1 (10min)</strong><br>
+                                Revisão e Dúvidas
+                            </div>
+                            <div>
+                                <strong>📡 Parte 2 (50min)</strong><br>
+                                Método GET em profundidade
+                            </div>
+                            <div>
+                                <strong>💻 Parte 3 (30min)</strong><br>
+                                Implementação prática
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="big-idea">
+                        "Hoje vamos criar uma API de produtos COMPLETA!" 🚀
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: REVISÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Revisão Rápida</h2>
+                    <p>Recapitulando as aulas anteriores</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">Aula 1: Fundamentos REST</h4>
+                            <p>APIs, arquitetura REST, princípios, JSON</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">Aula 2: HTTP e Setup</h4>
+                            <p>Protocolo HTTP, métodos, status codes, ambiente configurado</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">Primeira API criada! 🎉</h4>
+                            <p>Express instalado, servidor rodando, endpoints básicos funcionando</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>💬 Compartilhamento de Soluções</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Quem fez a tarefa de casa? Vamos ver alguns exemplos do endpoint <code>GET /api/me</code>!
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Vocês já sabem</h3>
+                            <ul>
+                                <li>Criar projeto Node.js</li>
+                                <li>Instalar Express</li>
+                                <li>Criar endpoints GET básicos</li>
+                                <li>Testar com Postman</li>
+                                <li>Versionar com Git</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Hoje vamos aprender</h3>
+                            <ul>
+                                <li>Trabalhar com arrays de dados</li>
+                                <li>Buscar por ID (path params)</li>
+                                <li>Filtrar com query params</li>
+                                <li>Implementar paginação</li>
+                                <li>Ordenar resultados</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 30px;">
+                        Vamos do GET básico para o GET profissional! 💪
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: DADOS EM MEMÓRIA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🗄️ Trabalhando com Dados em Memória</h2>
+                    <p>Antes do banco de dados</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>📦 Analogia: Array = Caixa de Produtos</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            Imagine uma prateleira de loja com produtos:<br><br>
+                            <strong>Array:</strong> A prateleira inteira<br>
+                            <strong>Objetos:</strong> Cada produto individual<br>
+                            <strong>ID:</strong> Código de barras de cada produto<br>
+                            <strong>GET todos:</strong> Mostrar toda a prateleira<br>
+                            <strong>GET por ID:</strong> Pegar produto específico pelo código
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📝 Criando Array de Produtos</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// Banco de dados "fake" em memória</span>
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">produtos</span> = [
+    {
+        <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">1</span>,
+        <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Notebook Dell"</span>,
+        <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">3500</span>,
+        <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span>,
+        <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">15</span>
+    },
+    {
+        <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">2</span>,
+        <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Mouse Logitech"</span>,
+        <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">150</span>,
+        <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span>,
+        <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">50</span>
+    },
+    {
+        <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">3</span>,
+        <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Livro JavaScript"</span>,
+        <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">89</span>,
+        <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Livros"</span>,
+        <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">30</span>
+    },
+    {
+        <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">4</span>,
+        <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Teclado Mecânico"</span>,
+        <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">450</span>,
+        <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span>,
+        <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">20</span>
+    }
+];
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="key-takeaway">
+                            <h4>💡 Por que usar arrays?</h4>
+                            <p>Antes de conectar ao banco de dados, arrays em memória são perfeitos para:
+                            <br>• Prototipar rapidamente
+                            <br>• Testar lógica da API
+                            <br>• Aprender conceitos</p>
+                        </div>
+
+                        <div class="key-takeaway" style="animation-delay: 0.2s;">
+                            <h4>⚠️ Limitação</h4>
+                            <p>Dados em memória são perdidos quando o servidor reinicia!
+                            <br><br>Na próxima aula: banco de dados real! 🎯</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: GET LISTAR TODOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 GET - Listar Todos os Recursos</h2>
+                    <p>O endpoint mais básico e importante</p>
+                </div>
+                <div class="slide-body">
+                    <div class="endpoint-card">
+                        <span class="method">GET</span>
+                        <span class="url">/api/produtos</span>
+                        <p style="margin-top: 10px;">Retorna todos os produtos do array</p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Implementação Completa</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// GET /api/produtos - Listar todos</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// Retorna o array completo</span>
+    res.<span style="color: #DCDCAA;">json</span>(produtos);
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📤 Requisição</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+GET /api/produtos HTTP/1.1
+Host: localhost:3000
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📥 Resposta</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  {
+    "id": 1,
+    "nome": "Notebook Dell",
+    "preco": 3500,
+    "categoria": "Informática",
+    "estoque": 15
+  },
+  {
+    "id": 2,
+    "nome": "Mouse Logitech",
+    ...
+  }
+]
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>✨ Características importantes</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Status code: <strong>200 OK</strong></li>
+                            <li style="padding: 8px 0;">✅ Retorna array JSON</li>
+                            <li style="padding: 8px 0;">✅ Todos os produtos de uma vez</li>
+                            <li style="padding: 8px 0;">✅ Simples e direto</li>
+                        </ul>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>🎯 Quando usar?</h4>
+                        <p>Use quando precisar de <strong>TODOS</strong> os recursos. 
+                        Para listas grandes, usaremos paginação (próximo slide)!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: GET POR ID -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔍 GET - Buscar por ID (Path Parameter)</h2>
+                    <p>Encontrando um recurso específico</p>
+                </div>
+                <div class="slide-body">
+                    <div class="endpoint-card">
+                        <span class="method">GET</span>
+                        <span class="url">/api/produtos/:id</span>
+                        <p style="margin-top: 10px;">Retorna UM produto específico pelo ID</p>
+                    </div>
+
+                    <div class="analogy-box">
+                        <h3>🎯 Path Parameter - O que é?</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>:id</strong> é uma variável na URL!<br><br>
+                            <code>/api/produtos/1</code> → id = 1<br>
+                            <code>/api/produtos/42</code> → id = 42<br>
+                            <code>/api/produtos/999</code> → id = 999<br><br>
+                            O <strong>:</strong> indica que é um parâmetro dinâmico
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Implementação Completa</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// GET /api/produtos/:id - Buscar por ID</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// 1. Pegar ID da URL</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">id</span> = <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>);
+    
+    <span style="color: #6A9955;">// 2. Buscar produto no array</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produto</span> = produtos.<span style="color: #DCDCAA;">find</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === id);
+    
+    <span style="color: #6A9955;">// 3. Verificar se encontrou</span>
+    <span style="color: #C586C0;">if</span> (!produto) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ 
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Produto não encontrado"</span> 
+        });
+    }
+    
+    <span style="color: #6A9955;">// 4. Retornar produto encontrado</span>
+    res.<span style="color: #DCDCAA;">json</span>(produto);
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Cenário de Sucesso</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #4CAF50;">GET /api/produtos/1</span>
+
+<span style="color: #4CAF50;">200 OK</span>
+{
+  "id": 1,
+  "nome": "Notebook Dell",
+  "preco": 3500,
+  "categoria": "Informática",
+  "estoque": 15
+}
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>❌ Produto Não Existe</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #F44336;">GET /api/produtos/999</span>
+
+<span style="color: #F44336;">404 Not Found</span>
+{
+  "erro": "Produto não encontrado"
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Pontos Importantes</h4>
+                        <p>• <code>req.params.id</code> vem como <strong>string</strong>, use parseInt()<br>
+                        • <code>find()</code> retorna undefined se não encontrar<br>
+                        • Sempre retorne <strong>404</strong> quando não encontrar!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: QUERY PARAMETERS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔎 Query Parameters - Filtros e Buscas</h2>
+                    <p>Refinando resultados</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🎛️ Query Parameters = Filtros de Pesquisa</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            Pense em um e-commerce:<br><br>
+                            <strong>Sem filtro:</strong> Todos os produtos<br>
+                            <strong>Com filtro:</strong> Só produtos de uma categoria<br><br>
+                            <code>?categoria=Informática</code> → filtra por categoria<br>
+                            <code>?preco_max=500</code> → produtos até R$ 500<br>
+                            <code>?categoria=Livros&preco_max=100</code> → múltiplos filtros!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Implementação com Filtros</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// GET /api/produtos?categoria=Informática&preco_max=500</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// 1. Pegar query parameters</span>
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">categoria</span>, <span style="color: #9CDCFE;">preco_max</span>, <span style="color: #9CDCFE;">preco_min</span> } = req.<span style="color: #9CDCFE;">query</span>;
+    
+    <span style="color: #6A9955;">// 2. Começar com todos os produtos</span>
+    <span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">resultado</span> = produtos;
+    
+    <span style="color: #6A9955;">// 3. Aplicar filtro de categoria (se fornecido)</span>
+    <span style="color: #C586C0;">if</span> (categoria) {
+        resultado = resultado.<span style="color: #DCDCAA;">filter</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">categoria</span> === categoria);
+    }
+    
+    <span style="color: #6A9955;">// 4. Aplicar filtro de preço máximo</span>
+    <span style="color: #C586C0;">if</span> (preco_max) {
+        resultado = resultado.<span style="color: #DCDCAA;">filter</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">preco</span> <= <span style="color: #DCDCAA;">parseFloat</span>(preco_max));
+    }
+    
+    <span style="color: #6A9955;">// 5. Aplicar filtro de preço mínimo</span>
+    <span style="color: #C586C0;">if</span> (preco_min) {
+        resultado = resultado.<span style="color: #DCDCAA;">filter</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">preco</span> >= <span style="color: #DCDCAA;">parseFloat</span>(preco_min));
+    }
+    
+    <span style="color: #6A9955;">// 6. Retornar resultados filtrados</span>
+    res.<span style="color: #DCDCAA;">json</span>(resultado);
+});
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔍 Exemplo 1</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?categoria=Informática
+
+Retorna: 3 produtos
+(Notebook, Mouse, Teclado)
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🔍 Exemplo 2</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?preco_max=200
+
+Retorna: 2 produtos
+(Mouse R$150, Livro R$89)
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.4s;">
+                            <h3>🔍 Exemplo 3</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?categoria=Informática
+&preco_max=500
+
+Retorna: 2 produtos
+(Mouse, Teclado)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Dica Profissional</h4>
+                        <p>Query parameters são <strong>opcionais</strong>! Se não fornecidos, retorna tudo.
+                        <br>Use <code>req.query.parametro</code> para acessá-los.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: ORDENAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Ordenação de Resultados</h2>
+                    <p>Organizando dados para o cliente</p>
+                </div>
+                <div class="slide-body">
+                    <div class="highlight-box">
+                        <h3>🎯 Ordenação comum em APIs</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; font-size: 1.05rem;">
+                            <div>
+                                <strong>Por Preço</strong><br>
+                                Menor → Maior<br>
+                                Maior → Menor
+                            </div>
+                            <div>
+                                <strong>Por Nome</strong><br>
+                                A → Z<br>
+                                Z → A
+                            </div>
+                            <div>
+                                <strong>Por Data</strong><br>
+                                Mais recente<br>
+                                Mais antigo
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Implementação de Ordenação</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// GET /api/produtos?ordem=preco&direcao=asc</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">categoria</span>, <span style="color: #9CDCFE;">preco_max</span>, <span style="color: #9CDCFE;">preco_min</span>, <span style="color: #9CDCFE;">ordem</span>, <span style="color: #9CDCFE;">direcao</span> } = req.<span style="color: #9CDCFE;">query</span>;
+    
+    <span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">resultado</span> = produtos;
+    
+    <span style="color: #6A9955;">// ... filtros anteriores ...</span>
+    
+    <span style="color: #6A9955;">// Ordenação</span>
+    <span style="color: #C586C0;">if</span> (ordem) {
+        resultado = resultado.<span style="color: #DCDCAA;">sort</span>((<span style="color: #9CDCFE;">a</span>, <span style="color: #9CDCFE;">b</span>) => {
+            <span style="color: #C586C0;">if</span> (ordem === <span style="color: #CE9178;">'preco'</span>) {
+                <span style="color: #6A9955;">// Ordenar por preço</span>
+                <span style="color: #C586C0;">return</span> direcao === <span style="color: #CE9178;">'desc'</span> 
+                    ? b.<span style="color: #9CDCFE;">preco</span> - a.<span style="color: #9CDCFE;">preco</span>  <span style="color: #6A9955;">// Decrescente</span>
+                    : a.<span style="color: #9CDCFE;">preco</span> - b.<span style="color: #9CDCFE;">preco</span>; <span style="color: #6A9955;">// Crescente</span>
+            }
+            
+            <span style="color: #C586C0;">if</span> (ordem === <span style="color: #CE9178;">'nome'</span>) {
+                <span style="color: #6A9955;">// Ordenar por nome (alfabético)</span>
+                <span style="color: #C586C0;">return</span> direcao === <span style="color: #CE9178;">'desc'</span>
+                    ? b.<span style="color: #9CDCFE;">nome</span>.<span style="color: #DCDCAA;">localeCompare</span>(a.<span style="color: #9CDCFE;">nome</span>)
+                    : a.<span style="color: #9CDCFE;">nome</span>.<span style="color: #DCDCAA;">localeCompare</span>(b.<span style="color: #9CDCFE;">nome</span>);
+            }
+        });
+    }
+    
+    res.<span style="color: #DCDCAA;">json</span>(resultado);
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📈 Ordenar por Preço (crescente)</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?ordem=preco&direcao=asc
+
+Resultado:
+1. Livro - R$ 89
+2. Mouse - R$ 150
+3. Teclado - R$ 450
+4. Notebook - R$ 3500
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📉 Ordenar por Preço (decrescente)</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?ordem=preco&direcao=desc
+
+Resultado:
+1. Notebook - R$ 3500
+2. Teclado - R$ 450
+3. Mouse - R$ 150
+4. Livro - R$ 89
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Boas Práticas</h4>
+                        <p>• Use <code>asc</code> para crescente (ascending)<br>
+                        • Use <code>desc</code> para decrescente (descending)<br>
+                        • Para strings, use <code>localeCompare()</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: PAGINAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📄 Paginação - Lidando com Grandes Volumes</h2>
+                    <p>Não retornar tudo de uma vez</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>📚 Analogia: Livro com Páginas</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            Imagine um livro com 1000 páginas:<br><br>
+                            <strong>Sem paginação:</strong> Ler 1000 páginas de uma vez 😵<br>
+                            <strong>Com paginação:</strong> Ler 10 páginas por vez 😊<br><br>
+                            <code>?pagina=1</code> → Páginas 1-10<br>
+                            <code>?pagina=2</code> → Páginas 11-20<br>
+                            <code>?pagina=3</code> → Páginas 21-30
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Implementação de Paginação</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// GET /api/produtos?pagina=1&limite=2</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> { 
+        <span style="color: #9CDCFE;">categoria</span>, <span style="color: #9CDCFE;">preco_max</span>, <span style="color: #9CDCFE;">preco_min</span>, 
+        <span style="color: #9CDCFE;">ordem</span>, <span style="color: #9CDCFE;">direcao</span>,
+        <span style="color: #9CDCFE;">pagina</span> = <span style="color: #B5CEA8;">1</span>,      <span style="color: #6A9955;">// Página padrão: 1</span>
+        <span style="color: #9CDCFE;">limite</span> = <span style="color: #B5CEA8;">10</span>     <span style="color: #6A9955;">// Itens por página: 10</span>
+    } = req.<span style="color: #9CDCFE;">query</span>;
+    
+    <span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">resultado</span> = produtos;
+    
+    <span style="color: #6A9955;">// ... aplicar filtros e ordenação ...</span>
+    
+    <span style="color: #6A9955;">// Paginação</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">paginaNum</span> = <span style="color: #DCDCAA;">parseInt</span>(pagina);
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">limiteNum</span> = <span style="color: #DCDCAA;">parseInt</span>(limite);
+    
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">inicio</span> = (paginaNum - <span style="color: #B5CEA8;">1</span>) * limiteNum;
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">fim</span> = inicio + limiteNum;
+    
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">paginado</span> = resultado.<span style="color: #DCDCAA;">slice</span>(inicio, fim);
+    
+    <span style="color: #6A9955;">// Retornar com metadados</span>
+    res.<span style="color: #DCDCAA;">json</span>({
+        <span style="color: #9CDCFE;">dados</span>: paginado,
+        <span style="color: #9CDCFE;">paginacao</span>: {
+            <span style="color: #9CDCFE;">pagina_atual</span>: paginaNum,
+            <span style="color: #9CDCFE;">itens_por_pagina</span>: limiteNum,
+            <span style="color: #9CDCFE;">total_itens</span>: resultado.<span style="color: #9CDCFE;">length</span>,
+            <span style="color: #9CDCFE;">total_paginas</span>: <span style="color: #4EC9B0;">Math</span>.<span style="color: #DCDCAA;">ceil</span>(resultado.<span style="color: #9CDCFE;">length</span> / limiteNum)
+        }
+    });
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📄 Página 1</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?pagina=1&limite=2
+
+{
+  "dados": [
+    { "id": 1, "nome": "Notebook"...},
+    { "id": 2, "nome": "Mouse"... }
+  ],
+  "paginacao": {
+    "pagina_atual": 1,
+    "itens_por_pagina": 2,
+    "total_itens": 4,
+    "total_paginas": 2
+  }
+}
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📄 Página 2</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?pagina=2&limite=2
+
+{
+  "dados": [
+    { "id": 3, "nome": "Livro"... },
+    { "id": 4, "nome": "Teclado"... }
+  ],
+  "paginacao": {
+    "pagina_atual": 2,
+    "itens_por_pagina": 2,
+    "total_itens": 4,
+    "total_paginas": 2
+  }
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Por que Paginar?</h4>
+                        <p>• <strong>Performance:</strong> Menos dados = resposta mais rápida<br>
+                        • <strong>UX:</strong> Melhor experiência para o usuário<br>
+                        • <strong>Escalabilidade:</strong> Funciona com milhões de registros</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CÓDIGO COMPLETO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Código Completo - GET Profissional</h2>
+                    <p>Tudo junto e funcionando</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 API Completa com Todas as Funcionalidades</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.9rem;">
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">express</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'express'</span>);
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">app</span> = <span style="color: #DCDCAA;">express</span>();
+
+app.<span style="color: #DCDCAA;">use</span>(express.<span style="color: #DCDCAA;">json</span>());
+
+<span style="color: #6A9955;">// Dados em memória</span>
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">produtos</span> = [
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">1</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Notebook Dell"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">3500</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span>, <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">15</span> },
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">2</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Mouse Logitech"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">150</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span>, <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">50</span> },
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">3</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Livro JavaScript"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">89</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Livros"</span>, <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">30</span> },
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">4</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Teclado Mecânico"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">450</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span>, <span style="color: #9CDCFE;">estoque</span>: <span style="color: #B5CEA8;">20</span> }
+];
+
+<span style="color: #6A9955;">// GET /api/produtos - Listar com filtros, ordenação e paginação</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">categoria</span>, <span style="color: #9CDCFE;">preco_max</span>, <span style="color: #9CDCFE;">preco_min</span>, <span style="color: #9CDCFE;">ordem</span>, <span style="color: #9CDCFE;">direcao</span>, <span style="color: #9CDCFE;">pagina</span> = <span style="color: #B5CEA8;">1</span>, <span style="color: #9CDCFE;">limite</span> = <span style="color: #B5CEA8;">10</span> } = req.<span style="color: #9CDCFE;">query</span>;
+    
+    <span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">resultado</span> = produtos;
+    
+    <span style="color: #6A9955;">// Filtros</span>
+    <span style="color: #C586C0;">if</span> (categoria) resultado = resultado.<span style="color: #DCDCAA;">filter</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">categoria</span> === categoria);
+    <span style="color: #C586C0;">if</span> (preco_max) resultado = resultado.<span style="color: #DCDCAA;">filter</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">preco</span> <= <span style="color: #DCDCAA;">parseFloat</span>(preco_max));
+    <span style="color: #C586C0;">if</span> (preco_min) resultado = resultado.<span style="color: #DCDCAA;">filter</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">preco</span> >= <span style="color: #DCDCAA;">parseFloat</span>(preco_min));
+    
+    <span style="color: #6A9955;">// Ordenação</span>
+    <span style="color: #C586C0;">if</span> (ordem) {
+        resultado = resultado.<span style="color: #DCDCAA;">sort</span>((<span style="color: #9CDCFE;">a</span>, <span style="color: #9CDCFE;">b</span>) => {
+            <span style="color: #C586C0;">if</span> (ordem === <span style="color: #CE9178;">'preco'</span>) {
+                <span style="color: #C586C0;">return</span> direcao === <span style="color: #CE9178;">'desc'</span> ? b.<span style="color: #9CDCFE;">preco</span> - a.<span style="color: #9CDCFE;">preco</span> : a.<span style="color: #9CDCFE;">preco</span> - b.<span style="color: #9CDCFE;">preco</span>;
+            }
+            <span style="color: #C586C0;">if</span> (ordem === <span style="color: #CE9178;">'nome'</span>) {
+                <span style="color: #C586C0;">return</span> direcao === <span style="color: #CE9178;">'desc'</span> ? b.<span style="color: #9CDCFE;">nome</span>.<span style="color: #DCDCAA;">localeCompare</span>(a.<span style="color: #9CDCFE;">nome</span>) : a.<span style="color: #9CDCFE;">nome</span>.<span style="color: #DCDCAA;">localeCompare</span>(b.<span style="color: #9CDCFE;">nome</span>);
+            }
+        });
+    }
+    
+    <span style="color: #6A9955;">// Paginação</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">paginaNum</span> = <span style="color: #DCDCAA;">parseInt</span>(pagina);
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">limiteNum</span> = <span style="color: #DCDCAA;">parseInt</span>(limite);
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">inicio</span> = (paginaNum - <span style="color: #B5CEA8;">1</span>) * limiteNum;
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">paginado</span> = resultado.<span style="color: #DCDCAA;">slice</span>(inicio, inicio + limiteNum);
+    
+    res.<span style="color: #DCDCAA;">json</span>({
+        <span style="color: #9CDCFE;">dados</span>: paginado,
+        <span style="color: #9CDCFE;">paginacao</span>: {
+            <span style="color: #9CDCFE;">pagina_atual</span>: paginaNum,
+            <span style="color: #9CDCFE;">itens_por_pagina</span>: limiteNum,
+            <span style="color: #9CDCFE;">total_itens</span>: resultado.<span style="color: #9CDCFE;">length</span>,
+            <span style="color: #9CDCFE;">total_paginas</span>: <span style="color: #4EC9B0;">Math</span>.<span style="color: #DCDCAA;">ceil</span>(resultado.<span style="color: #9CDCFE;">length</span> / limiteNum)
+        }
+    });
+});
+
+<span style="color: #6A9955;">// GET /api/produtos/:id - Buscar por ID</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produto</span> = produtos.<span style="color: #DCDCAA;">find</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>));
+    <span style="color: #C586C0;">if</span> (!produto) <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Produto não encontrado"</span> });
+    res.<span style="color: #DCDCAA;">json</span>(produto);
+});
+
+app.<span style="color: #DCDCAA;">listen</span>(<span style="color: #B5CEA8;">3000</span>, () => <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(<span style="color: #CE9178;">'🚀 API rodando na porta 3000'</span>));
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>✨ Funcionalidades Implementadas</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Listar todos os produtos</li>
+                            <li style="padding: 8px 0;">✅ Buscar produto por ID</li>
+                            <li style="padding: 8px 0;">✅ Filtrar por categoria e preço</li>
+                            <li style="padding: 8px 0;">✅ Ordenar por nome ou preço</li>
+                            <li style="padding: 8px 0;">✅ Paginação com metadados</li>
+                        </ul>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 30px;">
+                        Isso é uma API REST profissional! 🎉
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: EXEMPLOS DE USO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧪 Exemplos de Uso - Testando a API</h2>
+                    <p>Casos de uso reais</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="endpoint-card">
+                            <h4 style="color: var(--unifil-orange);">📋 Listar Tudo</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+
+Retorna todos
+os 4 produtos
+                            </div>
+                        </div>
+
+                        <div class="endpoint-card" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange);">🔍 Buscar #2</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos/2
+
+Retorna apenas
+o Mouse Logitech
+                            </div>
+                        </div>
+
+                        <div class="endpoint-card" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange);">🏷️ Filtrar Categoria</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?categoria=Informática
+
+Retorna 3 produtos
+                            </div>
+                        </div>
+
+                        <div class="endpoint-card" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange);">💰 Preço até 500</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?preco_max=500
+
+Retorna 3 produtos
+(exclui Notebook)
+                            </div>
+                        </div>
+
+                        <div class="endpoint-card" style="animation-delay: 0.8s;">
+                            <h4 style="color: var(--unifil-orange);">📊 Ordenar por Preço</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?ordem=preco&direcao=asc
+
+Mais barato primeiro
+                            </div>
+                        </div>
+
+                        <div class="endpoint-card" style="animation-delay: 1s;">
+                            <h4 style="color: var(--unifil-orange);">📄 Paginação</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+GET /api/produtos
+?pagina=1&limite=2
+
+2 produtos + metadata
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🎯 Exemplo Combinado (Query String Complexa)</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+GET /api/produtos?categoria=Informática&preco_max=500&ordem=preco&direcao=asc&pagina=1&limite=2
+
+<span style="color: #6A9955;">// Produtos de Informática, até R$ 500, ordenados por preço crescente, 2 por página</span>
+
+{
+    "dados": [
+        { "id": 2, "nome": "Mouse Logitech", "preco": 150, ... },
+        { "id": 4, "nome": "Teclado Mecânico", "preco": 450, ... }
+    ],
+    "paginacao": {
+        "pagina_atual": 1,
+        "itens_por_pagina": 2,
+        "total_itens": 2,
+        "total_paginas": 1
+    }
+}
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Combinações Poderosas</h4>
+                        <p>A mágica acontece quando você combina filtros + ordenação + paginação!
+                        <br>Isso é o que faz uma API ser verdadeiramente útil.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: ATIVIDADE PRÁTICA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Atividade Prática em Sala</h2>
+                    <p>Mãos à obra!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Agora é com vocês! Vamos codificar juntos! 🚀
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">Passo 1: Criar o Projeto</h4>
+                            <ul style="padding-left: 20px;">
+                                <li>Criar pasta <code>api-produtos</code></li>
+                                <li>Executar <code>npm init -y</code></li>
+                                <li>Instalar Express: <code>npm install express</code></li>
+                                <li>Criar arquivo <code>index.js</code></li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">Passo 2: Implementar Array de Dados</h4>
+                            <ul style="padding-left: 20px;">
+                                <li>Criar array com pelo menos 5 produtos</li>
+                                <li>Cada produto: id, nome, preco, categoria, estoque</li>
+                                <li>Pelo menos 2 categorias diferentes</li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">Passo 3: Criar Endpoints</h4>
+                            <ul style="padding-left: 20px;">
+                                <li><code>GET /api/produtos</code> - Listar todos</li>
+                                <li><code>GET /api/produtos/:id</code> - Buscar por ID</li>
+                                <li>Adicionar filtro por categoria</li>
+                                <li>Adicionar ordenação por preço</li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">Passo 4: Testar no Postman</h4>
+                            <ul style="padding-left: 20px;">
+                                <li>Testar cada endpoint</li>
+                                <li>Experimentar diferentes combinações</li>
+                                <li>Salvar requests em Collection</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Desafio Extra (se terminar rápido)</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            • Adicionar filtro por faixa de preço (<code>preco_min</code> e <code>preco_max</code>)<br>
+                            • Implementar busca por nome (<code>?busca=mouse</code>)<br>
+                            • Adicionar paginação básica
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>⏰ Tempo</h4>
+                        <p>30 minutos para implementar. Vamos trabalhar juntos, tirando dúvidas!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que conquistamos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Hoje criamos uma API GET profissional e completa! 🎊
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Hoje Aprendemos</h3>
+                            <ul>
+                                <li>Trabalhar com arrays em memória</li>
+                                <li>GET para listar todos</li>
+                                <li>GET por ID (path parameters)</li>
+                                <li>Filtros (query parameters)</li>
+                                <li>Ordenação de resultados</li>
+                                <li>Paginação básica</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>💪 Agora Você Sabe</h3>
+                            <ul>
+                                <li>Como estruturar dados em memória</li>
+                                <li>Diferença entre path e query params</li>
+                                <li>Como filtrar arrays com JavaScript</li>
+                                <li>Implementar ordenação</li>
+                                <li>Calcular paginação</li>
+                                <li>Retornar metadados úteis</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para Casa - TRABALHO IMPORTANTE!</h3>
+                        <div style="margin-top: 20px; font-size: 1.1rem;">
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">1️⃣ Criar API de Livros ou Filmes:</strong><br>
+                                • Escolha um tema (livros, filmes, séries, jogos, etc)<br>
+                                • Array com pelo menos 10 itens<br>
+                                • Campos: id, título, autor/diretor, ano, gênero, nota<br>
+                                • Implementar todos os endpoints GET que vimos
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">2️⃣ Funcionalidades Obrigatórias:</strong><br>
+                                • Listar todos<br>
+                                • Buscar por ID<br>
+                                • Filtrar por categoria/gênero<br>
+                                • Ordenar por título ou nota<br>
+                                • Paginação (opcional, mas recomendado!)
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px;">
+                                <strong style="color: var(--unifil-orange);">3️⃣ Testar e Documentar:</strong><br>
+                                • Collection do Postman com todos os endpoints<br>
+                                • README.md explicando como usar<br>
+                                • Commit no Git com mensagens descritivas
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (Sexta, 20/02)</h3>
+                            <ul>
+                                <li><strong>Método POST</strong></li>
+                                <li>Criar novos recursos</li>
+                                <li>Validação de dados</li>
+                                <li>Tratamento de erros</li>
+                                <li>Status code 201 Created</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📖 Leitura Recomendada</h3>
+                            <ul>
+                                <li>Métodos de Arrays em JavaScript</li>
+                                <li>filter(), find(), sort(), slice()</li>
+                                <li>Query strings e URL parameters</li>
+                                <li>Boas práticas de API design</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Pratique muito os filtros e ordenação! É fundamental!" 💪
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.2rem;">Excelente trabalho hoje! 🙌</p>
+                        <p style="font-size: 1rem; margin-top: 10px;">Nos vemos na próxima aula com POST!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 12</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .rest-principle, .highlight-box, .code-block, .big-idea, .key-takeaway, .comparison-table, .interactive-demo, .analogy-box, .timeline-item, .endpoint-card');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

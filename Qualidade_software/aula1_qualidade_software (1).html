@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 1 - Introdução à Qualidade de Software | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 70px;
+            margin-bottom: 30px;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 21px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .timeline-item p {
+            color: var(--unifil-dark);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--unifil-orange);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .dimension-card {
+            background: white;
+            border: 2px solid var(--unifil-light);
+            border-left: 5px solid var(--unifil-orange);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .dimension-card:hover {
+            border-color: var(--unifil-orange);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.2);
+        }
+
+        .dimension-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .dimension-card p {
+            color: var(--unifil-dark);
+            line-height: 1.6;
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .failure-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #C92A2A 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .failure-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .failure-card .cost {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Stagger animations */
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .dimension-card:nth-child(1) { animation-delay: 0s; }
+        .dimension-card:nth-child(2) { animation-delay: 0.1s; }
+        .dimension-card:nth-child(3) { animation-delay: 0.2s; }
+        .dimension-card:nth-child(4) { animation-delay: 0.3s; }
+        .dimension-card:nth-child(5) { animation-delay: 0.4s; }
+        .dimension-card:nth-child(6) { animation-delay: 0.5s; }
+        .timeline-item:nth-child(1) { animation-delay: 0s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.3s; }
+        .timeline-item:nth-child(5) { animation-delay: 0.4s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Qualidade de Software</h1>
+                    <p>Normas, Modelos e Melhoria Contínua</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 80px; font-size: 2.2rem;">
+                        Aula 1: Introdução à Qualidade de Software 
+                    </div>
+
+                    <div style="text-align: center; margin-top: 60px;">
+                        <h2 style="color: var(--unifil-dark); font-size: 2rem; margin-bottom: 20px;">
+                            Por que a qualidade importa?
+                        </h2>
+                        <p style="font-size: 1.3rem; color: var(--unifil-gray); line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                            Explore os fundamentos da qualidade de software, entenda por que sistemas falham 
+                            e descubra como modelos de qualidade podem transformar o desenvolvimento de software.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 60px;">
+                        <div class="content-box">
+                            <h3>📚 Disciplina</h3>
+                            <ul>
+                                <li>30 horas (20 aulas)</li>
+                                <li>Segunda e Terça-feira</li>
+                                <li>09/02/2026 a 17/03/2026</li>
+                                <li>Graduação em Eng. Software</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Professor</h3>
+                            <ul>
+                                <li>Dr. Tiago Galvão</li>
+                                <li>Email: tiago.galvao@unifil.br</li>
+                                <li>Atendimento: dia das aulas</li>
+                                <li>Material: Classroom</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 50px; color: var(--unifil-gray); font-size: 1.1rem;">
+                        Use as setas do teclado (← →) ou os botões abaixo para navegar
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: VISÃO GERAL DA DISCIPLINA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🗺️ Visão Geral da Disciplina</h2>
+                    <p>O que vamos aprender nos próximos meses</p>
+                </div>
+                <div class="slide-body">
+                    <div class="highlight-box">
+                        <h3>🎯 Objetivo Geral</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Capacitar você a <strong>compreender e aplicar modelos de melhoria de processos</strong>, 
+                            normas internacionais e práticas de melhoria contínua para elevar a qualidade e 
+                            maturidade dos processos de desenvolvimento de software.
+                        </p>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📖 Bloco 1</h3>
+                            <ul>
+                                <li>Qualidade de Software</li>
+                                <li>MR-MPS-SW</li>
+                                <li>Níveis de Maturidade</li>
+                                <li>Processos (G a A)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🌍 Bloco 2</h3>
+                            <ul>
+                                <li>ISO/IEC 12207</li>
+                                <li>MR-MPS-RH</li>
+                                <li>Gestão de Pessoas</li>
+                                <li>Ambiente de Trabalho</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🔄 Bloco 3</h3>
+                            <ul>
+                                <li>Ciclo PDCA</li>
+                                <li>Melhoria Contínua</li>
+                                <li>Ferramentas da Qualidade</li>
+                                <li>Casos Práticos</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>📝 Avaliação</th>
+                                <th>Tipo</th>
+                                <th>Peso</th>
+                                <th>Data</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Trabalho 1</strong></td>
+                                <td>Caracterização de Empresa</td>
+                                <td>10%</td>
+                                <td>02/03</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prova Intermediária</strong></td>
+                                <td>MPS.BR Completo</td>
+                                <td>25%</td>
+                                <td>03/03</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Trabalho 2</strong></td>
+                                <td>ISO 12207 + MPS-RH</td>
+                                <td>10%</td>
+                                <td>16/03</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Trabalho 3</strong></td>
+                                <td>Ferramentas da Qualidade</td>
+                                <td>10%</td>
+                                <td>30/03</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Projeto Final</strong></td>
+                                <td>Plano de Melhoria + Apresentação</td>
+                                <td>30%</td>
+                                <td>07-13/04</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prova Final</strong></td>
+                                <td>Todo Conteúdo</td>
+                                <td>15%</td>
+                                <td>14/04</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: O QUE É QUALIDADE? -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🤔 O que é Qualidade de Software?</h2>
+                    <p>Entendendo o conceito fundamental</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        "Qualidade é adequação ao uso" - Joseph Juran
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📖 Definições Clássicas</h3>
+                            <ul>
+                                <li><strong>Juran:</strong> Adequação ao uso</li>
+                                <li><strong>Crosby:</strong> Conformidade com requisitos</li>
+                                <li><strong>Deming:</strong> Previsibilidade e uniformidade</li>
+                                <li><strong>ISO 9000:</strong> Atender necessidades explícitas e implícitas</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💡 Na Prática</h3>
+                            <ul>
+                                <li>Software faz o que deveria fazer?</li>
+                                <li>É confiável e seguro?</li>
+                                <li>É fácil de usar?</li>
+                                <li>É eficiente e rápido?</li>
+                                <li>É fácil de manter e evoluir?</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🏠 Analogia: Construindo uma Casa</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            Imagine construir uma casa. Qualidade significa:
+                        </p>
+                        <ul style="margin-top: 15px; font-size: 1.05rem; line-height: 1.8;">
+                            <li style="padding: 8px 0;">✅ <strong>Funcionalidade:</strong> Tem quartos, banheiro, cozinha (faz o que precisa)</li>
+                            <li style="padding: 8px 0;">✅ <strong>Confiabilidade:</strong> Não cai com chuva ou vento (é estável)</li>
+                            <li style="padding: 8px 0;">✅ <strong>Usabilidade:</strong> Portas e janelas abrem facilmente (é fácil usar)</li>
+                            <li style="padding: 8px 0;">✅ <strong>Eficiência:</strong> Bem isolada, economiza energia (usa recursos bem)</li>
+                            <li style="padding: 8px 0;">✅ <strong>Manutenibilidade:</strong> Fácil trocar uma torneira (fácil consertar)</li>
+                            <li style="padding: 8px 0;">✅ <strong>Portabilidade:</strong> Pode adicionar um quarto (fácil expandir)</li>
+                        </ul>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Software de qualidade não é aquele que não tem bugs. 
+                        É aquele que atende as necessidades do usuário de forma confiável, 
+                        eficiente e com boa experiência.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: DIMENSÕES DA QUALIDADE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📐 Dimensões da Qualidade (ISO/IEC 25010)</h2>
+                    <p>Os 6 pilares da qualidade de software</p>
+                </div>
+                <div class="slide-body">
+                    <div class="dimension-card">
+                        <h4>1️⃣ Funcionalidade</h4>
+                        <p>
+                            O software faz o que deveria fazer? Tem todas as funções necessárias?
+                            <strong>Ex:</strong> Um app de banco que permite transferências, consultas e pagamentos.
+                        </p>
+                    </div>
+
+                    <div class="dimension-card">
+                        <h4>2️⃣ Confiabilidade</h4>
+                        <p>
+                            O software funciona sem falhas? É tolerante a erros?
+                            <strong>Ex:</strong> Sistema bancário que não perde transações mesmo com quedas de energia.
+                        </p>
+                    </div>
+
+                    <div class="dimension-card">
+                        <h4>3️⃣ Usabilidade</h4>
+                        <p>
+                            É fácil de aprender e usar? A interface é intuitiva?
+                            <strong>Ex:</strong> Instagram - qualquer pessoa consegue postar uma foto em segundos.
+                        </p>
+                    </div>
+
+                    <div class="dimension-card">
+                        <h4>4️⃣ Eficiência (Performance)</h4>
+                        <p>
+                            Usa bem os recursos? É rápido? Consome pouca memória/CPU?
+                            <strong>Ex:</strong> Google retorna resultados em milissegundos.
+                        </p>
+                    </div>
+
+                    <div class="dimension-card">
+                        <h4>5️⃣ Manutenibilidade</h4>
+                        <p>
+                            É fácil corrigir bugs? É fácil adicionar novas funcionalidades?
+                            <strong>Ex:</strong> Código bem documentado e organizado facilita mudanças.
+                        </p>
+                    </div>
+
+                    <div class="dimension-card">
+                        <h4>6️⃣ Portabilidade</h4>
+                        <p>
+                            Funciona em diferentes ambientes? É fácil migrar?
+                            <strong>Ex:</strong> WhatsApp funciona em Android, iOS, Windows, Mac, Web.
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Importante!</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Qualidade é <strong>multidimensional</strong>. Um software pode ser excelente em funcionalidade 
+                            mas péssimo em usabilidade. O desafio é <strong>balancear todas as dimensões</strong> de acordo 
+                            com as necessidades do projeto.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PRODUTO VS PROCESSO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚙️ Qualidade de Produto vs Qualidade de Processo</h2>
+                    <p>Duas faces da mesma moeda</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>📦 Qualidade de Produto</h3>
+                            <ul>
+                                <li>Características do software final</li>
+                                <li>Funciona corretamente?</li>
+                                <li>É fácil de usar?</li>
+                                <li>É rápido e eficiente?</li>
+                                <li>Atende os requisitos?</li>
+                            </ul>
+                            <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid var(--unifil-orange);">
+                                <strong>Foco:</strong> O QUE foi entregue
+                            </div>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🔄 Qualidade de Processo</h3>
+                            <ul>
+                                <li>Como o software foi desenvolvido</li>
+                                <li>Seguiu boas práticas?</li>
+                                <li>Processo é repetível?</li>
+                                <li>Tem controle de qualidade?</li>
+                                <li>Melhora continuamente?</li>
+                            </ul>
+                            <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid var(--unifil-orange);">
+                                <strong>Foco:</strong> COMO foi desenvolvido
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Processos de qualidade geram produtos de qualidade"
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🍕 Analogia: Pizzaria</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Qualidade de Produto:</strong> A pizza está deliciosa, bem assada, ingredientes frescos.
+                            <br><br>
+                            <strong>Qualidade de Processo:</strong> Como a pizzaria funciona - higiene da cozinha, 
+                            treinamento dos pizzaiolos, receitas padronizadas, controle de temperatura do forno, 
+                            gestão de estoque.
+                            <br><br>
+                            <strong>Relação:</strong> Uma pizzaria com processos ruins pode fazer uma pizza boa <em>por sorte</em>. 
+                            Mas uma pizzaria com <strong>processos excelentes</strong> faz pizzas boas <strong>consistentemente</strong>! 🎯
+                        </p>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>Produto</th>
+                                <th>Processo</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Avaliação</strong></td>
+                                <td>Testes, métricas de código</td>
+                                <td>Auditorias, avaliações</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Padrões</strong></td>
+                                <td>ISO/IEC 25010</td>
+                                <td>MPS.BR, CMMI, ISO 12207</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Responsável</strong></td>
+                                <td>Equipe de desenvolvimento</td>
+                                <td>Gestores de processo</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: CRISE DO SOFTWARE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💥 A Crise do Software</h2>
+                    <p>Por que a qualidade se tornou tão importante?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>1968 - Conferência da NATO</h4>
+                            <p>
+                                Termo "Crise do Software" cunhado pela primeira vez. Projetos atrasavam, 
+                                estouravam orçamento e não atendiam requisitos.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>Anos 70-80 - Problemas Crescentes</h4>
+                            <p>
+                                Software se tornou mais complexo, mas métodos de desenvolvimento permaneceram os mesmos.
+                                Falta de metodologias, ferramentas e processos estruturados.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>Anos 90 - Busca por Soluções</h4>
+                            <p>
+                                Surgimento de modelos de qualidade: ISO 9000 (1987), CMM (1991), 
+                                ISO/IEC 12207 (1995). Empresas começam a investir em processos.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>Anos 2000 - Era Moderna</h4>
+                            <p>
+                                MPS.BR (2003), Metodologias Ágeis, DevOps, CI/CD. 
+                                Qualidade se torna parte integral do desenvolvimento.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>Hoje - Qualidade é Mandatória</h4>
+                            <p>
+                                Software crítico em todos os setores. Falhas podem custar vidas, 
+                                bilhões de dólares e reputação de empresas.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">31%</div>
+                            <div class="stat-label">Projetos cancelados antes da conclusão</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">53%</div>
+                            <div class="stat-label">Projetos atrasados ou acima do orçamento</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">16%</div>
+                            <div class="stat-label">Projetos entregues no prazo e orçamento</div>
+                        </div>
+                    </div>
+
+                    <p style="text-align: center; color: var(--unifil-gray); margin-top: 20px; font-size: 0.95rem;">
+                        Fonte: Standish Group - CHAOS Report (1995)
+                    </p>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 A Solução</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Modelos de qualidade como <strong>MPS.BR</strong>, <strong>CMMI</strong> e normas como 
+                            <strong>ISO/IEC 12207</strong> foram criados para trazer estrutura, previsibilidade 
+                            e melhoria contínua aos processos de desenvolvimento de software.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: FALHAS FAMOSAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔥 Falhas de Software Famosas</h2>
+                    <p>Quando a falta de qualidade custa caro</p>
+                </div>
+                <div class="slide-body">
+                    <div class="failure-card">
+                        <h4>⚡ Therac-25 (1985-1987)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 10px;">
+                            Máquina de radioterapia aplicou doses massivas de radiação em pacientes devido a bug de software.
+                        </p>
+                        <div class="cost">💀 6 mortes</div>
+                        <p style="font-size: 1rem; opacity: 0.9; margin-top: 10px;">
+                            <strong>Causa:</strong> Condição de corrida (race condition) + falta de testes de segurança
+                        </p>
+                    </div>
+
+                    <div class="failure-card">
+                        <h4>🚀 Ariane 5 (1996)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 10px;">
+                            Foguete explodiu 37 segundos após o lançamento devido a overflow em conversão de dados.
+                        </p>
+                        <div class="cost">💰 $500 milhões</div>
+                        <p style="font-size: 1rem; opacity: 0.9; margin-top: 10px;">
+                            <strong>Causa:</strong> Conversão de float 64-bit para int 16-bit sem validação
+                        </p>
+                    </div>
+
+                    <div class="failure-card">
+                        <h4>🌍 Mars Climate Orbiter (1999)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 10px;">
+                            Sonda espacial da NASA perdida ao entrar na órbita de Marte.
+                        </p>
+                        <div class="cost">💰 $460 milhões</div>
+                        <p style="font-size: 1rem; opacity: 0.9; margin-top: 10px;">
+                            <strong>Causa:</strong> Equipe usou unidades imperiais, outra usou métricas. Falta de validação!
+                        </p>
+                    </div>
+
+                    <div class="failure-card">
+                        <h4>💹 Knight Capital (2012)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 10px;">
+                            Bug em sistema de trading automático gerou prejuízo em 45 minutos.
+                        </p>
+                        <div class="cost">💸 $440 milhões</div>
+                        <p style="font-size: 1rem; opacity: 0.9; margin-top: 10px;">
+                            <strong>Causa:</strong> Deploy incorreto reativou código antigo de teste em produção
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>📊 Padrões Comuns</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">❌ Falta de testes adequados</li>
+                            <li style="padding: 8px 0;">❌ Validação insuficiente de dados</li>
+                            <li style="padding: 8px 0;">❌ Processos de deploy fracos</li>
+                            <li style="padding: 8px 0;">❌ Comunicação deficiente entre equipes</li>
+                            <li style="padding: 8px 0;">❌ Reuso de código sem revisão</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: CUSTOS DA QUALIDADE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💰 Custos da Qualidade</h2>
+                    <p>Prevenir é muito mais barato que remediar</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        "Qualidade não custa. É de graça. O que custa é a falta de qualidade." - Philip Crosby
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>💸 Custos da Falta de Qualidade</h3>
+                            <ul>
+                                <li>Retrabalho e correção de bugs</li>
+                                <li>Perda de clientes e reputação</li>
+                                <li>Atrasos em entregas</li>
+                                <li>Multas e processos legais</li>
+                                <li>Desmotivação da equipe</li>
+                                <li>Overhead de manutenção</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💎 Investimentos em Qualidade</h3>
+                            <ul>
+                                <li>Treinamento de equipes</li>
+                                <li>Ferramentas e automação</li>
+                                <li>Processos e metodologias</li>
+                                <li>Code review e pair programming</li>
+                                <li>Testes automatizados</li>
+                                <li>Monitoramento e análise</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📈 A Regra 1-10-100</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            Custo relativo de corrigir um defeito em diferentes fases:
+                        </p>
+                        <div class="stats-grid" style="margin-top: 25px;">
+                            <div class="stat-card">
+                                <div class="stat-number">$1</div>
+                                <div class="stat-label">Durante desenvolvimento (Prevenir)</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-number">$10</div>
+                                <div class="stat-label">Durante testes (Detectar)</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-number">$100+</div>
+                                <div class="stat-label">Em produção (Corrigir)</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 20px; text-align: center; color: var(--unifil-orange); font-weight: 600;">
+                            Quanto mais tarde você encontra um bug, mais caro é corrigi-lo! 💡
+                        </p>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Categoria de Custo</th>
+                                <th>Descrição</th>
+                                <th>Exemplos</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Prevenção</strong></td>
+                                <td>Evitar defeitos</td>
+                                <td>Treinamento, code review, padrões</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Avaliação</strong></td>
+                                <td>Detectar defeitos</td>
+                                <td>Testes, auditorias, inspeções</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Falhas Internas</strong></td>
+                                <td>Defeitos antes da entrega</td>
+                                <td>Retrabalho, debugging, refatoração</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Falhas Externas</strong></td>
+                                <td>Defeitos após a entrega</td>
+                                <td>Suporte, recalls, perda de clientes</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Conclusão</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Investir em <strong>prevenção</strong> (processos, treinamento, boas práticas) é 
+                            <strong>muito mais barato</strong> do que lidar com falhas em produção. 
+                            Qualidade não é um custo, é um <strong>investimento</strong>! 📊
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: EVOLUÇÃO DOS MODELOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📚 Evolução dos Modelos de Qualidade</h2>
+                    <p>De onde viemos e para onde vamos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>1987 - ISO 9000</h4>
+                            <p>
+                                Primeira grande norma de qualidade. Foco em processos gerais de gestão da qualidade.
+                                Aplicável a qualquer indústria, incluindo software.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>1991 - CMM (Capability Maturity Model)</h4>
+                            <p>
+                                Criado pelo SEI (Software Engineering Institute). 5 níveis de maturidade.
+                                Revolucionou a forma de pensar processos de software.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>1995 - ISO/IEC 12207</h4>
+                            <p>
+                                Primeira norma internacional específica para processos de ciclo de vida de software.
+                                Define processos fundamentais, de apoio e organizacionais.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>2003 - MPS.BR (Melhoria de Processo do Software Brasileiro)</h4>
+                            <p>
+                                Modelo brasileiro adaptado à realidade das empresas nacionais.
+                                7 níveis (G a A), compatível com CMMI e ISO/IEC 12207.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>2011 - ISO/IEC 25010</h4>
+                            <p>
+                                Atualização da ISO 9126. Define características de qualidade de produto e 
+                                qualidade em uso. Modelo que estudamos nas dimensões da qualidade.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>Hoje - DevOps, CI/CD, Qualidade Contínua</h4>
+                            <p>
+                                Integração de qualidade em todo o ciclo. Automação, testes contínuos, 
+                                feedback rápido. Qualidade não é uma fase, é parte do dia a dia.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>🌍 Modelos Internacionais</h3>
+                            <ul>
+                                <li><strong>CMMI:</strong> EUA, grandes corporações</li>
+                                <li><strong>ISO 9000/12207:</strong> Mundial</li>
+                                <li><strong>SPICE (ISO 15504):</strong> Europa</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🇧🇷 Modelos Brasileiros</h3>
+                            <ul>
+                                <li><strong>MPS.BR:</strong> Foco em PMEs</li>
+                                <li><strong>Compatível com CMMI</strong></li>
+                                <li><strong>Mais acessível financeiramente</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Próximas Aulas</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Vamos mergulhar no <strong>MPS.BR</strong> - o modelo brasileiro de melhoria de processos.
+                            Vamos estudar seus 7 níveis de maturidade (G, F, E, D, C, B, A) e todos os processos
+                            envolvidos em cada nível.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Hoje você deu o primeiro passo no mundo da Qualidade de Software! 🚀
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Qualidade é multidimensional</h4>
+                            <p>
+                                6 dimensões: Funcionalidade, Confiabilidade, Usabilidade, Eficiência, 
+                                Manutenibilidade e Portabilidade.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Produto vs Processo</h4>
+                            <p>
+                                Qualidade de produto (o que) e qualidade de processo (como). 
+                                Processos de qualidade geram produtos de qualidade!
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Falhas custam CARO</h4>
+                            <p>
+                                Vimos casos que custaram vidas e bilhões de dólares. A regra 1-10-100: 
+                                prevenir é 100x mais barato que corrigir em produção.
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Modelos de Qualidade existem</h4>
+                            <p>
+                                MPS.BR, CMMI, ISO 12207 - frameworks criados para estruturar e melhorar 
+                                processos de desenvolvimento de software.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para a Próxima Aula (Terça, 10/02)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣ Pesquisar:</strong> Encontre 2 casos de falhas de software (além dos que vimos)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣ Refletir:</strong> Como a qualidade impactará sua carreira?
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣ Ler:</strong> Introdução ao MPS.BR (material no Moodle)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣ Preparar:</strong> Trazer laptop para atividades práticas
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próximas Aulas</h3>
+                            <ul>
+                                <li>Custos da Qualidade e ROI</li>
+                                <li>MR-MPS-SW: Estrutura Geral</li>
+                                <li>Níveis de Maturidade (G a A)</li>
+                                <li>Processos de cada nível</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Horário:</strong> Segundas e terças</p>
+                            <p><strong>Classroom:</strong> Todo material disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Qualidade nunca é um acidente. É sempre o resultado de um esforço inteligente." 
+                        - John Ruskin
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.2rem;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1rem; margin-top: 10px;">Nos vemos na próxima aula!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 10</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .dimension-card, .timeline-item, .stat-card, .quote-box, .comparison-table, .failure-card');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

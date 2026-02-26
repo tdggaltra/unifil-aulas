@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 1 - Introdução à Lógica de Programação | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .code-block .keyword {
+            color: #c678dd;
+        }
+
+        .code-block .function {
+            color: #61afef;
+        }
+
+        .code-block .string {
+            color: #98c379;
+        }
+
+        .code-block .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .analogy-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #533f03;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 20px 0;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin: 30px 0;
+            border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--unifil-light);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            min-width: 80px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1001;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: var(--unifil-gray);
+            font-weight: 500;
+        }
+
+        /* Scrollbar customization */
+        .slide-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb:hover {
+            background: var(--unifil-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Lógica de Programação e Algoritmos</h1>
+                    <p>Aula 01 - Introdução à Lógica de Programação</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="font-size: 6rem; margin-bottom: 30px;">💻</div>
+                    <h2 style="font-size: 2.5rem; color: var(--unifil-orange); margin-bottom: 20px;">
+                        Bem-vindo ao Mundo da Programação!
+                    </h2>
+                    <p style="font-size: 1.3rem; color: var(--unifil-gray); max-width: 800px; margin-bottom: 40px;">
+                        Nesta disciplina, você aprenderá a pensar computacionalmente e a resolver problemas através de algoritmos.
+                    </p>
+                    <div class="two-column" style="width: 100%; max-width: 900px; margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="number">30h</div>
+                            <div class="label">Carga Horária</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">20</div>
+                            <div class="label">Aulas Práticas</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 50px; font-size: 1.1rem; color: var(--unifil-gray);">
+                        <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                        <p><strong>Data:</strong> Quarta-feira, 12 de Fevereiro de 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: APRESENTAÇÃO DO PROFESSOR -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>Apresentação do Professor</h2>
+                    <p>Tiago Dutra Galvão</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>📚 Formação Acadêmica</h3>
+                            <ul>
+                                <li>Graduação em Física</li>
+                                <li>Especialização em Ciência de Dados e IA aplicada</li>
+                                <li>Mestrado em Física Aplicada</li>
+                                <li>Doutorado em Física Aplicada</li>
+                                <li>Pós-doutorado em Física Aplicada</li>
+                                <li>Graduando em Engenharia de Software</li>
+                                <li>Docente na UniFil desde 2026</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💼 Experiência Profissional</h3>
+                            <ul>
+                                <li>16+ anos de docência do IES</li>
+                                <li>Empresário e empreendedor, 5+ startups</li>
+                                <li>Coordenador de projetos acadêmicos (UEL/UNOPAR/UP/UniCesumar)</li>
+                                <li>Desenvolvedor full-stack</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Metodologia da Disciplina</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Aprenderemos programação de forma <strong>progressiva e prática</strong>. Cada conceito será apresentado em <strong>três linguagens</strong> (Portugol, C e Java) para que você entenda a lógica independente da sintaxe.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📧 Contato</h3>
+                            <ul>
+                                <li><strong>Email:</strong> tiago.galvao@unifil.br</li>
+                                <li><strong>Sala:</strong> Bloco C - Sala 205</li>
+                                <li><strong>Atendimento:</strong> Quintas-feiras 21h-22h</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚠️ Avisos Importantes</h3>
+                            <ul>
+                                <li>75% de presença obrigatória</li>
+                                <li>Trabalhos atrasados: -50%/semana</li>
+                                <li>Plágio = nota zero (ambos)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: O QUE É UM ALGORITMO? -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🤔 O que é um Algoritmo?</h2>
+                    <p>Conceito fundamental da programação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Um algoritmo é uma <strong>sequência finita de instruções</strong> bem definidas e não ambíguas que descrevem a solução de um problema ou a realização de uma tarefa.
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Características de um Algoritmo</h3>
+                            <ul>
+                                <li><strong>Finito:</strong> Deve terminar após um número finito de passos</li>
+                                <li><strong>Definido:</strong> Cada passo deve ser claro e sem ambiguidade</li>
+                                <li><strong>Entrada:</strong> Pode ter zero ou mais entradas</li>
+                                <li><strong>Saída:</strong> Deve produzir pelo menos uma saída</li>
+                                <li><strong>Efetivo:</strong> Cada operação deve ser executável</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Por que estudar algoritmos?</h3>
+                            <ul>
+                                <li>Base para qualquer linguagem de programação</li>
+                                <li>Desenvolve raciocínio lógico</li>
+                                <li>Essencial para resolver problemas complexos</li>
+                                <li>Independente de tecnologia específica</li>
+                                <li>Skill fundamental para programadores</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🍳 Analogia: Receita de Bolo</h3>
+                        <p style="margin-bottom: 15px;">
+                            <strong>Uma receita de bolo é um algoritmo!</strong>
+                        </p>
+                        <p style="margin-bottom: 10px;">
+                            <strong>Entrada:</strong> Ingredientes (farinha, ovos, açúcar, etc.)
+                        </p>
+                        <p style="margin-bottom: 10px;">
+                            <strong>Processo:</strong> Passos bem definidos (misture, bata, leve ao forno...)
+                        </p>
+                        <p>
+                            <strong>Saída:</strong> Bolo pronto! 🎂
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: EXEMPLOS DO DIA A DIA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🌟 Algoritmos no Dia a Dia</h2>
+                    <p>Você já usa algoritmos sem perceber!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="example-card">
+                            <h4>☕ Preparar Café</h4>
+                            <p><strong>1.</strong> Colocar água na cafeteira</p>
+                            <p><strong>2.</strong> Adicionar pó de café</p>
+                            <p><strong>3.</strong> Ligar a cafeteira</p>
+                            <p><strong>4.</strong> Esperar o café passar</p>
+                            <p><strong>5.</strong> Servir em uma xícara</p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🚗 Trocar Pneu</h4>
+                            <p><strong>1.</strong> Parar o carro em local seguro</p>
+                            <p><strong>2.</strong> Pegar o macaco e o estepe</p>
+                            <p><strong>3.</strong> Soltar os parafusos</p>
+                            <p><strong>4.</strong> Levantar o carro</p>
+                            <p><strong>5.</strong> Trocar o pneu</p>
+                            <p><strong>6.</strong> Apertar os parafusos</p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>📱 Ligar para Alguém</h4>
+                            <p><strong>1.</strong> Pegar o celular</p>
+                            <p><strong>2.</strong> Desbloquear a tela</p>
+                            <p><strong>3.</strong> Abrir o app de telefone</p>
+                            <p><strong>4.</strong> Buscar o contato</p>
+                            <p><strong>5.</strong> Tocar no botão ligar</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Percebeu o padrão?</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Todos esses exemplos são <strong>sequências de passos</strong> bem definidas para atingir um objetivo. 
+                            Isso é exatamente o que fazemos ao programar: <strong>dividir problemas complexos em passos simples</strong> que o computador possa executar.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🧩 Decomposição de Problemas</h3>
+                            <ul>
+                                <li>Dividir problema em partes menores</li>
+                                <li>Resolver cada parte individualmente</li>
+                                <li>Combinar as soluções</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Pensamento Computacional</h3>
+                            <ul>
+                                <li>Abstrair detalhes desnecessários</li>
+                                <li>Reconhecer padrões</li>
+                                <li>Criar soluções generalizadas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PROGRAMA VS ALGORITMO VS LINGUAGEM -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Algoritmo × Programa × Linguagem</h2>
+                    <p>Entendendo as diferenças fundamentais</p>
+                </div>
+                <div class="slide-body">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Conceito</th>
+                                <th>Definição</th>
+                                <th>Exemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>🧩 Algoritmo</strong></td>
+                                <td>Sequência lógica de passos para resolver um problema. Independe de linguagem.</td>
+                                <td>"Para fazer café: coloque água, adicione pó, ligue a cafeteira..."</td>
+                            </tr>
+                            <tr>
+                                <td><strong>💻 Programa</strong></td>
+                                <td>Algoritmo implementado em uma linguagem de programação específica.</td>
+                                <td>Código em C, Java ou Python que faz café (se existisse! 😄)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>🗣️ Linguagem de Programação</strong></td>
+                                <td>Conjunto de regras e sintaxe para escrever programas que o computador entenda.</td>
+                                <td>C, Java, Python, JavaScript, etc.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="analogy-box" style="margin-top: 40px;">
+                        <h3>🏗️ Analogia: Construindo uma Casa</h3>
+                        <div style="margin-top: 20px;">
+                            <p style="margin-bottom: 15px;">
+                                <strong>🧩 Algoritmo =</strong> Plano/Projeto da casa (ideia, sequência de construção)
+                            </p>
+                            <p style="margin-bottom: 15px;">
+                                <strong>💻 Programa =</strong> Casa construída seguindo o projeto
+                            </p>
+                            <p>
+                                <strong>🗣️ Linguagem =</strong> Materiais e ferramentas (tijolos, cimento, madeira...)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Conceito-Chave</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>O MESMO algoritmo</strong> pode ser implementado em <strong>DIFERENTES linguagens</strong>. 
+                            Por isso, nesta disciplina você verá os mesmos exemplos em <strong>Portugol, C e Java</strong>!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: DESENVOLVIMENTO DE ALGORITMOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚙️ Desenvolvimento de Algoritmos</h2>
+                    <p>Metodologia para criar soluções</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Para criar um bom algoritmo, siga estas 4 etapas:
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4>1️⃣ Entenda o Problema</h4>
+                            <p>Leia com atenção. O que está sendo pedido? Qual é o objetivo? Quais são as restrições?</p>
+                            <p style="margin-top: 10px; font-style: italic; color: var(--unifil-gray);">
+                                "Se eu tivesse uma hora para resolver um problema, passaria 55 minutos pensando sobre o problema e 5 minutos pensando em soluções." - Einstein
+                            </p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>2️⃣ Defina Entradas e Saídas</h4>
+                            <p><strong>Entrada:</strong> Quais dados o algoritmo precisa receber?</p>
+                            <p><strong>Saída:</strong> Qual resultado o algoritmo deve produzir?</p>
+                            <p style="margin-top: 10px;"><strong>Exemplo:</strong> Calcular média de notas</p>
+                            <p style="padding-left: 20px;">📥 Entrada: 4 notas</p>
+                            <p style="padding-left: 20px;">📤 Saída: Média calculada</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>3️⃣ Defina o Processamento</h4>
+                            <p>Quais operações transformam a entrada na saída? Quais cálculos? Quais decisões?</p>
+                            <p style="margin-top: 10px;"><strong>Exemplo:</strong> Somar as 4 notas e dividir por 4</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>4️⃣ Teste e Valide</h4>
+                            <p>Simule o algoritmo com diferentes valores. Funciona em todos os casos? E nos extremos?</p>
+                            <p style="margin-top: 10px;"><strong>Teste:</strong> Notas = 7, 8, 6, 9 → Média = 7.5 ✅</p>
+                        </div>
+                    </div>
+
+                    <div class="content-box" style="margin-top: 30px;">
+                        <h3>💡 Dicas Importantes</h3>
+                        <ul>
+                            <li>Comece simples, depois refine</li>
+                            <li>Use nomes descritivos para variáveis</li>
+                            <li>Documente seu raciocínio</li>
+                            <li>Teste com casos extremos (valores mínimos, máximos, zero)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: TIPOS DE DADOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Tipos de Dados</h2>
+                    <p>Classificação da informação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Todo dado tem um <strong>tipo</strong> que determina quais operações podem ser realizadas com ele.
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>🔢 INTEIRO (int, integer)</h4>
+                            <p style="margin-bottom: 15px;">Números positivos ou negativos <strong>sem parte decimal</strong>.</p>
+                            <p><strong>Exemplos:</strong></p>
+                            <p>✓ 42</p>
+                            <p>✓ -15</p>
+                            <p>✓ 0</p>
+                            <p>✓ 2025</p>
+                            <p style="margin-top: 15px;"><strong>Uso:</strong> contadores, idades, quantidades</p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>💰 REAL (float, double)</h4>
+                            <p style="margin-bottom: 15px;">Números <strong>com parte decimal</strong> (ponto flutuante).</p>
+                            <p><strong>Exemplos:</strong></p>
+                            <p>✓ 3.14</p>
+                            <p>✓ -7.5</p>
+                            <p>✓ 0.0</p>
+                            <p>✓ 99.99</p>
+                            <p style="margin-top: 15px;"><strong>Uso:</strong> preços, médias, medidas</p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>📝 CARACTERE (char, string)</h4>
+                            <p style="margin-bottom: 15px;">Texto: letras, números, símbolos. Entre <strong>aspas</strong>.</p>
+                            <p><strong>Exemplos:</strong></p>
+                            <p>✓ "UniFil"</p>
+                            <p>✓ "Londrina"</p>
+                            <p>✓ "A"</p>
+                            <p>✓ "(43) 9999-9999"</p>
+                            <p style="margin-top: 15px;"><strong>Uso:</strong> nomes, endereços, mensagens</p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>✅ LÓGICO (boolean)</h4>
+                            <p style="margin-bottom: 15px;">Apenas <strong>dois valores possíveis</strong>: verdadeiro ou falso.</p>
+                            <p><strong>Valores:</strong></p>
+                            <p>✓ verdadeiro / true</p>
+                            <p>✓ falso / false</p>
+                            <p style="margin-top: 15px;"><strong>Uso:</strong> decisões, flags, estados</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚠️ Atenção ao Tipo!</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            <strong>"123"</strong> (texto) é diferente de <strong>123</strong> (número)!
+                        </p>
+                        <p style="font-size: 1.05rem; margin-top: 10px;">
+                            O primeiro você não pode somar matematicamente. O segundo, sim!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: FORMAS DE REPRESENTAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Formas de Representação de Algoritmos</h2>
+                    <p>Como "escrever" um algoritmo</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="content-box">
+                            <h3>1️⃣ Linguagem Natural</h3>
+                            <p style="margin-top: 15px;">Descrição em <strong>português</strong>, como se estivesse explicando para alguém.</p>
+                            <p style="margin-top: 10px; font-weight: 600;">✅ Vantagem:</p>
+                            <p>Fácil de entender</p>
+                            <p style="margin-top: 10px; font-weight: 600;">❌ Desvantagem:</p>
+                            <p>Pode ser ambíguo</p>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>2️⃣ Fluxograma</h3>
+                            <p style="margin-top: 15px;">Representação <strong>gráfica</strong> usando símbolos padronizados.</p>
+                            <p style="margin-top: 10px; font-weight: 600;">✅ Vantagem:</p>
+                            <p>Visual, fácil de seguir o fluxo</p>
+                            <p style="margin-top: 10px; font-weight: 600;">❌ Desvantagem:</p>
+                            <p>Trabalhoso para algoritmos grandes</p>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>3️⃣ Pseudocódigo</h3>
+                            <p style="margin-top: 15px;">Linguagem <strong>intermediária</strong> entre natural e programação.</p>
+                            <p style="margin-top: 10px; font-weight: 600;">✅ Vantagem:</p>
+                            <p>Estruturado, sem sintaxe rígida</p>
+                            <p style="margin-top: 10px; font-weight: 600;">❌ Desvantagem:</p>
+                            <p>Não executa diretamente</p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📌 Exemplo: Calcular Média de 4 Notas</h4>
+                        
+                        <div style="margin-top: 20px;">
+                            <p style="font-weight: 600; color: var(--unifil-orange); margin-bottom: 10px;">1️⃣ Linguagem Natural:</p>
+                            <ul style="padding-left: 30px;">
+                                <li>Solicitar as 4 notas do aluno</li>
+                                <li>Somar as 4 notas</li>
+                                <li>Dividir a soma por 4</li>
+                                <li>Mostrar o resultado (média)</li>
+                            </ul>
+                        </div>
+
+                        <div style="margin-top: 25px;">
+                            <p style="font-weight: 600; color: var(--unifil-orange); margin-bottom: 10px;">2️⃣ Fluxograma:</p>
+                            <p style="font-style: italic; color: var(--unifil-gray);">[Diagrama com retângulos e losangos - veremos em detalhes na próxima aula]</p>
+                        </div>
+
+                        <div style="margin-top: 25px;">
+                            <p style="font-weight: 600; color: var(--unifil-orange); margin-bottom: 10px;">3️⃣ Pseudocódigo (Portugol):</p>
+                            <div class="code-block">
+<span class="keyword">algoritmo</span> <span class="string">"calcular_media"</span>
+<span class="keyword">var</span>
+    nota1, nota2, nota3, nota4, media : <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 1: "</span>)
+    <span class="function">leia</span>(nota1)
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 2: "</span>)
+    <span class="function">leia</span>(nota2)
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 3: "</span>)
+    <span class="function">leia</span>(nota3)
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 4: "</span>)
+    <span class="function">leia</span>(nota4)
+    
+    media ← (nota1 + nota2 + nota3 + nota4) / 4
+    
+    <span class="function">escreva</span>(<span class="string">"A média é: "</span>, media)
+<span class="keyword">fimalgoritmo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: EXEMPLO EM TRÊS LINGUAGENS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Mesmo Algoritmo, 3 Linguagens</h2>
+                    <p>Portugol, C e Java - Comparação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-bottom: 30px;">
+                        O <strong>mesmo algoritmo</strong> (calcular média) implementado em três linguagens diferentes!
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🟢 Portugol (Portugol Web Studio)</h4>
+                        <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">real</span> nota1, nota2, nota3, nota4, media
+        
+        <span class="function">escreva</span>(<span class="string">"Digite a nota 1: "</span>)
+        <span class="function">leia</span>(nota1)
+        <span class="function">escreva</span>(<span class="string">"Digite a nota 2: "</span>)
+        <span class="function">leia</span>(nota2)
+        <span class="function">escreva</span>(<span class="string">"Digite a nota 3: "</span>)
+        <span class="function">leia</span>(nota3)
+        <span class="function">escreva</span>(<span class="string">"Digite a nota 4: "</span>)
+        <span class="function">leia</span>(nota4)
+        
+        media = (nota1 + nota2 + nota3 + nota4) / <span class="string">4.0</span>
+        
+        <span class="function">escreva</span>(<span class="string">"A média é: "</span>, media)
+    }
+}
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 25px;">
+                        <h4>🔵 Linguagem C</h4>
+                        <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="keyword">float</span> nota1, nota2, nota3, nota4, media;
+    
+    <span class="function">printf</span>(<span class="string">"Digite a nota 1: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;nota1);
+    
+    <span class="function">printf</span>(<span class="string">"Digite a nota 2: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;nota2);
+    
+    <span class="function">printf</span>(<span class="string">"Digite a nota 3: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;nota3);
+    
+    <span class="function">printf</span>(<span class="string">"Digite a nota 4: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;nota4);
+    
+    media = (nota1 + nota2 + nota3 + nota4) / <span class="string">4.0</span>;
+    
+    <span class="function">printf</span>(<span class="string">"A média é: %.2f\n"</span>, media);
+    
+    <span class="keyword">return</span> <span class="string">0</span>;
+}
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 25px;">
+                        <h4>🟠 Java</h4>
+                        <div class="code-block">
+<span class="keyword">import</span> java.util.Scanner;
+
+<span class="keyword">public class</span> CalcularMedia 
+{
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        Scanner scanner = <span class="keyword">new</span> Scanner(System.in);
+        <span class="keyword">float</span> nota1, nota2, nota3, nota4, media;
+        
+        System.out.<span class="function">print</span>(<span class="string">"Digite a nota 1: "</span>);
+        nota1 = scanner.<span class="function">nextFloat</span>();
+        
+        System.out.<span class="function">print</span>(<span class="string">"Digite a nota 2: "</span>);
+        nota2 = scanner.<span class="function">nextFloat</span>();
+        
+        System.out.<span class="function">print</span>(<span class="string">"Digite a nota 3: "</span>);
+        nota3 = scanner.<span class="function">nextFloat</span>();
+        
+        System.out.<span class="function">print</span>(<span class="string">"Digite a nota 4: "</span>);
+        nota4 = scanner.<span class="function">nextFloat</span>();
+        
+        media = (nota1 + nota2 + nota3 + nota4) / <span class="string">4.0f</span>;
+        
+        System.out.<span class="function">println</span>(<span class="string">"A média é: "</span> + media);
+        
+        scanner.<span class="function">close</span>();
+    }
+}
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Perceba:</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            A <strong>LÓGICA é a mesma</strong> nas três linguagens! Apenas a <strong>sintaxe</strong> (forma de escrever) muda.
+                            Por isso, dominar a lógica é mais importante que decorar sintaxe!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: FERRAMENTAS QUE USAREMOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🛠️ Ferramentas que Usaremos</h2>
+                    <p>Prepare seu ambiente de desenvolvimento</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="example-card">
+                            <h4>🟢 Portugol Web Studio</h4>
+                            <p style="margin-top: 15px;"><strong>O que é:</strong> IDE online para Portugol</p>
+                            <p style="margin-top: 10px;"><strong>Link:</strong> <a href="https://portugol-webstudio.cubos.io" target="_blank" style="color: var(--unifil-orange);">portugol-webstudio.cubos.io</a></p>
+                            <p style="margin-top: 10px;"><strong>Vantagem:</strong> Funciona no navegador, sem instalar nada!</p>
+                            <p style="margin-top: 10px;"><strong>Quando usar:</strong> Aprender lógica em português</p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 Code::Blocks (C)</h4>
+                            <p style="margin-top: 15px;"><strong>O que é:</strong> IDE para linguagem C</p>
+                            <p style="margin-top: 10px;"><strong>Link:</strong> <a href="http://www.codeblocks.org" target="_blank" style="color: var(--unifil-orange);">codeblocks.org</a></p>
+                            <p style="margin-top: 10px;"><strong>Vantagem:</strong> Leve, rápido e gratuito</p>
+                            <p style="margin-top: 10px;"><strong>Quando usar:</strong> Programação em C (sistema operacional próximo)</p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 IntelliJ / Eclipse (Java)</h4>
+                            <p style="margin-top: 15px;"><strong>O que é:</strong> IDEs profissionais para Java</p>
+                            <p style="margin-top: 10px;"><strong>Links:</strong> 
+                                <a href="https://www.jetbrains.com/idea/" target="_blank" style="color: var(--unifil-orange);">IntelliJ IDEA</a> / 
+                                <a href="https://www.eclipse.org/" target="_blank" style="color: var(--unifil-orange);">Eclipse</a>
+                            </p>
+                            <p style="margin-top: 10px;"><strong>Vantagem:</strong> Recursos avançados, autocompletar</p>
+                            <p style="margin-top: 10px;"><strong>Quando usar:</strong> Orientação a objetos, projetos maiores</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>📥 Instalação para Casa</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Tutoriais de instalação estão disponíveis no <strong>Moodle</strong> da disciplina. 
+                            Nos laboratórios da UniFil, tudo já está instalado!
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🎯 Estratégia de Aprendizado</h3>
+                            <ul>
+                                <li><strong>Semanas 1-4:</strong> Portugol (base)</li>
+                                <li><strong>Semanas 5-7:</strong> C (performance)</li>
+                                <li><strong>Semanas 8-10:</strong> Java (OO)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💡 Dica de Ouro</h3>
+                            <ul>
+                                <li>Pratique MUITO!</li>
+                                <li>Não apenas copie, ENTENDA</li>
+                                <li>Faça os exercícios propostos</li>
+                                <li>Tire dúvidas cedo!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Você deu o primeiro passo no mundo da programação! 🚀
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ O que é Algoritmo</h4>
+                            <p>Sequência finita de instruções bem definidas para resolver problemas</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Diferenças Fundamentais</h4>
+                            <p>Algoritmo × Programa × Linguagem de Programação</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Desenvolvimento de Algoritmos</h4>
+                            <p>4 etapas: Entender → Definir E/S → Processar → Testar</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Tipos de Dados</h4>
+                            <p>Inteiro, Real, Caractere, Lógico - cada um com seu propósito</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Formas de Representação</h4>
+                            <p>Linguagem Natural, Fluxograma, Pseudocódigo</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Exemplo Prático</h4>
+                            <p>Calcular média em Portugol, C e Java</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para a Próxima Aula (Quinta, 13/02)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣ Criar conta:</strong> Portugol Web Studio (portugol-webstudio.cubos.io)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣ Praticar:</strong> Digite e execute o exemplo da média no Portugol
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣ Desafio:</strong> Modifique o programa para calcular média de 3 notas
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣ Leitura:</strong> Slides disponíveis no Moodle
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próximas Aulas</h3>
+                            <ul>
+                                <li>Representação de Algoritmos (Fluxograma)</li>
+                                <li>Variáveis e Constantes</li>
+                                <li>Operadores Aritméticos</li>
+                                <li>Entrada e Saída de Dados</li>
+                                <li>Primeiros programas completos! 💻</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Horário de Atendimento:</strong> Quintas 21h-22h</p>
+                            <p style="margin-bottom: 10px;"><strong>Sala:</strong> Bloco C - Sala 205</p>
+                            <p><strong>Moodle:</strong> Fórum de dúvidas disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "A melhor maneira de aprender programação é PROGRAMANDO! Pratique, erre, corrija, evolua! 💪"
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Nos vemos na quinta-feira!</p>
+                        <p style="font-size: 0.9rem; margin-top: 20px; font-style: italic;">
+                            "Todo programador começou onde você está agora. Continue!" 🚀
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 11</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .stat-card, .analogy-box, .comparison-table');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                    showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                changeSlide(1); // Swipe left - next slide
+            }
+            if (touchEndX > touchStartX + 50) {
+                changeSlide(-1); // Swipe right - previous slide
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

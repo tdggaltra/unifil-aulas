@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 7 - Sprint Planning | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --planning-blue: #2196F3;
+            --planning-indigo: #3F51B5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .planning-box {
+            background: #E3F2FD;
+            border-left-color: var(--planning-blue);
+        }
+
+        .planning-box h3 {
+            color: var(--planning-blue);
+        }
+
+        .planning-box li::before {
+            color: var(--planning-blue);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -48px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, var(--planning-blue) 0%, var(--planning-indigo) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .question-card h4 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .poker-card {
+            background: white;
+            border: 3px solid var(--planning-blue);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--planning-blue);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .poker-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(33, 150, 243, 0.3);
+        }
+
+        .goal-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .goal-card h4 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 1.3rem;
+            text-align: center;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            opacity: 0.3;
+        }
+
+        .checklist-card {
+            background: white;
+            border-left: 5px solid var(--planning-blue);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .checklist-card h4 {
+            color: var(--planning-blue);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--planning-blue);
+            border-radius: 4px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--planning-blue);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        .comparison-table th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .comparison-table td {
+            background: var(--unifil-light);
+            padding: 20px;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table td:first-child {
+            border-radius: 10px 0 0 10px;
+            font-weight: 600;
+            color: var(--unifil-orange);
+        }
+
+        .comparison-table td:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .fibonacci-sequence {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">📅 Aula 7</h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Sprint Planning & Backlog Refinement</h3>
+                        <p style="font-size: 1.5rem; color: var(--planning-blue); margin-bottom: 15px; font-weight: 600;">Como Planejar Sprints Eficazes</p>
+                        <p style="font-size: 1.3rem; color: var(--unifil-gray); margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                        <p style="font-size: 1.1rem; color: var(--unifil-gray);">Sábado, 01 de Março de 2026</p>
+                    </div>
+                    <div class="big-idea">"Um Sprint bem planejado é meio caminho andado para o sucesso!" 🎯</div>
+                    <div style="margin-top: 40px; color: var(--unifil-gray); font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                        <p style="margin-top: 10px;">⌨️ ← Anterior | Próximo →</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: AGENDA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Agenda da Aula</h2>
+                    <p>Dominando Sprint Planning e Refinement</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item" style="animation-delay: 0s;">
+                            <h4>1️⃣ O Que É Sprint Planning? (15 min)</h4>
+                            <p>Objetivo, participantes, timebox, quando acontece</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.1s;">
+                            <h4>2️⃣ As 3 Perguntas do Planning (30 min)</h4>
+                            <p>Why? What? How? - Estrutura completa do evento</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4>3️⃣ Estimativas e Planning Poker (25 min)</h4>
+                            <p>Story Points, Fibonacci, Planning Poker na prática</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.3s;">
+                            <h4>4️⃣ Backlog Refinement (20 min)</h4>
+                            <p>Grooming, preparação, manter backlog saudável</p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Objetivos de Aprendizagem</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Entender estrutura do Sprint Planning</li>
+                            <li style="padding: 8px 0;">✅ Responder as 3 perguntas fundamentais</li>
+                            <li style="padding: 8px 0;">✅ Estimar com Planning Poker</li>
+                            <li style="padding: 8px 0;">✅ Definir Sprint Goal eficaz</li>
+                            <li style="padding: 8px 0;">✅ Preparar backlog com refinement</li>
+                        </ul>
+                    </div>
+                    <div class="big-idea" style="background: linear-gradient(135deg, var(--planning-blue) 0%, var(--planning-indigo) 100%);">Hoje você aprenderá a planejar como um PRO! 🚀</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: O QUE É SPRINT PLANNING -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📅 O Que É Sprint Planning?</h2>
+                    <p>O evento que inicia cada Sprint</p>
+                </div>
+                <div class="slide-body">
+                    <div class="question-card" style="animation-delay: 0s;">
+                        <h4>📖 Definição do Scrum Guide</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            "Sprint Planning <strong>inicia o Sprint</strong> estabelecendo o trabalho a ser realizado no Sprint. 
+                            Este plano resultante é criado pelo <strong>trabalho colaborativo</strong> de todo o Scrum Team."
+                        </p>
+                    </div>
+
+                    <div class="big-idea">Planning é COLABORAÇÃO, não ditadura do PO ou SM! 👥</div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box planning-box">
+                            <h3>👥 Participantes</h3>
+                            <ul>
+                                <li><strong>Product Owner:</strong> Propõe itens e valor</li>
+                                <li><strong>Scrum Master:</strong> Facilita o evento</li>
+                                <li><strong>Developers:</strong> Decidem capacidade e como fazer</li>
+                                <li><strong>Stakeholders:</strong> Apenas se convidados pelo PO</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box planning-box">
+                            <h3>⏰ Timebox</h3>
+                            <ul>
+                                <li><strong>Sprint 1 mês:</strong> Máximo 8 horas</li>
+                                <li><strong>Sprint 2 semanas:</strong> Máximo 4 horas</li>
+                                <li><strong>Sprint 1 semana:</strong> Máximo 2 horas</li>
+                                <li><strong>Regra:</strong> Proporcionalmente menos para Sprints mais curtos</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--planning-blue);">
+                        <h4 style="color: var(--planning-blue);">📆 Quando Acontece?</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 15px;">
+                            <strong>Primeiro dia do Sprint!</strong> Logo após o Sprint anterior terminar.<br>
+                            <strong>Exemplo:</strong> Sprint de 2 semanas começa segunda-feira 9h → Planning é segunda 9h-13h<br>
+                            <strong>Saída:</strong> Sprint Goal + Sprint Backlog com plano para entrega
+                        </p>
+                    </div>
+
+                    <div class="checklist-card" style="margin-top: 30px;">
+                        <h4>✅ Checklist Pré-Planning</h4>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Product Backlog está refinado e ordenado</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Top 5-10 itens têm critérios de aceitação</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>PO sabe qual valor quer maximizar</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Time conhece a Definition of Done</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Retrospectiva do Sprint anterior foi feita</div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        Planning ruim = Sprint caótico. Planning bom = Sprint tranquilo!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Invista tempo no planejamento!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: AS 3 PERGUNTAS - WHY -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>❓ Pergunta 1: WHY?</h2>
+                    <p>Por que este Sprint é valioso?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">WHY = Sprint Goal! Por que estamos fazendo este Sprint? 🎯</div>
+
+                    <div class="question-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Por Que Este Sprint É Valioso?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Product Owner:</strong> Propõe como o produto poderia aumentar seu valor neste Sprint<br>
+                            <strong>Todo o Time:</strong> Colabora para definir um <strong>Sprint Goal</strong> que comunique 
+                            por que este Sprint é valioso para stakeholders
+                        </p>
+                    </div>
+
+                    <div class="goal-card" style="animation-delay: 0.1s;">
+                        <h4>🎯 O Que É Sprint Goal?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Objetivo único</strong> para o Sprint. Dá <strong>coerência</strong> e <strong>foco</strong>. 
+                            Responde: "Por que estamos fazendo este Sprint?"<br><br>
+                            É o <strong>compromisso</strong> dos Developers para este Sprint. 
+                            Mesmo se escopo mudar, o Goal permanece!
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card" style="border-color: #4CAF50;">
+                            <h4 style="color: #4CAF50;">✅ BONS Sprint Goals</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 15px;">
+                                <strong>E-commerce:</strong><br>
+                                "Permitir que usuários salvem carrinho e voltem depois"<br><br>
+                                <strong>App Financeiro:</strong><br>
+                                "Usuários podem transferir dinheiro entre contas próprias"<br><br>
+                                <strong>Sistema Interno:</strong><br>
+                                "Relatórios de vendas podem ser gerados em menos de 5 segundos"
+                            </p>
+                        </div>
+
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">❌ RUINS Sprint Goals</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 15px;">
+                                <strong>Vago:</strong><br>
+                                "Melhorar a experiência do usuário"<br><br>
+                                <strong>Lista de tarefas:</strong><br>
+                                "Completar US-12, US-15, US-18, US-20"<br><br>
+                                <strong>Técnico demais:</strong><br>
+                                "Refatorar serviço de autenticação para usar JWT"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Características de um Bom Sprint Goal</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">✓ <strong>Claro:</strong> Todos entendem o que significa</li>
+                            <li style="padding: 8px 0;">✓ <strong>Valioso:</strong> Benefício claro para usuário/negócio</li>
+                            <li style="padding: 8px 0;">✓ <strong>Atingível:</strong> Possível completar no Sprint</li>
+                            <li style="padding: 8px 0;">✓ <strong>Único:</strong> Um objetivo, não uma lista</li>
+                            <li style="padding: 8px 0;">✓ <strong>Verificável:</strong> Sabemos quando atingimos</li>
+                        </ul>
+                    </div>
+
+                    <div class="quote-box">
+                        Sprint Goal é a estrela-guia do Sprint. Quando em dúvida, pergunte: "Isso contribui para o Goal?"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Foco > Dispersão!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: AS 3 PERGUNTAS - WHAT -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>❓ Pergunta 2: WHAT?</h2>
+                    <p>O que pode ser feito neste Sprint?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">WHAT = Selecionar itens do Product Backlog! 📋</div>
+
+                    <div class="question-card" style="animation-delay: 0s;">
+                        <h4>2️⃣ O Que Pode Ser Feito Neste Sprint?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Product Owner:</strong> Discute quais itens do Product Backlog são mais importantes<br>
+                            <strong>Developers:</strong> Selecionam quantos itens conseguem completar baseado em:<br>
+                            • Capacidade do time (velocity histórica)<br>
+                            • Disponibilidade (férias, feriados, outras responsabilidades)<br>
+                            • Complexidade dos itens<br>
+                            • Definition of Done
+                        </p>
+                    </div>
+
+                    <div class="content-box planning-box" style="margin-top: 30px;">
+                        <h3>📊 Como Calcular Capacidade?</h3>
+                        <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.1rem; line-height: 1.8;">
+                                <strong>Método 1: Velocity Histórica</strong><br>
+                                • Time completou 42 story points nos últimos 3 sprints em média<br>
+                                • Logo, provavelmente consegue ~40-45 pontos neste Sprint<br><br>
+                                
+                                <strong>Método 2: Horas Disponíveis</strong><br>
+                                • 5 desenvolvedores × 2 semanas × 40h = 400 horas<br>
+                                • Menos reuniões/imprevistos (20%) = 320 horas úteis<br>
+                                • Se 1 story point ≈ 4 horas → ~80 pontos possíveis<br>
+                                • Mas sejamos realistas: pegue 60-70 pontos (buffer!)<br><br>
+                                
+                                <strong>Método 3: Yesterday's Weather</strong><br>
+                                • "O que fizemos no último Sprint, provavelmente faremos neste"<br>
+                                • Método mais simples e surpreendentemente preciso!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--planning-blue);">
+                        <h4 style="color: var(--planning-blue);">🎯 Negociação Durante WHAT</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>PO:</strong> "Eu gostaria que fizéssemos US-10, US-12, US-15 e US-18"<br>
+                                <strong>Dev:</strong> "US-10 é 13 pontos, muito grande. Conseguimos quebrar?"<br>
+                                <strong>PO:</strong> "Sim! O core é login com email. OAuth pode ser próximo Sprint"<br>
+                                <strong>Dev:</strong> "Perfeito! US-10a (8 pts) + US-12 (5 pts) + US-15 (8 pts) = 21 pontos"<br>
+                                <strong>Dev:</strong> "Nossa velocity é 25. Conseguimos pegar US-18 também (3 pts)"<br>
+                                <strong>PO:</strong> "Ótimo! Sprint Goal: 'Usuários podem fazer login e gerenciar perfil'"<br><br>
+                                <strong>✅ Resultado:</strong> Escopo claro, Goal definido, todos concordam!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚠️ Sinais de Alerta no WHAT</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">🚨 PO está forçando itens que time não acha possível</li>
+                            <li style="padding: 8px 0;">🚨 Time está superestimando capacidade ("podemos fazer tudo!")</li>
+                            <li style="padding: 8px 0;">🚨 Itens do topo do backlog não têm critérios de aceitação</li>
+                            <li style="padding: 8px 0;">🚨 Time não entende requisitos claramente</li>
+                            <li style="padding: 8px 0;">🚨 Planning está virando sessão de refinement (deveria ser feito antes!)</li>
+                        </ul>
+                    </div>
+
+                    <div class="quote-box">
+                        PO propõe, time dispõe. Developers têm palavra final sobre O QUÊ cabe no Sprint!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Auto-organização em ação!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: AS 3 PERGUNTAS - HOW -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>❓ Pergunta 3: HOW?</h2>
+                    <p>Como o trabalho escolhido será feito?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">HOW = Criar Sprint Backlog com plano! 🛠️</div>
+
+                    <div class="question-card" style="animation-delay: 0s;">
+                        <h4>3️⃣ Como o Trabalho Será Feito?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Developers:</strong> Planejam o trabalho necessário para criar um Incremento "Done" que atenda ao Sprint Goal<br><br>
+                            Isso geralmente é feito <strong>quebrando</strong> itens do Product Backlog em <strong>tarefas</strong> menores (1 dia ou menos)
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--planning-blue);">
+                        <h4 style="color: var(--planning-blue);">📝 Exemplo: US → Tasks</h4>
+                        <div style="background: #E3F2FD; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.1rem; line-height: 1.8;">
+                                <strong>User Story:</strong> "Como usuário, eu quero fazer login com email/senha para acessar o sistema"<br>
+                                <strong>Estimativa:</strong> 8 story points<br><br>
+                                
+                                <strong>Tasks criadas pelo time:</strong><br>
+                                ☐ Criar modelo User no banco de dados (4h) - Maria<br>
+                                ☐ Implementar endpoint POST /auth/login (6h) - Pedro<br>
+                                ☐ Implementar hash de senha com bcrypt (2h) - Pedro<br>
+                                ☐ Gerar e retornar JWT (3h) - Pedro<br>
+                                ☐ Criar tela de login no frontend (5h) - Ana<br>
+                                ☐ Integrar frontend com API (3h) - Ana<br>
+                                ☐ Escrever testes unitários (4h) - João<br>
+                                ☐ Escrever testes de integração (3h) - João<br>
+                                ☐ Documentar endpoint na API docs (1h) - Carlos<br><br>
+                                
+                                <strong>Total:</strong> 31 horas (~4 dias úteis para 5 pessoas)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box planning-box">
+                            <h3>✅ Boas Práticas HOW</h3>
+                            <ul>
+                                <li>Tasks de 1 dia ou menos</li>
+                                <li>Tasks técnicas claras</li>
+                                <li>Distribuição voluntária (não forçada)</li>
+                                <li>Identificar dependências</li>
+                                <li>Considerar Definition of Done</li>
+                                <li>Deixar buffer para imprevistos</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="background: #FFEBEE; border-left-color: #F44336;">
+                            <h3 style="color: #F44336;">❌ Armadilhas HOW</h3>
+                            <ul style="color: var(--unifil-dark);">
+                                <li style="color: var(--unifil-dark);">Tasks muito grandes (>1 dia)</li>
+                                <li style="color: var(--unifil-dark);">Planejar TODAS tasks no Planning</li>
+                                <li style="color: var(--unifil-dark);">Atribuir tasks sem consenso</li>
+                                <li style="color: var(--unifil-dark);">Esquecer testes/docs</li>
+                                <li style="color: var(--unifil-dark);">Não considerar férias/ausências</li>
+                                <li style="color: var(--unifil-dark);">Supercomprometer capacidade</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Sprint Backlog = Goal + Itens + Plano</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Sprint Backlog</strong> é composto de:<br><br>
+                            1️⃣ <strong>Sprint Goal</strong> (WHY) - Por que este Sprint<br>
+                            2️⃣ <strong>Product Backlog items</strong> (WHAT) - O que será feito<br>
+                            3️⃣ <strong>Plano acionável</strong> (HOW) - Como será feito (tasks)<br><br>
+                            É <strong>propriedade dos Developers</strong> e pode ser atualizado durante o Sprint!
+                        </p>
+                    </div>
+
+                    <div class="quote-box">
+                        Planning não precisa planejar TUDO. Itens para o final do Sprint podem ser detalhados depois!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Just-in-time planning!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: PLANNING POKER -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎴 Planning Poker</h2>
+                    <p>Estimando com Story Points</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Planning Poker = Gamificação das estimativas! 🃏</div>
+
+                    <div class="question-card" style="animation-delay: 0s;">
+                        <h4>🎯 O Que São Story Points?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            Unidade abstrata de <strong>esforço/complexidade</strong>, não tempo!<br>
+                            Considera: <strong>Complexidade + Incerteza + Esforço</strong><br><br>
+                            <strong>Por que não horas?</strong> Porque cada pessoa trabalha em ritmo diferente, 
+                            mas todos concordam que "algo é 2x mais complexo que outra coisa"
+                        </p>
+                    </div>
+
+                    <div class="content-box planning-box" style="margin-top: 30px;">
+                        <h3>🔢 Sequência de Fibonacci</h3>
+                        <p style="margin-top: 10px; margin-bottom: 20px;">Usada porque reflete naturalmente a incerteza crescente:</p>
+                        <div class="fibonacci-sequence">
+                            <div class="poker-card">1</div>
+                            <div class="poker-card">2</div>
+                            <div class="poker-card">3</div>
+                            <div class="poker-card">5</div>
+                            <div class="poker-card">8</div>
+                            <div class="poker-card">13</div>
+                            <div class="poker-card">21</div>
+                            <div class="poker-card" style="background: #FFF3E0; border-color: #FF9800; color: #FF9800;">?</div>
+                            <div class="poker-card" style="background: #FFEBEE; border-color: #F44336; color: #F44336;">∞</div>
+                        </div>
+                        <p style="margin-top: 20px; font-size: 1.05rem;">
+                            <strong>? (Interrogação):</strong> Preciso de mais informações<br>
+                            <strong>∞ (Infinito):</strong> Item grande demais, precisa quebrar
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--planning-blue);">
+                        <h4 style="color: var(--planning-blue);">🎴 Como Funciona Planning Poker</h4>
+                        <div style="background: #E3F2FD; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>1.</strong> PO apresenta uma User Story<br>
+                                <strong>2.</strong> Time faz perguntas para esclarecer<br>
+                                <strong>3.</strong> Cada pessoa escolhe uma carta SECRETAMENTE<br>
+                                <strong>4.</strong> Todos revelam cartas AO MESMO TEMPO<br>
+                                <strong>5.</strong> Se houver consenso (todos próximos) → Pronto!<br>
+                                <strong>6.</strong> Se houver divergência grande → Discutem:<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;• Quem deu menor número explica por quê<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;• Quem deu maior número explica por quê<br>
+                                <strong>7.</strong> Revotam até convergir<br><br>
+                                <strong>🎯 Meta:</strong> Não é precisão exata, é alinhamento de entendimento!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card" style="border-color: #4CAF50;">
+                            <h4 style="color: #4CAF50;">✅ Por Que Planning Poker Funciona</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">✓ Evita ancoragem (1ª pessoa influenciar)</li>
+                                <li style="padding: 8px 0;">✓ Discussões revelam riscos ocultos</li>
+                                <li style="padding: 8px 0;">✓ Todos participam (não só seniores)</li>
+                                <li style="padding: 8px 0;">✓ Expõe diferentes entendimentos</li>
+                                <li style="padding: 8px 0;">✓ Rápido (5-10 min por história)</li>
+                                <li style="padding: 8px 0;">✓ Divertido! Engaja o time</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card" style="border-color: #FF9800;">
+                            <h4 style="color: #FF9800;">⚠️ Armadilhas Comuns</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">❌ Gastar 30min discutindo 8 vs 13</li>
+                                <li style="padding: 8px 0;">❌ Converter points para horas rigidamente</li>
+                                <li style="padding: 8px 0;">❌ Comparar velocity entre times</li>
+                                <li style="padding: 8px 0;">❌ Usar como métrica de performance</li>
+                                <li style="padding: 8px 0;">❌ PO ou SM influenciando votos</li>
+                                <li style="padding: 8px 0;">❌ Forçar consenso sem discussão</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        Story Points são sobre ALINHAMENTO, não precisão! Se time concorda, está bom!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Discussão > Número exato</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: BACKLOG REFINEMENT -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔧 Backlog Refinement</h2>
+                    <p>Preparando o backlog para Planning</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Refinement = Jardinagem contínua do backlog! 🌱</div>
+
+                    <div class="question-card" style="animation-delay: 0s;">
+                        <h4>📖 O Que É Refinement (Grooming)?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            Processo contínuo de <strong>adicionar detalhes, estimativas e ordem</strong> aos itens do Product Backlog.<br><br>
+                            <strong>NÃO é evento oficial do Scrum</strong>, mas é ESSENCIAL!<br>
+                            Time reserva ~10% do Sprint para refinement (ex: 4h em Sprint de 2 semanas)
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box planning-box">
+                            <h3>🎯 Objetivos do Refinement</h3>
+                            <ul>
+                                <li>Esclarecer histórias do topo do backlog</li>
+                                <li>Adicionar critérios de aceitação</li>
+                                <li>Estimar histórias</li>
+                                <li>Quebrar épicos grandes em histórias menores</li>
+                                <li>Reordenar baseado em nova informação</li>
+                                <li>Remover itens obsoletos</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box planning-box">
+                            <h3>⏰ Como Fazer Refinement</h3>
+                            <ul>
+                                <li><strong>Quando:</strong> 1-2x por semana, mid-Sprint</li>
+                                <li><strong>Duração:</strong> 1-2 horas por sessão</li>
+                                <li><strong>Quem:</strong> PO + parte/todo time Dev</li>
+                                <li><strong>Foco:</strong> Próximos 2 Sprints</li>
+                                <li><strong>Saída:</strong> Top 5-10 itens "Ready"</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="checklist-card" style="margin-top: 30px; border-left-color: #4CAF50;">
+                        <h4 style="color: #4CAF50;">✅ Definition of Ready (DoR)</h4>
+                        <p style="margin-bottom: 15px; font-size: 1.05rem;">Quando um item está "pronto" para entrar no Sprint?</p>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Escrita como User Story (Como... eu quero... para...)</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Critérios de aceitação definidos e claros</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Estimada pelo time (story points)</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Tamanho adequado (cabe no Sprint - max 13 pts)</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Sem dependências bloqueantes externas</div>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checklist-checkbox">✓</div>
+                            <div>Time entende o que precisa ser feito</div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--planning-blue);">
+                        <h4 style="color: var(--planning-blue);">📊 Estrutura do Backlog Saudável</h4>
+                        <div style="background: #E3F2FD; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>🔝 TOPO (Próximos 2 Sprints):</strong><br>
+                                • 10-20 histórias "Ready" (DoR completo)<br>
+                                • Detalhadas, estimadas, ordenadas<br>
+                                • Critérios de aceitação claros<br><br>
+                                
+                                <strong>📍 MEIO (Sprints 3-5):</strong><br>
+                                • Histórias com descrição básica<br>
+                                • Podem ter estimativas aproximadas<br>
+                                • Refinamento gradual conforme sobem<br><br>
+                                
+                                <strong>📦 FUNDO (Futuro distante):</strong><br>
+                                • Épicos grandes, ideias soltas<br>
+                                • Descrição mínima ("placeholder")<br>
+                                • Serão refinados quando se aproximarem
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        Planning de 8 horas? Seu backlog não está refinado! Planning de 2 horas? Backlog saudável!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Refinement economiza tempo no Planning!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: ANTI-PADRÕES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚠️ Anti-Padrões de Planning</h2>
+                    <p>O que evitar no Sprint Planning</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Reconheça os cheiros ruins do Planning! 👃</div>
+
+                    <div class="example-card" style="animation-delay: 0s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ 1. Planning Maratona (>4h para Sprint 2 semanas)</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Sintoma:</strong> Planning dura 6-8 horas, todos exaustos<br>
+                                <strong>Causa raiz:</strong> Backlog não foi refinado antes<br>
+                                <strong>Solução:</strong> Fazer refinement 1-2x por semana durante Sprint
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.1s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ 2. PO Ditador</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Sintoma:</strong> PO diz "VOCÊS VÃO FAZER X, Y, Z" sem negociação<br>
+                                <strong>Causa raiz:</strong> PO não entende auto-organização do time<br>
+                                <strong>Solução:</strong> SM facilita, time tem palavra final sobre capacidade
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.2s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ 3. Time Overcommit</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Sintoma:</strong> Time pega 100 pontos quando velocity histórica é 40<br>
+                                <strong>Causa raiz:</strong> Otimismo exagerado ou pressão externa<br>
+                                <strong>Solução:</strong> SM relembra velocity, time aprende com fracassos anteriores
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.3s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ 4. Sprint Goal Vago</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Sintoma:</strong> Goal é "Completar US-10, US-12, US-15" ou "Melhorar sistema"<br>
+                                <strong>Causa raiz:</strong> Time não pensou no valor, só em tarefas<br>
+                                <strong>Solução:</strong> Sempre perguntar "POR QUE estamos fazendo isso?"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.4s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ 5. Micro-Planning</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Sintoma:</strong> Time passa 4 horas planejando TODAS tasks em detalhe<br>
+                                <strong>Causa raiz:</strong> Mentalidade waterfall "planejar tudo upfront"<br>
+                                <strong>Solução:</strong> Planejar suficiente para começar, detalhar just-in-time
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.5s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ 6. Falta de Sprint Goal</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Sintoma:</strong> Planning termina sem definir Sprint Goal<br>
+                                <strong>Causa raiz:</strong> Time foca apenas em backlog items, esquece o "por quê"<br>
+                                <strong>Solução:</strong> SM garante que Goal é definido ANTES de selecionar itens
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🚨 Red Flags Durante Planning</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">🚩 Stakeholders no Planning tentando influenciar escopo</li>
+                            <li style="padding: 8px 0;">🚩 PO e Time brigando sobre prioridades</li>
+                            <li style="padding: 8px 0;">🚩 Time não entende requisitos e Planning vira refinement</li>
+                            <li style="padding: 8px 0;">🚩 Ninguém fala durante Planning (só PO ou SM)</li>
+                            <li style="padding: 8px 0;">🚩 Planning termina sem consenso sobre Sprint Goal</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: CASOS PRÁTICOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📚 Planning em Ação</h2>
+                    <p>Casos reais de Sprint Planning</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card" style="animation-delay: 0s; border-color: #4CAF50;">
+                        <h4 style="color: #4CAF50;">✅ SUCESSO: Planning do Time Spotify</h4>
+                        <div style="background: #E8F5E9; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Contexto:</strong> Squad de Discovery precisa melhorar recomendações<br><br>
+                                <strong>WHY (Sprint Goal):</strong><br>
+                                "Usuários descobrem 5+ artistas novos por semana baseado em seu gosto"<br><br>
+                                <strong>WHAT (Escopo):</strong><br>
+                                • Implementar algoritmo de recomendação colaborativa (13 pts)<br>
+                                • Adicionar seção "Descobrir Semanalmente" no app (8 pts)<br>
+                                • A/B test com 10% dos usuários (5 pts)<br>
+                                <strong>Total:</strong> 26 pontos (velocity média do squad: 28 pts)<br><br>
+                                <strong>HOW (Plano):</strong><br>
+                                • Pair programming para algoritmo (complexo)<br>
+                                • Frontend paralelo ao backend<br>
+                                • A/B test será última task<br><br>
+                                <strong>✅ Resultado:</strong> Sprint Goal atingido! 92% dos usuários do teste descobriram 5+ artistas!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.1s; border-color: #2196F3;">
+                        <h4 style="color: #2196F3;">✅ SUCESSO: Planning Remoto na Nubank</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Contexto:</strong> Time distribuído (São Paulo, Berlin, México City) planning remoto<br><br>
+                                <strong>Setup:</strong><br>
+                                • Zoom call com todas câmeras ligadas<br>
+                                • Miro board compartilhado para backlog visual<br>
+                                • Planning Poker online (PlanningPoker.com)<br>
+                                • Timer visível para todos respeitarem timebox<br><br>
+                                <strong>Processo:</strong><br>
+                                • PO apresenta 3 histórias prioritárias<br>
+                                • Time faz perguntas (5 min por história)<br>
+                                • Planning Poker para estimar (10 min por história)<br>
+                                • Discutem Sprint Goal juntos (15 min)<br>
+                                • Cada dev move histórias para "meu trabalho" no Miro<br><br>
+                                <strong>✅ Diferencial:</strong> Async preparation! PO enviou backlog 2 dias antes, 
+                                time já tinha lido. Planning durou 2h ao invés de 4h!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.2s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ FRACASSO: Planning Sem Refinement</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Contexto:</strong> Time de e-commerce, novo PO que não fazia refinement<br><br>
+                                <strong>O que aconteceu:</strong><br>
+                                • Planning começou 9h segunda-feira<br>
+                                • PO apresentou histórias que time nunca tinha visto<br>
+                                • Cada história gerou 30min de discussão "mas o que é isso?"<br>
+                                • Time não conseguiu estimar (muita incerteza)<br>
+                                • Planning foi para 7 HORAS (!)​<br>
+                                • Sprint Goal foi "fazer o que der"<br><br>
+                                <strong>Consequência:</strong><br>
+                                • Time exausto já no dia 1 do Sprint<br>
+                                • Histórias mal entendidas = retrabalho<br>
+                                • Sprint Goal vago = sem foco<br>
+                                • 40% do Sprint Goal não foi atingido<br><br>
+                                <strong>🔧 Fix:</strong> SM implementou refinement 2x por semana. 
+                                Próximo Planning durou 2.5h e foi muito mais produtivo!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        Planning eficaz não acontece por acaso. É resultado de refinement contínuo e time maduro!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Invista no processo!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: FERRAMENTAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🛠️ Ferramentas para Planning</h2>
+                    <p>Software e técnicas práticas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box planning-box">
+                            <h3>💻 Ferramentas Digitais</h3>
+                            <ul>
+                                <li><strong>Jira:</strong> Mais popular, robusto</li>
+                                <li><strong>Azure DevOps:</strong> Microsoft stack</li>
+                                <li><strong>Trello:</strong> Simples, visual, grátis</li>
+                                <li><strong>Monday.com:</strong> Flexível</li>
+                                <li><strong>Linear:</strong> Moderno, rápido</li>
+                                <li><strong>Notion:</strong> All-in-one</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box planning-box">
+                            <h3>🎴 Planning Poker Online</h3>
+                            <ul>
+                                <li><strong>PlanningPoker.com:</strong> Simples</li>
+                                <li><strong>Scrum Poker:</strong> App mobile</li>
+                                <li><strong>Async Poker:</strong> Time distribuído</li>
+                                <li><strong>Jira Planning Poker:</strong> Integrado</li>
+                                <li><strong>Cards físicos:</strong> Sempre funcionam!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--planning-blue);">
+                        <h4 style="color: var(--planning-blue);">📋 Template de Planning (Miro/Mural)</h4>
+                        <div style="background: #E3F2FD; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Seção 1: Sprint Goal</strong><br>
+                                [Sticky note grande] "Por que este Sprint é valioso?"<br><br>
+                                
+                                <strong>Seção 2: Product Backlog (Input)</strong><br>
+                                [Cards] US-10 (8pts) | US-12 (5pts) | US-15 (13pts) | US-18 (3pts)<br><br>
+                                
+                                <strong>Seção 3: Sprint Backlog (Output)</strong><br>
+                                [Colunas] To Do | In Progress | Done<br>
+                                [Cards movidos do Product Backlog]<br><br>
+                                
+                                <strong>Seção 4: Capacity</strong><br>
+                                Velocity média: 28 pts<br>
+                                Disponibilidade: João férias 2 dias (-20%)<br>
+                                Estimativa Sprint: ~23 pts<br><br>
+                                
+                                <strong>Seção 5: Parking Lot</strong><br>
+                                [Sticky notes] Questões/ideias para discutir depois
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="checklist-card">
+                            <h4>🏢 Planning Presencial</h4>
+                            <div style="margin-top: 15px;">
+                                <p style="font-size: 1.05rem; margin-bottom: 10px;"><strong>Materiais:</strong></p>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Sala grande com mesa/whiteboard</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Sticky notes (3 cores diferentes)</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Canetões para whiteboard</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Planning Poker cards (1 deck/pessoa)</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Timer visível (projetor)</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Café e snacks! ☕🍪</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checklist-card">
+                            <h4>🌐 Planning Remoto</h4>
+                            <div style="margin-top: 15px;">
+                                <p style="font-size: 1.05rem; margin-bottom: 10px;"><strong>Setup:</strong></p>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Zoom/Meet com câmeras ON</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Miro/Mural board compartilhado</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Planning Poker online</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Timer online compartilhado</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Slack/Discord para chat paralelo</div>
+                                </div>
+                                <div class="checklist-item">
+                                    <div class="checklist-checkbox">✓</div>
+                                    <div>Boa internet! 📡</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Dica: Híbrido Planning</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Time parte presencial, parte remoto? <br>
+                            • Use projetor com Zoom para todos verem remotos<br>
+                            • Miro/Mural para board digital (todos editam)<br>
+                            • Planning Poker online (mesmo presenciais usam laptop)<br>
+                            • Microfone omnidirecional na sala<br>
+                            • Faça breaks a cada 60 minutos!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você dominou o Sprint Planning! 🎉</div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box planning-box">
+                            <h3>📅 Sprint Planning</h3>
+                            <ul>
+                                <li>Inicia o Sprint</li>
+                                <li>Máx 8h para Sprint 1 mês</li>
+                                <li>Todo Scrum Team participa</li>
+                                <li>Saída: Sprint Goal + Sprint Backlog</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box planning-box">
+                            <h3>❓ As 3 Perguntas</h3>
+                            <ul>
+                                <li><strong>WHY:</strong> Sprint Goal</li>
+                                <li><strong>WHAT:</strong> Selecionar itens</li>
+                                <li><strong>HOW:</strong> Plano de execução</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box planning-box">
+                            <h3>🎴 Planning Poker</h3>
+                            <ul>
+                                <li>Story Points (não horas!)</li>
+                                <li>Sequência de Fibonacci</li>
+                                <li>Revelar simultaneamente</li>
+                                <li>Discussão > Precisão</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box planning-box">
+                            <h3>🔧 Backlog Refinement</h3>
+                            <ul>
+                                <li>~10% do Sprint</li>
+                                <li>1-2x por semana</li>
+                                <li>Topo "Ready" para Planning</li>
+                                <li>Definition of Ready (DoR)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🔑 Chaves para Planning de Sucesso</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">1️⃣ Refinement contínuo antes do Planning</li>
+                            <li style="padding: 8px 0;">2️⃣ Sprint Goal claro e inspirador</li>
+                            <li style="padding: 8px 0;">3️⃣ Time decide capacidade (não PO!)</li>
+                            <li style="padding: 8px 0;">4️⃣ Planning Poker para alinhamento</li>
+                            <li style="padding: 8px 0;">5️⃣ Respeitar timebox (máx 8h!)</li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (04/03)</h3>
+                            <ul>
+                                <li><strong>Daily Scrum</strong></li>
+                                <li>15 minutos sagrados</li>
+                                <li>Inspeção e adaptação diária</li>
+                                <li>Como facilitar Daily eficaz</li>
+                                <li>Anti-padrões do Daily</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Fazer Planning simulado em grupo</li>
+                                <li>Praticar Planning Poker</li>
+                                <li>Refinar Product Backlog do projeto</li>
+                                <li>Definir Sprint Goal para Sprint 1</li>
+                                <li>Preparar estimativas (story points)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Um Sprint bem planejado economiza horas de confusão durante a execução!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Invista tempo no Planning!</div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado! Até terça-feira! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Pratiquem Planning Poker!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 12</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .question-card, .goal-card, .checklist-card, .quote-box, .poker-card');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

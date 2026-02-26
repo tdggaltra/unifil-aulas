@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 1 - Introdução às Metodologias Ágeis | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 100px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -48px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .timeline-item p {
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            animation: bounceIn 0.6s ease-out forwards;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.2);
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: var(--unifil-dark);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        .comparison-table th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .comparison-table td {
+            background: var(--unifil-light);
+            padding: 20px;
+            font-size: 1.05rem;
+            border-top: 2px solid white;
+            border-bottom: 2px solid white;
+        }
+
+        .comparison-table td:first-child {
+            border-left: 2px solid white;
+            border-radius: 10px 0 0 10px;
+            font-weight: 600;
+            color: var(--unifil-orange);
+        }
+
+        .comparison-table td:last-child {
+            border-right: 2px solid white;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            animation: slideInRight 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .analogy-box p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+        }
+
+        .interactive-demo {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+
+        .interactive-demo h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .demo-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .demo-button:hover {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .demo-output {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid var(--unifil-orange);
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            min-height: 150px;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        /* Animações */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Scrollbar customizada */
+        .slide-body::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb:hover {
+            background: var(--unifil-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <img src="logo.png" alt="UniFil" class="logo">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">
+                            🚀 Aula 1
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">
+                            Introdução às Metodologias Ágeis
+                        </h3>
+                        <p style="font-size: 1.3rem; color: var(--unifil-gray); margin-bottom: 10px;">
+                            Prof. Tiago Galvão
+                        </p>
+                        <p style="font-size: 1.1rem; color: var(--unifil-gray);">
+                            Terça-feira, 10 de Fevereiro de 2026
+                        </p>
+                    </div>
+
+                    <div class="big-idea">
+                        "A única constante na vida é a mudança." - Heráclito
+                    </div>
+
+                    <div style="margin-top: 40px; color: var(--unifil-gray); font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                        <p style="margin-top: 10px;">⌨️ ← Anterior | Próximo →</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: AGENDA DA AULA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Agenda da Aula</h2>
+                    <p>O que vamos aprender hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item" style="animation-delay: 0s;">
+                            <h4>1️⃣ Apresentação da Disciplina (20 min)</h4>
+                            <p>Ementa, cronograma, sistema de avaliação e metodologia hands-on</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.1s;">
+                            <h4>2️⃣ Contexto Histórico (30 min)</h4>
+                            <p>A crise do software, problemas do Cascata, surgimento do movimento ágil</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4>3️⃣ O Problema que Ágil Resolve (30 min)</h4>
+                            <p>Projetos falhando, desperdício, necessidade de adaptação e feedback contínuo</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.3s;">
+                            <h4>4️⃣ Panorama Atual (10 min)</h4>
+                            <p>Adoção de ágil no Brasil e mundo, tendências e futuro</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>🎯 Objetivos de Aprendizagem</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Compreender o contexto histórico das metodologias ágeis</li>
+                            <li style="padding: 8px 0;">✅ Entender por que ágil se tornou predominante</li>
+                            <li style="padding: 8px 0;">✅ Reconhecer os problemas que ágil resolve</li>
+                            <li style="padding: 8px 0;">✅ Conhecer o panorama atual de adoção no mercado</li>
+                        </ul>
+                    </div>
+
+                    <div class="analogy-box">
+                        <h3>💭 Pergunta para Reflexão</h3>
+                        <p><strong>Você já participou de algum projeto (acadêmico ou profissional)?</strong></p>
+                        <p style="margin-top: 15px;">Ele foi entregue no prazo? Atendeu às expectativas? Houve mudanças durante o desenvolvimento?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: SOBRE A DISCIPLINA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📚 Sobre a Disciplina</h2>
+                    <p>Informações gerais e estrutura</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="stat-card" style="animation-delay: 0s;">
+                            <div class="number">30h</div>
+                            <div class="label">Carga Horária</div>
+                        </div>
+                        <div class="stat-card" style="animation-delay: 0.1s;">
+                            <div class="number">20</div>
+                            <div class="label">Aulas</div>
+                        </div>
+                        <div class="stat-card" style="animation-delay: 0.2s;">
+                            <div class="number">1</div>
+                            <div class="label">Projeto Prático</div>
+                        </div>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>🎓 Objetivo Geral</h3>
+                            <p style="line-height: 1.7; font-size: 1.05rem;">
+                                Capacitar os alunos a <strong>aplicar metodologias ágeis</strong> (Scrum e Kanban) em projetos de software, utilizando ferramentas modernas de gestão para planejamento, execução e acompanhamento.
+                            </p>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📅 Calendário</h3>
+                            <ul>
+                                <li>Início: 10/02/2026</li>
+                                <li>Término: 18/03/2026</li>
+                                <li>Terças e Quartas</li>
+                                <li>1,5h por aula</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>🚀 Metodologia: APRENDER FAZENDO!</h3>
+                        <p style="font-size: 1.15rem; margin-top: 10px;">
+                            Esta disciplina é <strong>70% prática</strong>. Você vai desenvolver um projeto real em equipe, aplicando Scrum e Kanban desde o primeiro dia. Não é só teoria — é vivência!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📊 Sistema de Avaliação</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0;">• <strong>Projeto Final:</strong> 35% (apresentação + incremento)</li>
+                            <li style="padding: 8px 0;">• <strong>Sprint Reviews:</strong> 25% (2 apresentações)</li>
+                            <li style="padding: 8px 0;">• <strong>Trabalhos:</strong> 25% (3 trabalhos)</li>
+                            <li style="padding: 8px 0;">• <strong>Prova Final:</strong> 15%</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: A CRISE DO SOFTWARE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💥 A Crise do Software (Anos 90)</h2>
+                    <p>Por que precisávamos de uma mudança</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);">
+                        "Software está comendo o mundo, mas projetos de software estão falhando em massa!"
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="stat-card" style="animation-delay: 0s;">
+                            <div class="number">70%</div>
+                            <div class="label">Projetos falhavam ou eram cancelados</div>
+                        </div>
+                        <div class="stat-card" style="animation-delay: 0.1s;">
+                            <div class="number">189%</div>
+                            <div class="label">Estouro de orçamento em média</div>
+                        </div>
+                        <div class="stat-card" style="animation-delay: 0.2s;">
+                            <div class="number">222%</div>
+                            <div class="label">Estouro de prazo em média</div>
+                        </div>
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4>📈 O Problema</h4>
+                            <p>Software tornando-se cada vez mais complexo, mas metodologias continuavam antigas (herança da engenharia civil e manufatura)</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>💸 Desperdício Massivo</h4>
+                            <p>Bilhões de dólares desperdiçados em projetos que nunca eram entregues ou que entregavam o que ninguém mais queria</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>😤 Frustração Generalizada</h4>
+                            <p>Clientes insatisfeitos, desenvolvedores desmotivados, empresas falindo por projetos mal-sucedidos</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>🔍 Busca por Alternativas</h4>
+                            <p>Diversos profissionais começaram a experimentar abordagens diferentes, mais leves e adaptativas</p>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🏗️ Analogia: Construindo uma Casa vs Criando Software</h3>
+                        <p><strong>Casa:</strong> Você decide tudo no início (planta, materiais). Mudanças são caríssimas.</p>
+                        <p style="margin-top: 15px;"><strong>Software:</strong> Requisitos mudam constantemente. O que o cliente quer hoje pode não ser o que ele precisa amanhã!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: MODELO CASCATA - O VILÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🌊 O Modelo Cascata (Waterfall)</h2>
+                    <p>A abordagem tradicional e seus problemas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📐 Como Funciona o Cascata?</h4>
+                        <p style="margin-bottom: 20px; font-size: 1.05rem;">
+                            Inspirado na engenharia civil e manufatura. Processo sequencial e linear onde cada fase deve estar 100% completa antes de iniciar a próxima.
+                        </p>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px;">
+                            <div style="font-size: 1.8rem; text-align: center; line-height: 2.5;">
+                                📋 Requisitos ⬇️<br>
+                                🎨 Design ⬇️<br>
+                                💻 Implementação ⬇️<br>
+                                🧪 Testes ⬇️<br>
+                                🚀 Implantação ⬇️<br>
+                                🔧 Manutenção
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px; background: linear-gradient(135deg, #c31432 0%, #240b36 100%);">
+                        <h3>❌ Os 5 Pecados Capitais do Cascata</h3>
+                        <div style="margin-top: 20px; font-size: 1.1rem;">
+                            <p><strong>1. Planejamento Upfront Total:</strong> Decidir TUDO no início (impossível!)</p>
+                            <p style="margin-top: 15px;"><strong>2. Resistência a Mudanças:</strong> Mudança = retrabalho caro e demorado</p>
+                            <p style="margin-top: 15px;"><strong>3. Feedback Tardio:</strong> Cliente só vê o produto no final (às vezes anos depois!)</p>
+                            <p style="margin-top: 15px;"><strong>4. Documentação Pesada:</strong> Mais tempo escrevendo docs do que código</p>
+                            <p style="margin-top: 15px;"><strong>5. Big Bang no Final:</strong> Tudo integra e testa só no fim (rezar para dar certo!)</p>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🎬 Analogia: O Filme que Ninguém Viu</h3>
+                        <p>
+                            Imagine fazer um filme durante 2 anos sem mostrar nada para ninguém. No dia do lançamento, você descobre que o público queria uma comédia, mas você fez um drama!
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>É assim que o Cascata funciona.</strong> Quando o cliente finalmente vê o software, frequentemente não é mais o que ele precisa.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: O SURGIMENTO DO ÁGIL -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🌟 O Surgimento do Movimento Ágil</h2>
+                    <p>Snowbird Meeting - Fevereiro de 2001</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Em uma estação de ski em Utah, 17 desenvolvedores se reuniram e mudaram a história do desenvolvimento de software para sempre!
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4>📅 Final dos Anos 90</h4>
+                            <p>Diversos profissionais experimentavam métodos "leves": XP (Extreme Programming), Scrum, Crystal, FDD, DSDM...</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>🏔️ Snowbird, Utah - Fevereiro 2001</h4>
+                            <p>17 pioneiros se reúnem: Kent Beck, Jeff Sutherland, Martin Fowler, Robert Martin (Uncle Bob), e outros</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>📜 O Manifesto Ágil</h4>
+                            <p>Criaram um documento de 68 palavras que capturava os valores comuns entre todos os métodos leves</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>🌍 Revolução Global</h4>
+                            <p>O manifesto se espalhou rapidamente. Em poucos anos, metodologias ágeis se tornaram o padrão da indústria</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 O Grande Insight</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Não era sobre criar uma <strong>nova metodologia</strong>. Era sobre capturar os <strong>valores e princípios</strong> que faziam os métodos leves funcionarem!
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px; font-style: italic;">
+                            "Não precisamos de processos pesados. Precisamos de valores que orientem nossas decisões!"
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🔑 Os 17 Pioneiros</h4>
+                        <p>Kent Beck, Mike Beedle, Arie van Bennekum, Alistair Cockburn, Ward Cunningham, Martin Fowler, James Grenning, Jim Highsmith, Andrew Hunt, Ron Jeffries, Jon Kern, Brian Marick, Robert C. Martin, Steve Mellor, Ken Schwaber, Jeff Sutherland, Dave Thomas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: PROBLEMAS QUE ÁGIL RESOLVE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💡 O Problema que Ágil Resolve</h2>
+                    <p>Por que ágil funciona?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🚢 Analogia: Navegando em Águas Turbulentas</h3>
+                        <p>
+                            <strong>Cascata:</strong> Você planeja toda a viagem de navio com 2 anos de antecedência. Se houver uma tempestade ou mudança de rota? Azar! Você segue o plano original.
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>Ágil:</strong> Você navega em pequenos trechos, ajustando a rota constantemente baseado no clima, feedback da tripulação e mudanças no destino.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>❌ Problemas do Mundo Real</h3>
+                            <ul>
+                                <li>Requisitos mudam constantemente</li>
+                                <li>Cliente não sabe exatamente o que quer</li>
+                                <li>Tecnologia evolui rápido</li>
+                                <li>Concorrência lança novidades</li>
+                                <li>Mercado muda (COVID, anyone?)</li>
+                                <li>Equipes aprendem durante o projeto</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Como Ágil Aborda</h3>
+                            <ul>
+                                <li>Abraça mudanças a qualquer momento</li>
+                                <li>Feedback contínuo com o cliente</li>
+                                <li>Entregas frequentes de valor</li>
+                                <li>Adaptação rápida</li>
+                                <li>Inspeção e ajuste constante</li>
+                                <li>Aprendizado incremental</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 O Cerne do Problema</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>Desenvolvimento de software é um processo criativo e exploratório</strong>, não manufatura.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Você não pode planejar 100% do que vai criar antes de começar, porque você <strong>descobre</strong> o que precisa criar <strong>enquanto está criando!</strong>
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 Dados do Standish Group (Chaos Report)</h4>
+                        <p style="margin-top: 10px;"><strong>Projetos Cascata:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>✅ Sucesso: 14%</li>
+                            <li>⚠️ Desafiadores: 57%</li>
+                            <li>❌ Falhas: 29%</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Projetos Ágeis:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>✅ Sucesso: 42%</li>
+                            <li>⚠️ Desafiadores: 49%</li>
+                            <li>❌ Falhas: 9%</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: ESTATÍSTICAS IMPACTANTES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📈 Estatísticas que Impressionam</h2>
+                    <p>O impacto real do ágil</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        "Empresas que adotam ágil têm 3x mais chances de ter projetos bem-sucedidos!"
+                    </div>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="number">71%</div>
+                            <div class="label">Das organizações usam ágil</div>
+                        </div>
+                        <div class="stat-card" style="animation-delay: 0.1s;">
+                            <div class="number">60%</div>
+                            <div class="label">Maior produtividade</div>
+                        </div>
+                        <div class="stat-card" style="animation-delay: 0.2s;">
+                            <div class="number">65%</div>
+                            <div class="label">Melhor qualidade</div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🌍 State of Agile Report 2023 - Principais Descobertas</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                📊 <strong>94%</strong> das organizações praticam desenvolvimento ágil
+                            </li>
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                🚀 <strong>Scrum</strong> é a metodologia mais popular (58%)
+                            </li>
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                🎯 <strong>Kanban</strong> é usado por 44% das equipes
+                            </li>
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                💼 <strong>52%</strong> adotam ágil em toda organização
+                            </li>
+                            <li style="padding: 10px 0;">
+                                ⚡ <strong>79%</strong> reportam maior velocidade de entrega
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🇧🇷 No Brasil</h3>
+                            <ul>
+                                <li>68% das empresas de TI usam ágil</li>
+                                <li>Crescimento de 45% nos últimos 5 anos</li>
+                                <li>Maior adoção em startups (82%)</li>
+                                <li>Bancos e telecoms também adotando</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🌎 No Mundo</h3>
+                            <ul>
+                                <li>EUA: 86% de adoção</li>
+                                <li>Europa: 71% de adoção</li>
+                                <li>Ásia: 63% de adoção</li>
+                                <li>Empresas de todos os portes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Insight Importante</h3>
+                        <p style="font-size: 1.15rem;">
+                            Ágil não é mais uma "moda" ou "experimentação". É o <strong>padrão da indústria</strong>. Se você quer trabalhar com desenvolvimento de software, <strong>você PRECISA dominar ágil!</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CASOS DE SUCESSO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏆 Casos de Sucesso</h2>
+                    <p>Empresas que transformaram seus resultados com ágil</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>🎵 Spotify - A Orquestra Ágil</h4>
+                        <p style="margin-top: 10px;">
+                            <strong>Desafio:</strong> Coordenar 100+ equipes de desenvolvimento globalmente
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Solução:</strong> Criaram o "Spotify Model" - Squads, Tribes, Chapters e Guilds
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Resultado:</strong> Deploy múltiplo por dia, inovação constante, 500M+ usuários
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🚗 Tesla - Ágil na Manufatura</h4>
+                        <p style="margin-top: 10px;">
+                            <strong>Desafio:</strong> Competir com montadoras centenárias
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Solução:</strong> Aplicaram Scrum até na linha de produção
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Resultado:</strong> Iterações semanais de design, atualizações over-the-air
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📦 Amazon - Customer Obsession</h4>
+                        <p style="margin-top: 10px;">
+                            <strong>Desafio:</strong> Escalar de livraria online para gigante do e-commerce
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Solução:</strong> Two-pizza teams + Deploy contínuo
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Resultado:</strong> Deploy a cada 11.7 segundos (!), inovação brutal
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🇧🇷 No Brasil</h3>
+                            <ul>
+                                <li><strong>Nubank:</strong> Squads ágeis, sem burocracy</li>
+                                <li><strong>iFood:</strong> Crescimento explosivo com ágil</li>
+                                <li><strong>Magazine Luiza:</strong> Transformação digital ágil</li>
+                                <li><strong>BTG Pactual:</strong> Banking ágil</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🌐 Gigantes Tech</h3>
+                            <ul>
+                                <li><strong>Netflix:</strong> "Context, not control"</li>
+                                <li><strong>Google:</strong> OKRs + ágil</li>
+                                <li><strong>Microsoft:</strong> Transformação ágil total</li>
+                                <li><strong>Apple:</strong> Sprints de hardware</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>💭 O Padrão Comum</h3>
+                        <p>Todas essas empresas têm algo em comum:</p>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                            <li>✅ Equipes pequenas e autônomas</li>
+                            <li>✅ Feedback rápido e constante</li>
+                            <li>✅ Experimentação incentivada</li>
+                            <li>✅ Foco no valor para o cliente</li>
+                            <li>✅ Melhoria contínua</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: PANORAMA ATUAL E FUTURO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔮 Panorama Atual e Futuro</h2>
+                    <p>Onde estamos e para onde vamos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        "Ágil não é o fim da jornada, é o começo de uma cultura de melhoria contínua!"
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4>🎯 Agora (2024-2026)</h4>
+                            <p><strong>Maturidade:</strong> Ágil é mainstream. DevOps, CI/CD, Cloud Native são extensões naturais</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>🚀 Tendências Emergentes</h4>
+                            <p><strong>Scaled Agile:</strong> SAFe, LeSS para grandes organizações | <strong>Business Agility:</strong> Ágil além de TI</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>🤖 IA e Ágil</h4>
+                            <p>Ferramentas de IA auxiliando em estimativas, testes, code review. Ágil se adapta!</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>🌱 Futuro</h4>
+                            <p>Foco em <strong>outcomes</strong> (resultados) ao invés de <strong>outputs</strong> (entregas). Ágil continua evoluindo!</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚠️ Atenção: Agile Theatre</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Muitas empresas dizem que "fazem ágil", mas apenas adotam as práticas sem internalizar os <strong>valores e princípios</strong>.
+                        </p>
+                        <p style="font-size: 1.05rem; margin-top: 15px;">
+                            Resultado: "Ágil" só no nome, mesmos problemas de antes. Isso se chama <strong>"Agile Theatre"</strong> ou <strong>"Fake Agile"</strong>.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Ágil de Verdade</h3>
+                            <ul>
+                                <li>Mindset de adaptação e aprendizado</li>
+                                <li>Empoderamento das equipes</li>
+                                <li>Foco no valor para cliente</li>
+                                <li>Transparência radical</li>
+                                <li>Melhoria contínua genuína</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>❌ Fake Agile</h3>
+                            <ul>
+                                <li>Apenas renomeou "reuniões"</li>
+                                <li>Command & Control disfarçado</li>
+                                <li>Daily como status report</li>
+                                <li>Scrum Master como gerente</li>
+                                <li>Resistência a mudanças continua</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🎭 Ser Ágil vs Fazer Ágil</h3>
+                        <p>
+                            <strong>Fazer Ágil:</strong> Seguir práticas e rituais (Dailys, Sprints, Kanban boards)
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>Ser Ágil:</strong> Internalizar valores e princípios. Adaptar, colaborar, entregar valor continuamente.
+                        </p>
+                        <p style="margin-top: 15px; font-weight: 600; font-size: 1.1rem;">
+                            Nesta disciplina, você vai <strong>SER</strong> ágil, não apenas "fazer" ágil!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Hoje você deu o primeiro passo no mundo das Metodologias Ágeis! 🚀
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Contexto Histórico</h4>
+                            <p>Anos 90: Crise do software, projetos falhando em massa, desperdício</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Problemas do Cascata</h4>
+                            <p>Planejamento upfront, resistência a mudanças, feedback tardio, big bang</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Surgimento do Ágil</h4>
+                            <p>Snowbird 2001, Manifesto Ágil, revolução global</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Por que Ágil Funciona</h4>
+                            <p>Abraça mudanças, feedback contínuo, entregas incrementais, adaptação</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Panorama Atual</h4>
+                            <p>71% de adoção, padrão da indústria, tendências futuras</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para a Próxima Aula (Quarta, 11/02)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣ Leitura Obrigatória:</strong> Manifesto Ágil (link no Moodle)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣ Reflexão:</strong> Pense em projetos que você participou. Quais eram ágeis? Quais não eram?
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣ TRABALHO 1 (começa):</strong> Formar equipes de 4-5 pessoas
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣ Pesquisa (opcional):</strong> Procure empresas brasileiras que usam ágil
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próximas Aulas</h3>
+                            <ul>
+                                <li>Manifesto Ágil e os 12 Princípios</li>
+                                <li>Métodos Tradicionais vs Ágeis</li>
+                                <li>Introdução ao Scrum</li>
+                                <li>Papéis no Scrum</li>
+                                <li>E muito mais! 🚀</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Horário de Atendimento:</strong> Terças 18h-19h</p>
+                            <p><strong>Moodle:</strong> Fórum de dúvidas disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "A jornada de mil milhas começa com um único passo. Você acabou de dar esse passo! 💪"
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Nos vemos na próxima aula!</p>
+                        <p style="font-size: 0.9rem; margin-top: 20px; font-style: italic;">
+                            "Seja ágil. Não apenas faça ágil." 🚀
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 11</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .stat-card, .analogy-box, .comparison-table, .interactive-demo');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

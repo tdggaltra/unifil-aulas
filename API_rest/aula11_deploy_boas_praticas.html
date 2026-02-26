@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 11 - Deploy e Boas Práticas | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--unifil-dark);
+            color: #00ff00;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+            animation: fadeInUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+            border: 2px solid var(--unifil-orange);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .key-takeaway {
+            background: #FFF3E0;
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .key-takeaway h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .danger-box {
+            background: #FFEBEE;
+            border-left: 5px solid #F44336;
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .danger-box h4 {
+            color: #F44336;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .success-box {
+            background: #E8F5E9;
+            border-left: 5px solid #4CAF50;
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .success-box h4 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: scale(1.05);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            color: var(--unifil-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .checklist {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .checklist h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .checklist-item {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            border-bottom: 1px solid #eee;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-item::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .slide-header h1 { font-size: 1.8rem; }
+            .slide-header h2 { font-size: 1.4rem; }
+            .two-column, .three-column { grid-template-columns: 1fr; }
+            .slide-body { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>📱 Desenvolvimento de Aplicativos Móveis</h1>
+                    <p>Criação de API REST Básica</p>
+                </div>
+                <div class="slide-body">
+                    <div style="text-align: center; margin-top: 80px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px; animation: fadeInUp 0.6s ease-out;">
+                            Aula 11 - FINAL
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 40px; animation: fadeInUp 0.6s ease-out 0.2s; opacity: 0; animation-fill-mode: forwards;">
+                            Deploy e Boas Práticas
+                        </h3>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 60px;">
+                        <div class="content-box">
+                            <h3>📅 Informações</h3>
+                            <ul>
+                                <li><strong>Data:</strong> Segunda, 16/03/2026</li>
+                                <li><strong>Duração:</strong> 1,5 horas</li>
+                                <li><strong>Formato:</strong> Fechamento!</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Objetivos</h3>
+                            <ul>
+                                <li>Preparar para produção</li>
+                                <li>Fazer deploy</li>
+                                <li>Boas práticas</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📚 Agenda de Hoje</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <strong>🔧 Parte 1 (30min)</strong><br>
+                                Variáveis de ambiente
+                            </div>
+                            <div>
+                                <strong>🚀 Parte 2 (30min)</strong><br>
+                                Deploy Render
+                            </div>
+                            <div>
+                                <strong>📋 Parte 3 (30min)</strong><br>
+                                Boas práticas finais
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="big-idea">
+                        "Última aula! Colocando sua API no ar! 🚀"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: DESENVOLVIMENTO VS PRODUÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Desenvolvimento vs Produção</h2>
+                    <p>Ambientes diferentes</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🏗️ Analogia: Construindo uma Casa</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>Desenvolvimento = Obra 🚧</strong><br>
+                            → Ferramentas espalhadas<br>
+                            → Testes, experimentos<br>
+                            → Pode ter erros, bagunça<br>
+                            → Só você e equipe veem<br><br>
+                            <strong>Produção = Casa Pronta 🏠</strong><br>
+                            → Tudo organizado e limpo<br>
+                            → Seguro e confiável<br>
+                            → Pessoas moram lá<br>
+                            → Precisa funcionar 24/7!
+                        </p>
+                    </div>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Aspecto</th>
+                            <th>Desenvolvimento (Local)</th>
+                            <th>Produção (Servidor)</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Ambiente</strong></td>
+                            <td>Seu computador</td>
+                            <td>Servidor na nuvem</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Usuários</strong></td>
+                            <td>Só você</td>
+                            <td>Mundo inteiro</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Erros</strong></td>
+                            <td>Pode ter bugs</td>
+                            <td>Deve ser estável</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Logs</strong></td>
+                            <td>console.log() liberado</td>
+                            <td>Sistema de logs profissional</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Banco</strong></td>
+                            <td>loja.db local</td>
+                            <td>Banco remoto seguro</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Secrets</strong></td>
+                            <td>Pode estar no código</td>
+                            <td>NUNCA no código!</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Performance</strong></td>
+                            <td>Pode ser lento</td>
+                            <td>Deve ser otimizado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Disponibilidade</strong></td>
+                            <td>Quando você rodar</td>
+                            <td>24/7/365</td>
+                        </tr>
+                    </table>
+
+                    <div class="key-takeaway">
+                        <h4>💡 NODE_ENV</h4>
+                        <p>Variável que indica ambiente:<br>
+                        <code>development</code> = desenvolvimento<br>
+                        <code>production</code> = produção<br><br>
+                        Muda comportamento do código automaticamente!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: VARIÁVEIS DE AMBIENTE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔐 Variáveis de Ambiente (.env)</h2>
+                    <p>Configurações seguras</p>
+                </div>
+                <div class="slide-body">
+                    <div class="danger-box">
+                        <h4>🚨 NUNCA FAÇA ISSO!</h4>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #6A9955;">// ❌❌❌ PÉSSIMO! ❌❌❌</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">JWT_SECRET</span> = <span style="color: #CE9178;">'minhaChaveSecreta123'</span>;
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">DB_PASSWORD</span> = <span style="color: #CE9178;">'senha123'</span>;
+
+<span style="color: #6A9955;">// Commita no Git?</span>
+<span style="color: #6A9955;">→ TODO MUNDO VÊ SUAS SENHAS! 😱</span>
+<span style="color: #6A9955;">→ Hackers agradecem!</span>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📝 Criando arquivo .env</h4>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #6A9955;"># .env (na raiz do projeto)</span>
+
+<span style="color: #6A9955;"># Porta do servidor</span>
+PORT=3000
+
+<span style="color: #6A9955;"># Ambiente</span>
+NODE_ENV=development
+
+<span style="color: #6A9955;"># JWT</span>
+JWT_SECRET=super_secret_key_change_in_production_123!@#
+
+<span style="color: #6A9955;"># Banco de dados</span>
+DATABASE_URL=./loja.db
+
+<span style="color: #6A9955;"># CORS (permitir origens)</span>
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Instalando dotenv</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// 1. Instalar</span>
+npm install dotenv
+
+<span style="color: #6A9955;">// 2. Carregar no início do index.js</span>
+<span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'dotenv'</span>).<span style="color: #DCDCAA;">config</span>();
+
+<span style="color: #6A9955;">// 3. Usar variáveis</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">PORT</span> = process.<span style="color: #9CDCFE;">env</span>.<span style="color: #9CDCFE;">PORT</span> || <span style="color: #B5CEA8;">3000</span>;
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">JWT_SECRET</span> = process.<span style="color: #9CDCFE;">env</span>.<span style="color: #9CDCFE;">JWT_SECRET</span>;
+
+app.<span style="color: #DCDCAA;">listen</span>(PORT, () => {
+    <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(<span style="color: #CE9178;">`Servidor rodando na porta </span><span style="color: #569cd6;">${PORT}</span><span style="color: #CE9178;">`</span>);
+});
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🚫 .gitignore - CRUCIAL!</h4>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #6A9955;"># .gitignore</span>
+
+<span style="color: #6A9955;"># Dependências</span>
+node_modules/
+
+<span style="color: #6A9955;"># Variáveis de ambiente (NUNCA commitar!)</span>
+.env
+.env.local
+.env.production
+
+<span style="color: #6A9955;"># Banco de dados local</span>
+*.db
+*.sqlite
+
+<span style="color: #6A9955;"># Logs</span>
+*.log
+npm-debug.log*
+
+<span style="color: #6A9955;"># Sistema operacional</span>
+.DS_Store
+Thumbs.db
+                        </div>
+                    </div>
+
+                    <div class="success-box">
+                        <h4>✅ .env.example - Para o time</h4>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark); margin-top: 15px;">
+<span style="color: #6A9955;"># .env.example (SIM, commitar este!)</span>
+
+PORT=3000
+NODE_ENV=development
+JWT_SECRET=seu_secret_aqui
+DATABASE_URL=./seu_banco.db
+ALLOWED_ORIGINS=http://localhost:3000
+                        </div>
+                        <p style="margin-top: 15px;">
+                            <strong>Propósito:</strong> Mostrar quais variáveis são necessárias,<br>
+                            sem expor os valores reais!
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Regra de Ouro</h4>
+                        <p><strong>.env</strong> = Nunca commitar! (.gitignore)<br>
+                        <strong>.env.example</strong> = Sempre commitar! (documentação)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: PREPARANDO PARA DEPLOY -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📦 Preparando o Projeto</h2>
+                    <p>Checklist pré-deploy</p>
+                </div>
+                <div class="slide-body">
+                    <div class="checklist">
+                        <h4>✅ Checklist Essencial</h4>
+                        <div class="checklist-item">
+                            <strong>1. package.json com start script</strong><br>
+                            <code>"start": "node index.js"</code>
+                        </div>
+                        <div class="checklist-item">
+                            <strong>2. Porta dinâmica</strong><br>
+                            <code>const PORT = process.env.PORT || 3000;</code>
+                        </div>
+                        <div class="checklist-item">
+                            <strong>3. Variáveis de ambiente</strong><br>
+                            .env local, configurar no servidor
+                        </div>
+                        <div class="checklist-item">
+                            <strong>4. .gitignore configurado</strong><br>
+                            node_modules/, .env, *.db
+                        </div>
+                        <div class="checklist-item">
+                            <strong>5. README.md completo</strong><br>
+                            Instruções de instalação e uso
+                        </div>
+                        <div class="checklist-item">
+                            <strong>6. Dependências corretas</strong><br>
+                            <code>npm install</code> deve funcionar
+                        </div>
+                        <div class="checklist-item">
+                            <strong>7. Tratamento de erros</strong><br>
+                            try-catch em todas as rotas
+                        </div>
+                        <div class="checklist-item">
+                            <strong>8. CORS configurado</strong><br>
+                            Se frontend vai acessar
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📝 package.json Completo</h4>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark);">
+{
+  "name": "minha-api-rest",
+  "version": "1.0.0",
+  "description": "API REST completa com Node.js",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["api", "rest", "node", "express"],
+  "author": "Seu Nome",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^9.2.2",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔧 Script "start"</h3>
+                            <p style="margin-top: 15px; line-height: 1.7;">
+                                <strong>Servidor usa:</strong> <code>npm start</code><br><br>
+                                Executa: <code>node index.js</code><br><br>
+                                <strong>Desenvolvimento:</strong> <code>npm run dev</code><br>
+                                Executa: <code>nodemon index.js</code><br>
+                                (reinicia automático)
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🌐 CORS</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); margin-top: 15px; font-size: 0.85rem;">
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">cors</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'cors'</span>);
+
+app.<span style="color: #DCDCAA;">use</span>(<span style="color: #DCDCAA;">cors</span>({
+  <span style="color: #9CDCFE;">origin</span>: process.<span style="color: #9CDCFE;">env</span>.<span style="color: #9CDCFE;">ALLOWED_ORIGINS</span>
+    .<span style="color: #DCDCAA;">split</span>(<span style="color: #CE9178;">','</span>)
+}));
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: RENDER DEPLOY -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🚀 Deploy no Render</h2>
+                    <p>Colocando no ar (GRÁTIS!)</p>
+                </div>
+                <div class="slide-body">
+                    <div class="highlight-box">
+                        <h3>🎯 Por que Render?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.15rem;">
+                            <li style="padding: 8px 0;">✅ <strong>100% Gratuito</strong> para começar</li>
+                            <li style="padding: 8px 0;">✅ <strong>Fácil</strong> de usar</li>
+                            <li style="padding: 8px 0;">✅ <strong>Deploy automático</strong> via Git</li>
+                            <li style="padding: 8px 0;">✅ <strong>HTTPS</strong> automático</li>
+                            <li style="padding: 8px 0;">✅ <strong>Logs</strong> em tempo real</li>
+                        </ul>
+                    </div>
+
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange);">1️⃣ Criar conta no Render</h4>
+                            <p>render.com → Sign Up → Conectar GitHub</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange);">2️⃣ Criar repositório Git</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); margin-top: 10px;">
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin URL_DO_SEU_REPO
+git push -u origin main
+                            </div>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange);">3️⃣ New Web Service no Render</h4>
+                            <p>Dashboard → New + → Web Service → Connect Repository</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange);">4️⃣ Configurar Service</h4>
+                            <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                <strong>Name:</strong> minha-api-rest<br>
+                                <strong>Environment:</strong> Node<br>
+                                <strong>Build Command:</strong> <code>npm install</code><br>
+                                <strong>Start Command:</strong> <code>npm start</code>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.8s;">
+                            <h4 style="color: var(--unifil-orange);">5️⃣ Variáveis de Ambiente</h4>
+                            <p>Environment → Add Environment Variables</p>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); margin-top: 10px;">
+NODE_ENV=production
+JWT_SECRET=seu_secret_aqui_muito_forte
+DATABASE_URL=./data/loja.db
+                            </div>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 1s;">
+                            <h4 style="color: var(--unifil-orange);">6️⃣ Deploy!</h4>
+                            <p>Create Web Service → Aguardar build → URL gerada! 🎉</p>
+                        </div>
+                    </div>
+
+                    <div class="success-box" style="margin-top: 30px;">
+                        <h4>🎊 API no Ar!</h4>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>URL:</strong> https://minha-api-rest.onrender.com<br><br>
+                            <strong>Testar:</strong><br>
+                            GET https://minha-api-rest.onrender.com/api/produtos<br><br>
+                            <strong>Auto-deploy:</strong> Cada push no Git = deploy automático!
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>⚠️ Plano Gratuito</h4>
+                        <p>API "dorme" após 15min inativo → Primeiro request demora ~30s<br>
+                        Perfeito para estudos! Para produção real, upgrade para pago.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: BOAS PRÁTICAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Boas Práticas - Resumo</h2>
+                    <p>Checklist do desenvolvedor profissional</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="content-box">
+                            <h3>🔒 Segurança</h3>
+                            <ul>
+                                <li>Sempre bcrypt senhas</li>
+                                <li>JWT com expiração</li>
+                                <li>HTTPS em produção</li>
+                                <li>.env para secrets</li>
+                                <li>Validar TUDO</li>
+                                <li>SQL injection: prepared statements</li>
+                                <li>CORS configurado</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📝 Código Limpo</h3>
+                            <ul>
+                                <li>Nomes descritivos</li>
+                                <li>Funções pequenas</li>
+                                <li>DRY (Don't Repeat)</li>
+                                <li>Comentários úteis</li>
+                                <li>Indentação correta</li>
+                                <li>Modularização</li>
+                                <li>RESTful correto</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.4s;">
+                            <h3>🧪 Qualidade</h3>
+                            <ul>
+                                <li>try-catch sempre</li>
+                                <li>Status codes corretos</li>
+                                <li>Mensagens claras</li>
+                                <li>Logs informativos</li>
+                                <li>Documentação (README)</li>
+                                <li>Testes (se possível)</li>
+                                <li>Versionamento Git</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 Status Codes - Referência Rápida</h4>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>Código</th>
+                                <th>Significado</th>
+                                <th>Quando Usar</th>
+                            </tr>
+                            <tr>
+                                <td><strong>200</strong></td>
+                                <td>OK</td>
+                                <td>GET, PUT bem-sucedidos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>201</strong></td>
+                                <td>Created</td>
+                                <td>POST criou recurso</td>
+                            </tr>
+                            <tr>
+                                <td><strong>204</strong></td>
+                                <td>No Content</td>
+                                <td>DELETE bem-sucedido</td>
+                            </tr>
+                            <tr>
+                                <td><strong>400</strong></td>
+                                <td>Bad Request</td>
+                                <td>Dados inválidos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>401</strong></td>
+                                <td>Unauthorized</td>
+                                <td>Não autenticado</td>
+                            </tr>
+                            <tr>
+                                <td><strong>403</strong></td>
+                                <td>Forbidden</td>
+                                <td>Sem permissão</td>
+                            </tr>
+                            <tr>
+                                <td><strong>404</strong></td>
+                                <td>Not Found</td>
+                                <td>Recurso não existe</td>
+                            </tr>
+                            <tr>
+                                <td><strong>500</strong></td>
+                                <td>Internal Error</td>
+                                <td>Erro no servidor</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Padrões REST</h3>
+                        <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <code>GET /api/produtos</code> - Listar todos<br>
+                            <code>GET /api/produtos/:id</code> - Buscar um<br>
+                            <code>POST /api/produtos</code> - Criar<br>
+                            <code>PUT /api/produtos/:id</code> - Atualizar completo<br>
+                            <code>PATCH /api/produtos/:id</code> - Atualizar parcial<br>
+                            <code>DELETE /api/produtos/:id</code> - Deletar
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: ESTRUTURA PROJETO PROFISSIONAL -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📁 Estrutura de Projeto Profissional</h2>
+                    <p>Organização é fundamental</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="example-card">
+                            <h4>📂 Estrutura Básica (Atual)</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+projeto-api/
+├── index.js
+├── database.js
+├── package.json
+├── .env
+├── .gitignore
+├── README.md
+└── node_modules/
+                            </div>
+                        </div>
+
+                        <div class="example-card" style="animation-delay: 0.2s;">
+                            <h4>📂 Estrutura Profissional</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+projeto-api/
+├── src/
+│   ├── index.js
+│   ├── config/
+│   │   └── database.js
+│   ├── routes/
+│   │   ├── produtos.js
+│   │   ├── auth.js
+│   │   └── categorias.js
+│   ├── controllers/
+│   │   ├── produtosController.js
+│   │   └── authController.js
+│   ├── middleware/
+│   │   └── auth.js
+│   └── models/
+│       └── Usuario.js
+├── .env
+├── .env.example
+├── .gitignore
+├── package.json
+└── README.md
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📁 routes/</h3>
+                            <p style="margin-top: 10px; line-height: 1.6;">
+                                <strong>Definir rotas</strong><br><br>
+                                Agrupa endpoints relacionados<br><br>
+                                produtos.js<br>
+                                auth.js<br>
+                                categorias.js
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎮 controllers/</h3>
+                            <p style="margin-top: 10px; line-height: 1.6;">
+                                <strong>Lógica de negócio</strong><br><br>
+                                Funções que processam requests<br><br>
+                                criarProduto()<br>
+                                listarProdutos()<br>
+                                login()
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.4s;">
+                            <h3>🛡️ middleware/</h3>
+                            <p style="margin-top: 10px; line-height: 1.6;">
+                                <strong>Funções intermediárias</strong><br><br>
+                                Executam antes das rotas<br><br>
+                                autenticar()<br>
+                                validarDados()<br>
+                                logging()
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🎯 Exemplo: Separando Rotas</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.85rem;">
+<span style="color: #6A9955;">// src/routes/produtos.js</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">express</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'express'</span>);
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">router</span> = express.<span style="color: #DCDCAA;">Router</span>();
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtosController</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'../controllers/produtosController'</span>);
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">autenticar</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'../middleware/auth'</span>);
+
+router.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/'</span>, produtosController.<span style="color: #9CDCFE;">listar</span>);
+router.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/:id'</span>, produtosController.<span style="color: #9CDCFE;">buscarPorId</span>);
+router.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/'</span>, autenticar, produtosController.<span style="color: #9CDCFE;">criar</span>);
+router.<span style="color: #DCDCAA;">put</span>(<span style="color: #CE9178;">'/:id'</span>, autenticar, produtosController.<span style="color: #9CDCFE;">atualizar</span>);
+router.<span style="color: #DCDCAA;">delete</span>(<span style="color: #CE9178;">'/:id'</span>, autenticar, produtosController.<span style="color: #9CDCFE;">deletar</span>);
+
+<span style="color: #9CDCFE;">module</span>.<span style="color: #9CDCFE;">exports</span> = router;
+
+<span style="color: #6A9955;">// src/index.js</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtosRoutes</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'./routes/produtos'</span>);
+app.<span style="color: #DCDCAA;">use</span>(<span style="color: #CE9178;">'/api/produtos'</span>, produtosRoutes);
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Princípio da Responsabilidade Única</h4>
+                        <p>Cada arquivo/função tem UMA responsabilidade!<br>
+                        Facilita manutenção, testes e trabalho em equipe.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: DOCUMENTAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📖 Documentação da API</h2>
+                    <p>README.md essencial</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📝 Modelo de README.md Completo</h4>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.82rem;">
+# 🛒 API REST - Loja Virtual
+
+API RESTful completa para gerenciamento de produtos e usuários.
+
+## 🚀 Tecnologias
+
+- Node.js
+- Express
+- SQLite (better-sqlite3)
+- JWT para autenticação
+- Bcrypt para senhas
+
+## 📋 Pré-requisitos
+
+- Node.js >= 14
+- npm ou yarn
+
+## 🔧 Instalação
+
+```bash
+# Clonar repositório
+git clone https://github.com/usuario/minha-api.git
+
+# Entrar no diretório
+cd minha-api
+
+# Instalar dependências
+npm install
+
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Editar .env com suas configurações
+
+# Rodar servidor
+npm start
+```
+
+## 📡 Endpoints
+
+### Autenticação
+
+**POST /auth/register**
+- Cadastrar novo usuário
+- Body: `{ "nome": "...", "email": "...", "senha": "..." }`
+- Response: `{ "token": "...", "usuario": {...} }`
+
+**POST /auth/login**
+- Login de usuário
+- Body: `{ "email": "...", "senha": "..." }`
+- Response: `{ "token": "...", "usuario": {...} }`
+
+### Produtos (🔒 = autenticação necessária)
+
+**GET /api/produtos**
+- Listar todos os produtos
+- Query params: `?categoria=...&ordem=preco&limite=10`
+
+**GET /api/produtos/:id**
+- Buscar produto por ID
+
+**POST /api/produtos** 🔒
+- Criar produto
+- Header: `Authorization: Bearer {token}`
+- Body: `{ "nome": "...", "preco": 100, "categoria_id": 1 }`
+
+**PUT /api/produtos/:id** 🔒
+- Atualizar produto
+
+**DELETE /api/produtos/:id** 🔒
+- Deletar produto
+
+## 🔐 Autenticação
+
+Rotas protegidas requerem token JWT no header:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+## 🌐 Deploy
+
+Deploy na Render: https://minha-api.onrender.com
+
+## 👨‍💻 Autor
+
+**Seu Nome**
+- GitHub: @usuario
+- Email: email@exemplo.com
+
+## 📄 Licença
+
+MIT
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 README.md é seu cartão de visitas!</h4>
+                        <p>Primeira coisa que recrutadores e outros devs veem.<br>
+                        Caprichar = Demonstrar profissionalismo!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎓 O Que Você Aprendeu</h2>
+                    <p>Jornada completa!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        11 aulas = Desenvolvedor de APIs REST! 🎉
+                    </div>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>🎯 Fundamentos</h3>
+                            <ul>
+                                <li>HTTP e REST</li>
+                                <li>Métodos GET/POST</li>
+                                <li>Status codes</li>
+                                <li>JSON</li>
+                                <li>Express.js</li>
+                                <li>Rotas e params</li>
+                                <li>Validações</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🗄️ Banco de Dados</h3>
+                            <ul>
+                                <li>SQL básico</li>
+                                <li>SQLite</li>
+                                <li>CRUD completo</li>
+                                <li>Relacionamentos 1:N</li>
+                                <li>Foreign Keys</li>
+                                <li>JOINs</li>
+                                <li>Queries avançadas</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.4s;">
+                            <h3>🔐 Segurança</h3>
+                            <ul>
+                                <li>Autenticação JWT</li>
+                                <li>Bcrypt senhas</li>
+                                <li>Middlewares</li>
+                                <li>Rotas protegidas</li>
+                                <li>Variáveis ambiente</li>
+                                <li>CORS</li>
+                                <li>Deploy produção</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>🚀 Próximos Passos (Continuando seus estudos)</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <strong>📚 Tópicos Avançados:</strong><br><br>
+                                • TypeScript<br>
+                                • Testes (Jest, Mocha)<br>
+                                • WebSockets<br>
+                                • GraphQL<br>
+                                • Microservices<br>
+                                • Docker
+                            </div>
+                            <div>
+                                <strong>🛠️ Ferramentas:</strong><br><br>
+                                • MongoDB (NoSQL)<br>
+                                • PostgreSQL<br>
+                                • Redis (cache)<br>
+                                • RabbitMQ (filas)<br>
+                                • AWS/Azure<br>
+                                • Kubernetes
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>💼 Portfólio</h3>
+                            <ul>
+                                <li>GitHub organizado</li>
+                                <li>README caprichado</li>
+                                <li>APIs no ar (Render)</li>
+                                <li>Documentação clara</li>
+                                <li>Código limpo</li>
+                                <li>Commits descritivos</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Prática</h3>
+                            <ul>
+                                <li>Criar APIs variadas</li>
+                                <li>Contribuir open source</li>
+                                <li>Fazer desafios</li>
+                                <li>Estudar código alheio</li>
+                                <li>Participar comunidades</li>
+                                <li>Nunca parar!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: ENCERRAMENTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎊 Parabéns!</h2>
+                    <p>Você chegou ao fim!</p>
+                </div>
+                <div class="slide-body">
+                    <div style="text-align: center; margin-top: 60px;">
+                        <h2 style="font-size: 3.5rem; color: var(--unifil-orange); margin-bottom: 30px;">
+                            🎓
+                        </h2>
+                        <h3 style="font-size: 2.5rem; color: var(--unifil-dark); margin-bottom: 40px;">
+                            Curso Completo!
+                        </h3>
+                    </div>
+
+                    <div class="big-idea" style="font-size: 2.2rem;">
+                        Você domina APIs REST profissionais! 🚀
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);">
+                        <h3>✅ Conquistas Desbloqueadas</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; font-size: 1.2rem;">
+                            <div>
+                                ✅ HTTP e REST<br>
+                                ✅ Node.js e Express<br>
+                                ✅ CRUD Completo<br>
+                                ✅ Banco de Dados<br>
+                                ✅ SQL e JOINs
+                            </div>
+                            <div>
+                                ✅ Autenticação JWT<br>
+                                ✅ Segurança<br>
+                                ✅ Deploy Produção<br>
+                                ✅ Boas Práticas<br>
+                                ✅ API Profissional
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="success-box">
+                            <h4>🎯 Seu Diferencial Agora</h4>
+                            <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                                Você sabe criar APIs REST completas do zero!<br><br>
+                                • Backend profissional<br>
+                                • Banco de dados<br>
+                                • Autenticação<br>
+                                • Deploy em produção<br><br>
+                                Isso é <strong>MUITO VALIOSO</strong> no mercado! 💎
+                            </p>
+                        </div>
+
+                        <div class="success-box" style="animation-delay: 0.2s;">
+                            <h4>💪 Continue Evoluindo</h4>
+                            <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                                Este curso é o COMEÇO!<br><br>
+                                • Pratique muito<br>
+                                • Crie projetos pessoais<br>
+                                • Estude novas tecnologias<br>
+                                • Compartilhe conhecimento<br><br>
+                                O céu é o limite! 🚀
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 50px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "O aprendizado é contínuo. Nunca pare de evoluir!" 📚
+                    </div>
+
+                    <div style="text-align: center; margin-top: 50px; color: var(--unifil-gray);">
+                        <h3 style="font-size: 2rem; margin-bottom: 20px;">Obrigado por participar! 🙏</h3>
+                        <p style="font-size: 1.3rem;">
+                            <strong>Prof. Tiago Galvão - UniFil</strong><br>
+                            Desenvolvimento de Aplicativos Móveis<br>
+                            2026
+                        </p>
+                        <p style="font-size: 1.5rem; margin-top: 40px; color: var(--unifil-orange);">
+                            ⭐⭐⭐ Sucesso na sua jornada! ⭐⭐⭐
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 10</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .code-block, .big-idea, .key-takeaway, .comparison-table, .analogy-box, .timeline-item, .danger-box, .success-box, .checklist');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

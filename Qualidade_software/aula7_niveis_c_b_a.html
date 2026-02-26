@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 7 - Níveis C, B e A | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --green: #28a745;
+            --blue: #007bff;
+            --purple: #6f42c1;
+            --red: #dc3545;
+            --yellow: #ffc107;
+            --level-c: #16a085;
+            --level-b: #8e44ad;
+            --level-a: #c0392b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-dark);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-dark);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+        }
+
+        .level-card {
+            background: white;
+            border: 3px solid var(--unifil-light);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .level-card:hover {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .level-card.level-c {
+            border-color: var(--level-c);
+        }
+
+        .level-card.level-b {
+            border-color: var(--level-b);
+        }
+
+        .level-card.level-a {
+            border-color: var(--level-a);
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--unifil-light);
+        }
+
+        .level-badge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .level-badge.level-c {
+            background: linear-gradient(135deg, var(--level-c) 0%, #1abc9c 100%);
+        }
+
+        .level-badge.level-b {
+            background: linear-gradient(135deg, var(--level-b) 0%, #9b59b6 100%);
+        }
+
+        .level-badge.level-a {
+            background: linear-gradient(135deg, var(--level-a) 0%, #e74c3c 100%);
+        }
+
+        .level-title {
+            flex: 1;
+        }
+
+        .level-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .level-name.level-c { color: var(--level-c); }
+        .level-name.level-b { color: var(--level-b); }
+        .level-name.level-a { color: var(--level-a); }
+
+        .level-subtitle {
+            font-size: 1.1rem;
+            color: var(--unifil-gray);
+        }
+
+        .process-list {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .process-list h4 {
+            color: var(--unifil-dark);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .process-item {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .process-item:last-child {
+            border-bottom: none;
+        }
+
+        .process-item::before {
+            content: '⚙️';
+            position: absolute;
+            left: 0;
+            font-size: 1.3rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--unifil-orange);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .journey-diagram {
+            background: white;
+            border: 3px solid var(--unifil-light);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .journey-steps {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .journey-step {
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            min-width: 100px;
+            transition: transform 0.3s ease;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .journey-step:hover {
+            transform: scale(1.1);
+        }
+
+        .journey-step.g { background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); }
+        .journey-step.f { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .journey-step.e { background: linear-gradient(135deg, #f39c12 0%, #d68910 100%); }
+        .journey-step.d { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); }
+        .journey-step.c { background: linear-gradient(135deg, var(--level-c) 0%, #1abc9c 100%); }
+        .journey-step.b { background: linear-gradient(135deg, var(--level-b) 0%, #9b59b6 100%); }
+        .journey-step.a { background: linear-gradient(135deg, var(--level-a) 0%, #e74c3c 100%); }
+
+        .journey-arrow {
+            font-size: 2rem;
+            color: var(--unifil-gray);
+            font-weight: 700;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .benefit-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .benefit-item {
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .benefit-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .benefit-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            margin-bottom: 10px;
+        }
+
+        .benefit-desc {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .benefit-item:nth-child(1) { animation-delay: 0s; }
+        .benefit-item:nth-child(2) { animation-delay: 0.1s; }
+        .benefit-item:nth-child(3) { animation-delay: 0.2s; }
+        .benefit-item:nth-child(4) { animation-delay: 0.3s; }
+        .benefit-item:nth-child(5) { animation-delay: 0.4s; }
+        .benefit-item:nth-child(6) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>🏆 Níveis C, B e A do MPS.BR</h1>
+                    <p>Aula 7 - A Elite da Maturidade em Processos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 60px;">
+                        O Topo da Pirâmide! 🎯
+                    </div>
+
+                    <div class="journey-diagram" style="margin-top: 40px;">
+                        <h3 style="color: var(--unifil-dark); text-align: center; margin-bottom: 30px; font-size: 1.6rem;">
+                            📊 A Jornada Completa de Maturidade
+                        </h3>
+                        
+                        <div class="journey-steps">
+                            <div class="journey-step g">G</div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step f">F</div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step e">E</div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step d">D</div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step c">C</div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step b">B</div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step a">A</div>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 30px;">
+                            <p style="font-size: 1.2rem; color: var(--unifil-dark); font-weight: 600;">
+                                Gestão Básica → Qualidade → Padronização → Engenharia → 
+                                <span style="color: var(--level-c);">Definido</span> → 
+                                <span style="color: var(--level-b);">Quantitativo</span> → 
+                                <span style="color: var(--level-a);">Otimização</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 50px;">
+                        <div class="content-box" style="border-left-color: var(--level-c);">
+                            <h3 style="color: var(--level-c);">🎯 Nível C</h3>
+                            <p style="font-size: 1.1rem; margin-top: 10px;">
+                                <strong>Definido</strong><br>
+                                Processos completos + Verificação + Integração
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="border-left-color: var(--level-b);">
+                            <h3 style="color: var(--level-b);">📊 Nível B</h3>
+                            <p style="font-size: 1.1rem; margin-top: 10px;">
+                                <strong>Gerenciado Quantitativamente</strong><br>
+                                Gestão estatística e previsibilidade
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="border-left-color: var(--level-a);">
+                            <h3 style="color: var(--level-a);">🚀 Nível A</h3>
+                            <p style="font-size: 1.1rem; margin-top: 10px;">
+                                <strong>Em Otimização</strong><br>
+                                Inovação contínua e excelência
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card" style="border-top-color: var(--level-c);">
+                            <div class="stat-number" style="color: var(--level-c);">~5%</div>
+                            <div class="stat-label">empresas brasileiras nos níveis C, B ou A</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-b);">
+                            <div class="stat-number" style="color: var(--level-b);">5-7 anos</div>
+                            <div class="stat-label">jornada típica de G até A</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-a);">
+                            <div class="stat-number" style="color: var(--level-a);">ROI 500%+</div>
+                            <div class="stat-label">retorno sobre investimento em qualidade</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>💡 Por que tão poucas empresas chegam aqui?</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Os níveis C, B e A representam <strong>excelência organizacional</strong>. 
+                            Exigem investimento significativo, disciplina rigorosa e comprometimento de longo prazo. 
+                            Mas quem chega colhe benefícios extraordinários: <strong>previsibilidade total, 
+                            qualidade excepcional e vantagem competitiva sustentável</strong>!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: VISÃO GERAL DOS NÍVEIS SUPERIORES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Visão Geral: C, B e A</h2>
+                    <p>O que diferencia cada nível</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Da Definição à Otimização! 📈
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th style="background: var(--level-c);">Nível C (Definido)</th>
+                                <th style="background: var(--level-b);">Nível B (Quantitativo)</th>
+                                <th style="background: var(--level-a);">Nível A (Otimização)</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Foco Principal</strong></td>
+                                <td>Completar processos técnicos</td>
+                                <td>Medir e prever estatisticamente</td>
+                                <td>Inovar e melhorar continuamente</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Novos Processos</strong></td>
+                                <td>+4 processos (VER, ITP, GRI, GDE)</td>
+                                <td>+2 processos (GQP)</td>
+                                <td>+2 processos (IIO, ACP)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Processos</strong></td>
+                                <td>17 processos</td>
+                                <td>19 processos</td>
+                                <td>21 processos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Capacidade</strong></td>
+                                <td>Nível 2 ou 3</td>
+                                <td>Nível 2, 3 ou 4</td>
+                                <td>Nível 2, 3, 4 ou 5</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Diferencial</strong></td>
+                                <td>Verificação, Integração, Gestão Integrada</td>
+                                <td>Análise estatística, previsibilidade</td>
+                                <td>Análise de causas, inovação</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tempo G→Este</strong></td>
+                                <td>~4-5 anos</td>
+                                <td>~5-6 anos</td>
+                                <td>~6-7 anos</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>📊 Distribuição no Brasil</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 8px 0;">
+                                    <strong>Nível G:</strong> ~40% das empresas avaliadas
+                                </li>
+                                <li style="padding: 8px 0;">
+                                    <strong>Nível F:</strong> ~30% das empresas
+                                </li>
+                                <li style="padding: 8px 0;">
+                                    <strong>Nível E:</strong> ~15% das empresas
+                                </li>
+                                <li style="padding: 8px 0;">
+                                    <strong>Nível D:</strong> ~10% das empresas
+                                </li>
+                                <li style="padding: 8px 0;">
+                                    <strong>Níveis C+B+A:</strong> ~5% das empresas
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>💰 Investimento e ROI</h4>
+                            <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <p style="margin: 10px 0;"><strong>Investimento total G→A:</strong><br>R$ 800k - R$ 1.5M (5-7 anos)</p>
+                                <p style="margin: 10px 0;"><strong>ROI médio:</strong><br>400-600% em 5-7 anos</p>
+                                <p style="margin: 10px 0;"><strong>Benefícios:</strong><br>-80% defeitos, +60% produtividade, +150% faturamento</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Níveis C, B e A não são para todos. São para organizações que buscam 
+                        <strong>excelência sustentável</strong> e estão dispostas a pagar o preço!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: NÍVEL C PARTE 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header" style="background: linear-gradient(135deg, var(--level-c) 0%, #1abc9c 100%);">
+                    <h2>🎯 Nível C: Definido</h2>
+                    <p>Processos técnicos completos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="level-card level-c">
+                        <div class="level-header">
+                            <div class="level-badge level-c">C</div>
+                            <div class="level-title">
+                                <div class="level-name level-c">Nível C - Definido</div>
+                                <div class="level-subtitle">Defined Level</div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px;">
+                            <h4 style="color: var(--level-c); margin-bottom: 15px; font-size: 1.4rem;">🎯 Propósito</h4>
+                            <p style="font-size: 1.15rem; line-height: 1.8;">
+                                Completar a <strong>engenharia de software com processos técnicos de verificação, 
+                                integração e gestão integrada</strong>. O nível C garante que todos os processos 
+                                de desenvolvimento estão definidos e sendo executados de forma consistente.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="process-list" style="margin-top: 30px;">
+                        <h4 style="color: var(--level-c);">⚙️ Os 4 Novos Processos do Nível C</h4>
+                        
+                        <div class="process-item">
+                            <strong>VER - Verificação:</strong> Assegurar que os produtos de trabalho atendem 
+                            aos requisitos especificados através de revisões e testes
+                        </div>
+
+                        <div class="process-item">
+                            <strong>ITP - Integração do Produto:</strong> Compor o produto a partir de 
+                            componentes, assegurando que funciona corretamente quando integrado
+                        </div>
+
+                        <div class="process-item">
+                            <strong>GRI - Gerência de Riscos:</strong> Identificar, analisar e tratar 
+                            riscos continuamente ao longo do projeto
+                        </div>
+
+                        <div class="process-item">
+                            <strong>GDE - Gerência de Decisões:</strong> Analisar possíveis decisões 
+                            usando processo formal de avaliação
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="background: linear-gradient(135deg, var(--level-c) 0%, #1abc9c 100%); margin-top: 30px;">
+                        <h3>💡 O que muda do D para o C?</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Nível D:</strong> Você desenvolve requisitos (DRE), faz design/construção (DES) 
+                            e valida (VAL).<br><br>
+                            <strong>Nível C adiciona:</strong> Verificação sistemática (VER) de TUDO que é produzido, 
+                            integração formal de componentes (ITP), gestão proativa de riscos (GRI) e 
+                            decisões baseadas em análise formal (GDE).
+                        </p>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card" style="border-top-color: var(--level-c);">
+                            <div class="stat-number" style="color: var(--level-c);">17</div>
+                            <div class="stat-label">processos no total</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-c);">
+                            <div class="stat-number" style="color: var(--level-c);">-70%</div>
+                            <div class="stat-label">defeitos vs nível D</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-c);">
+                            <div class="stat-number" style="color: var(--level-c);">4-5 anos</div>
+                            <div class="stat-label">jornada G→C</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: NÍVEL C PARTE 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header" style="background: linear-gradient(135deg, var(--level-c) 0%, #1abc9c 100%);">
+                    <h2>🛠️ Nível C: Práticas-Chave</h2>
+                    <p>Como implementar VER, ITP, GRI e GDE</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="background: linear-gradient(135deg, var(--level-c) 0%, #1abc9c 100%); font-size: 1.6rem;">
+                        C = Verificar + Integrar + Gerenciar Riscos + Decidir Formalmente! ✅
+                    </div>
+
+                    <div class="benefit-grid" style="margin-top: 30px;">
+                        <div class="benefit-item" style="border-left-color: var(--level-c);">
+                            <div class="benefit-icon">✅</div>
+                            <div class="benefit-title">VER - Verificação</div>
+                            <div class="benefit-desc">
+                                <strong>Práticas:</strong> Reviews de design, code review 100%, 
+                                testes múltiplos níveis (unit, integração, sistema), 
+                                análise estática automatizada, inspeções formais.
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-c);">
+                            <div class="benefit-icon">🔗</div>
+                            <div class="benefit-title">ITP - Integração Produto</div>
+                            <div class="benefit-desc">
+                                <strong>Práticas:</strong> Estratégia integração (incremental/contínua), 
+                                sequência definida, ambiente integração, 
+                                testes integração automatizados, CI/CD avançado.
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-c);">
+                            <div class="benefit-icon">⚠️</div>
+                            <div class="benefit-title">GRI - Gerência Riscos</div>
+                            <div class="benefit-desc">
+                                <strong>Práticas:</strong> Identificação contínua riscos, 
+                                análise probabilidade/impacto, planos mitigação, 
+                                monitoramento riscos, matriz riscos atualizada.
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-c);">
+                            <div class="benefit-icon">🎯</div>
+                            <div class="benefit-title">GDE - Gerência Decisões</div>
+                            <div class="benefit-desc">
+                                <strong>Práticas:</strong> Identificar decisões importantes, 
+                                estabelecer critérios avaliação, avaliar alternativas, 
+                                documentar decisão e justificativa (ADRs).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💼 Exemplo: Empresa FinTech (Nível C)</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                            <p style="margin: 12px 0;">
+                                <strong>VER:</strong> Code review obrigatório 2 aprovadores + SonarQube Quality Gate + 
+                                90% cobertura testes + Testes segurança SAST/DAST
+                            </p>
+                            <p style="margin: 12px 0;">
+                                <strong>ITP:</strong> CI/CD com 15 microservices integrados diariamente + 
+                                200 testes integração automatizados + Smoke tests produção
+                            </p>
+                            <p style="margin: 12px 0;">
+                                <strong>GRI:</strong> Matriz com 30 riscos monitorados semanalmente + 
+                                5 riscos críticos com planos detalhados de mitigação
+                            </p>
+                            <p style="margin: 12px 0;">
+                                <strong>GDE:</strong> ADRs para decisões arquiteturais importantes + 
+                                Análise formal make-or-buy para componentes críticos
+                            </p>
+                        </div>
+
+                        <p style="margin-top: 20px; font-size: 1.05rem; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724;">
+                            <strong>Resultado:</strong> 2 anos no nível C → Zero incidentes críticos produção! 
+                            Disponibilidade 99.98%! 🎉
+                        </p>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Nível C é onde a empresa se torna <strong>previsível e confiável</strong>. 
+                        Não há mais surpresas!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: NÍVEL B -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header" style="background: linear-gradient(135deg, var(--level-b) 0%, #9b59b6 100%);">
+                    <h2>📊 Nível B: Gerenciado Quantitativamente</h2>
+                    <p>Gestão baseada em estatística</p>
+                </div>
+                <div class="slide-body">
+                    <div class="level-card level-b">
+                        <div class="level-header">
+                            <div class="level-badge level-b">B</div>
+                            <div class="level-title">
+                                <div class="level-name level-b">Nível B - Gerenciado Quantitativamente</div>
+                                <div class="level-subtitle">Quantitatively Managed Level</div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px;">
+                            <h4 style="color: var(--level-b); margin-bottom: 15px; font-size: 1.4rem;">🎯 Propósito</h4>
+                            <p style="font-size: 1.15rem; line-height: 1.8;">
+                                Estabelecer <strong>objetivos quantitativos de qualidade e desempenho</strong> 
+                                e gerenciar projetos usando <strong>técnicas estatísticas e quantitativas</strong>. 
+                                O nível B traz previsibilidade através de dados e análise estatística.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="process-list" style="margin-top: 30px;">
+                        <h4 style="color: var(--level-b);">⚙️ Novo Processo do Nível B</h4>
+                        
+                        <div class="process-item">
+                            <strong>GQP - Gerência Quantitativa do Projeto:</strong> Gerenciar quantitativamente 
+                            o projeto para atingir objetivos estabelecidos de qualidade e desempenho do processo. 
+                            Usa <strong>controle estatístico</strong> e <strong>análise de dados</strong> para 
+                            entender variação do processo e prever resultados.
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="background: linear-gradient(135deg, var(--level-b) 0%, #9b59b6 100%); margin-top: 30px;">
+                        <h3>💡 O que significa "Quantitativo"?</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            Nível B não se baseia em "achismos" ou "feeling". <strong>TUDO é medido</strong>:<br><br>
+                            
+                            • Você não diz "o processo está bem", você PROVA com dados<br>
+                            • Você não "espera" entregar no prazo, você PREVÊ estatisticamente<br>
+                            • Você não "reage" a problemas, você os ANTECIPA via análise de tendências<br>
+                            • Decisões baseadas em <strong>intervalos de confiança, desvios-padrão, 
+                            gráficos de controle</strong><br><br>
+                            
+                            É o nível onde engenharia de software se torna <strong>ciência exata</strong>!
+                        </p>
+                    </div>
+
+                    <div class="benefit-grid" style="margin-top: 30px;">
+                        <div class="benefit-item" style="border-left-color: var(--level-b);">
+                            <div class="benefit-icon">📈</div>
+                            <div class="benefit-title">Objetivos Quantitativos</div>
+                            <div class="benefit-desc">
+                                Definir metas numéricas claras: "Defeitos < 0.5/KLOC", 
+                                "Disponibilidade > 99.9%", "Velocity 40±5 SP/sprint"
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-b);">
+                            <div class="benefit-icon">📊</div>
+                            <div class="benefit-title">Controle Estatístico</div>
+                            <div class="benefit-desc">
+                                Gráficos controle (SPC), análise tendências, 
+                                identificação causas especiais vs comuns
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-b);">
+                            <div class="benefit-icon">🔮</div>
+                            <div class="benefit-title">Previsibilidade</div>
+                            <div class="benefit-desc">
+                                Modelos preditivos, intervalos confiança, 
+                                probabilidade atingir objetivos
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-b);">
+                            <div class="benefit-icon">🎯</div>
+                            <div class="benefit-title">Gestão Proativa</div>
+                            <div class="benefit-desc">
+                                Detectar desvios antes virarem problemas, 
+                                ajustar processos preventivamente
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💼 Exemplo: Objetivos Quantitativos</h4>
+                        <ul style="font-size: 1.05rem; line-height: 1.8; margin: 15px 0 15px 20px;">
+                            <li><strong>Qualidade:</strong> Densidade defeitos < 0.3/KLOC (6σ)</li>
+                            <li><strong>Performance:</strong> Tempo resposta API < 200ms (95th percentile)</li>
+                            <li><strong>Produtividade:</strong> Velocity = 35-45 SP/sprint</li>
+                            <li><strong>Disponibilidade:</strong> Uptime > 99.95% (4.38h downtime/ano)</li>
+                            <li><strong>Satisfação:</strong> NPS > 70</li>
+                        </ul>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card" style="border-top-color: var(--level-b);">
+                            <div class="stat-number" style="color: var(--level-b);">19</div>
+                            <div class="stat-label">processos totais</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-b);">
+                            <div class="stat-number" style="color: var(--level-b);">±5%</div>
+                            <div class="stat-label">precisão previsões</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-b);">
+                            <div class="stat-number" style="color: var(--level-b);">5-6 anos</div>
+                            <div class="stat-label">jornada G→B</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: NÍVEL A -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header" style="background: linear-gradient(135deg, var(--level-a) 0%, #e74c3c 100%);">
+                    <h2>🚀 Nível A: Em Otimização</h2>
+                    <p>Inovação e melhoria contínua</p>
+                </div>
+                <div class="slide-body">
+                    <div class="level-card level-a">
+                        <div class="level-header">
+                            <div class="level-badge level-a">A</div>
+                            <div class="level-title">
+                                <div class="level-name level-a">Nível A - Em Otimização</div>
+                                <div class="level-subtitle">Optimizing Level</div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px;">
+                            <h4 style="color: var(--level-a); margin-bottom: 15px; font-size: 1.4rem;">🎯 Propósito</h4>
+                            <p style="font-size: 1.15rem; line-height: 1.8;">
+                                <strong>Melhorar continuamente</strong> os processos com base em entendimento 
+                                quantitativo das causas de variação. O nível A é sobre <strong>inovação, 
+                                análise de causas-raiz e otimização proativa</strong> para atingir 
+                                objetivos de negócio em mudança.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="process-list" style="margin-top: 30px;">
+                        <h4 style="color: var(--level-a);">⚙️ Os 2 Novos Processos do Nível A</h4>
+                        
+                        <div class="process-item">
+                            <strong>IIO - Inovação e Implantação na Organização:</strong> Selecionar e implantar 
+                            melhorias incrementais e inovações que contribuam para atender objetivos 
+                            quantitativos de melhoria da organização
+                        </div>
+
+                        <div class="process-item">
+                            <strong>ACP - Análise de Causas de Problemas:</strong> Identificar causas de 
+                            problemas e tomar ações para prevenir ocorrência futura de problemas similares. 
+                            Análise de causa-raiz sistemática.
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="background: linear-gradient(135deg, var(--level-a) 0%, #e74c3c 100%); margin-top: 30px;">
+                        <h3>💡 O que torna o Nível A especial?</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Níveis anteriores:</strong> "Vamos executar nossos processos bem"<br>
+                            <strong>Nível A:</strong> "Vamos <strong>MUDAR e MELHORAR</strong> nossos processos continuamente!"<br><br>
+                            
+                            • Cultura de <strong>experimentação</strong> e inovação<br>
+                            • <strong>Análise de causa-raiz</strong> para TUDO que dá errado<br>
+                            • <strong>Disseminação</strong> de melhores práticas<br>
+                            • <strong>Benchmarking</strong> com líderes da indústria<br>
+                            • Organização que <strong>aprende e evolui</strong> constantemente<br><br>
+                            
+                            Nível A = <strong>Never stop improving!</strong> 🚀
+                        </p>
+                    </div>
+
+                    <div class="benefit-grid" style="margin-top: 30px;">
+                        <div class="benefit-item" style="border-left-color: var(--level-a);">
+                            <div class="benefit-icon">🔬</div>
+                            <div class="benefit-title">Análise Causa-Raiz</div>
+                            <div class="benefit-desc">
+                                Técnicas: 5 Whys, Ishikawa, Pareto Analysis. 
+                                Entender "POR QUE" o problema ocorreu, não apenas corrigi-lo.
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-a);">
+                            <div class="benefit-icon">💡</div>
+                            <div class="benefit-title">Inovação Sistemática</div>
+                            <div class="benefit-desc">
+                                Pilotos controlados, A/B testing de processos, 
+                                análise ROI de melhorias antes implantar.
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-a);">
+                            <div class="benefit-icon">📚</div>
+                            <div class="benefit-title">Gestão Conhecimento</div>
+                            <div class="benefit-desc">
+                                Lições aprendidas documentadas, 
+                                base conhecimento organizacional, disseminação best practices.
+                            </div>
+                        </div>
+
+                        <div class="benefit-item" style="border-left-color: var(--level-a);">
+                            <div class="benefit-icon">🎯</div>
+                            <div class="benefit-title">Melhoria Proativa</div>
+                            <div class="benefit-desc">
+                                Não espera problemas acontecerem. 
+                                Busca ativamente oportunidades otimização.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💼 Exemplo: Análise Causa-Raiz</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="margin: 12px 0;">
+                                <strong>Problema:</strong> 15% dos deploys resultavam em rollback
+                            </p>
+                            <p style="margin: 12px 0;">
+                                <strong>Análise 5 Whys:</strong><br>
+                                Por quê? → Testes não detectaram incompatibilidade<br>
+                                Por quê? → Ambiente teste ≠ produção<br>
+                                Por quê? → Configs diferentes, dados diferentes<br>
+                                Por quê? → Sem processo padronização ambientes<br>
+                                <strong>Causa-raiz:</strong> Falta Infrastructure as Code (IaC)
+                            </p>
+                            <p style="margin: 12px 0;">
+                                <strong>Solução:</strong> Implantaram Terraform + Docker → Ambientes idênticos
+                            </p>
+                        </div>
+
+                        <p style="margin-top: 20px; font-size: 1.05rem; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724;">
+                            <strong>Resultado:</strong> Rollbacks caíram de 15% para 0.5%! 🎉
+                        </p>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card" style="border-top-color: var(--level-a);">
+                            <div class="stat-number" style="color: var(--level-a);">21</div>
+                            <div class="stat-label">processos totais (completo!)</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-a);">
+                            <div class="stat-number" style="color: var(--level-a);">~2%</div>
+                            <div class="stat-label">empresas brasileiras nível A</div>
+                        </div>
+
+                        <div class="stat-card" style="border-top-color: var(--level-a);">
+                            <div class="stat-number" style="color: var(--level-a);">6-7 anos</div>
+                            <div class="stat-label">jornada G→A</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: COMPARAÇÃO NÍVEIS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚖️ Comparação: C vs B vs A</h2>
+                    <p>Principais diferenças</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Cada nível eleva a organização a um novo patamar! 📈
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Característica</th>
+                                <th style="background: var(--level-c);">Nível C</th>
+                                <th style="background: var(--level-b);">Nível B</th>
+                                <th style="background: var(--level-a);">Nível A</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Mentalidade</strong></td>
+                                <td>"Vamos fazer certo"</td>
+                                <td>"Vamos medir e prever"</td>
+                                <td>"Vamos inovar e melhorar"</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Decisões</strong></td>
+                                <td>Baseadas em processos</td>
+                                <td>Baseadas em dados</td>
+                                <td>Baseadas em análise causa-raiz</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Problemas</strong></td>
+                                <td>Prevenção via verificação</td>
+                                <td>Antecipação via análise estatística</td>
+                                <td>Eliminação via análise causa-raiz</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Melhoria</strong></td>
+                                <td>Programa formal (AMP)</td>
+                                <td>Melhoria baseada em métricas</td>
+                                <td>Melhoria proativa e inovação</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cultura</strong></td>
+                                <td>Disciplina e consistência</td>
+                                <td>Análise e previsibilidade</td>
+                                <td>Experimentação e aprendizado</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Vantagem</strong></td>
+                                <td>Confiabilidade</td>
+                                <td>Previsibilidade ±5%</td>
+                                <td>Excelência sustentável</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>📊 Impacto Real</h4>
+                            <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <p style="margin: 10px 0;"><strong>Nível C:</strong><br>-70% defeitos vs D, 99.9% confiabilidade</p>
+                                <p style="margin: 10px 0;"><strong>Nível B:</strong><br>Previsão prazo ±5%, estimativas 95% precisas</p>
+                                <p style="margin: 10px 0;"><strong>Nível A:</strong><br>Melhoria contínua 15%+ ao ano, benchmark indústria</p>
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>💰 Retorno sobre Investimento</h4>
+                            <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <p style="margin: 10px 0;"><strong>G→C:</strong> ROI 350% em 4-5 anos</p>
+                                <p style="margin: 10px 0;"><strong>G→B:</strong> ROI 450% em 5-6 anos</p>
+                                <p style="margin: 10px 0;"><strong>G→A:</strong> ROI 500-600% em 6-7 anos</p>
+                                <p style="margin: 15px 0 5px 0; font-weight: 600;">+ Benefícios intangíveis: marca, reputação, atração talentos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        A jornada de G a A não é apenas sobre processos. É sobre transformar a 
+                        <strong>cultura organizacional</strong> de reativa para proativa, de intuitiva 
+                        para baseada em dados, de estática para em constante evolução!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: CASOS DE SUCESSO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏆 Casos de Sucesso</h2>
+                    <p>Empresas que chegaram ao topo</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        É possível! E vale a pena! 💪
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🏢 Caso 1: CPM Braxis (Nível A desde 2008)</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="margin: 12px 0;"><strong>Empresa:</strong> Multinacional TI, 5.000+ funcionários</p>
+                            <p style="margin: 12px 0;"><strong>Jornada:</strong> Primeira empresa brasileira nível A MPS.BR</p>
+                            <p style="margin: 12px 0;">
+                                <strong>Impactos:</strong><br>
+                                • Produtividade: +60% em 5 anos<br>
+                                • Defeitos: -85% (0.05 defeitos/KLOC)<br>
+                                • Retrabalho: <5% do esforço total<br>
+                                • Previsibilidade: 98% projetos no prazo/orçamento<br>
+                                • Faturamento: Crescimento 200%+ durante jornada
+                            </p>
+                            <p style="margin: 12px 0;">
+                                <strong>Segredo:</strong> Comprometimento CEO, investimento contínuo, cultura dados
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🏢 Caso 2: SIDIA (Nível A desde 2012)</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="margin: 12px 0;"><strong>Empresa:</strong> Instituto P&D Samsung, Manaus, 1.000+ pessoas</p>
+                            <p style="margin: 12px 0;"><strong>Contexto:</strong> Desenvolvimento software embarcado (smartphones)</p>
+                            <p style="margin: 12px 0;">
+                                <strong>Resultados Nível A:</strong><br>
+                                • Taxa defeitos: 0.08/KLOC (6 sigma)<br>
+                                • Estimativas: desvio médio <3%<br>
+                                • 50+ melhorias processos implantadas<br>
+                                • Análise causa-raiz: 100% problemas críticos<br>
+                                • Benchmark: Top 5% global Samsung
+                            </p>
+                            <p style="margin: 12px 0;">
+                                <strong>Diferencial:</strong> Foco inovação + cultura aprendizado
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">empresas brasileiras nível C+</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">20+</div>
+                            <div class="stat-label">empresas nível A no Brasil</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">0.05-0.1</div>
+                            <div class="stat-label">defeitos/KLOC típico nível A</div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "A jornada foi longa e desafiadora, mas nos tornamos líderes em qualidade no setor. 
+                        Hoje, nível A é parte do nosso DNA." - CTO, empresa nível A
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: JORNADA COMPLETA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🛤️ A Jornada Completa: G → A</h2>
+                    <p>Visão integrada dos 7 níveis</p>
+                </div>
+                <div class="slide-body">
+                    <div class="journey-diagram">
+                        <h3 style="color: var(--unifil-dark); text-align: center; margin-bottom: 30px; font-size: 1.6rem;">
+                            📊 Evolução de Maturidade
+                        </h3>
+                        
+                        <div class="journey-steps">
+                            <div class="journey-step g">
+                                <div style="font-size: 2rem; margin-bottom: 5px;">G</div>
+                                <div style="font-size: 0.9rem;">Parcialmente<br>Gerenciado</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">2 processos</div>
+                            </div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step f">
+                                <div style="font-size: 2rem; margin-bottom: 5px;">F</div>
+                                <div style="font-size: 0.9rem;">Gerenciado</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">7 processos</div>
+                            </div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step e">
+                                <div style="font-size: 2rem; margin-bottom: 5px;">E</div>
+                                <div style="font-size: 0.9rem;">Parcialmente<br>Definido</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">10 processos</div>
+                            </div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step d">
+                                <div style="font-size: 2rem; margin-bottom: 5px;">D</div>
+                                <div style="font-size: 0.9rem;">Largamente<br>Definido</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">13 processos</div>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center; margin: 20px 0;">
+                            <div style="font-size: 3rem; color: var(--unifil-gray);">↓</div>
+                        </div>
+
+                        <div class="journey-steps">
+                            <div class="journey-step c">
+                                <div style="font-size: 2rem; margin-bottom: 5px;">C</div>
+                                <div style="font-size: 0.9rem;">Definido</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">17 processos</div>
+                            </div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step b">
+                                <div style="font-size: 2rem; margin-bottom: 5px;">B</div>
+                                <div style="font-size: 0.9rem;">Gerenciado<br>Quantitativamente</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">19 processos</div>
+                            </div>
+                            <div class="journey-arrow">→</div>
+                            <div class="journey-step a">
+                                <div style="font-size: 2rem; margin-bottom: 5px;">A</div>
+                                <div style="font-size: 0.9rem;">Em<br>Otimização</div>
+                                <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.8;">21 processos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Nível</th>
+                                <th>Tempo G→Nível</th>
+                                <th>Investimento Total</th>
+                                <th>Principal Ganho</th>
+                            </tr>
+                            <tr>
+                                <td><strong>G</strong></td>
+                                <td>0 (início)</td>
+                                <td>R$ 50-150k</td>
+                                <td>Controle básico projetos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>F</strong></td>
+                                <td>+1-1.5 anos</td>
+                                <td>R$ 150-350k</td>
+                                <td>Qualidade e medição</td>
+                            </tr>
+                            <tr>
+                                <td><strong>E</strong></td>
+                                <td>+0.5-1 ano</td>
+                                <td>R$ 230-500k</td>
+                                <td>Processos organizacionais</td>
+                            </tr>
+                            <tr>
+                                <td><strong>D</strong></td>
+                                <td>+1-1.5 anos</td>
+                                <td>R$ 400-800k</td>
+                                <td>Engenharia completa</td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: var(--level-c);">C</strong></td>
+                                <td>+1-1.5 anos</td>
+                                <td>R$ 600k-1.2M</td>
+                                <td>Confiabilidade</td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: var(--level-b);">B</strong></td>
+                                <td>+1-1.5 anos</td>
+                                <td>R$ 800k-1.4M</td>
+                                <td>Previsibilidade</td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: var(--level-a);">A</strong></td>
+                                <td>+1-1.5 anos</td>
+                                <td>R$ 1M-1.6M</td>
+                                <td>Excelência e inovação</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Lições da Jornada</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li>✓ Não pule níveis - cada um constrói sobre o anterior</li>
+                            <li>✓ Comprometimento da liderança é essencial</li>
+                            <li>✓ Invista em pessoas (treinamento, cultura)</li>
+                            <li>✓ Use consultoria experiente - acelera e evita erros</li>
+                            <li>✓ Comece com projetos piloto antes de escalar</li>
+                            <li>✓ Celebre conquistas - jornada é longa!</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos e o que vem a seguir</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Você conhece todos os 7 níveis do MPS.BR! 🎓
+                    </div>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="content-box" style="border-left-color: var(--level-c);">
+                            <h3 style="color: var(--level-c);">📋 Nível C</h3>
+                            <ul style="font-size: 1rem; line-height: 1.7;">
+                                <li><strong>VER:</strong> Verificação</li>
+                                <li><strong>ITP:</strong> Integração</li>
+                                <li><strong>GRI:</strong> Riscos</li>
+                                <li><strong>GDE:</strong> Decisões</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="border-left-color: var(--level-b);">
+                            <h3 style="color: var(--level-b);">📊 Nível B</h3>
+                            <ul style="font-size: 1rem; line-height: 1.7;">
+                                <li><strong>GQP:</strong> Gestão Quantitativa</li>
+                                <li>Controle estatístico</li>
+                                <li>Previsibilidade ±5%</li>
+                                <li>Decisões por dados</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="border-left-color: var(--level-a);">
+                            <h3 style="color: var(--level-a);">🚀 Nível A</h3>
+                            <ul style="font-size: 1rem; line-height: 1.7;">
+                                <li><strong>IIO:</strong> Inovação</li>
+                                <li><strong>ACP:</strong> Análise Causas</li>
+                                <li>Melhoria contínua</li>
+                                <li>Excelência</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">21</div>
+                            <div class="stat-label">processos totais no nível A</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">6-7 anos</div>
+                            <div class="stat-label">jornada completa G→A</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">ROI 500%+</div>
+                            <div class="stat-label">retorno investimento</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Próxima Aula (Segunda, 03/03)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li><strong>Tema:</strong> PROVA INTERMEDIÁRIA (25%)</li>
+                            <li><strong>Conteúdo:</strong> Aulas 1-7 (Intro até Níveis C, B, A)</li>
+                            <li><strong>Formato:</strong> Teórica + Prática/Estudo de Caso</li>
+                            <li><strong>Duração:</strong> 1,5 horas</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                        <h3>📝 Trabalho 2 (10% - Entrega 16/03)</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Matriz de Processos:</strong><br>
+                            Escolha uma empresa (real ou fictícia) e avalie a aderência aos processos 
+                            dos níveis G, F, E, D, C, B e A. Crie uma matriz mostrando quais processos 
+                            estão implementados, parcialmente implementados ou não implementados. 
+                            Justifique sua avaliação com evidências.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>📖 Para Estudar</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;">✓ Slides Aulas 1-7</li>
+                                <li style="padding: 5px 0;">✓ Guia Geral MPS.BR</li>
+                                <li style="padding: 5px 0;">✓ Diferenças entre níveis</li>
+                                <li style="padding: 5px 0;">✓ Processos de cada nível</li>
+                                <li style="padding: 5px 0;">✓ Exemplos práticos</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🎯 Dicas Prova</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;">✓ Foque nas diferenças entre níveis</li>
+                                <li style="padding: 5px 0;">✓ Saiba siglas e propósitos</li>
+                                <li style="padding: 5px 0;">✓ Entenda quando usar cada processo</li>
+                                <li style="padding: 5px 0;">✓ Estude casos reais</li>
+                                <li style="padding: 5px 0;">✓ Pratique análises de empresas</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px;">
+                        <p style="font-size: 1.3rem; color: var(--unifil-dark); font-weight: 600;">
+                            Boa sorte na prova! 📚
+                        </p>
+                        <p style="font-size: 1rem; margin-top: 10px; color: var(--unifil-gray);">
+                            Nos vemos na PROVA INTERMEDIÁRIA (03/03)!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 10</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .quote-box, .comparison-table, .level-card, .benefit-item, .journey-diagram, .process-list');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => { el.style.animation = ''; }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

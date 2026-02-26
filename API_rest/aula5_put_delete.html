@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 5 - Implementação de Endpoints PUT e DELETE | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--unifil-dark);
+            color: #00ff00;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+            animation: fadeInUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+            border: 2px solid var(--unifil-orange);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .method-get { background: #4CAF50; }
+        .method-post { background: #2196F3; }
+        .method-put { background: #FF9800; }
+        .method-patch { background: #9C27B0; }
+        .method-delete { background: #F44336; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin: 5px;
+            font-size: 1rem;
+        }
+
+        .status-200 { background: #4CAF50; }
+        .status-201 { background: #00ACC1; }
+        .status-204 { background: #607D8B; }
+        .status-400 { background: #FF9800; }
+        .status-404 { background: #F44336; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .key-takeaway {
+            background: #FFF3E0;
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .key-takeaway h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .crud-badge {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            margin: 10px;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        .crud-create { background: #2196F3; }
+        .crud-read { background: #4CAF50; }
+        .crud-update { background: #FF9800; }
+        .crud-delete { background: #F44336; }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: scale(1.05);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            color: var(--unifil-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .slide-header h1 { font-size: 1.8rem; }
+            .slide-header h2 { font-size: 1.4rem; }
+            .two-column, .three-column { grid-template-columns: 1fr; }
+            .slide-body { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>📱 Desenvolvimento de Aplicativos Móveis</h1>
+                    <p>Criação de API REST Básica</p>
+                </div>
+                <div class="slide-body">
+                    <div style="text-align: center; margin-top: 80px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px; animation: fadeInUp 0.6s ease-out;">
+                            Aula 5
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 40px; animation: fadeInUp 0.6s ease-out 0.2s; opacity: 0; animation-fill-mode: forwards;">
+                            Implementação de PUT e DELETE
+                        </h3>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 60px;">
+                        <div class="content-box">
+                            <h3>📅 Informações</h3>
+                            <ul>
+                                <li><strong>Data:</strong> Segunda, 23/02/2026</li>
+                                <li><strong>Duração:</strong> 1,5 horas</li>
+                                <li><strong>Formato:</strong> Teórico + Prático</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Objetivos</h3>
+                            <ul>
+                                <li>Implementar PUT/PATCH</li>
+                                <li>Implementar DELETE</li>
+                                <li>Completar CRUD 100%!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📚 Agenda de Hoje</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <strong>🔄 Parte 1 (10min)</strong><br>
+                                Revisão CRUD até agora
+                            </div>
+                            <div>
+                                <strong>✏️ Parte 2 (35min)</strong><br>
+                                Método PUT/PATCH (Update)
+                            </div>
+                            <div>
+                                <strong>🗑️ Parte 3 (35min)</strong><br>
+                                Método DELETE (Remoção)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="big-idea">
+                        "Hoje completamos o CRUD! 🎉"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: REVISÃO CRUD -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Revisão: CRUD até Agora</h2>
+                    <p>O que já sabemos fazer</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        CRUD = Create, Read, Update, Delete
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px;">
+                        <div style="display: inline-block;">
+                            <div class="crud-badge crud-create">
+                                ✅ CREATE<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">POST - Criar recursos</small>
+                            </div>
+                            <div class="crud-badge crud-read">
+                                ✅ READ<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">GET - Ler recursos</small>
+                            </div>
+                            <div class="crud-badge crud-update">
+                                ⏳ UPDATE<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">PUT - Atualizar recursos</small>
+                            </div>
+                            <div class="crud-badge crud-delete">
+                                ⏳ DELETE<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">DELETE - Remover recursos</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Já Implementamos</h3>
+                            <ul>
+                                <li><strong>GET /api/produtos</strong><br>Listar todos</li>
+                                <li><strong>GET /api/produtos/:id</strong><br>Buscar por ID</li>
+                                <li><strong>GET com filtros</strong><br>Query parameters</li>
+                                <li><strong>POST /api/produtos</strong><br>Criar novo produto</li>
+                                <li><strong>Validações completas</strong><br>Campos, tipos, regras</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Falta Implementar</h3>
+                            <ul>
+                                <li><strong>PUT /api/produtos/:id</strong><br>Atualizar produto completo</li>
+                                <li><strong>PATCH /api/produtos/:id</strong><br>Atualizar parcialmente</li>
+                                <li><strong>DELETE /api/produtos/:id</strong><br>Remover produto</li>
+                            </ul>
+                            <p style="margin-top: 20px; font-size: 1.2rem; color: var(--unifil-orange); font-weight: bold;">
+                                Hoje completamos! 🚀
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Por que CRUD é importante?</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            CRUD são as <strong>4 operações básicas</strong> que toda aplicação precisa!<br><br>
+                            Sem CRUD completo, sua API não está funcional.<br>
+                            É como ter um carro sem volante, freio ou acelerador! 🚗
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: PUT VS PATCH -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚖️ PUT vs PATCH - Diferenças Importantes</h2>
+                    <p>Dois métodos de atualização</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>📄 Analogia: Editando um Documento</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>PUT:</strong> Reescrever o documento TODO do zero 📝<br>
+                            → Você joga o documento antigo fora<br>
+                            → Escreve um documento completamente novo<br>
+                            → Precisa reescrever TUDO, mesmo o que não mudou<br><br>
+                            <strong>PATCH:</strong> Usar corretivo/liquid paper 🖍️<br>
+                            → Você mantém o documento original<br>
+                            → Corrige apenas a parte que tem erro<br>
+                            → Resto continua igual
+                        </p>
+                    </div>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Aspecto</th>
+                            <th><span class="method-badge method-put">PUT</span></th>
+                            <th><span class="method-badge method-patch">PATCH</span></th>
+                        </tr>
+                        <tr>
+                            <td><strong>Propósito</strong></td>
+                            <td>Substituir recurso COMPLETO</td>
+                            <td>Atualizar PARCIALMENTE</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dados Enviados</strong></td>
+                            <td>Todos os campos (objeto completo)</td>
+                            <td>Só os campos que mudam</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Campos Não Enviados</strong></td>
+                            <td>Podem ser apagados/nulos</td>
+                            <td>Permanecem inalterados</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Idempotente?</strong></td>
+                            <td>✅ Sim</td>
+                            <td>✅ Sim</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Uso Comum</strong></td>
+                            <td>Editar perfil completo</td>
+                            <td>Mudar só o email</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status Sucesso</strong></td>
+                            <td>200 OK</td>
+                            <td>200 OK</td>
+                        </tr>
+                    </table>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>📝 Exemplo PUT (Completo)</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+PUT /api/produtos/1
+
+{
+  "nome": "Notebook Dell",
+  "preco": 3200,
+  "categoria": "Informática",
+  "estoque": 10
+}
+
+<span style="color: #6A9955;">// Todos os campos!</span>
+                            </div>
+                        </div>
+
+                        <div class="example-card" style="animation-delay: 0.2s;">
+                            <h4>🖍️ Exemplo PATCH (Parcial)</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+PATCH /api/produtos/1
+
+{
+  "preco": 3200
+}
+
+<span style="color: #6A9955;">// Só o que mudou!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Qual usar?</h4>
+                        <p><strong>PUT:</strong> Quando você tem todos os dados do recurso (formulário completo)<br>
+                        <strong>PATCH:</strong> Quando quer mudar só alguns campos (toggle, contador)<br><br>
+                        Para nossas aulas, vamos focar no <strong>PUT</strong> (mais comum e simples)!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: IMPLEMENTAÇÃO PUT -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>✏️ Implementação do PUT</h2>
+                    <p>Atualizando recursos completos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 Código Completo - PUT /api/produtos/:id</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.88rem;">
+<span style="color: #6A9955;">// PUT /api/produtos/:id - Atualizar produto</span>
+app.<span style="color: #DCDCAA;">put</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// 1. Pegar ID da URL</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">id</span> = <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>);
+    
+    <span style="color: #6A9955;">// 2. Buscar produto no array</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produto</span> = produtos.<span style="color: #DCDCAA;">find</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === id);
+    
+    <span style="color: #6A9955;">// 3. Verificar se existe</span>
+    <span style="color: #C586C0;">if</span> (!produto) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ 
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Produto não encontrado"</span> 
+        });
+    }
+    
+    <span style="color: #6A9955;">// 4. Extrair dados do body</span>
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">preco</span>, <span style="color: #9CDCFE;">categoria</span> } = req.<span style="color: #9CDCFE;">body</span>;
+    
+    <span style="color: #6A9955;">// 5. VALIDAÇÕES (igual ao POST!)</span>
+    <span style="color: #C586C0;">if</span> (!nome || !preco || !categoria) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Campos obrigatórios: nome, preco, categoria"</span>
+        });
+    }
+    
+    <span style="color: #C586C0;">if</span> (<span style="color: #C586C0;">typeof</span> preco !== <span style="color: #CE9178;">'number'</span> || preco <= <span style="color: #B5CEA8;">0</span>) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Preço deve ser um número positivo"</span>
+        });
+    }
+    
+    <span style="color: #6A9955;">// 6. Atualizar campos do produto</span>
+    produto.<span style="color: #9CDCFE;">nome</span> = nome;
+    produto.<span style="color: #9CDCFE;">preco</span> = preco;
+    produto.<span style="color: #9CDCFE;">categoria</span> = categoria;
+    
+    <span style="color: #6A9955;">// 7. Retornar produto atualizado com 200 OK</span>
+    res.<span style="color: #DCDCAA;">json</span>(produto);
+});
+                        </div>
+                    </div>
+
+                    <div class="timeline" style="margin-top: 30px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">1️⃣ Buscar o recurso</h4>
+                            <p>Verificar se existe pelo ID (404 se não encontrar)</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">2️⃣ Validar os novos dados</h4>
+                            <p>Mesmas validações do POST!</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">3️⃣ Atualizar os campos</h4>
+                            <p>Substituir valores antigos pelos novos</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">4️⃣ Retornar produto atualizado</h4>
+                            <p>Status 200 OK com o recurso modificado</p>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Diferença do POST</h4>
+                        <p>POST cria (adiciona ao array), PUT modifica (altera existente).<br>
+                        PUT precisa verificar se o ID existe ANTES de atualizar!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: TESTANDO PUT -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧪 Testando o PUT</h2>
+                    <p>Casos de uso e respostas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>✅ Cenário de Sucesso</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+<strong style="color: #FF9800;">PUT</strong> /api/produtos/1
+
+<span style="color: #6A9955;">// Body:</span>
+{
+  "nome": "Notebook Dell G15",
+  "preco": 3200,
+  "categoria": "Informática"
+}
+
+<strong style="color: #4CAF50;">200 OK</strong>
+{
+  "id": 1,
+  "nome": "Notebook Dell G15",
+  "preco": 3200,
+  "categoria": "Informática"
+}
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>❌ Produto Não Existe</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+<strong style="color: #FF9800;">PUT</strong> /api/produtos/999
+
+<span style="color: #6A9955;">// Body:</span>
+{
+  "nome": "Produto X",
+  "preco": 100,
+  "categoria": "Tech"
+}
+
+<strong style="color: #F44336;">404 Not Found</strong>
+{
+  "erro": "Produto não encontrado"
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>❌ Dados Inválidos</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+<strong style="color: #FF9800;">PUT</strong> /api/produtos/1
+
+<span style="color: #6A9955;">// Body (falta categoria):</span>
+{
+  "nome": "Notebook",
+  "preco": 3200
+}
+
+<strong style="color: #F44336;">400 Bad Request</strong>
+{
+  "erro": "Campos obrigatórios:
+   nome, preco, categoria"
+}
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>❌ Preço Inválido</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+<strong style="color: #FF9800;">PUT</strong> /api/produtos/1
+
+<span style="color: #6A9955;">// Body:</span>
+{
+  "nome": "Notebook",
+  "preco": -100,
+  "categoria": "Tech"
+}
+
+<strong style="color: #F44336;">400 Bad Request</strong>
+{
+  "erro": "Preço deve ser
+   um número positivo"
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Status Codes no PUT</h3>
+                        <div style="margin-top: 20px;">
+                            <span class="status-badge status-200">200 OK</span>
+                            <span style="color: white; font-size: 1.1rem;">Atualizado com sucesso</span><br><br>
+                            
+                            <span class="status-badge status-404">404 Not Found</span>
+                            <span style="color: white; font-size: 1.1rem;">Recurso não existe</span><br><br>
+                            
+                            <span class="status-badge status-400">400 Bad Request</span>
+                            <span style="color: white; font-size: 1.1rem;">Dados inválidos</span>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Testando no Postman</h4>
+                        <p><strong>1.</strong> Método: PUT<br>
+                        <strong>2.</strong> URL: http://localhost:3000/api/produtos/1<br>
+                        <strong>3.</strong> Headers: Content-Type: application/json<br>
+                        <strong>4.</strong> Body: raw JSON com todos os campos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: DELETE - INTRODUÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🗑️ Método DELETE - Removendo Recursos</h2>
+                    <p>A operação destrutiva</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🗂️ Analogia: Arquivo no Computador</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>Soft Delete:</strong> Mover para a Lixeira 🗑️<br>
+                            → Arquivo ainda existe no sistema<br>
+                            → Pode ser recuperado<br>
+                            → Bom para segurança<br><br>
+                            <strong>Hard Delete:</strong> Shift+Delete (apagar permanente) ⚠️<br>
+                            → Arquivo é destruído do HD<br>
+                            → Impossível recuperar<br>
+                            → Operação irreversível
+                        </p>
+                    </div>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Aspecto</th>
+                            <th>Soft Delete</th>
+                            <th>Hard Delete</th>
+                        </tr>
+                        <tr>
+                            <td><strong>O que faz</strong></td>
+                            <td>Marca como "deletado"</td>
+                            <td>Remove completamente</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Banco de Dados</strong></td>
+                            <td>UPDATE (muda flag)</td>
+                            <td>DELETE (remove linha)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Recuperável?</strong></td>
+                            <td>✅ Sim, facilmente</td>
+                            <td>❌ Não (perdido)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Campo comum</strong></td>
+                            <td><code>deletado: true</code></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vantagem</strong></td>
+                            <td>Seguro, auditável</td>
+                            <td>Limpa dados antigos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Desvantagem</strong></td>
+                            <td>Acumula dados</td>
+                            <td>Perda permanente</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Uso típico</strong></td>
+                            <td>Produção (empresas)</td>
+                            <td>Testes, admin</td>
+                        </tr>
+                    </table>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Qual usar?</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>Para nossas aulas:</strong> Hard Delete (mais simples)<br>
+                            <strong>Para produção real:</strong> Soft Delete (mais seguro)<br><br>
+                            Empresas raramente deletam dados de verdade!
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Curiosidade</h4>
+                        <p>Quando você "deleta" sua conta no Facebook, Instagram, etc, eles fazem SOFT DELETE!<br>
+                        Seus dados ficam lá, só marcados como deletados. Por isso conseguem recuperar depois.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: IMPLEMENTAÇÃO DELETE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🗑️ Implementação do DELETE</h2>
+                    <p>Hard Delete - Remoção permanente</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 Código Completo - DELETE /api/produtos/:id</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// DELETE /api/produtos/:id - Remover produto</span>
+app.<span style="color: #DCDCAA;">delete</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// 1. Pegar ID da URL</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">id</span> = <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>);
+    
+    <span style="color: #6A9955;">// 2. Encontrar índice do produto no array</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">index</span> = produtos.<span style="color: #DCDCAA;">findIndex</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === id);
+    
+    <span style="color: #6A9955;">// 3. Verificar se existe</span>
+    <span style="color: #C586C0;">if</span> (index === -<span style="color: #B5CEA8;">1</span>) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ 
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Produto não encontrado"</span> 
+        });
+    }
+    
+    <span style="color: #6A9955;">// 4. Remover do array</span>
+    produtos.<span style="color: #DCDCAA;">splice</span>(index, <span style="color: #B5CEA8;">1</span>);
+    
+    <span style="color: #6A9955;">// 5. Retornar 204 No Content (sem body!)</span>
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">204</span>).<span style="color: #DCDCAA;">send</span>();
+});
+                        </div>
+                    </div>
+
+                    <div class="timeline" style="margin-top: 30px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">1️⃣ Buscar índice do recurso</h4>
+                            <p>Usar <code>findIndex()</code> ao invés de <code>find()</code></p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">2️⃣ Verificar se existe</h4>
+                            <p>findIndex retorna -1 se não encontrar (404 nesse caso)</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">3️⃣ Remover com splice</h4>
+                            <p><code>array.splice(indice, quantidade)</code> remove elementos</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">4️⃣ Retornar 204</h4>
+                            <p>204 No Content = sucesso sem corpo na resposta</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚠️ Por que 204 e não 200?</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>200 OK:</strong> Sucesso COM resposta no body<br>
+                            <strong>204 No Content:</strong> Sucesso SEM resposta<br><br>
+                            DELETE não precisa retornar nada, o recurso foi deletado!<br>
+                            Por isso 204 é mais apropriado.
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Importante</h4>
+                        <p>Ao usar <code>res.status(204).send()</code>, NÃO envie JSON!<br>
+                        204 significa "sem conteúdo", então o body deve estar vazio.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: SOFT DELETE EXEMPLO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💡 Soft Delete - Exemplo Bonus</h2>
+                    <p>Como implementar em produção</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 Soft Delete - Abordagem Profissional</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.9rem;">
+<span style="color: #6A9955;">// Estrutura do produto com campo 'deletado'</span>
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">produtos</span> = [
+    { 
+        <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">1</span>, 
+        <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Notebook"</span>, 
+        <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">3500</span>,
+        <span style="color: #9CDCFE;">deletado</span>: <span style="color: #569cd6;">false</span>  <span style="color: #6A9955;">← Flag de soft delete</span>
+    }
+];
+
+<span style="color: #6A9955;">// DELETE com Soft Delete</span>
+app.<span style="color: #DCDCAA;">delete</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">id</span> = <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>);
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produto</span> = produtos.<span style="color: #DCDCAA;">find</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === id);
+    
+    <span style="color: #C586C0;">if</span> (!produto) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Produto não encontrado"</span> });
+    }
+    
+    <span style="color: #6A9955;">// Marcar como deletado ao invés de remover!</span>
+    produto.<span style="color: #9CDCFE;">deletado</span> = <span style="color: #569cd6;">true</span>;
+    
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">204</span>).<span style="color: #DCDCAA;">send</span>();
+});
+
+<span style="color: #6A9955;">// GET precisa filtrar produtos deletados!</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// Só retornar produtos não deletados</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produtosAtivos</span> = produtos.<span style="color: #DCDCAA;">filter</span>(<span style="color: #9CDCFE;">p</span> => !p.<span style="color: #9CDCFE;">deletado</span>);
+    res.<span style="color: #DCDCAA;">json</span>(produtosAtivos);
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Vantagens Soft Delete</h3>
+                            <ul>
+                                <li>Dados podem ser recuperados</li>
+                                <li>Histórico preservado</li>
+                                <li>Auditoria completa</li>
+                                <li>Desfazer operação</li>
+                                <li>Análise de dados deletados</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>❌ Desvantagens Soft Delete</h3>
+                            <ul>
+                                <li>Banco cresce indefinidamente</li>
+                                <li>Queries mais complexas</li>
+                                <li>Precisa filtrar sempre</li>
+                                <li>Mais código para manter</li>
+                                <li>Pode confundir desenvolvedores</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Campos Comuns em Soft Delete</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">• <code>deletado: boolean</code> - Flag simples</li>
+                            <li style="padding: 8px 0;">• <code>deletadoEm: Date</code> - Quando foi deletado</li>
+                            <li style="padding: 8px 0;">• <code>deletadoPor: string</code> - Quem deletou</li>
+                            <li style="padding: 8px 0;">• <code>motivoDelecao: string</code> - Por que deletou</li>
+                        </ul>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Recomendação</h4>
+                        <p>Para as aulas, use <strong>Hard Delete</strong> (mais simples).<br>
+                        Mas saiba que em produção, <strong>Soft Delete</strong> é mais comum!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CRUD COMPLETO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎉 CRUD 100% Completo!</h2>
+                    <p>Todas as operações implementadas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Parabéns! Você tem uma API REST funcional! 🎊
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px;">
+                        <div style="display: inline-block;">
+                            <div class="crud-badge crud-create">
+                                ✅ CREATE<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">POST /api/produtos</small>
+                            </div>
+                            <div class="crud-badge crud-read">
+                                ✅ READ<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">GET /api/produtos</small>
+                            </div>
+                            <div class="crud-badge crud-update">
+                                ✅ UPDATE<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">PUT /api/produtos/:id</small>
+                            </div>
+                            <div class="crud-badge crud-delete">
+                                ✅ DELETE<br>
+                                <small style="font-size: 0.8rem; opacity: 0.9;">DELETE /api/produtos/:id</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 40px;">
+                        <h4>📋 Resumo Completo das Rotas</h4>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>Método</th>
+                                <th>Endpoint</th>
+                                <th>Ação</th>
+                                <th>Status Sucesso</th>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-get">GET</span></td>
+                                <td>/api/produtos</td>
+                                <td>Listar todos</td>
+                                <td>200 OK</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-get">GET</span></td>
+                                <td>/api/produtos/:id</td>
+                                <td>Buscar por ID</td>
+                                <td>200 OK</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-post">POST</span></td>
+                                <td>/api/produtos</td>
+                                <td>Criar novo</td>
+                                <td>201 Created</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-put">PUT</span></td>
+                                <td>/api/produtos/:id</td>
+                                <td>Atualizar completo</td>
+                                <td>200 OK</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-delete">DELETE</span></td>
+                                <td>/api/produtos/:id</td>
+                                <td>Remover</td>
+                                <td>204 No Content</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Status Codes - Resumo</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <h4 style="margin-bottom: 10px;">✅ Sucesso</h4>
+                                <span class="status-badge status-200">200 OK</span> GET, PUT<br>
+                                <span class="status-badge status-201">201 Created</span> POST<br>
+                                <span class="status-badge status-204">204 No Content</span> DELETE
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 10px;">❌ Erro</h4>
+                                <span class="status-badge status-400">400 Bad Request</span> Dados inválidos<br>
+                                <span class="status-badge status-404">404 Not Found</span> Não existe
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: CÓDIGO COMPLETO API -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Código Completo da API</h2>
+                    <p>CRUD inteiro em um arquivo</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📝 index.js - API REST Completa</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.82rem;">
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">express</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'express'</span>);
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">app</span> = <span style="color: #DCDCAA;">express</span>();
+
+app.<span style="color: #DCDCAA;">use</span>(express.<span style="color: #DCDCAA;">json</span>());
+
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">produtos</span> = [
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">1</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Notebook"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">3500</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span> },
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">2</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Mouse"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">150</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span> }
+];
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">proximoId</span> = <span style="color: #B5CEA8;">3</span>;
+
+<span style="color: #6A9955;">// GET /api/produtos - Listar todos</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    res.<span style="color: #DCDCAA;">json</span>(produtos);
+});
+
+<span style="color: #6A9955;">// GET /api/produtos/:id - Buscar por ID</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produto</span> = produtos.<span style="color: #DCDCAA;">find</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>));
+    <span style="color: #C586C0;">if</span> (!produto) <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Não encontrado"</span> });
+    res.<span style="color: #DCDCAA;">json</span>(produto);
+});
+
+<span style="color: #6A9955;">// POST /api/produtos - Criar novo</span>
+app.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">preco</span>, <span style="color: #9CDCFE;">categoria</span> } = req.<span style="color: #9CDCFE;">body</span>;
+    
+    <span style="color: #C586C0;">if</span> (!nome || !preco || !categoria) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Campos obrigatórios faltando"</span> });
+    }
+    
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">novoProduto</span> = { <span style="color: #9CDCFE;">id</span>: proximoId++, <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">preco</span>, <span style="color: #9CDCFE;">categoria</span> };
+    produtos.<span style="color: #DCDCAA;">push</span>(novoProduto);
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">201</span>).<span style="color: #DCDCAA;">json</span>(novoProduto);
+});
+
+<span style="color: #6A9955;">// PUT /api/produtos/:id - Atualizar</span>
+app.<span style="color: #DCDCAA;">put</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">produto</span> = produtos.<span style="color: #DCDCAA;">find</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>));
+    <span style="color: #C586C0;">if</span> (!produto) <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Não encontrado"</span> });
+    
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">preco</span>, <span style="color: #9CDCFE;">categoria</span> } = req.<span style="color: #9CDCFE;">body</span>;
+    <span style="color: #C586C0;">if</span> (!nome || !preco || !categoria) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Campos obrigatórios faltando"</span> });
+    }
+    
+    produto.<span style="color: #9CDCFE;">nome</span> = nome;
+    produto.<span style="color: #9CDCFE;">preco</span> = preco;
+    produto.<span style="color: #9CDCFE;">categoria</span> = categoria;
+    res.<span style="color: #DCDCAA;">json</span>(produto);
+});
+
+<span style="color: #6A9955;">// DELETE /api/produtos/:id - Remover</span>
+app.<span style="color: #DCDCAA;">delete</span>(<span style="color: #CE9178;">'/api/produtos/:id'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">index</span> = produtos.<span style="color: #DCDCAA;">findIndex</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span> === <span style="color: #DCDCAA;">parseInt</span>(req.<span style="color: #9CDCFE;">params</span>.<span style="color: #9CDCFE;">id</span>));
+    <span style="color: #C586C0;">if</span> (index === -<span style="color: #B5CEA8;">1</span>) <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">404</span>).<span style="color: #DCDCAA;">json</span>({ <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Não encontrado"</span> });
+    
+    produtos.<span style="color: #DCDCAA;">splice</span>(index, <span style="color: #B5CEA8;">1</span>);
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">204</span>).<span style="color: #DCDCAA;">send</span>();
+});
+
+app.<span style="color: #DCDCAA;">listen</span>(<span style="color: #B5CEA8;">3000</span>, () => <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(<span style="color: #CE9178;">'🚀 API CRUD completa na porta 3000'</span>));
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>✨ Você tem uma API REST funcional!</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            Com apenas ~50 linhas de código, você criou uma API completa!<br>
+                            Todas as operações CRUD funcionando. 🎉
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>🎯 Próximo Passo</h4>
+                        <p>Na próxima aula: conectar ao BANCO DE DADOS!<br>
+                        Dados em memória → Dados persistentes 🗄️</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que conquistamos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        CRUD 100% COMPLETO! Parabéns! 🎊🎉
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Hoje Dominamos</h3>
+                            <ul>
+                                <li>Diferença PUT vs PATCH</li>
+                                <li>Implementação completa do PUT</li>
+                                <li>Validações no PUT</li>
+                                <li>Soft Delete vs Hard Delete</li>
+                                <li>Implementação do DELETE</li>
+                                <li>Status code 204</li>
+                                <li><strong>CRUD 100% completo!</strong></li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Métodos HTTP Completos</h3>
+                            <ul>
+                                <li>✅ GET - Consultar</li>
+                                <li>✅ POST - Criar</li>
+                                <li>✅ PUT - Atualizar completo</li>
+                                <li>✅ DELETE - Remover</li>
+                                <li>📚 PATCH - Atualizar parcial (bônus)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 TRABALHO 2 - VALE 30% DA NOTA!</h3>
+                        <div style="margin-top: 20px; font-size: 1.1rem;">
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">💻 API CRUD Completa com Banco de Dados</strong><br><br>
+                                Criar uma API REST completa de um tema à sua escolha:<br>
+                                • Tema: Livros, Filmes, Jogos, Tarefas, etc<br>
+                                • Mínimo 10 registros iniciais<br>
+                                • CRUD 100% implementado (GET, POST, PUT, DELETE)<br>
+                                • Validações completas<br>
+                                • Tratamento de erros<br>
+                                • Collection do Postman com TODOS os testes
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">📋 Requisitos Técnicos</strong><br><br>
+                                ✅ Todos os endpoints funcionando<br>
+                                ✅ Status codes corretos<br>
+                                ✅ Validação de dados<br>
+                                ✅ README.md com documentação<br>
+                                ✅ Git com commits organizados<br>
+                                ✅ Código comentado e limpo
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px;">
+                                <strong style="color: var(--unifil-orange);">📅 Prazo e Entrega</strong><br><br>
+                                <strong>Prazo:</strong> Segunda, 09/03/2026<br>
+                                <strong>Formato:</strong> Link do repositório Git<br>
+                                <strong>Deve conter:</strong> Código + README + Collection Postman
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (Sexta, 27/02)</h3>
+                            <ul>
+                                <li>Introdução a Bancos de Dados</li>
+                                <li>SQL vs NoSQL</li>
+                                <li>Instalação do SQLite</li>
+                                <li>Modelagem de dados</li>
+                                <li>Criação de tabelas</li>
+                                <li>Fim dos dados em memória!</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📖 Preparação</h3>
+                            <ul>
+                                <li>Completar CRUD da sua API</li>
+                                <li>Testar TUDO no Postman</li>
+                                <li>Fazer Collection completa</li>
+                                <li>Preparar dúvidas sobre banco</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "CRUD completo é um marco! Você é oficialmente um dev de APIs!" 🚀
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.2rem;">Trabalho incrível hoje! 🙌</p>
+                        <p style="font-size: 1rem; margin-top: 10px;">Nos vemos na próxima com banco de dados!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 11</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .code-block, .big-idea, .key-takeaway, .comparison-table, .analogy-box, .timeline-item');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 2 - Representação de Algoritmos | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .four-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .code-block .keyword {
+            color: #c678dd;
+        }
+
+        .code-block .function {
+            color: #61afef;
+        }
+
+        .code-block .string {
+            color: #98c379;
+        }
+
+        .code-block .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .analogy-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #533f03;
+        }
+
+        .flowchart-symbol {
+            display: inline-block;
+            text-align: center;
+            margin: 10px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .flowchart-symbol svg {
+            width: 120px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .flowchart-symbol p {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--unifil-dark);
+        }
+
+        .flowchart-example {
+            background: white;
+            border: 3px solid var(--unifil-orange);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 20px 0;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin: 30px 0;
+            border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--unifil-light);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            min-width: 80px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1001;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .symbol-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .step-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .step-box h4 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .step-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: var(--unifil-gray);
+            font-weight: 500;
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb:hover {
+            background: var(--unifil-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Lógica de Programação e Algoritmos</h1>
+                    <p>Aula 02 - Desenvolvimento e Representação de Algoritmos</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="font-size: 6rem; margin-bottom: 30px;">📊</div>
+                    <h2 style="font-size: 2.5rem; color: var(--unifil-orange); margin-bottom: 20px;">
+                        Representando Soluções de Forma Visual
+                    </h2>
+                    <p style="font-size: 1.3rem; color: var(--unifil-gray); max-width: 800px; margin-bottom: 40px;">
+                        Aprenda a expressar algoritmos através de fluxogramas, pseudocódigo e linguagem natural.
+                    </p>
+                    <div class="two-column" style="width: 100%; max-width: 900px; margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="number">3</div>
+                            <div class="label">Formas de Representação</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">1</div>
+                            <div class="label">Ferramenta Prática</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 50px; font-size: 1.1rem; color: var(--unifil-gray);">
+                        <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                        <p><strong>Data:</strong> Quinta-feira, 13 de Fevereiro de 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: REVISÃO RÁPIDA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⏮️ Revisão Rápida - Aula 01</h2>
+                    <p>O que vimos na última aula</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>✅ Conceitos Fundamentais</h3>
+                            <ul>
+                                <li><strong>Algoritmo:</strong> Sequência de passos para resolver problema</li>
+                                <li><strong>Programa:</strong> Algoritmo em linguagem de programação</li>
+                                <li><strong>Linguagem:</strong> Sintaxe para escrever programas</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📊 Tipos de Dados</h3>
+                            <ul>
+                                <li><strong>Inteiro:</strong> Números sem decimal</li>
+                                <li><strong>Real:</strong> Números com decimal</li>
+                                <li><strong>Caractere:</strong> Texto entre aspas</li>
+                                <li><strong>Lógico:</strong> Verdadeiro ou Falso</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Hoje vamos aprofundar:</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Como <strong>representar</strong> algoritmos de forma clara e compreensível usando diferentes técnicas:
+                            <strong>Linguagem Natural, Fluxogramas e Pseudocódigo (Portugol)</strong>.
+                        </p>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>💭 Pergunta para Reflexão</h3>
+                        <p>
+                            Você conseguiu fazer o desafio da aula passada? 
+                            (Modificar o programa para calcular média de 3 notas ao invés de 4)
+                        </p>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Se sim, parabéns! Você já está pensando como programador! 🎉
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: AS 4 ETAPAS DE DESENVOLVIMENTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚙️ As 4 Etapas de Desenvolvimento</h2>
+                    <p>Metodologia sistemática para criar algoritmos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Todo algoritmo bem construído segue 4 etapas fundamentais
+                    </div>
+
+                    <div class="step-box" style="animation-delay: 0.1s;">
+                        <h4>1️⃣ ENTENDER O PROBLEMA</h4>
+                        <p><strong>O que fazer:</strong> Leia com atenção, identifique o objetivo, liste as restrições</p>
+                        <p style="margin-top: 10px;"><strong>Perguntas-chave:</strong></p>
+                        <ul style="margin-top: 10px; padding-left: 30px;">
+                            <li>O que o problema está pedindo?</li>
+                            <li>Quais são os dados disponíveis?</li>
+                            <li>Qual é o resultado esperado?</li>
+                            <li>Existem casos especiais a considerar?</li>
+                        </ul>
+                    </div>
+
+                    <div class="step-box" style="animation-delay: 0.2s;">
+                        <h4>2️⃣ DEFINIR ENTRADAS E SAÍDAS</h4>
+                        <p><strong>Entrada (INPUT):</strong> Quais dados o algoritmo precisa receber do usuário ou sistema?</p>
+                        <p style="margin-top: 10px;"><strong>Saída (OUTPUT):</strong> Qual resultado deve ser produzido e exibido?</p>
+                        <p style="margin-top: 15px; font-style: italic;">
+                            💡 Dica: Faça uma lista clara de cada entrada e saída com seus tipos de dados
+                        </p>
+                    </div>
+
+                    <div class="step-box" style="animation-delay: 0.3s;">
+                        <h4>3️⃣ DEFINIR O PROCESSAMENTO</h4>
+                        <p><strong>O que fazer:</strong> Determine quais operações transformam as entradas nas saídas</p>
+                        <p style="margin-top: 10px;"><strong>Inclui:</strong></p>
+                        <ul style="margin-top: 10px; padding-left: 30px;">
+                            <li>Cálculos matemáticos necessários</li>
+                            <li>Decisões a serem tomadas (if/else)</li>
+                            <li>Repetições de operações (loops)</li>
+                            <li>Armazenamento temporário de dados</li>
+                        </ul>
+                    </div>
+
+                    <div class="step-box" style="animation-delay: 0.4s;">
+                        <h4>4️⃣ TESTAR E VALIDAR</h4>
+                        <p><strong>O que fazer:</strong> Simule o algoritmo com diferentes valores, incluindo casos extremos</p>
+                        <p style="margin-top: 10px;"><strong>Casos de teste:</strong></p>
+                        <ul style="margin-top: 10px; padding-left: 30px;">
+                            <li>Valores normais (casos comuns)</li>
+                            <li>Valores extremos (mínimos e máximos)</li>
+                            <li>Valores inválidos (como o algoritmo reage?)</li>
+                            <li>Casos especiais (zero, negativo, vazio)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: EXEMPLO PRÁTICO DAS 4 ETAPAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Exemplo Prático: Calculadora de IMC</h2>
+                    <p>Aplicando as 4 etapas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📌 Problema:</h4>
+                        <p style="font-size: 1.15rem; margin-top: 10px;">
+                            Criar um algoritmo que calcule o <strong>Índice de Massa Corporal (IMC)</strong> 
+                            de uma pessoa e informe sua classificação.
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-gray);">
+                            Fórmula: IMC = peso / (altura × altura)
+                        </p>
+                    </div>
+
+                    <div class="timeline" style="margin-top: 30px;">
+                        <div class="timeline-item">
+                            <h4>1️⃣ Entender o Problema</h4>
+                            <p><strong>Objetivo:</strong> Calcular IMC e classificar</p>
+                            <p><strong>Dados necessários:</strong> Peso (kg) e Altura (m)</p>
+                            <p><strong>Resultado:</strong> Valor do IMC + Classificação</p>
+                            <p><strong>Restrições:</strong> Altura e peso devem ser positivos</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>2️⃣ Definir Entradas e Saídas</h4>
+                            <p><strong>📥 ENTRADAS:</strong></p>
+                            <ul style="padding-left: 30px; margin-top: 5px;">
+                                <li>peso (real) - em quilogramas</li>
+                                <li>altura (real) - em metros</li>
+                            </ul>
+                            <p style="margin-top: 10px;"><strong>📤 SAÍDAS:</strong></p>
+                            <ul style="padding-left: 30px; margin-top: 5px;">
+                                <li>imc (real) - valor calculado</li>
+                                <li>classificacao (texto) - "Abaixo do peso", "Normal", "Sobrepeso", "Obesidade"</li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>3️⃣ Definir Processamento</h4>
+                            <p><strong>Cálculos:</strong></p>
+                            <p style="padding-left: 20px;">imc = peso / (altura × altura)</p>
+                            <p style="margin-top: 10px;"><strong>Decisões:</strong></p>
+                            <ul style="padding-left: 30px; margin-top: 5px;">
+                                <li>Se IMC < 18.5 → "Abaixo do peso"</li>
+                                <li>Se IMC entre 18.5 e 24.9 → "Normal"</li>
+                                <li>Se IMC entre 25 e 29.9 → "Sobrepeso"</li>
+                                <li>Se IMC ≥ 30 → "Obesidade"</li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4>4️⃣ Testar e Validar</h4>
+                            <p><strong>Teste 1 (Normal):</strong> peso=70kg, altura=1.75m → IMC=22.86 → "Normal" ✅</p>
+                            <p><strong>Teste 2 (Sobrepeso):</strong> peso=85kg, altura=1.70m → IMC=29.41 → "Sobrepeso" ✅</p>
+                            <p><strong>Teste 3 (Extremo):</strong> peso=50kg, altura=1.80m → IMC=15.43 → "Abaixo do peso" ✅</p>
+                            <p><strong>Teste 4 (Inválido):</strong> peso=-70kg → ERRO: peso deve ser positivo ⚠️</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: FORMAS DE REPRESENTAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Formas de Representar Algoritmos</h2>
+                    <p>Três abordagens principais</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Há <strong>3 formas principais</strong> de representar um algoritmo antes de implementá-lo em código
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 40px;">
+                        <thead>
+                            <tr>
+                                <th>Forma</th>
+                                <th>Descrição</th>
+                                <th>Quando Usar</th>
+                                <th>Vantagens</th>
+                                <th>Desvantagens</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1. Linguagem Natural</strong></td>
+                                <td>Descrição em português, como se estivesse explicando para alguém</td>
+                                <td>Fase inicial, brainstorming</td>
+                                <td>Fácil de escrever e entender</td>
+                                <td>Pode ser ambíguo, impreciso</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2. Fluxograma</strong></td>
+                                <td>Representação gráfica usando símbolos padronizados</td>
+                                <td>Algoritmos com decisões e loops</td>
+                                <td>Visual, fácil de seguir o fluxo</td>
+                                <td>Trabalhoso para algoritmos grandes</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3. Pseudocódigo (Portugol)</strong></td>
+                                <td>Linguagem intermediária entre natural e programação</td>
+                                <td>Antes de implementar em C/Java</td>
+                                <td>Estruturado, próximo do código real</td>
+                                <td>Não executa diretamente (precisa converter)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>💡 Na Prática</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Muitas vezes usamos as <strong>3 formas em sequência</strong>:
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            <strong>1.</strong> Linguagem Natural (entender o problema) → 
+                            <strong>2.</strong> Fluxograma (visualizar a lógica) → 
+                            <strong>3.</strong> Pseudocódigo (detalhar implementação) → 
+                            <strong>4.</strong> Código (C, Java, Python...)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: FLUXOGRAMAS - SÍMBOLOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Fluxogramas: Símbolos Padronizados</h2>
+                    <p>Linguagem visual universal</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Fluxogramas usam símbolos geométricos padronizados para representar diferentes operações
+                    </div>
+
+                    <div class="symbol-grid" style="margin-top: 40px;">
+                        <div class="flowchart-symbol">
+                            <svg viewBox="0 0 120 80">
+                                <ellipse cx="60" cy="40" rx="55" ry="35" fill="#4CAF50" stroke="#2E7D32" stroke-width="3"/>
+                            </svg>
+                            <p>⭕ INÍCIO/FIM</p>
+                            <p style="font-size: 0.85rem; color: var(--unifil-gray); margin-top: 5px;">Elipse</p>
+                        </div>
+
+                        <div class="flowchart-symbol">
+                            <svg viewBox="0 0 120 80">
+                                <rect x="10" y="20" width="100" height="40" fill="#2196F3" stroke="#1565C0" stroke-width="3"/>
+                            </svg>
+                            <p>▭ PROCESSO</p>
+                            <p style="font-size: 0.85rem; color: var(--unifil-gray); margin-top: 5px;">Retângulo</p>
+                        </div>
+
+                        <div class="flowchart-symbol">
+                            <svg viewBox="0 0 120 80">
+                                <path d="M 60 10 L 100 40 L 60 70 L 20 40 Z" fill="#FF9800" stroke="#E65100" stroke-width="3"/>
+                            </svg>
+                            <p>◇ DECISÃO</p>
+                            <p style="font-size: 0.85rem; color: var(--unifil-gray); margin-top: 5px;">Losango</p>
+                        </div>
+
+                        <div class="flowchart-symbol">
+                            <svg viewBox="0 0 120 80">
+                                <path d="M 20 20 L 90 20 L 100 60 L 10 60 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="3"/>
+                            </svg>
+                            <p>⬥ ENTRADA/SAÍDA</p>
+                            <p style="font-size: 0.85rem; color: var(--unifil-gray); margin-top: 5px;">Paralelogramo</p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>⭕ Início/Fim (Elipse)</h3>
+                            <ul>
+                                <li>Marca o <strong>início</strong> do algoritmo</li>
+                                <li>Marca o <strong>fim</strong> do algoritmo</li>
+                                <li>Todo fluxograma deve ter 1 início e pelo menos 1 fim</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>▭ Processo (Retângulo)</h3>
+                            <ul>
+                                <li>Operações matemáticas (soma, subtração...)</li>
+                                <li>Atribuições de valores a variáveis</li>
+                                <li>Qualquer processamento de dados</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>◇ Decisão (Losango)</h3>
+                            <ul>
+                                <li>Teste de <strong>condição</strong> (verdadeiro/falso)</li>
+                                <li>Bifurca o fluxo em 2 caminhos</li>
+                                <li>Sempre tem saídas para "SIM" e "NÃO"</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⬥ Entrada/Saída (Paralelogramo)</h3>
+                            <ul>
+                                <li><strong>Entrada:</strong> Ler dados do usuário</li>
+                                <li><strong>Saída:</strong> Mostrar informações na tela</li>
+                                <li>Sempre indica interação com usuário</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>➡️ Setas de Fluxo</h3>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">
+                            As <strong>setas</strong> conectam os símbolos e indicam a <strong>ordem de execução</strong> das operações.
+                            O fluxo geralmente vai de cima para baixo e da esquerda para direita.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: EXEMPLO DE FLUXOGRAMA SIMPLES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Exemplo: Fluxograma Calcular Média</h2>
+                    <p>Algoritmo da aula anterior em formato visual</p>
+                </div>
+                <div class="slide-body">
+                    <div class="flowchart-example">
+                        <h4 style="color: var(--unifil-orange); margin-bottom: 30px; font-size: 1.4rem;">
+                            Fluxograma: Calcular Média de 4 Notas
+                        </h4>
+                        
+                        <svg viewBox="0 0 500 900" style="width: 100%; max-width: 500px; height: auto;">
+                            <!-- Início -->
+                            <ellipse cx="250" cy="50" rx="80" ry="40" fill="#4CAF50" stroke="#2E7D32" stroke-width="3"/>
+                            <text x="250" y="58" text-anchor="middle" fill="white" font-size="18" font-weight="bold">INÍCIO</text>
+                            
+                            <!-- Seta 1 -->
+                            <line x1="250" y1="90" x2="250" y2="130" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            
+                            <!-- Entrada: Ler notas -->
+                            <path d="M 150 130 L 320 130 L 350 180 L 180 180 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="3"/>
+                            <text x="250" y="145" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Ler nota1</text>
+                            <text x="250" y="165" text-anchor="middle" fill="white" font-size="16" font-weight="bold">nota2, nota3, nota4</text>
+                            
+                            <!-- Seta 2 -->
+                            <line x1="250" y1="180" x2="250" y2="220" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            
+                            <!-- Processo: Calcular média -->
+                            <rect x="150" y="220" width="200" height="60" fill="#2196F3" stroke="#1565C0" stroke-width="3"/>
+                            <text x="250" y="245" text-anchor="middle" fill="white" font-size="16" font-weight="bold">media =</text>
+                            <text x="250" y="265" text-anchor="middle" fill="white" font-size="14">(n1+n2+n3+n4)/4</text>
+                            
+                            <!-- Seta 3 -->
+                            <line x1="250" y1="280" x2="250" y2="320" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            
+                            <!-- Decisão: média >= 7 -->
+                            <path d="M 250 320 L 350 380 L 250 440 L 150 380 Z" fill="#FF9800" stroke="#E65100" stroke-width="3"/>
+                            <text x="250" y="385" text-anchor="middle" fill="white" font-size="16" font-weight="bold">media</text>
+                            <text x="250" y="405" text-anchor="middle" fill="white" font-size="16" font-weight="bold">≥ 7 ?</text>
+                            
+                            <!-- Seta SIM -->
+                            <line x1="350" y1="380" x2="400" y2="380" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            <text x="365" y="370" fill="#4CAF50" font-size="16" font-weight="bold">SIM</text>
+                            
+                            <!-- Saída: Aprovado -->
+                            <path d="M 400 360 L 470 360 L 490 400 L 420 400 Z" fill="#4CAF50" stroke="#2E7D32" stroke-width="3"/>
+                            <text x="455" y="387" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Aprovado</text>
+                            
+                            <!-- Seta NÃO -->
+                            <line x1="150" y1="380" x2="100" y2="380" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            <text x="135" y="370" fill="#f44336" font-size="16" font-weight="bold">NÃO</text>
+                            
+                            <!-- Saída: Reprovado -->
+                            <path d="M 30 360 L 100 360 L 120 400 L 50 400 Z" fill="#f44336" stroke="#c62828" stroke-width="3"/>
+                            <text x="85" y="387" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Reprovado</text>
+                            
+                            <!-- Convergência -->
+                            <line x1="455" y1="400" x2="455" y2="500" stroke="#333" stroke-width="2"/>
+                            <line x1="85" y1="400" x2="85" y2="500" stroke="#333" stroke-width="2"/>
+                            <line x1="85" y1="500" x2="455" y2="500" stroke="#333" stroke-width="2"/>
+                            <line x1="250" y1="500" x2="250" y2="540" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            
+                            <!-- Saída: Mostrar resultado -->
+                            <path d="M 150 540 L 320 540 L 350 590 L 180 590 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="3"/>
+                            <text x="250" y="555" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Mostrar</text>
+                            <text x="250" y="575" text-anchor="middle" fill="white" font-size="16" font-weight="bold">resultado</text>
+                            
+                            <!-- Seta final -->
+                            <line x1="250" y1="590" x2="250" y2="630" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            
+                            <!-- Fim -->
+                            <ellipse cx="250" cy="670" rx="80" ry="40" fill="#f44336" stroke="#c62828" stroke-width="3"/>
+                            <text x="250" y="678" text-anchor="middle" fill="white" font-size="18" font-weight="bold">FIM</text>
+                            
+                            <!-- Arrow marker definition -->
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🔍 Observe:</h3>
+                        <ul style="font-size: 1.1rem; margin-top: 15px; list-style: none; padding: 0;">
+                            <li style="padding: 8px 0;">✓ O fluxo começa no <strong>INÍCIO</strong> (elipse verde)</li>
+                            <li style="padding: 8px 0;">✓ Primeiro <strong>lemos</strong> os dados (paralelogramo roxo)</li>
+                            <li style="padding: 8px 0;">✓ Depois <strong>processamos</strong> (retângulo azul)</li>
+                            <li style="padding: 8px 0;">✓ Tomamos uma <strong>decisão</strong> (losango laranja)</li>
+                            <li style="padding: 8px 0;">✓ <strong>Mostramos</strong> o resultado (paralelogramo roxo)</li>
+                            <li style="padding: 8px 0;">✓ Termina no <strong>FIM</strong> (elipse vermelha)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: PSEUDOCÓDIGO (PORTUGOL) -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Pseudocódigo: Portugol</h2>
+                    <p>Ponte entre lógica e programação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Pseudocódigo é uma linguagem <strong>intermediária</strong> que mistura português com estrutura de programação
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Vantagens do Pseudocódigo</h3>
+                            <ul>
+                                <li>Estruturado como código real</li>
+                                <li>Usa palavras em português</li>
+                                <li>Fácil conversão para C/Java/Python</li>
+                                <li>Não depende de sintaxe específica</li>
+                                <li>Foca na LÓGICA, não na linguagem</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📋 Estrutura Básica</h3>
+                            <ul>
+                                <li><strong>programa</strong> ou <strong>algoritmo</strong></li>
+                                <li><strong>var</strong> (declaração de variáveis)</li>
+                                <li><strong>inicio</strong> (começo do código)</li>
+                                <li><strong>leia</strong> (entrada de dados)</li>
+                                <li><strong>escreva</strong> (saída de dados)</li>
+                                <li><strong>fimalgoritmo</strong> ou <strong>fim</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📌 Exemplo: Calcular Média em Portugol</h4>
+                        <div class="code-block">
+<span class="keyword">algoritmo</span> <span class="string">"calcular_media"</span>
+<span class="keyword">var</span>
+    nota1, nota2, nota3, nota4, media : <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+    <span class="comment">// Entrada de dados</span>
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 1: "</span>)
+    <span class="function">leia</span>(nota1)
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 2: "</span>)
+    <span class="function">leia</span>(nota2)
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 3: "</span>)
+    <span class="function">leia</span>(nota3)
+    <span class="function">escreva</span>(<span class="string">"Digite a nota 4: "</span>)
+    <span class="function">leia</span>(nota4)
+    
+    <span class="comment">// Processamento</span>
+    media ← (nota1 + nota2 + nota3 + nota4) / 4
+    
+    <span class="comment">// Saída</span>
+    <span class="function">escreva</span>(<span class="string">"A média é: "</span>, media)
+    
+    <span class="comment">// Decisão</span>
+    <span class="keyword">se</span> media >= 7 <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"Aprovado!"</span>)
+    <span class="keyword">senao</span>
+        <span class="function">escreva</span>(<span class="string">"Reprovado!"</span>)
+    <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Palavras-Chave Importantes</h3>
+                        <div class="two-column" style="margin-top: 15px;">
+                            <div>
+                                <p style="font-size: 1.1rem;"><strong>Estrutura:</strong></p>
+                                <p>algoritmo, var, inicio, fimalgoritmo</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 1.1rem;"><strong>Tipos:</strong></p>
+                                <p>inteiro, real, caractere, logico</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 1.1rem;"><strong>Entrada/Saída:</strong></p>
+                                <p>leia, escreva</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 1.1rem;"><strong>Decisão:</strong></p>
+                                <p>se, entao, senao, fimse</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CONVERSÃO ENTRE REPRESENTAÇÕES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Conversão Entre Representações</h2>
+                    <p>Mesmo algoritmo, 3 formas diferentes</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Vamos representar o MESMO algoritmo (soma de dois números) nas 3 formas
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>1️⃣ Linguagem Natural</h4>
+                        <ol style="padding-left: 30px; margin-top: 15px; font-size: 1.1rem; line-height: 1.8;">
+                            <li>Solicitar o primeiro número ao usuário</li>
+                            <li>Armazenar o valor na variável "numero1"</li>
+                            <li>Solicitar o segundo número ao usuário</li>
+                            <li>Armazenar o valor na variável "numero2"</li>
+                            <li>Calcular a soma: numero1 + numero2</li>
+                            <li>Armazenar o resultado na variável "soma"</li>
+                            <li>Exibir o resultado para o usuário</li>
+                        </ol>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>2️⃣ Fluxograma</h4>
+                            <div style="text-align: center; margin-top: 20px;">
+                                <svg viewBox="0 0 300 600" style="width: 100%; max-width: 250px; height: auto;">
+                                    <!-- Início -->
+                                    <ellipse cx="150" cy="40" rx="70" ry="30" fill="#4CAF50" stroke="#2E7D32" stroke-width="2"/>
+                                    <text x="150" y="48" text-anchor="middle" fill="white" font-size="16" font-weight="bold">INÍCIO</text>
+                                    
+                                    <!-- Seta -->
+                                    <line x1="150" y1="70" x2="150" y2="100" stroke="#333" stroke-width="2" marker-end="url(#arrow2)"/>
+                                    
+                                    <!-- Ler num1 -->
+                                    <path d="M 70 100 L 210 100 L 230 140 L 90 140 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="2"/>
+                                    <text x="150" y="128" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Ler numero1</text>
+                                    
+                                    <!-- Seta -->
+                                    <line x1="150" y1="140" x2="150" y2="170" stroke="#333" stroke-width="2" marker-end="url(#arrow2)"/>
+                                    
+                                    <!-- Ler num2 -->
+                                    <path d="M 70 170 L 210 170 L 230 210 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="2"/>
+                                    <path d="M 90 210 L 230 210 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="2"/>
+                                    <path d="M 90 210 L 70 170 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="2"/>
+                                    <text x="150" y="198" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Ler numero2</text>
+                                    
+                                    <!-- Seta -->
+                                    <line x1="150" y1="210" x2="150" y2="240" stroke="#333" stroke-width="2" marker-end="url(#arrow2)"/>
+                                    
+                                    <!-- Calcular -->
+                                    <rect x="70" y="240" width="160" height="50" fill="#2196F3" stroke="#1565C0" stroke-width="2"/>
+                                    <text x="150" y="262" text-anchor="middle" fill="white" font-size="14" font-weight="bold">soma =</text>
+                                    <text x="150" y="280" text-anchor="middle" fill="white" font-size="13">numero1 + numero2</text>
+                                    
+                                    <!-- Seta -->
+                                    <line x1="150" y1="290" x2="150" y2="320" stroke="#333" stroke-width="2" marker-end="url(#arrow2)"/>
+                                    
+                                    <!-- Mostrar -->
+                                    <path d="M 70 320 L 210 320 L 230 360 L 90 360 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="2"/>
+                                    <text x="150" y="348" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Mostrar soma</text>
+                                    
+                                    <!-- Seta -->
+                                    <line x1="150" y1="360" x2="150" y2="390" stroke="#333" stroke-width="2" marker-end="url(#arrow2)"/>
+                                    
+                                    <!-- Fim -->
+                                    <ellipse cx="150" cy="420" rx="70" ry="30" fill="#f44336" stroke="#c62828" stroke-width="2"/>
+                                    <text x="150" y="428" text-anchor="middle" fill="white" font-size="16" font-weight="bold">FIM</text>
+                                    
+                                    <!-- Arrow marker -->
+                                    <defs>
+                                        <marker id="arrow2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                            <polygon points="0 0, 8 3, 0 6" fill="#333"/>
+                                        </marker>
+                                    </defs>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>3️⃣ Pseudocódigo (Portugol)</h4>
+                            <div class="code-block">
+<span class="keyword">algoritmo</span> <span class="string">"somar_dois_numeros"</span>
+<span class="keyword">var</span>
+    numero1, numero2, soma : <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+    <span class="comment">// Entrada</span>
+    <span class="function">escreva</span>(<span class="string">"Número 1: "</span>)
+    <span class="function">leia</span>(numero1)
+    
+    <span class="function">escreva</span>(<span class="string">"Número 2: "</span>)
+    <span class="function">leia</span>(numero2)
+    
+    <span class="comment">// Processamento</span>
+    soma ← numero1 + numero2
+    
+    <span class="comment">// Saída</span>
+    <span class="function">escreva</span>(<span class="string">"Soma: "</span>, soma)
+<span class="keyword">fimalgoritmo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>💡 Perceba</h3>
+                        <p>
+                            As <strong>3 representações descrevem exatamente a mesma lógica</strong>, apenas mudam a forma de expressão!
+                        </p>
+                        <p style="margin-top: 10px;">
+                            É como contar a mesma história em português, com desenhos, ou com uma linguagem técnica.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: PORTUGOL WEB STUDIO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🌐 Portugol Web Studio</h2>
+                    <p>Nossa ferramenta de prática</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Portugol Web Studio é um ambiente online GRATUITO para escrever e executar pseudocódigo!
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🔗 Acesse Agora</h3>
+                        <p style="font-size: 1.3rem; margin-top: 15px; text-align: center;">
+                            <strong>https://portugol-webstudio.cubos.io</strong>
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px; text-align: center;">
+                            ✅ Não precisa instalar nada<br>
+                            ✅ Funciona no navegador<br>
+                            ✅ Totalmente em português<br>
+                            ✅ Ideal para aprender lógica
+                        </p>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>🎯 Passo 1: Acessar</h3>
+                            <ul>
+                                <li>Abra o navegador</li>
+                                <li>Digite a URL</li>
+                                <li>Página carrega instantaneamente</li>
+                                <li>Sem necessidade de login</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✍️ Passo 2: Escrever</h3>
+                            <ul>
+                                <li>Editor de código central</li>
+                                <li>Syntax highlighting</li>
+                                <li>Numeração de linhas</li>
+                                <li>Autocompletar palavras-chave</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>▶️ Passo 3: Executar</h3>
+                            <ul>
+                                <li>Clique no botão "Executar"</li>
+                                <li>Console mostra saídas</li>
+                                <li>Digite entradas quando solicitado</li>
+                                <li>Veja resultados em tempo real</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Vantagens</h3>
+                            <ul>
+                                <li><strong>Online:</strong> Acesse de qualquer lugar</li>
+                                <li><strong>Gratuito:</strong> 100% sem custos</li>
+                                <li><strong>Simples:</strong> Interface intuitiva</li>
+                                <li><strong>Educativo:</strong> Feito para ensino</li>
+                                <li><strong>Português:</strong> Mensagens de erro claras</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📚 Recursos</h3>
+                            <ul>
+                                <li>Editor com cores de sintaxe</li>
+                                <li>Console de entrada/saída</li>
+                                <li>Detecção de erros</li>
+                                <li>Exemplos prontos</li>
+                                <li>Salvar código no navegador</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>💻 Dica de Uso</h3>
+                        <p>
+                            <strong>Para a próxima aula:</strong> Já deixe o Portugol Web Studio aberto em uma aba do navegador.
+                            Vamos usá-lo em TODAS as aulas práticas!
+                        </p>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Bookmark/Favorito recomendado! ⭐
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: EXERCÍCIOS PROPOSTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Exercícios Propostos</h2>
+                    <p>Pratique as 3 formas de representação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Pratique criando algoritmos nas 3 formas: Natural, Fluxograma e Pseudocódigo!
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📌 Exercício 1: Converter Celsius para Fahrenheit</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia uma temperatura em Celsius</li>
+                            <li>Converta para Fahrenheit usando a fórmula: F = (C × 9/5) + 32</li>
+                            <li>Mostre o resultado</li>
+                        </ul>
+                        <p style="margin-top: 15px; background: var(--unifil-light); padding: 15px; border-radius: 10px;">
+                            <strong>Desafio:</strong> Represente este algoritmo nas 3 formas!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 2: Calcular Área de um Retângulo</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia a base do retângulo</li>
+                            <li>Leia a altura do retângulo</li>
+                            <li>Calcule a área (área = base × altura)</li>
+                            <li>Mostre o resultado</li>
+                        </ul>
+                        <p style="margin-top: 15px; background: var(--unifil-light); padding: 15px; border-radius: 10px;">
+                            <strong>Faça:</strong> Implemente no Portugol Web Studio e teste!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 3: Verificar Maioridade</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia a idade de uma pessoa</li>
+                            <li>Se idade ≥ 18, mostre "Maior de idade"</li>
+                            <li>Senão, mostre "Menor de idade"</li>
+                        </ul>
+                        <p style="margin-top: 15px; background: var(--unifil-light); padding: 15px; border-radius: 10px;">
+                            <strong>Atenção:</strong> Este usa estrutura de DECISÃO (if/else)!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Entrega Sugerida (Opcional)</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Resolva os 3 exercícios e traga suas soluções (pelo menos em Portugol) para a próxima aula.
+                            Vamos discutir as diferentes abordagens!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Hoje você dominou as formas de representar algoritmos! 🎉
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ As 4 Etapas</h4>
+                            <p>Entender → Definir E/S → Processar → Testar</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Formas de Representação</h4>
+                            <p>Linguagem Natural, Fluxograma, Pseudocódigo</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Símbolos de Fluxograma</h4>
+                            <p>Início/Fim, Processo, Decisão, Entrada/Saída</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Portugol</h4>
+                            <p>Pseudocódigo estruturado em português</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Portugol Web Studio</h4>
+                            <p>Ferramenta online gratuita para praticar</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para a Próxima Aula (Quarta, 18/02)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣ Praticar:</strong> Fazer os 3 exercícios propostos
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣ Testar:</strong> Executar códigos no Portugol Web Studio
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣ Estudar:</strong> Revisar os símbolos de fluxograma
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣ Preparar:</strong> Dúvidas sobre representação de algoritmos
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula</h3>
+                            <ul>
+                                <li>Tipos de Dados Primitivos (detalhado)</li>
+                                <li>Variáveis e Constantes</li>
+                                <li>Atribuição e Nomenclatura</li>
+                                <li>Exercícios práticos em Portugol</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Atendimento:</strong> Quintas 21h-22h</p>
+                            <p style="margin-bottom: 10px;"><strong>Sala:</strong> Bloco C - Sala 205</p>
+                            <p><strong>Moodle:</strong> Fórum sempre disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Algoritmos são como receitas: quanto mais você pratica, melhor fica! 👨‍🍳"
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Nos vemos na quarta-feira!</p>
+                        <p style="font-size: 0.9rem; margin-top: 20px; font-style: italic;">
+                            "Desenhe, escreva, codifique. Repita!" 🔁
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 12</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .stat-card, .analogy-box, .comparison-table, .flowchart-symbol, .step-box');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                changeSlide(1);
+            }
+            if (touchEndX > touchStartX + 50) {
+                changeSlide(-1);
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 2 - Protocolo HTTP e Setup do Ambiente | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 100px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--unifil-dark);
+            color: #00ff00;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+            animation: fadeInUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+            border: 2px solid var(--unifil-orange);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .http-method {
+            background: var(--unifil-light);
+            padding: 20px 25px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid var(--unifil-orange);
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .http-method h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .http-method .method-tag {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        .method-get { background: #4CAF50; }
+        .method-post { background: #2196F3; }
+        .method-put { background: #FF9800; }
+        .method-delete { background: #F44336; }
+        .method-patch { background: #9C27B0; }
+
+        .status-code {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin: 5px;
+            font-size: 0.95rem;
+        }
+
+        .status-2xx { background: #4CAF50; }
+        .status-3xx { background: #2196F3; }
+        .status-4xx { background: #FF9800; }
+        .status-5xx { background: #F44336; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .key-takeaway {
+            background: #FFF3E0;
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .key-takeaway h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .interactive-demo {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px dashed var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .interactive-demo button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .interactive-demo button:hover {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: scale(1.05);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            color: var(--unifil-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .slide-header h1 { font-size: 1.8rem; }
+            .slide-header h2 { font-size: 1.4rem; }
+            .two-column, .three-column { grid-template-columns: 1fr; }
+            .slide-body { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>📱 Desenvolvimento de Aplicativos Móveis</h1>
+                    <p>Criação de API REST Básica</p>
+                </div>
+                <div class="slide-body">
+                    <div style="text-align: center; margin-top: 80px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px; animation: fadeInUp 0.6s ease-out;">
+                            Aula 2
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 40px; animation: fadeInUp 0.6s ease-out 0.2s; opacity: 0; animation-fill-mode: forwards;">
+                            Protocolo HTTP e Setup do Ambiente
+                        </h3>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 60px;">
+                        <div class="content-box">
+                            <h3>📅 Informações</h3>
+                            <ul>
+                                <li><strong>Data:</strong> Sexta, 13/02/2026</li>
+                                <li><strong>Duração:</strong> 1,5 horas</li>
+                                <li><strong>Formato:</strong> Teórico + Prático</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Objetivos</h3>
+                            <ul>
+                                <li>Dominar protocolo HTTP</li>
+                                <li>Configurar ambiente Dev</li>
+                                <li>Criar primeira API</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📚 Agenda de Hoje</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <strong>📡 Parte 1 (40min)</strong><br>
+                                Protocolo HTTP em profundidade
+                            </div>
+                            <div>
+                                <strong>⚙️ Parte 2 (40min)</strong><br>
+                                Setup do Ambiente de Desenvolvimento
+                            </div>
+                            <div>
+                                <strong>🚀 Parte 3 (10min)</strong><br>
+                                Primeira API funcionando!
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="big-idea">
+                        "Hoje vamos do zero ao deploy de uma API funcional!" 🎉
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: REVISÃO RÁPIDA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Revisão Rápida da Aula 1</h2>
+                    <p>O que vimos até agora</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ O que é uma API?</h4>
+                            <p>Interface que permite comunicação entre sistemas diferentes</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Arquitetura REST</h4>
+                            <p>Estilo arquitetural baseado em recursos, URIs e métodos HTTP</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Princípios REST</h4>
+                            <p>Stateless, Client-Server, Cacheable, Uniform Interface</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ JSON como formato</h4>
+                            <p>Formato leve e universal para troca de dados</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>🎯 Hoje vamos mais fundo!</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            Vamos entender <strong>como</strong> as APIs conversam usando HTTP e 
+                            criar nossa <strong>primeira API funcionando</strong>! 🚀
+                        </p>
+                    </div>
+
+                    <div class="key-takeaway" style="margin-top: 30px;">
+                        <h4>💡 Conexão com Hoje</h4>
+                        <p>REST usa HTTP como protocolo de comunicação. Então, para dominar APIs REST, 
+                        precisamos dominar HTTP primeiro!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: O QUE É HTTP -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📡 O que é HTTP?</h2>
+                    <p>HyperText Transfer Protocol</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🔧 Analogia: HTTP é como o sistema postal</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Imagine que você quer pedir uma pizza por correspondência:<br><br>
+                            <strong>📮 Você:</strong> Escreve um pedido detalhado (método, endereço, dados)<br>
+                            <strong>🚚 Correios:</strong> Entregam seu pedido (HTTP transporta)<br>
+                            <strong>🍕 Pizzaria:</strong> Lê seu pedido e prepara a pizza<br>
+                            <strong>📦 Retorno:</strong> Pizza + nota fiscal voltam para você<br><br>
+                            <strong>HTTP funciona EXATAMENTE assim!</strong>
+                        </p>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>📋 Definição Técnica</h3>
+                            <ul>
+                                <li><strong>Protocolo:</strong> Conjunto de regras</li>
+                                <li><strong>Cliente-Servidor:</strong> Arquitetura</li>
+                                <li><strong>Stateless:</strong> Sem memória entre requisições</li>
+                                <li><strong>Baseado em texto:</strong> Legível por humanos</li>
+                                <li><strong>Porta padrão:</strong> 80 (HTTP) ou 443 (HTTPS)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Para que serve?</h3>
+                            <ul>
+                                <li>Transferir páginas web (HTML)</li>
+                                <li>Enviar e receber dados (JSON)</li>
+                                <li>Upload/download de arquivos</li>
+                                <li>Comunicação entre sistemas</li>
+                                <li><strong>Base das APIs REST!</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 30px;">
+                        HTTP é a LÍNGUA que Cliente e Servidor usam para conversar! 🗣️
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: ANATOMIA DE UMA REQUISIÇÃO HTTP -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔍 Anatomia de uma Requisição HTTP</h2>
+                    <p>Os componentes essenciais</p>
+                </div>
+                <div class="slide-body">
+                    <div class="highlight-box">
+                        <h3>📨 Uma requisição HTTP tem 4 partes principais:</h3>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; font-size: 1.1rem;">
+                            <div><strong>1️⃣ Método</strong><br>(GET, POST, etc)</div>
+                            <div><strong>2️⃣ URL</strong><br>(Endereço do recurso)</div>
+                            <div><strong>3️⃣ Headers</strong><br>(Metadados)</div>
+                            <div><strong>4️⃣ Body</strong><br>(Dados opcionais)</div>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📝 Exemplo Completo de Requisição</h4>
+                        <div class="code-block">
+POST /api/usuarios HTTP/1.1
+Host: api.exemplo.com
+Content-Type: application/json
+Authorization: Bearer abc123xyz
+User-Agent: PostmanRuntime/7.29.2
+
+{
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "idade": 25
+}
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🎯 Linha de Requisição</h3>
+                            <p style="margin-top: 10px;">
+                                <strong>POST /api/usuarios HTTP/1.1</strong><br>
+                                • Método: POST<br>
+                                • Caminho: /api/usuarios<br>
+                                • Versão: HTTP/1.1
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📋 Headers</h3>
+                            <p style="margin-top: 10px;">
+                                Informações adicionais:<br>
+                                • Tipo de conteúdo<br>
+                                • Autenticação<br>
+                                • Origem da requisição<br>
+                                • Idioma preferido
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.4s;">
+                            <h3>📦 Body (Corpo)</h3>
+                            <p style="margin-top: 10px;">
+                                Dados sendo enviados:<br>
+                                • JSON (mais comum)<br>
+                                • XML<br>
+                                • Formulários<br>
+                                • Arquivos
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Importante</h4>
+                        <p>Nem toda requisição tem Body! GET e DELETE normalmente não têm. 
+                        POST e PUT geralmente têm.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: MÉTODOS HTTP -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔧 Métodos HTTP - Os Verbos da Web</h2>
+                    <p>O QUE você quer fazer com o recurso?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>📚 Analogia: Biblioteca</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>GET:</strong> "Quero ler um livro" (consultar)<br>
+                            <strong>POST:</strong> "Quero adicionar um livro novo" (criar)<br>
+                            <strong>PUT:</strong> "Quero substituir todo o conteúdo de um livro" (atualizar completo)<br>
+                            <strong>PATCH:</strong> "Quero corrigir só uma página do livro" (atualizar parcial)<br>
+                            <strong>DELETE:</strong> "Quero remover um livro" (excluir)
+                        </p>
+                    </div>
+
+                    <div class="http-method">
+                        <span class="method-tag method-get">GET</span>
+                        <h4 style="display: inline;">Buscar/Ler Dados</h4>
+                        <p style="margin-top: 10px;">
+                            <strong>Uso:</strong> Listar recursos ou buscar um específico<br>
+                            <strong>Tem Body?</strong> Não<br>
+                            <strong>Idempotente?</strong> Sim (pode repetir sem problemas)<br>
+                            <strong>Exemplo:</strong> GET /api/produtos ou GET /api/produtos/123
+                        </p>
+                    </div>
+
+                    <div class="http-method" style="animation-delay: 0.2s;">
+                        <span class="method-tag method-post">POST</span>
+                        <h4 style="display: inline;">Criar Novo Recurso</h4>
+                        <p style="margin-top: 10px;">
+                            <strong>Uso:</strong> Adicionar novo registro<br>
+                            <strong>Tem Body?</strong> Sim (dados do novo recurso)<br>
+                            <strong>Idempotente?</strong> Não (cada chamada cria novo recurso)<br>
+                            <strong>Exemplo:</strong> POST /api/produtos + JSON no body
+                        </p>
+                    </div>
+
+                    <div class="http-method" style="animation-delay: 0.4s;">
+                        <span class="method-tag method-put">PUT</span>
+                        <h4 style="display: inline;">Atualizar Completo</h4>
+                        <p style="margin-top: 10px;">
+                            <strong>Uso:</strong> Substituir recurso inteiro<br>
+                            <strong>Tem Body?</strong> Sim (todos os campos)<br>
+                            <strong>Idempotente?</strong> Sim<br>
+                            <strong>Exemplo:</strong> PUT /api/produtos/123 + JSON completo
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 20px;">
+                        <div class="http-method" style="animation-delay: 0.6s;">
+                            <span class="method-tag method-patch">PATCH</span>
+                            <h4 style="display: inline;">Atualizar Parcial</h4>
+                            <p style="margin-top: 10px;">
+                                <strong>Uso:</strong> Modificar só alguns campos<br>
+                                <strong>Exemplo:</strong> PATCH /api/produtos/123
+                            </p>
+                        </div>
+
+                        <div class="http-method" style="animation-delay: 0.8s;">
+                            <span class="method-tag method-delete">DELETE</span>
+                            <h4 style="display: inline;">Excluir Recurso</h4>
+                            <p style="margin-top: 10px;">
+                                <strong>Uso:</strong> Remover registro<br>
+                                <strong>Exemplo:</strong> DELETE /api/produtos/123
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: STATUS CODES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Status Codes - Respostas do Servidor</h2>
+                    <p>O servidor sempre responde com um código</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Status Codes = "Emoticons do Servidor" 😊😐😢😡
+                    </div>
+
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>🎯 5 Categorias</h3>
+                            <ul>
+                                <li><strong style="color: #2196F3;">1xx:</strong> Informativo</li>
+                                <li><strong style="color: #4CAF50;">2xx:</strong> Sucesso 👍</li>
+                                <li><strong style="color: #FF9800;">3xx:</strong> Redirecionamento</li>
+                                <li><strong style="color: #F44336;">4xx:</strong> Erro do Cliente 😵</li>
+                                <li><strong style="color: #9C27B0;">5xx:</strong> Erro do Servidor 💥</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>💡 Regra de Ouro</h3>
+                            <p style="margin-top: 15px; font-size: 1.1rem; line-height: 1.7;">
+                                <strong>2xx =</strong> Tudo certo! 🎉<br>
+                                <strong>4xx =</strong> Você errou algo 🤦<br>
+                                <strong>5xx =</strong> Servidor errou 🔥
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>✨ Status Codes Mais Importantes para APIs</h3>
+                        
+                        <div style="margin-top: 20px;">
+                            <h4 style="margin-bottom: 15px;">✅ Sucesso (2xx)</h4>
+                            <span class="status-code status-2xx">200 OK</span>
+                            <span style="color: white;">Requisição bem-sucedida (GET, PUT, DELETE)</span><br><br>
+                            
+                            <span class="status-code status-2xx">201 Created</span>
+                            <span style="color: white;">Recurso criado com sucesso (POST)</span><br><br>
+                            
+                            <span class="status-code status-2xx">204 No Content</span>
+                            <span style="color: white;">Sucesso, mas sem conteúdo na resposta (DELETE)</span>
+                        </div>
+
+                        <div style="margin-top: 25px;">
+                            <h4 style="margin-bottom: 15px;">❌ Erro do Cliente (4xx)</h4>
+                            <span class="status-code status-4xx">400 Bad Request</span>
+                            <span style="color: white;">Dados inválidos ou malformados</span><br><br>
+                            
+                            <span class="status-code status-4xx">401 Unauthorized</span>
+                            <span style="color: white;">Não autenticado (falta login)</span><br><br>
+                            
+                            <span class="status-code status-4xx">403 Forbidden</span>
+                            <span style="color: white;">Autenticado, mas sem permissão</span><br><br>
+                            
+                            <span class="status-code status-4xx">404 Not Found</span>
+                            <span style="color: white;">Recurso não encontrado</span><br><br>
+                            
+                            <span class="status-code status-4xx">422 Unprocessable Entity</span>
+                            <span style="color: white;">Dados válidos, mas regra de negócio falhou</span>
+                        </div>
+
+                        <div style="margin-top: 25px;">
+                            <h4 style="margin-bottom: 15px;">💥 Erro do Servidor (5xx)</h4>
+                            <span class="status-code status-5xx">500 Internal Server Error</span>
+                            <span style="color: white;">Erro genérico do servidor</span><br><br>
+                            
+                            <span class="status-code status-5xx">503 Service Unavailable</span>
+                            <span style="color: white;">Servidor temporariamente indisponível</span>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway" style="margin-top: 30px;">
+                        <h4>💡 Dica Profissional</h4>
+                        <p>Use o status code CORRETO! Isso ajuda clientes da API a tratarem erros adequadamente. 
+                        Não retorne 200 quando algo deu errado!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: HEADERS E PARÂMETROS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Headers e Parâmetros HTTP</h2>
+                    <p>Informações adicionais nas requisições</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>📨 Headers Importantes</h3>
+                            <ul>
+                                <li><strong>Content-Type:</strong> Tipo do conteúdo<br>
+                                    <small>application/json, text/html, etc</small></li>
+                                <li><strong>Authorization:</strong> Token de autenticação<br>
+                                    <small>Bearer token123</small></li>
+                                <li><strong>Accept:</strong> Formato desejado<br>
+                                    <small>application/json</small></li>
+                                <li><strong>User-Agent:</strong> Cliente fazendo requisição<br>
+                                    <small>Chrome, Postman, etc</small></li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📌 Tipos de Parâmetros</h3>
+                            <ul>
+                                <li><strong>Query Parameters:</strong><br>
+                                    <code>?categoria=eletronicos&ordem=preco</code></li>
+                                <li><strong>Path Parameters:</strong><br>
+                                    <code>/api/produtos/<strong>123</strong></code></li>
+                                <li><strong>Body:</strong><br>
+                                    Dados no corpo (JSON)</li>
+                                <li><strong>Headers:</strong><br>
+                                    Metadados da requisição</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🔍 Diferença entre Query e Path Parameters</h4>
+                        <table class="comparison-table" style="margin-top: 15px;">
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Exemplo</th>
+                                <th>Quando Usar</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Path Param</strong></td>
+                                <td><code>/api/usuarios/123</code></td>
+                                <td>Identificar <strong>UM</strong> recurso específico</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Query Param</strong></td>
+                                <td><code>/api/usuarios?cidade=londrina</code></td>
+                                <td><strong>Filtrar</strong> lista de recursos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Múltiplos Query</strong></td>
+                                <td><code>/api/produtos?categoria=tech&max=100</code></td>
+                                <td>Filtros, paginação, ordenação</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Exemplos Práticos</h3>
+                        <div class="code-block" style="background: white; color: var(--unifil-dark); border: 2px solid var(--unifil-orange);">
+<span style="color: #4CAF50;">// Buscar produto específico (Path Parameter)</span>
+GET /api/produtos/123
+
+<span style="color: #4CAF50;">// Listar produtos filtrados (Query Parameters)</span>
+GET /api/produtos?categoria=eletronicos&preco_max=1000&ordem=nome
+
+<span style="color: #4CAF50;">// Criar novo produto (Body)</span>
+POST /api/produtos
+Content-Type: application/json
+
+{
+  "nome": "Notebook",
+  "preco": 3000,
+  "categoria": "eletronicos"
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: SETUP DO AMBIENTE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚙️ Setup do Ambiente de Desenvolvimento</h2>
+                    <p>Preparando as ferramentas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Vamos configurar TUDO que você precisa para desenvolver APIs! 🛠️
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">1️⃣ Node.js e npm</h4>
+                            <p><strong>O que é:</strong> Runtime JavaScript + Gerenciador de pacotes</p>
+                            <p><strong>Download:</strong> https://nodejs.org (versão LTS)</p>
+                            <p><strong>Verificar:</strong> <code>node --version</code> e <code>npm --version</code></p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">2️⃣ Editor de Código (VS Code)</h4>
+                            <p><strong>O que é:</strong> Editor de código profissional e gratuito</p>
+                            <p><strong>Download:</strong> https://code.visualstudio.com</p>
+                            <p><strong>Extensões úteis:</strong> ES7+ React/Redux, REST Client</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">3️⃣ Postman ou Insomnia</h4>
+                            <p><strong>O que é:</strong> Ferramenta para testar APIs</p>
+                            <p><strong>Download:</strong> https://www.postman.com ou https://insomnia.rest</p>
+                            <p><strong>Uso:</strong> Fazer requisições e visualizar respostas</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">4️⃣ Git (Controle de Versão)</h4>
+                            <p><strong>O que é:</strong> Sistema de versionamento de código</p>
+                            <p><strong>Download:</strong> https://git-scm.com</p>
+                            <p><strong>Verificar:</strong> <code>git --version</code></p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>✅ Checklist de Instalação</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">☐ Node.js instalado (versão 18+)</li>
+                            <li style="padding: 8px 0;">☐ VS Code instalado e configurado</li>
+                            <li style="padding: 8px 0;">☐ Postman instalado e testado</li>
+                            <li style="padding: 8px 0;">☐ Git instalado e configurado</li>
+                            <li style="padding: 8px 0;">☐ Terminal funcionando corretamente</li>
+                        </ul>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Dica</h4>
+                        <p>Se você já tem tudo instalado, <strong>atualize</strong> para as versões mais recentes! 
+                        Isso evita problemas de compatibilidade.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CRIANDO PRIMEIRO PROJETO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🚀 Criando Seu Primeiro Projeto API</h2>
+                    <p>Do zero ao "Hello World"</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🏗️ Vamos construir a estrutura</h3>
+                        <p style="font-size: 1.15rem;">
+                            Pense em criar uma API como construir uma casa:<br>
+                            <strong>1️⃣ Fundação:</strong> Criar pasta e inicializar projeto<br>
+                            <strong>2️⃣ Estrutura:</strong> Instalar dependências (Express)<br>
+                            <strong>3️⃣ Acabamento:</strong> Criar primeiro endpoint<br>
+                            <strong>4️⃣ Inauguração:</strong> Rodar e testar!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📝 Passo a Passo Completo</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;"># 1. Criar pasta do projeto</span>
+mkdir minha-primeira-api
+cd minha-primeira-api
+
+<span style="color: #6A9955;"># 2. Inicializar projeto Node.js</span>
+npm init -y
+
+<span style="color: #6A9955;"># 3. Instalar Express (framework web)</span>
+npm install express
+
+<span style="color: #6A9955;"># 4. Instalar nodemon (reinicia automático)</span>
+npm install --save-dev nodemon
+
+<span style="color: #6A9955;"># 5. Criar arquivo principal</span>
+<span style="color: #569cd6;">touch</span> index.js
+
+<span style="color: #6A9955;"># 6. Abrir no VS Code</span>
+code .
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📁 Estrutura de Pastas</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 1rem;">
+minha-primeira-api/
+├── node_modules/
+├── index.js
+├── package.json
+└── package-lock.json
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>⚙️ Configurar Scripts</h3>
+                            <p style="margin-bottom: 10px;">Adicione no <code>package.json</code>:</p>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+"scripts": {
+  "start": "node index.js",
+  "dev": "nodemon index.js"
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 O que cada comando faz?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.05rem;">
+                            <li style="padding: 8px 0;"><strong>npm init -y:</strong> Cria package.json com configurações padrão</li>
+                            <li style="padding: 8px 0;"><strong>npm install express:</strong> Baixa o framework Express</li>
+                            <li style="padding: 8px 0;"><strong>nodemon:</strong> Reinicia servidor quando código muda</li>
+                            <li style="padding: 8px 0;"><strong>npm run dev:</strong> Inicia servidor em modo desenvolvimento</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: PRIMEIRO ENDPOINT -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎉 Seu Primeiro Endpoint Funcionando!</h2>
+                    <p>Hello World API</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📝 Código Completo do index.js</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// 1. Importar Express</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">express</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'express'</span>);
+
+<span style="color: #6A9955;">// 2. Criar aplicação</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">app</span> = <span style="color: #DCDCAA;">express</span>();
+
+<span style="color: #6A9955;">// 3. Definir porta</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">PORT</span> = <span style="color: #B5CEA8;">3000</span>;
+
+<span style="color: #6A9955;">// 4. Middleware para JSON</span>
+app.<span style="color: #DCDCAA;">use</span>(express.<span style="color: #DCDCAA;">json</span>());
+
+<span style="color: #6A9955;">// 5. Criar primeiro endpoint</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    res.<span style="color: #DCDCAA;">json</span>({
+        <span style="color: #9CDCFE;">mensagem</span>: <span style="color: #CE9178;">'🎉 Minha primeira API funcionando!'</span>,
+        <span style="color: #9CDCFE;">status</span>: <span style="color: #CE9178;">'sucesso'</span>,
+        <span style="color: #9CDCFE;">timestamp</span>: <span style="color: #C586C0;">new</span> <span style="color: #4EC9B0;">Date</span>().<span style="color: #DCDCAA;">toISOString</span>()
+    });
+});
+
+<span style="color: #6A9955;">// 6. Endpoint de informações</span>
+app.<span style="color: #DCDCAA;">get</span>(<span style="color: #CE9178;">'/info'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    res.<span style="color: #DCDCAA;">json</span>({
+        <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">'Minha API REST'</span>,
+        <span style="color: #9CDCFE;">versao</span>: <span style="color: #CE9178;">'1.0.0'</span>,
+        <span style="color: #9CDCFE;">autor</span>: <span style="color: #CE9178;">'Seu Nome'</span>
+    });
+});
+
+<span style="color: #6A9955;">// 7. Iniciar servidor</span>
+app.<span style="color: #DCDCAA;">listen</span>(<span style="color: #9CDCFE;">PORT</span>, () => {
+    <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(<span style="color: #CE9178;">`🚀 Servidor rodando em http://localhost:</span><span style="color: #569cd6;">${</span><span style="color: #9CDCFE;">PORT</span><span style="color: #569cd6;">}</span><span style="color: #CE9178;">`</span>);
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>▶️ Como Rodar</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #6A9955;"># Modo desenvolvimento (recarrega automático)</span>
+npm run dev
+
+<span style="color: #6A9955;"># OU modo normal</span>
+npm start
+                            </div>
+                            <p style="margin-top: 15px;">
+                                Você verá no terminal:<br>
+                                <strong style="color: var(--unifil-orange);">🚀 Servidor rodando em http://localhost:3000</strong>
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🧪 Como Testar</h3>
+                            <ol style="padding-left: 20px; font-size: 1.05rem;">
+                                <li>Abrir navegador</li>
+                                <li>Ir para: <code>http://localhost:3000</code></li>
+                                <li>Ou usar Postman:<br>
+                                    GET → <code>http://localhost:3000</code></li>
+                                <li>Testar também: <code>/info</code></li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="interactive-demo" style="margin-top: 30px;">
+                        <h3 style="color: var(--unifil-orange); margin-bottom: 15px;">🎮 Teste Interativo</h3>
+                        <p style="margin-bottom: 15px;">Simule requisições para sua API:</p>
+                        <button onclick="simulateRequest('root')">GET /</button>
+                        <button onclick="simulateRequest('info')">GET /info</button>
+                        <div id="apiResponse" class="code-block" style="margin-top: 20px; min-height: 150px; background: white; color: var(--unifil-dark);">
+Clique nos botões acima para simular requisições!
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 30px;">
+                        Parabéns! Você criou sua primeira API REST! 🎊
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: GIT E VERSIONAMENTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📚 Git - Versionamento de Código</h2>
+                    <p>Salvando seu progresso profissionalmente</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🎮 Analogia: Git = Save Points em um Jogo</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>Commit:</strong> Salvar o progresso do jogo<br>
+                            <strong>Branch:</strong> Tentar um caminho diferente sem perder o save principal<br>
+                            <strong>Push:</strong> Upload do save para a nuvem<br>
+                            <strong>Pull:</strong> Download do save da nuvem<br>
+                            <strong>Merge:</strong> Juntar dois caminhos diferentes
+                        </p>
+                    </div>
+
+                    <div class="timeline" style="margin-top: 30px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">1️⃣ Configurar Git (primeira vez)</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+git config --global user.name "Seu Nome"
+git config --global user.email "seu@email.com"
+                            </div>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">2️⃣ Inicializar repositório</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+git init
+                            </div>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">3️⃣ Criar .gitignore</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #6A9955;"># Criar arquivo .gitignore</span>
+node_modules/
+.env
+*.log
+                            </div>
+                            <p style="margin-top: 10px;"><strong>Por quê?</strong> Não versionar arquivos temporários ou sensíveis</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">4️⃣ Primeiro commit</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+git add .
+git commit -m "feat: criar primeira API com Express"
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📋 Comandos Essenciais</h3>
+                            <ul>
+                                <li><code>git status</code> - Ver mudanças</li>
+                                <li><code>git add .</code> - Preparar tudo</li>
+                                <li><code>git commit -m "msg"</code> - Salvar</li>
+                                <li><code>git log</code> - Ver histórico</li>
+                                <li><code>git diff</code> - Ver diferenças</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>✍️ Mensagens de Commit</h3>
+                            <p style="margin-bottom: 10px;"><strong>Padrão Conventional Commits:</strong></p>
+                            <ul>
+                                <li><code>feat:</code> Nova funcionalidade</li>
+                                <li><code>fix:</code> Correção de bug</li>
+                                <li><code>docs:</code> Documentação</li>
+                                <li><code>refactor:</code> Refatoração</li>
+                                <li><code>test:</code> Testes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Boa Prática</h4>
+                        <p>Faça commits pequenos e frequentes! É melhor ter 10 commits pequenos 
+                        do que 1 commit gigante com tudo misturado.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: TESTANDO COM POSTMAN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧪 Testando APIs com Postman</h2>
+                    <p>Ferramenta profissional para testar endpoints</p>
+                </div>
+                <div class="slide-body">
+                    <div class="highlight-box">
+                        <h3>🎯 Por que usar Postman?</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; font-size: 1.05rem;">
+                            <div>
+                                <strong>✅ Fácil de usar</strong><br>
+                                Interface visual intuitiva
+                            </div>
+                            <div>
+                                <strong>✅ Organização</strong><br>
+                                Salvar requisições em collections
+                            </div>
+                            <div>
+                                <strong>✅ Testes automatizados</strong><br>
+                                Validar respostas
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline" style="margin-top: 30px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">1️⃣ Criar Nova Requisição</h4>
+                            <ul style="padding-left: 20px; margin-top: 10px;">
+                                <li>Abrir Postman</li>
+                                <li>Clicar em "New" → "HTTP Request"</li>
+                                <li>Escolher método (GET, POST, etc)</li>
+                                <li>Digitar URL: <code>http://localhost:3000</code></li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">2️⃣ Configurar Headers (se necessário)</h4>
+                            <ul style="padding-left: 20px; margin-top: 10px;">
+                                <li>Aba "Headers"</li>
+                                <li>Adicionar: <code>Content-Type: application/json</code></li>
+                                <li>Adicionar: <code>Authorization: Bearer token...</code></li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">3️⃣ Adicionar Body (POST/PUT)</h4>
+                            <ul style="padding-left: 20px; margin-top: 10px;">
+                                <li>Aba "Body"</li>
+                                <li>Selecionar "raw" → "JSON"</li>
+                                <li>Escrever objeto JSON</li>
+                            </ul>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">4️⃣ Enviar e Analisar</h4>
+                            <ul style="padding-left: 20px; margin-top: 10px;">
+                                <li>Clicar em "Send"</li>
+                                <li>Ver resposta, status code, tempo</li>
+                                <li>Salvar requisição na Collection</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📝 Exemplo de Teste POST no Postman</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                            <div>
+                                <strong style="color: var(--unifil-orange);">Configuração:</strong>
+                                <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+Método: POST
+URL: http://localhost:3000/api/produtos
+
+Headers:
+Content-Type: application/json
+
+Body (raw JSON):
+{
+  "nome": "Mouse Gamer",
+  "preco": 150,
+  "categoria": "Informática"
+}
+                                </div>
+                            </div>
+                            <div>
+                                <strong style="color: var(--unifil-orange);">Resposta Esperada:</strong>
+                                <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+Status: 201 Created
+Time: 25ms
+
+Body:
+{
+  "id": 1,
+  "nome": "Mouse Gamer",
+  "preco": 150,
+  "categoria": "Informática",
+  "createdAt": "2026-02-13T..."
+}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway" style="margin-top: 30px;">
+                        <h4>💡 Dica Profissional</h4>
+                        <p>Crie uma <strong>Collection</strong> no Postman para cada projeto! 
+                        Organize todas as requisições e compartilhe com a equipe.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que conquistamos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Hoje você saiu do ZERO e criou uma API funcionando! 🎊
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Parte 1: HTTP Dominado</h3>
+                            <ul>
+                                <li>Entendemos protocolo HTTP</li>
+                                <li>Aprendemos métodos (GET, POST, PUT, DELETE)</li>
+                                <li>Dominamos Status Codes</li>
+                                <li>Vimos Headers e Parâmetros</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>✅ Parte 2: Ambiente Pronto</h3>
+                            <ul>
+                                <li>Instalamos Node.js + npm</li>
+                                <li>Configuramos VS Code</li>
+                                <li>Instalamos Postman</li>
+                                <li>Configuramos Git</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="content-box" style="margin-top: 30px;">
+                        <h3>✅ Parte 3: Primeira API Criada!</h3>
+                        <ul>
+                            <li>Criamos projeto Node.js com Express</li>
+                            <li>Implementamos endpoints GET</li>
+                            <li>Testamos com navegador e Postman</li>
+                            <li>Versionamos código com Git</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para Casa - IMPORTANTE!</h3>
+                        <div style="margin-top: 20px; font-size: 1.1rem;">
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">1️⃣ Tarefa Obrigatória:</strong><br>
+                                Criar endpoint <code>GET /api/me</code> que retorna suas informações pessoais em JSON:
+                                <div class="code-block" style="margin-top: 10px; background: var(--unifil-dark); color: #00ff00;">
+{
+  "nome": "Seu Nome",
+  "curso": "Engenharia de Software",
+  "hobbies": ["programar", "jogar", "ler"],
+  "linguagens": ["JavaScript", "Python"]
+}
+                                </div>
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">2️⃣ Adicione 2 novos endpoints:</strong><br>
+                                • <code>GET /api/data</code> - retorna data/hora atual<br>
+                                • <code>GET /api/random</code> - retorna número aleatório
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">3️⃣ Crie Collection no Postman:</strong><br>
+                                • Salve todas as requisições<br>
+                                • Teste cada endpoint<br>
+                                • Exporte a Collection (arquivo .json)
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px;">
+                                <strong style="color: var(--unifil-orange);">4️⃣ Versione com Git:</strong><br>
+                                • Faça commits descritivos<br>
+                                • Use mensagens no padrão: <code>feat:</code>, <code>fix:</code>, etc
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (Segunda, 16/02)</h3>
+                            <ul>
+                                <li>Implementação de GET avançado</li>
+                                <li>Arrays de objetos em memória</li>
+                                <li>Query parameters na prática</li>
+                                <li>Filtros e paginação</li>
+                                <li><strong>Projeto: API de Produtos</strong></li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📖 Leitura Recomendada</h3>
+                            <ul>
+                                <li>Documentação do Express.js</li>
+                                <li>Artigo: "REST Best Practices"</li>
+                                <li>Guia completo de HTTP Status Codes</li>
+                                <li>Tutorial de Postman Collections</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Pratique MUITO! Quanto mais endpoints você criar, melhor!" 💪
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.2rem;">Excelente trabalho hoje! 🙌</p>
+                        <p style="font-size: 1rem; margin-top: 10px;">Nos vemos na próxima aula com muito código!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 13</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .http-method, .highlight-box, .code-block, .big-idea, .key-takeaway, .comparison-table, .interactive-demo, .analogy-box, .timeline-item');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Simulate API requests
+        function simulateRequest(endpoint) {
+            const output = document.getElementById('apiResponse');
+            
+            if (endpoint === 'root') {
+                output.innerHTML = `<strong style="color: var(--unifil-orange);">GET http://localhost:3000/</strong>
+
+<span style="color: #4CAF50;">Status: 200 OK</span>
+Time: 12ms
+
+Response Body:
+{
+  "mensagem": "🎉 Minha primeira API funcionando!",
+  "status": "sucesso",
+  "timestamp": "${new Date().toISOString()}"
+}`;
+            } else if (endpoint === 'info') {
+                output.innerHTML = `<strong style="color: var(--unifil-orange);">GET http://localhost:3000/info</strong>
+
+<span style="color: #4CAF50;">Status: 200 OK</span>
+Time: 8ms
+
+Response Body:
+{
+  "nome": "Minha API REST",
+  "versao": "1.0.0",
+  "autor": "Seu Nome"
+}`;
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

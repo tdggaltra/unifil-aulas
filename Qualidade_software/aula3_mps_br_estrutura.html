@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 3 - MR-MPS-SW: Estrutura Geral | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --green: #28a745;
+            --blue: #007bff;
+            --purple: #6f42c1;
+            --red: #dc3545;
+            --yellow: #ffc107;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .maturity-levels {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .level-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 6px solid;
+            transition: all 0.3s ease;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .level-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-card.level-a { border-left-color: #9b59b6; }
+        .level-card.level-b { border-left-color: #3498db; }
+        .level-card.level-c { border-left-color: #1abc9c; }
+        .level-card.level-d { border-left-color: #2ecc71; }
+        .level-card.level-e { border-left-color: #f39c12; }
+        .level-card.level-f { border-left-color: #e74c3c; }
+        .level-card.level-g { border-left-color: #95a5a6; }
+
+        .level-badge {
+            font-size: 3rem;
+            font-weight: 700;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .level-card.level-a .level-badge { color: #9b59b6; }
+        .level-card.level-b .level-badge { color: #3498db; }
+        .level-card.level-c .level-badge { color: #1abc9c; }
+        .level-card.level-d .level-badge { color: #2ecc71; }
+        .level-card.level-e .level-badge { color: #f39c12; }
+        .level-card.level-f .level-badge { color: #e74c3c; }
+        .level-card.level-g .level-badge { color: #95a5a6; }
+
+        .level-info {
+            flex: 1;
+        }
+
+        .level-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            margin-bottom: 5px;
+        }
+
+        .level-description {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 40px 0;
+            padding-left: 40px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: 5px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .timeline-year {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 5px;
+        }
+
+        .timeline-content {
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--unifil-orange);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .process-diagram {
+            background: white;
+            border: 3px solid var(--unifil-light);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .process-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .process-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            min-width: 150px;
+            transition: transform 0.3s ease;
+        }
+
+        .process-box:hover {
+            transform: scale(1.1);
+        }
+
+        .process-arrow {
+            font-size: 2rem;
+            color: var(--unifil-orange);
+            font-weight: 700;
+        }
+
+        .capability-levels {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .capability-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .capability-number {
+            background: var(--unifil-orange);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .capability-text {
+            flex: 1;
+        }
+
+        .capability-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            margin-bottom: 5px;
+        }
+
+        .capability-desc {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .benefit-card {
+            background: white;
+            border: 2px solid var(--unifil-light);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .benefit-card:hover {
+            border-color: var(--unifil-orange);
+            box-shadow: 0 5px 20px rgba(255, 140, 0, 0.2);
+        }
+
+        .benefit-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .benefit-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .benefit-desc {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Stagger animations */
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .content-box:nth-child(4) { animation-delay: 0.3s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(4) { animation-delay: 0.3s; }
+        .level-card:nth-child(1) { animation-delay: 0s; }
+        .level-card:nth-child(2) { animation-delay: 0.1s; }
+        .level-card:nth-child(3) { animation-delay: 0.2s; }
+        .level-card:nth-child(4) { animation-delay: 0.3s; }
+        .level-card:nth-child(5) { animation-delay: 0.4s; }
+        .level-card:nth-child(6) { animation-delay: 0.5s; }
+        .level-card:nth-child(7) { animation-delay: 0.6s; }
+        .timeline-item:nth-child(1) { animation-delay: 0s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.3s; }
+        .timeline-item:nth-child(5) { animation-delay: 0.4s; }
+        .capability-item:nth-child(1) { animation-delay: 0s; }
+        .capability-item:nth-child(2) { animation-delay: 0.1s; }
+        .capability-item:nth-child(3) { animation-delay: 0.2s; }
+        .capability-item:nth-child(4) { animation-delay: 0.3s; }
+        .benefit-card:nth-child(1) { animation-delay: 0s; }
+        .benefit-card:nth-child(2) { animation-delay: 0.1s; }
+        .benefit-card:nth-child(3) { animation-delay: 0.2s; }
+        .benefit-card:nth-child(4) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>🇧🇷 MR-MPS-SW: Estrutura Geral</h1>
+                    <p>Aula 3 - Qualidade de Software</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 60px;">
+                        Bem-vindo ao MPS.BR!<br>
+                        O modelo brasileiro de melhoria de processos 🚀
+                    </div>
+
+                    <div style="text-align: center; margin-top: 50px;">
+                        <h2 style="color: var(--unifil-dark); font-size: 1.8rem; margin-bottom: 20px;">
+                            🎯 O que vamos aprender hoje
+                        </h2>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>📚 Conteúdo da Aula</h3>
+                            <ul>
+                                <li>O que é o MPS.BR e por que existe</li>
+                                <li>História e evolução do modelo</li>
+                                <li>Estrutura geral do MR-MPS-SW</li>
+                                <li>Os 7 níveis de maturidade (G a A)</li>
+                                <li>Processos e atributos de processo</li>
+                                <li>Comparação com CMMI e ISO</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎓 Ao final você saberá</h3>
+                            <ul>
+                                <li>Explicar a estrutura do MPS.BR</li>
+                                <li>Identificar os 7 níveis de maturidade</li>
+                                <li>Entender capacidade de processo</li>
+                                <li>Comparar MPS.BR com outros modelos</li>
+                                <li>Iniciar o Trabalho 1 (10% da nota)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>🏆 Trabalho 1 - Caracterização de Empresa (10%)</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            <strong>Entrega:</strong> 02/03/2026<br>
+                            <strong>Tarefa:</strong> Escolher uma empresa (real ou fictícia) e caracterizá-la quanto 
+                            a processos de software, identificando seu nível atual de maturidade e propondo melhorias.<br>
+                            <strong>Hoje:</strong> Orientações iniciais e formação de grupos!
+                        </p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray); font-size: 1.1rem;">
+                        Use as setas do teclado (← →) ou os botões abaixo para navegar
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: O QUE É MPS.BR -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🇧🇷 O que é o MPS.BR?</h2>
+                    <p>Melhoria de Processo do Software Brasileiro</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        MPS.BR = Programa mobilizador da indústria brasileira de software! 🚀
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📖 Definição Oficial</h3>
+                            <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 15px;">
+                                <strong>MPS.BR</strong> (Melhoria de Processo do Software Brasileiro) é um programa 
+                                mobilizador, de longo prazo, criado em dezembro de 2003, coordenado pela 
+                                <strong>SOFTEX</strong> (Associação para Promoção da Excelência do Software Brasileiro).
+                            </p>
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                Seu objetivo é a <strong>melhoria da capacidade de desenvolvimento de software</strong> 
+                                nas empresas brasileiras, especialmente PMEs (Pequenas e Médias Empresas).
+                            </p>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Objetivos do Programa</h3>
+                            <ul>
+                                <li>Definir e aprimorar modelos de qualidade</li>
+                                <li>Desenvolver método de avaliação</li>
+                                <li>Implementar programa de capacitação</li>
+                                <li>Certificar consultores e avaliadores</li>
+                                <li>Apoiar PMEs brasileiras</li>
+                                <li>Promover competitividade internacional</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">1.100+</div>
+                            <div class="stat-label">empresas avaliadas MPS.BR desde 2003</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">7 Níveis</div>
+                            <div class="stat-label">de maturidade (G, F, E, D, C, B, A)</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">Compatible</div>
+                            <div class="stat-label">com CMMI e ISO/IEC 15504</div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💡 Por que MPS.BR foi criado?</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Problema:</strong> CMMI e SPICE (ISO 15504) eram muito <strong>caros e complexos</strong> 
+                            para PMEs brasileiras. Avaliação CMMI custava US$ 50k-200k!
+                        </p>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Solução MPS.BR:</strong>
+                        </p>
+                        <ul style="margin-top: 10px; font-size: 1.05rem; line-height: 1.8;">
+                            <li style="padding: 5px 0;">✅ <strong>Mais acessível:</strong> Avaliação custa 10-20% do CMMI</li>
+                            <li style="padding: 5px 0;">✅ <strong>Graduação fina:</strong> 7 níveis ao invés de 5 (CMMI)</li>
+                            <li style="padding: 5px 0;">✅ <strong>Cultura brasileira:</strong> Adaptado à realidade nacional</li>
+                            <li style="padding: 5px 0;">✅ <strong>Compatível internacionalmente:</strong> Reconhecido mundialmente</li>
+                            <li style="padding: 5px 0;">✅ <strong>Rede de parceiros:</strong> Consultores e implementadores em todo país</li>
+                        </ul>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        O MPS.BR é um case de sucesso internacional de modelo de qualidade criado em 
+                        país em desenvolvimento. É referência para vários países da América Latina, África e Ásia.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: HISTÓRIA DO MPS.BR -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📜 História e Evolução do MPS.BR</h2>
+                    <p>De 2003 até hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-year">2003 - Criação</div>
+                            <div class="timeline-content">
+                                <strong>Dezembro de 2003:</strong> Programa MPS.BR é lançado pela SOFTEX com apoio do MCT 
+                                (Ministério da Ciência e Tecnologia) e FINEP. Primeira versão do modelo MR-MPS.
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2005 - Primeiras Avaliações</div>
+                            <div class="timeline-content">
+                                <strong>Primeira empresa avaliada:</strong> Politec (hoje Stefanini) alcança nível F.
+                                Início da capacitação de consultores de implementação e avaliadores líderes.
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2007 - Reconhecimento</div>
+                            <div class="timeline-content">
+                                <strong>Equivalência com CMMI:</strong> Comprovada compatibilidade entre MPS.BR e CMMI.
+                                Empresas podem migrar entre modelos. Mais de 100 empresas já avaliadas.
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2011 - Expansão</div>
+                            <div class="timeline-content">
+                                <strong>500 empresas avaliadas.</strong> MPS.BR se torna referência na América Latina.
+                                Lançamento do MR-MPS-RH (Recursos Humanos) e MR-MPS-SV (Serviços).
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2016 - Maturidade</div>
+                            <div class="timeline-content">
+                                <strong>800+ empresas avaliadas.</strong> MPS.BR reconhecido internacionalmente.
+                                Adotado por países como Peru, México, Paraguai, Uruguai, Colômbia.
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2020-2024 - Consolidação</div>
+                            <div class="timeline-content">
+                                <strong>1.100+ empresas avaliadas.</strong> Novas versões dos guias (2021, 2023).
+                                Integração com metodologias ágeis. MPS.BR continua sendo o principal modelo brasileiro.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">21 anos</div>
+                            <div class="stat-label">de história e evolução contínua</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">70%</div>
+                            <div class="stat-label">das empresas são PMEs</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">Todo Brasil</div>
+                            <div class="stat-label">26 estados + DF participam</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🏆 Impacto do MPS.BR</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Empresas que implantaram MPS.BR reportam:<br>
+                            • <strong>60-70% de redução</strong> em defeitos<br>
+                            • <strong>40-50% de aumento</strong> em produtividade<br>
+                            • <strong>30-40% de redução</strong> em custos de projeto<br>
+                            • <strong>ROI médio de 250-400%</strong> em 2-3 anos
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: ESTRUTURA DO MR-MPS-SW -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏗️ Estrutura do MR-MPS-SW</h2>
+                    <p>Modelo de Referência para Software</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        3 componentes principais: Níveis + Processos + Capacidade 🎯
+                    </div>
+
+                    <div class="process-diagram" style="margin-top: 30px;">
+                        <h3 style="color: var(--unifil-orange); margin-bottom: 20px; text-align: center; font-size: 1.6rem;">
+                            📊 Arquitetura do MR-MPS-SW
+                        </h3>
+                        
+                        <div class="process-flow">
+                            <div class="process-box">7 Níveis de<br>Maturidade</div>
+                            <div class="process-arrow">→</div>
+                            <div class="process-box">Processos por<br>Nível</div>
+                            <div class="process-arrow">→</div>
+                            <div class="process-box">Capacidade de<br>Processo</div>
+                        </div>
+
+                        <p style="text-align: center; margin-top: 30px; font-size: 1.1rem; color: var(--unifil-gray);">
+                            Cada nível agrupa processos + cada processo tem níveis de capacidade
+                        </p>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>1️⃣ Níveis de Maturidade</h3>
+                            <p style="font-size: 1.05rem; line-height: 1.8; margin-top: 10px;">
+                                São <strong>7 níveis</strong> evolutivos de melhoria de processos:
+                            </p>
+                            <ul style="margin-top: 15px; font-size: 1rem;">
+                                <li><strong>G:</strong> Parcialmente Gerenciado</li>
+                                <li><strong>F:</strong> Gerenciado</li>
+                                <li><strong>E:</strong> Parcialmente Definido</li>
+                                <li><strong>D:</strong> Largamente Definido</li>
+                                <li><strong>C:</strong> Definido</li>
+                                <li><strong>B:</strong> Gerenciado Quantitativamente</li>
+                                <li><strong>A:</strong> Em Otimização</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>2️⃣ Processos</h3>
+                            <p style="font-size: 1.05rem; line-height: 1.8; margin-top: 10px;">
+                                Cada nível define um <strong>conjunto de processos</strong> que devem ser implementados:
+                            </p>
+                            <ul style="margin-top: 15px; font-size: 1rem;">
+                                <li><strong>Gerência de Projetos (GPR)</strong></li>
+                                <li><strong>Gerência de Requisitos (GRE)</strong></li>
+                                <li><strong>Desenvolvimento (DES)</strong></li>
+                                <li><strong>Garantia da Qualidade (GQA)</strong></li>
+                                <li><strong>Medição (MED)</strong></li>
+                                <li>E muitos outros...</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>3️⃣ Capacidade de Processo</h3>
+                            <p style="font-size: 1.05rem; line-height: 1.8; margin-top: 10px;">
+                                Cada processo é avaliado em <strong>níveis de capacidade</strong>:
+                            </p>
+                            <ul style="margin-top: 15px; font-size: 1rem;">
+                                <li><strong>0:</strong> Incompleto</li>
+                                <li><strong>1:</strong> Executado</li>
+                                <li><strong>2:</strong> Gerenciado</li>
+                                <li><strong>3:</strong> Definido</li>
+                                <li><strong>4:</strong> Previsível</li>
+                                <li><strong>5:</strong> Em Otimização</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💡 Entendendo a Relação</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Analogia da Escola:</strong>
+                        </p>
+                        <ul style="margin-top: 10px; font-size: 1.05rem; line-height: 1.8;">
+                            <li style="padding: 5px 0;">
+                                📚 <strong>Níveis de Maturidade</strong> = Anos escolares (1º ano, 2º ano, 3º ano...)
+                            </li>
+                            <li style="padding: 5px 0;">
+                                📖 <strong>Processos</strong> = Matérias que você deve cursar (Matemática, Português, Ciências...)
+                            </li>
+                            <li style="padding: 5px 0;">
+                                ⭐ <strong>Capacidade de Processo</strong> = Sua nota em cada matéria (0 a 10)
+                            </li>
+                        </ul>
+                        <p style="margin-top: 15px; font-size: 1.05rem; line-height: 1.8; color: var(--unifil-gray);">
+                            Para passar de ano (nível), você precisa ter todas as matérias (processos) com nota mínima 
+                            (capacidade adequada)!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Conceito Fundamental</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            <strong>Maturidade Organizacional</strong> = Capacidade de TODOS os processos necessários.<br>
+                            Uma organização evolui nível a nível, implementando novos processos e melhorando os existentes!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: OS 7 NÍVEIS DE MATURIDADE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Os 7 Níveis de Maturidade</h2>
+                    <p>De G (iniciante) até A (otimizado)</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="font-size: 1.6rem;">
+                        Jornada da melhoria contínua: G → F → E → D → C → B → A 🚀
+                    </div>
+
+                    <div class="maturity-levels" style="margin-top: 30px;">
+                        <div class="level-card level-g">
+                            <div class="level-badge">G</div>
+                            <div class="level-info">
+                                <div class="level-name">Parcialmente Gerenciado</div>
+                                <div class="level-description">
+                                    <strong>2 processos:</strong> Gerência de Projetos (GPR) e Gerência de Requisitos (GRE).
+                                    Primeiro passo: começar a gerenciar projetos e requisitos de forma disciplinada.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-card level-f">
+                            <div class="level-badge">F</div>
+                            <div class="level-info">
+                                <div class="level-name">Gerenciado</div>
+                                <div class="level-description">
+                                    <strong>+5 processos:</strong> Adiciona Medição (MED), Garantia da Qualidade (GQA), 
+                                    Gerência de Configuração (GCO), Aquisição (AQU) e Gerência de Portfólio de Projetos (GPP).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-card level-e">
+                            <div class="level-badge">E</div>
+                            <div class="level-info">
+                                <div class="level-name">Parcialmente Definido</div>
+                                <div class="level-description">
+                                    <strong>+3 processos:</strong> Adiciona Avaliação e Melhoria do Processo Organizacional (AMP),
+                                    Definição do Processo Organizacional (DFP) e Gerência de Recursos Humanos (GRH).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-card level-d">
+                            <div class="level-badge">D</div>
+                            <div class="level-info">
+                                <div class="level-name">Largamente Definido</div>
+                                <div class="level-description">
+                                    <strong>+3 processos:</strong> Adiciona Desenvolvimento de Requisitos (DRE), 
+                                    Solução Técnica (DES - detalhado) e Validação (VAL).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-card level-c">
+                            <div class="level-badge">C</div>
+                            <div class="level-info">
+                                <div class="level-name">Definido</div>
+                                <div class="level-description">
+                                    <strong>+4 processos:</strong> Adiciona Verificação (VER), Integração do Produto (ITP),
+                                    Gerência de Riscos (GRI) e Gerência de Decisões (GDE).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-card level-b">
+                            <div class="level-badge">B</div>
+                            <div class="level-info">
+                                <div class="level-name">Gerenciado Quantitativamente</div>
+                                <div class="level-description">
+                                    <strong>+2 processos:</strong> Adiciona Gerência Quantitativa do Projeto (GQP) e 
+                                    processos com desempenho estatisticamente controlado.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-card level-a">
+                            <div class="level-badge">A</div>
+                            <div class="level-info">
+                                <div class="level-name">Em Otimização</div>
+                                <div class="level-description">
+                                    <strong>+2 processos:</strong> Adiciona Inovação e Implantação na Organização (IIO) e 
+                                    Análise de Causas de Problemas e Resolução (ACP). Melhoria contínua baseada em dados!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">60%</div>
+                            <div class="stat-label">das empresas brasileiras estão nos níveis G e F</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">2-3 anos</div>
+                            <div class="stat-label">tempo médio para subir um nível de maturidade</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">< 5%</div>
+                            <div class="stat-label">das empresas alcançam níveis B ou A</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: CAPACIDADE DE PROCESSO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Capacidade de Processo</h2>
+                    <p>Avaliando a qualidade de cada processo</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Não basta TER o processo, precisa executá-lo BEM! ⭐
+                    </div>
+
+                    <div class="capability-levels" style="margin-top: 30px;">
+                        <div class="capability-item">
+                            <div class="capability-number" style="background: #95a5a6;">0</div>
+                            <div class="capability-text">
+                                <div class="capability-title">Incompleto (Nível 0)</div>
+                                <div class="capability-desc">
+                                    Processo não implementado ou falha em atingir seu propósito. 
+                                    Pouca ou nenhuma evidência de sucesso sistemático.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="capability-item">
+                            <div class="capability-number" style="background: #e74c3c;">1</div>
+                            <div class="capability-text">
+                                <div class="capability-title">Executado (Nível 1)</div>
+                                <div class="capability-desc">
+                                    Processo implementado atinge seu propósito. 
+                                    <strong>Atributo:</strong> Execução do processo (AP 1.1) - processo é executado e atinge resultados.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="capability-item">
+                            <div class="capability-number" style="background: #f39c12;">2</div>
+                            <div class="capability-text">
+                                <div class="capability-title">Gerenciado (Nível 2)</div>
+                                <div class="capability-desc">
+                                    Processo executado de forma gerenciada (planejado, monitorado e ajustado). 
+                                    <strong>Atributos:</strong> AP 2.1 (Gerência da Execução) e AP 2.2 (Gerência do Produto de Trabalho).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="capability-item">
+                            <div class="capability-number" style="background: #2ecc71;">3</div>
+                            <div class="capability-text">
+                                <div class="capability-title">Definido (Nível 3)</div>
+                                <div class="capability-desc">
+                                    Processo executado usando um processo definido capaz de atingir resultados. 
+                                    <strong>Atributos:</strong> AP 3.1 (Definição do Processo) e AP 3.2 (Implantação do Processo).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="capability-item">
+                            <div class="capability-number" style="background: #3498db;">4</div>
+                            <div class="capability-text">
+                                <div class="capability-title">Previsível (Nível 4)</div>
+                                <div class="capability-desc">
+                                    Processo opera dentro de limites definidos para atingir resultados. 
+                                    <strong>Atributos:</strong> AP 4.1 (Controle do Processo) e AP 4.2 (Controle do Produto).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="capability-item">
+                            <div class="capability-number" style="background: #9b59b6;">5</div>
+                            <div class="capability-text">
+                                <div class="capability-title">Em Otimização (Nível 5)</div>
+                                <div class="capability-desc">
+                                    Processo previsível é continuamente melhorado para atender objetivos de negócio. 
+                                    <strong>Atributos:</strong> AP 5.1 (Inovação do Processo) e AP 5.2 (Otimização do Processo).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💡 Exemplo Prático: Processo de Gerência de Requisitos</h4>
+                        <ul style="margin-top: 15px; font-size: 1.05rem; line-height: 1.8;">
+                            <li style="padding: 5px 0;">
+                                <strong>Nível 0 (Incompleto):</strong> "Requisitos? A gente anota no email mesmo..."
+                            </li>
+                            <li style="padding: 5px 0;">
+                                <strong>Nível 1 (Executado):</strong> "Temos uma planilha de requisitos e todo projeto tem uma."
+                            </li>
+                            <li style="padding: 5px 0;">
+                                <strong>Nível 2 (Gerenciado):</strong> "Planejamos coleta de requisitos, rastreamos mudanças, 
+                                revisamos com cliente periodicamente."
+                            </li>
+                            <li style="padding: 5px 0;">
+                                <strong>Nível 3 (Definido):</strong> "Temos processo organizacional padrão para requisitos, 
+                                templates, checklists, todos seguem o mesmo processo."
+                            </li>
+                            <li style="padding: 5px 0;">
+                                <strong>Nível 4 (Previsível):</strong> "Medimos % de requisitos voláteis, tempo de aprovação, 
+                                conseguimos prever esforço de mudanças."
+                            </li>
+                            <li style="padding: 5px 0;">
+                                <strong>Nível 5 (Em Otimização):</strong> "Experimentamos novas técnicas de elicitação, 
+                                otimizamos processo baseado em dados, inovamos constantemente."
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Relação com Níveis de Maturidade</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Para estar no <strong>Nível G</strong>, processos GPR e GRE devem estar no 
+                            <strong>nível de capacidade 2</strong> (Gerenciado).<br>
+                            Para estar no <strong>Nível F</strong>, todos os 7 processos devem estar no 
+                            <strong>nível 2 ou 3</strong>.<br>
+                            E assim por diante!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: ATRIBUTOS DE PROCESSO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⭐ Atributos de Processo (APs)</h2>
+                    <p>Como avaliar se um processo está bem implementado</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="font-size: 1.6rem;">
+                        Atributos de Processo = Checklist de qualidade! ✅
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>📋 O que são APs?</h3>
+                            <p style="font-size: 1.1rem; line-height: 1.8; margin: 15px 0;">
+                                <strong>Atributos de Processo (APs)</strong> são características mensuráveis da 
+                                capacidade do processo. Cada nível de capacidade tem 1 ou 2 APs associados.
+                            </p>
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                Eles definem <strong>o que deve ser avaliado</strong> para determinar se um processo 
+                                está em determinado nível de capacidade.
+                            </p>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Como funcionam?</h3>
+                            <p style="font-size: 1.1rem; line-height: 1.8; margin: 15px 0;">
+                                Cada AP é avaliado em uma escala:
+                            </p>
+                            <ul style="font-size: 1.05rem;">
+                                <li><strong>N (Não alcançado):</strong> 0-15% evidência</li>
+                                <li><strong>P (Parcialmente):</strong> 16-50% evidência</li>
+                                <li><strong>L (Largamente):</strong> 51-85% evidência</li>
+                                <li><strong>T (Totalmente):</strong> 86-100% evidência</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Nível</th>
+                                <th>Atributos de Processo</th>
+                                <th>O que é verificado</th>
+                            </tr>
+                            <tr>
+                                <td><strong>1 - Executado</strong></td>
+                                <td>AP 1.1: Execução do Processo</td>
+                                <td>O processo é executado e atinge seus objetivos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2 - Gerenciado</strong></td>
+                                <td>
+                                    AP 2.1: Gerência da Execução<br>
+                                    AP 2.2: Gerência do Produto de Trabalho
+                                </td>
+                                <td>
+                                    Processo planejado, monitorado e ajustado.<br>
+                                    Produtos de trabalho documentados e controlados.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>3 - Definido</strong></td>
+                                <td>
+                                    AP 3.1: Definição do Processo<br>
+                                    AP 3.2: Implantação do Processo
+                                </td>
+                                <td>
+                                    Processo padrão organizacional definido.<br>
+                                    Processo implantado como processo definido.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>4 - Previsível</strong></td>
+                                <td>
+                                    AP 4.1: Controle do Processo<br>
+                                    AP 4.2: Controle do Produto
+                                </td>
+                                <td>
+                                    Processo controlado estatisticamente.<br>
+                                    Produtos com qualidade quantitativamente conhecida.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>5 - Em Otimização</strong></td>
+                                <td>
+                                    AP 5.1: Inovação do Processo<br>
+                                    AP 5.2: Otimização do Processo
+                                </td>
+                                <td>
+                                    Melhorias inovadoras identificadas.<br>
+                                    Processo otimizado continuamente.
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💡 Exemplo de Avaliação: AP 2.1 (Gerência da Execução)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.8; margin: 15px 0;">
+                            <strong>Resultados Esperados (RAPs):</strong>
+                        </p>
+                        <ul style="font-size: 1rem; line-height: 1.8;">
+                            <li>RAP 1: Objetivos do processo são identificados</li>
+                            <li>RAP 2: Execução é planejada e monitorada</li>
+                            <li>RAP 3: Recursos e informações necessárias são identificadas e disponibilizadas</li>
+                            <li>RAP 4: Responsabilidades e autoridades estão definidas</li>
+                            <li>RAP 5: Processo é ajustado conforme necessário</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-size: 1rem; color: var(--unifil-gray);">
+                            <strong>Avaliação:</strong> Verifica-se evidências documentais, entrevistas com equipe, 
+                            observação de artefatos. Se 86%+ dos RAPs são atendidos = <strong>T (Totalmente alcançado)</strong>.
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>📌 Regra de Satisfação</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            Para um processo estar em determinado nível de capacidade, 
+                            <strong>TODOS os APs daquele nível</strong> devem estar classificados como 
+                            <strong>L (Largamente)</strong> ou <strong>T (Totalmente)</strong> alcançados.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: COMPARAÇÃO COM CMMI E ISO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚖️ MPS.BR vs CMMI vs ISO/IEC 15504</h2>
+                    <p>Comparando modelos de qualidade</p>
+                </div>
+                <div class="slide-body">
+                    <div class="comparison-table">
+                        <table>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>MPS.BR</th>
+                                <th>CMMI</th>
+                                <th>ISO/IEC 15504 (SPICE)</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Origem</strong></td>
+                                <td>🇧🇷 Brasil (SOFTEX, 2003)</td>
+                                <td>🇺🇸 EUA (SEI, 1991)</td>
+                                <td>🌍 Internacional (ISO, 1998)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Níveis de Maturidade</strong></td>
+                                <td>7 níveis (G, F, E, D, C, B, A)</td>
+                                <td>5 níveis (1, 2, 3, 4, 5)</td>
+                                <td>6 níveis de capacidade (0-5)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Foco Principal</strong></td>
+                                <td>PMEs brasileiras</td>
+                                <td>Grandes organizações</td>
+                                <td>Padrão internacional</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Custo de Avaliação</strong></td>
+                                <td>R$ 15.000 - 40.000</td>
+                                <td>US$ 50.000 - 200.000</td>
+                                <td>€ 30.000 - 100.000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tempo de Avaliação</strong></td>
+                                <td>1-2 semanas</td>
+                                <td>2-4 semanas</td>
+                                <td>1-3 semanas</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Número de Processos</strong></td>
+                                <td>21 processos</td>
+                                <td>22 áreas de processo</td>
+                                <td>48 processos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Abordagem</strong></td>
+                                <td>Staged + Continuous</td>
+                                <td>Staged ou Continuous</td>
+                                <td>Continuous (capacidade)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Compatibilidade</strong></td>
+                                <td>Compatível com CMMI e ISO</td>
+                                <td>Compatível com ISO</td>
+                                <td>Base para outros modelos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Reconhecimento</strong></td>
+                                <td>América Latina, Brasil</td>
+                                <td>Mundial</td>
+                                <td>Mundial (ISO)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Adequação para Ágil</strong></td>
+                                <td>✅ Bem adaptado</td>
+                                <td>✅ Com ajustes (CMMI-DEV)</td>
+                                <td>⚠️ Mais genérico</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">compatível com CMMI nível 2 e 3</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">10-20%</div>
+                            <div class="stat-label">do custo de uma avaliação CMMI</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">ISO 12207</div>
+                            <div class="stat-label">base de processos comum</div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Vantagens do MPS.BR</h3>
+                            <ul>
+                                <li>Mais acessível para PMEs</li>
+                                <li>7 níveis = evolução gradual</li>
+                                <li>Custo muito menor</li>
+                                <li>Adaptado à cultura brasileira</li>
+                                <li>Rede de consultores nacional</li>
+                                <li>Reconhecido internacionalmente</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚠️ Quando usar CMMI/ISO?</h3>
+                            <ul>
+                                <li>Exigência de cliente internacional</li>
+                                <li>Grande corporação multinacional</li>
+                                <li>Contratos governamentais EUA/Europa</li>
+                                <li>Já tem infraestrutura CMMI</li>
+                                <li>Certificação ISO obrigatória</li>
+                                <li>Mercado específico exige</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Empresas que alcançaram MPS.BR nível C ou superior podem migrar para 
+                        CMMI nível 3 com esforço mínimo. A compatibilidade entre os modelos é comprovada!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: BENEFÍCIOS E CASOS DE SUCESSO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏆 Benefícios e Casos de Sucesso</h2>
+                    <p>O que as empresas ganham com MPS.BR</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        MPS.BR transforma empresas! Resultados comprovados 📈
+                    </div>
+
+                    <div class="benefits-grid" style="margin-top: 30px;">
+                        <div class="benefit-card">
+                            <span class="benefit-icon">📊</span>
+                            <div class="benefit-title">Melhoria de Qualidade</div>
+                            <div class="benefit-desc">
+                                60-70% de redução em defeitos. 
+                                Produtos entregues com muito menos bugs e retrabalho.
+                            </div>
+                        </div>
+
+                        <div class="benefit-card">
+                            <span class="benefit-icon">⚡</span>
+                            <div class="benefit-title">Aumento de Produtividade</div>
+                            <div class="benefit-desc">
+                                40-50% de aumento em produtividade.
+                                Processos bem definidos aceleram entregas.
+                            </div>
+                        </div>
+
+                        <div class="benefit-card">
+                            <span class="benefit-icon">💰</span>
+                            <div class="benefit-title">Redução de Custos</div>
+                            <div class="benefit-desc">
+                                30-40% de redução em custos de projeto.
+                                Menos retrabalho = menos desperdício de recursos.
+                            </div>
+                        </div>
+
+                        <div class="benefit-card">
+                            <span class="benefit-icon">⏱️</span>
+                            <div class="benefit-title">Previsibilidade</div>
+                            <div class="benefit-desc">
+                                Estimativas 80%+ precisas.
+                                Projetos entregues no prazo e orçamento.
+                            </div>
+                        </div>
+
+                        <div class="benefit-card">
+                            <span class="benefit-icon">🎯</span>
+                            <div class="benefit-title">Satisfação do Cliente</div>
+                            <div class="benefit-desc">
+                                NPS aumenta 20-30 pontos.
+                                Clientes mais satisfeitos com entregas de qualidade.
+                            </div>
+                        </div>
+
+                        <div class="benefit-card">
+                            <span class="benefit-icon">🌟</span>
+                            <div class="benefit-title">Competitividade</div>
+                            <div class="benefit-desc">
+                                Diferencial em licitações.
+                                Certificação abre portas para novos mercados.
+                            </div>
+                        </div>
+
+                        <div class="benefit-card">
+                            <span class="benefit-icon">👥</span>
+                            <div class="benefit-title">Clima Organizacional</div>
+                            <div class="benefit-desc">
+                                Redução de stress e burnout.
+                                Equipes trabalham de forma mais organizada.
+                            </div>
+                        </div>
+
+                        <div class="benefit-card">
+                            <span class="benefit-icon">📈</span>
+                            <div class="benefit-title">Crescimento Sustentável</div>
+                            <div class="benefit-desc">
+                                Processos escaláveis.
+                                Empresa cresce sem perder qualidade.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 40px;">
+                        <h4>🏢 Caso Real: Empresa de Software Médico (Curitiba)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.8; margin: 15px 0;">
+                            <strong>Perfil:</strong> PME com 25 funcionários, desenvolve sistemas para hospitais
+                        </p>
+                        <div class="two-column" style="margin-top: 20px; gap: 20px;">
+                            <div>
+                                <p style="font-weight: 600; color: var(--red); margin-bottom: 10px;">❌ ANTES do MPS.BR (nível G):</p>
+                                <ul style="font-size: 1rem; line-height: 1.8;">
+                                    <li>• 45% dos projetos atrasavam</li>
+                                    <li>• 30% de retrabalho</li>
+                                    <li>• NPS: 35 (baixo)</li>
+                                    <li>• Rotatividade: 35%/ano</li>
+                                    <li>• Faturamento: R$ 2M/ano</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p style="font-weight: 600; color: var(--green); margin-bottom: 10px;">✅ DEPOIS (nível E - 3 anos):</p>
+                                <ul style="font-size: 1rem; line-height: 1.8;">
+                                    <li>• 90% dos projetos no prazo</li>
+                                    <li>• 8% de retrabalho (-73%)</li>
+                                    <li>• NPS: 72 (excelente)</li>
+                                    <li>• Rotatividade: 12%/ano</li>
+                                    <li>• Faturamento: R$ 4.5M/ano</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p style="margin-top: 20px; font-size: 1.1rem; font-weight: 600; color: var(--unifil-orange);">
+                            Investimento em MPS.BR: R$ 180.000 em 3 anos | ROI: 350% 🎯
+                        </p>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">89%</div>
+                            <div class="stat-label">das empresas reportam melhoria significativa</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">ROI 250%</div>
+                            <div class="stat-label">retorno médio em 2-3 anos</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">+40%</div>
+                            <div class="stat-label">aumento médio em faturamento após certificação</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO E TRABALHO 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Trabalho 1</h2>
+                    <p>Próximos passos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Você está pronto para começar sua jornada MPS.BR! 🚀
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ O que aprendemos hoje</h3>
+                            <ul>
+                                <li>MPS.BR é modelo brasileiro, acessível e eficaz</li>
+                                <li>7 níveis de maturidade (G→F→E→D→C→B→A)</li>
+                                <li>Estrutura: Níveis + Processos + Capacidade</li>
+                                <li>Atributos de Processo avaliam qualidade</li>
+                                <li>Compatível com CMMI e ISO/IEC 15504</li>
+                                <li>Benefícios comprovados: -60% bugs, +40% produtividade</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🔮 Próximas Aulas</h3>
+                            <ul>
+                                <li><strong>Aula 4 (Sexta):</strong> Nível G em detalhes</li>
+                                <li><strong>Aula 5 (Segunda):</strong> Níveis F e E</li>
+                                <li><strong>Aula 6 (Terça):</strong> Nível D</li>
+                                <li><strong>Aula 7 (Segunda):</strong> Níveis C, B, A</li>
+                                <li><strong>Aula 8 (Terça):</strong> PROVA INTERMEDIÁRIA</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📋 TRABALHO 1: Caracterização de Empresa (10%)</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-bottom: 20px;">
+                            <strong>Prazo:</strong> 02/03/2026 (Segunda-feira)<br>
+                            <strong>Formato:</strong> Individual ou dupla<br>
+                            <strong>Entrega:</strong> Documento PDF (3-5 páginas)
+                        </p>
+                        
+                        <h4 style="margin: 20px 0 15px 0; font-size: 1.3rem;">📝 O que fazer:</h4>
+                        <ol style="font-size: 1.1rem; line-height: 2; padding-left: 25px;">
+                            <li><strong>Escolher uma empresa</strong> (real ou fictícia) de desenvolvimento de software</li>
+                            <li><strong>Caracterizar a empresa:</strong> tamanho, produtos, clientes, processos atuais</li>
+                            <li><strong>Avaliar o nível atual de maturidade</strong> (qual nível MPS.BR você estima?)</li>
+                            <li><strong>Identificar principais problemas</strong> de processo e qualidade</li>
+                            <li><strong>Propor próximo nível</strong> e principais melhorias necessárias</li>
+                            <li><strong>Justificar com base nos conceitos</strong> aprendidos nas aulas 1, 2 e 3</li>
+                        </ol>
+
+                        <p style="margin-top: 20px; font-size: 1.1rem; line-height: 1.8;">
+                            <strong>💡 Dica:</strong> Escolha uma empresa que você conhece (onde trabalha, estágio) 
+                            ou crie uma fictícia realista. Isso vai facilitar nas próximas atividades!
+                        </p>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Critério</th>
+                                <th>Descrição</th>
+                                <th>Pontos</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Caracterização da Empresa</strong></td>
+                                <td>Perfil completo e realista</td>
+                                <td>3,0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Avaliação do Nível Atual</strong></td>
+                                <td>Análise fundamentada dos processos</td>
+                                <td>3,0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Problemas Identificados</strong></td>
+                                <td>Problemas relevantes e bem descritos</td>
+                                <td>2,0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Propostas de Melhoria</strong></td>
+                                <td>Sugestões viáveis e alinhadas ao MPS.BR</td>
+                                <td>1,5</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Qualidade do Documento</strong></td>
+                                <td>Formatação, redação, referências</td>
+                                <td>0,5</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="content-box" style="margin-top: 30px;">
+                        <h3>📚 Para Casa</h3>
+                        <ul>
+                            <li>Ler: Guia Geral MPS.BR - Parte 2 (Processos do nível G)</li>
+                            <li>Pesquisar: 3 empresas brasileiras certificadas MPS.BR (site SOFTEX)</li>
+                            <li>Começar: Escolher empresa para Trabalho 1</li>
+                            <li>Revisar: Anotações das aulas 1, 2 e 3</li>
+                        </ul>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px;">
+                        <p style="font-size: 1.2rem; color: var(--unifil-dark);">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1rem; margin-top: 10px; color: var(--unifil-gray);">
+                            Nos vemos na Aula 4 (Sexta-feira)!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 10</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .quote-box, .comparison-table, .level-card, .timeline-item, .capability-item, .benefit-card, .process-diagram');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

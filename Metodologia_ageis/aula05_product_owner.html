@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 5 - Product Owner | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --po-blue: #1E88E5;
+            --po-purple: #7E57C2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .po-box {
+            background: #E3F2FD;
+            border-left-color: var(--po-blue);
+        }
+
+        .po-box h3 {
+            color: var(--po-blue);
+        }
+
+        .po-box li::before {
+            color: var(--po-blue);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -48px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .user-story-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .user-story-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+
+        .acceptance-criteria {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .acceptance-criteria h5 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .acceptance-criteria ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .acceptance-criteria li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .acceptance-criteria li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .technique-card {
+            background: white;
+            border-left: 5px solid var(--po-blue);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .technique-card h4 {
+            color: var(--po-blue);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .matrix-cell {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .urgent-important {
+            background: #FFCDD2;
+            border: 3px solid #F44336;
+        }
+
+        .not-urgent-important {
+            background: #C8E6C9;
+            border: 3px solid #4CAF50;
+        }
+
+        .urgent-not-important {
+            background: #FFF9C4;
+            border: 3px solid #FFC107;
+        }
+
+        .not-urgent-not-important {
+            background: #E0E0E0;
+            border: 3px solid #9E9E9E;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--po-blue) 0%, var(--po-purple) 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .metric-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        .comparison-table th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .comparison-table td {
+            background: var(--unifil-light);
+            padding: 20px;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table td:first-child {
+            border-radius: 10px 0 0 10px;
+            font-weight: 600;
+            color: var(--unifil-orange);
+        }
+
+        .comparison-table td:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 1.3rem;
+            text-align: center;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            opacity: 0.3;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">👔 Aula 5</h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Product Owner</h3>
+                        <p style="font-size: 1.5rem; color: var(--po-blue); margin-bottom: 15px; font-weight: 600;">O Guardião do Valor do Produto</p>
+                        <p style="font-size: 1.3rem; color: var(--unifil-gray); margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                        <p style="font-size: 1.1rem; color: var(--unifil-gray);">Terça-feira, 24 de Fevereiro de 2026</p>
+                    </div>
+                    <div class="big-idea">"Product Owner é quem decide O QUÊ construir. Time Scrum decide COMO." 🎯</div>
+                    <div style="margin-top: 40px; color: var(--unifil-gray); font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                        <p style="margin-top: 10px;">⌨️ ← Anterior | Próximo →</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: AGENDA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Agenda da Aula</h2>
+                    <p>Dominando o papel de Product Owner</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item" style="animation-delay: 0s;">
+                            <h4>1️⃣ O Papel do PO (20 min)</h4>
+                            <p>Responsabilidades, características, bom PO vs PO problemático</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.1s;">
+                            <h4>2️⃣ User Stories (25 min)</h4>
+                            <p>Como escrever histórias de usuário eficazes com INVEST</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4>3️⃣ Priorização (20 min)</h4>
+                            <p>Técnicas: MoSCoW, Matriz de Eisenhower, Valor vs Esforço</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.3s;">
+                            <h4>4️⃣ Backlog e Métricas (25 min)</h4>
+                            <p>Refinement, grooming, métricas de sucesso do PO</p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Objetivos de Aprendizagem</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Dominar as responsabilidades do Product Owner</li>
+                            <li style="padding: 8px 0;">✅ Escrever User Stories de qualidade</li>
+                            <li style="padding: 8px 0;">✅ Aplicar técnicas de priorização eficazes</li>
+                            <li style="padding: 8px 0;">✅ Gerenciar Product Backlog como um profissional</li>
+                            <li style="padding: 8px 0;">✅ Medir sucesso com métricas corretas</li>
+                        </ul>
+                    </div>
+                    <div class="big-idea" style="background: linear-gradient(135deg, var(--po-blue) 0%, var(--po-purple) 100%);">Hoje você aprenderá a SER um Product Owner! 🚀</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: O PAPEL DO PO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>👔 O Papel do Product Owner</h2>
+                    <p>Responsável por maximizar o valor do produto</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">PO é a VOZ DO CLIENTE dentro do time Scrum! 📣</div>
+
+                    <div class="content-box po-box">
+                        <h3>🎯 Responsabilidades Core</h3>
+                        <ul>
+                            <li><strong>Visão do Produto:</strong> Define e comunica onde o produto quer chegar</li>
+                            <li><strong>Product Backlog:</strong> Cria, ordena e mantém a lista de funcionalidades</li>
+                            <li><strong>Priorização:</strong> Decide O QUE construir e EM QUE ORDEM</li>
+                            <li><strong>Critérios de Aceitação:</strong> Define quando algo está "Done"</li>
+                            <li><strong>Stakeholders:</strong> Representa e equilibra interesses de todos</li>
+                            <li><strong>ROI:</strong> Maximiza retorno sobre investimento do time</li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>✅ BOM Product Owner</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">✓ <strong>Disponível:</strong> Presente e acessível ao time</li>
+                                <li style="padding: 8px 0;">✓ <strong>Empoderado:</strong> Toma decisões com autonomia</li>
+                                <li style="padding: 8px 0;">✓ <strong>Conhece o negócio:</strong> Expert no domínio</li>
+                                <li style="padding: 8px 0;">✓ <strong>Comunica claramente:</strong> Sem ambiguidade</li>
+                                <li style="padding: 8px 0;">✓ <strong>Aceita feedback:</strong> Ouve o time e usuários</li>
+                                <li style="padding: 8px 0;">✓ <strong>Foca em valor:</strong> Não em features aleatórias</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">❌ PO Problemático</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">✗ <strong>Indisponível:</strong> "Só tenho 30min por semana"</li>
+                                <li style="padding: 8px 0;">✗ <strong>Sem poder:</strong> "Preciso aprovar com o chefe"</li>
+                                <li style="padding: 8px 0;">✗ <strong>Sem visão:</strong> Não sabe o que quer</li>
+                                <li style="padding: 8px 0;">✗ <strong>Priorização caótica:</strong> Muda toda hora</li>
+                                <li style="padding: 8px 0;">✗ <strong>Microgerente:</strong> Dita COMO fazer</li>
+                                <li style="padding: 8px 0;">✗ <strong>Delegacia de Polícia:</strong> Só critica, nunca aprova</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Regra de Ouro</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Product Owner é <strong>UMA pessoa</strong>, não um comitê! Pode consultar stakeholders, mas a decisão final é sua. Ter autonomia é ESSENCIAL para sucesso do Scrum.
+                        </p>
+                    </div>
+
+                    <div class="quote-box">
+                        Um bom PO é como um maestro: não toca os instrumentos, mas garante que a orquestra crie uma sinfonia incrível!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Foco na VISÃO, não na execução!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: DIA A DIA DO PO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📅 Um Dia na Vida do PO</h2>
+                    <p>Como o Product Owner passa seu tempo</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card" style="border-color: var(--po-blue);">
+                        <h4 style="color: var(--po-blue);">📆 Exemplo: Terça-feira do PO Ana</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="line-height: 1.8; font-size: 1.05rem;">
+                                <strong>09:00 - 10:00</strong> - Conversa com usuários sobre feature recente<br>
+                                <strong>10:00 - 10:15</strong> - Participa do Daily Scrum (ouvindo)<br>
+                                <strong>10:30 - 12:00</strong> - Refina histórias do topo do backlog<br>
+                                <strong>14:00 - 15:00</strong> - Ajusta prioridades baseado em feedback do mercado<br>
+                                <strong>15:00 - 16:30</strong> - Reunião com stakeholders sobre roadmap<br>
+                                <strong>16:30 - 17:30</strong> - Valida incremento parcial com desenvolvedores<br>
+                                <strong>17:30 - 18:00</strong> - Atualiza backlog e métricas
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="content-box po-box" style="animation-delay: 0s;">
+                            <h3>👥 40% do Tempo</h3>
+                            <p style="font-size: 1.1rem; margin-top: 15px; line-height: 1.7;">
+                                <strong>Com Stakeholders:</strong><br>
+                                • Coleta feedback<br>
+                                • Alinha expectativas<br>
+                                • Negocia prioridades<br>
+                                • Apresenta progresso
+                            </p>
+                        </div>
+
+                        <div class="content-box po-box" style="animation-delay: 0.1s;">
+                            <h3>👨‍💻 35% do Tempo</h3>
+                            <p style="font-size: 1.1rem; margin-top: 15px; line-height: 1.7;">
+                                <strong>Com o Time:</strong><br>
+                                • Esclarece requisitos<br>
+                                • Valida implementação<br>
+                                • Aceita/rejeita trabalho<br>
+                                • Participa de eventos
+                            </p>
+                        </div>
+
+                        <div class="content-box po-box" style="animation-delay: 0.2s;">
+                            <h3>📊 25% do Tempo</h3>
+                            <p style="font-size: 1.1rem; margin-top: 15px; line-height: 1.7;">
+                                <strong>Com o Backlog:</strong><br>
+                                • Escreve User Stories<br>
+                                • Prioriza itens<br>
+                                • Refina detalhes<br>
+                                • Atualiza status
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>⚠️ O Que PO NÃO Faz</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">❌ NÃO gerencia o time (isso é auto-organização!)</li>
+                            <li style="padding: 8px 0;">❌ NÃO dita soluções técnicas (time decide COMO)</li>
+                            <li style="padding: 8px 0;">❌ NÃO microgerencia tarefas (confia no time)</li>
+                            <li style="padding: 8px 0;">❌ NÃO ignora Definition of Done (respeita qualidade)</li>
+                            <li style="padding: 8px 0;">❌ NÃO muda prioridades no meio do Sprint (estabilidade!)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: USER STORIES - CONCEITO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📖 User Stories</h2>
+                    <p>A linguagem do Product Owner</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">User Stories são CONVERSAS, não contratos! 💬</div>
+
+                    <div class="user-story-card" style="animation-delay: 0s;">
+                        <h4>📝 Template Clássico</h4>
+                        <div style="background: rgba(255,255,255,0.2); padding: 25px; border-radius: 10px; margin-top: 15px; font-size: 1.3rem; text-align: center;">
+                            <strong>Como</strong> [tipo de usuário]<br>
+                            <strong>Eu quero</strong> [ação/funcionalidade]<br>
+                            <strong>Para que</strong> [benefício/valor]
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="user-story-card" style="animation-delay: 0.1s; background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);">
+                            <h4>✅ ÓTIMA User Story</h4>
+                            <p style="font-size: 1.15rem; line-height: 1.7; margin-top: 15px;">
+                                "Como <strong>cliente do e-commerce</strong>,<br>
+                                Eu quero <strong>salvar produtos no carrinho</strong><br>
+                                Para que <strong>eu possa voltar depois e finalizar a compra sem perder minha seleção</strong>"
+                            </p>
+                            <div class="acceptance-criteria">
+                                <h5>Critérios de Aceitação:</h5>
+                                <ul>
+                                    <li>Carrinho persiste por 30 dias</li>
+                                    <li>Produtos indisponíveis mostram aviso</li>
+                                    <li>Sincroniza entre dispositivos</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="user-story-card" style="animation-delay: 0.2s; background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);">
+                            <h4>❌ RUIM User Story</h4>
+                            <p style="font-size: 1.15rem; line-height: 1.7; margin-top: 15px;">
+                                "Como <strong>desenvolvedor</strong>,<br>
+                                Eu quero <strong>criar tabela no banco de dados</strong><br>
+                                Para que <strong>sistema funcione</strong>"
+                            </p>
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <h5>❌ Problemas:</h5>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="padding: 5px 0;">• Usuário é TÉCNICO (dev)</li>
+                                    <li style="padding: 5px 0;">• Foca em SOLUÇÃO, não necessidade</li>
+                                    <li style="padding: 5px 0;">• Valor é vago e genérico</li>
+                                    <li style="padding: 5px 0;">• Sem critérios de aceitação</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Os 3 Cs das User Stories</h3>
+                        <div class="three-column" style="margin-top: 20px; gap: 15px;">
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">💳 CARD</h4>
+                                <p>História escrita no cartão (ou ferramenta)</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">💬 CONVERSATION</h4>
+                                <p>Discussão entre PO e time</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">✅ CONFIRMATION</h4>
+                                <p>Critérios de aceitação</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: INVEST -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💎 INVEST - Qualidade de User Stories</h2>
+                    <p>6 características de histórias bem escritas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">INVEST é o checklist do bom Product Owner! ✅</div>
+
+                    <div class="technique-card" style="animation-delay: 0s;">
+                        <h4>I - Independent (Independente)</h4>
+                        <p style="font-size: 1.1rem; margin-top: 10px; line-height: 1.7;">
+                            <strong>O que é:</strong> História pode ser desenvolvida e entregue sem depender de outras<br>
+                            <strong>Por quê:</strong> Permite priorização flexível e entrega em qualquer ordem<br>
+                            <strong>Exemplo:</strong> "Adicionar botão de favoritar" NÃO deve depender de "Sistema de login OAuth"
+                        </p>
+                    </div>
+
+                    <div class="technique-card" style="animation-delay: 0.1s;">
+                        <h4>N - Negotiable (Negociável)</h4>
+                        <p style="font-size: 1.1rem; margin-top: 10px; line-height: 1.7;">
+                            <strong>O que é:</strong> Detalhes podem ser discutidos e ajustados<br>
+                            <strong>Por quê:</strong> História é convite à conversa, não especificação rígida<br>
+                            <strong>Exemplo:</strong> "Busca rápida" pode ser barra de busca, atalho de teclado ou ambos - decidir com time
+                        </p>
+                    </div>
+
+                    <div class="technique-card" style="animation-delay: 0.2s;">
+                        <h4>V - Valuable (Valiosa)</h4>
+                        <p style="font-size: 1.1rem; margin-top: 10px; line-height: 1.7;">
+                            <strong>O que é:</strong> Entrega valor claro para usuário ou negócio<br>
+                            <strong>Por quê:</strong> Justifica investimento de tempo e recursos<br>
+                            <strong>Exemplo:</strong> "Checkout em 1 clique" → valor: aumenta conversão em 15%
+                        </p>
+                    </div>
+
+                    <div class="technique-card" style="animation-delay: 0.3s;">
+                        <h4>E - Estimable (Estimável)</h4>
+                        <p style="font-size: 1.1rem; margin-top: 10px; line-height: 1.7;">
+                            <strong>O que é:</strong> Time consegue estimar esforço razoavelmente<br>
+                            <strong>Por quê:</strong> Permite planejamento de Sprint e previsibilidade<br>
+                            <strong>Exemplo RUIM:</strong> "Implementar IA" → muito vago! Refinar: "Sugestões de produto baseadas em histórico"
+                        </p>
+                    </div>
+
+                    <div class="technique-card" style="animation-delay: 0.4s;">
+                        <h4>S - Small (Pequena)</h4>
+                        <p style="font-size: 1.1rem; margin-top: 10px; line-height: 1.7;">
+                            <strong>O que é:</strong> Cabe em um Sprint (1-4 semanas)<br>
+                            <strong>Por quê:</strong> Feedback rápido, menos risco, mais foco<br>
+                            <strong>Regra prática:</strong> Se história leva > 1 Sprint, QUEBRAR em histórias menores (Epics → Stories)
+                        </p>
+                    </div>
+
+                    <div class="technique-card" style="animation-delay: 0.5s;">
+                        <h4>T - Testable (Testável)</h4>
+                        <p style="font-size: 1.1rem; margin-top: 10px; line-height: 1.7;">
+                            <strong>O que é:</strong> Critérios de aceitação claros e verificáveis<br>
+                            <strong>Por quê:</strong> Time sabe quando está "Done", PO sabe se aceitar ou não<br>
+                            <strong>Exemplo:</strong> "Login funciona" → RUIM | "Login com email/senha em < 2 segundos" → BOM!
+                        </p>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Se sua história não passa no INVEST, é hora de reescrever!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Qualidade das histórias = Qualidade do produto</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: TÉCNICAS DE PRIORIZAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Técnicas de Priorização</h2>
+                    <p>Como decidir o que fazer primeiro</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Priorização é a SUPER-HABILIDADE do Product Owner! 🦸</div>
+
+                    <div class="technique-card" style="animation-delay: 0s; border-left-color: #4CAF50;">
+                        <h4 style="color: #4CAF50;">1️⃣ MoSCoW</h4>
+                        <div class="two-column" style="gap: 20px; margin-top: 15px;">
+                            <div>
+                                <p style="font-size: 1.1rem; line-height: 1.7;">
+                                    <strong style="color: #F44336;">Must have:</strong> Crítico, sem isso não lança<br>
+                                    <strong style="color: #FF9800;">Should have:</strong> Importante, mas dá para esperar<br>
+                                    <strong style="color: #2196F3;">Could have:</strong> Bom ter, se sobrar tempo<br>
+                                    <strong style="color: #9E9E9E;">Won't have:</strong> Fora do escopo por agora
+                                </p>
+                            </div>
+                            <div style="background: #F5F5F5; padding: 20px; border-radius: 10px;">
+                                <h5 style="margin-bottom: 10px;">📱 Exemplo: App de Delivery</h5>
+                                <p style="font-size: 0.95rem; line-height: 1.6;">
+                                    <span style="color: #F44336;">•</span> Must: Fazer pedido, pagar<br>
+                                    <span style="color: #FF9800;">•</span> Should: Rastrear entrega<br>
+                                    <span style="color: #2196F3;">•</span> Could: Favoritos, cupons<br>
+                                    <span style="color: #9E9E9E;">•</span> Won't: Programa fidelidade
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="technique-card" style="animation-delay: 0.1s; border-left-color: #9C27B0;">
+                        <h4 style="color: #9C27B0;">2️⃣ Matriz de Eisenhower (Urgente vs Importante)</h4>
+                        <div class="matrix" style="margin-top: 20px;">
+                            <div class="matrix-cell urgent-important">
+                                <h5>🔥 URGENTE + IMPORTANTE</h5>
+                                <p style="font-size: 0.95rem; margin-top: 10px;">FAZER AGORA!<br>(Bug crítico, deadline)</p>
+                            </div>
+                            <div class="matrix-cell not-urgent-important">
+                                <h5>🎯 Importante, NÃO Urgente</h5>
+                                <p style="font-size: 0.95rem; margin-top: 10px;">PLANEJAR<br>(Features estratégicas)</p>
+                            </div>
+                            <div class="matrix-cell urgent-not-important">
+                                <h5>⚡ Urgente, NÃO Importante</h5>
+                                <p style="font-size: 0.95rem; margin-top: 10px;">DELEGAR<br>(Interrupções, emails)</p>
+                            </div>
+                            <div class="matrix-cell not-urgent-not-important">
+                                <h5>🗑️ Nem Urgente Nem Importante</h5>
+                                <p style="font-size: 0.95rem; margin-top: 10px;">ELIMINAR<br>(Distrações, nice-to-have)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="technique-card" style="animation-delay: 0.2s; border-left-color: #FF5722;">
+                        <h4 style="color: #FF5722;">3️⃣ Valor vs Esforço</h4>
+                        <div style="background: #F5F5F5; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div style="background: #C8E6C9; padding: 20px; border-radius: 10px; border: 3px solid #4CAF50;">
+                                    <h5 style="color: #2E7D32; margin-bottom: 10px;">💎 Alto Valor + Baixo Esforço</h5>
+                                    <p style="font-size: 0.95rem;"><strong>PRIORIDADE MÁXIMA!</strong> Quick wins, baixo custo alto retorno</p>
+                                </div>
+                                <div style="background: #FFF9C4; padding: 20px; border-radius: 10px; border: 3px solid #FFC107;">
+                                    <h5 style="color: #F57C00; margin-bottom: 10px;">⚖️ Alto Valor + Alto Esforço</h5>
+                                    <p style="font-size: 0.95rem;">Projetos maiores, planejar bem e quebrar em partes</p>
+                                </div>
+                                <div style="background: #E1F5FE; padding: 20px; border-radius: 10px; border: 3px solid #03A9F4;">
+                                    <h5 style="color: #0277BD; margin-bottom: 10px;">🎁 Baixo Valor + Baixo Esforço</h5>
+                                    <p style="font-size: 0.95rem;">Se sobrar tempo, mas não é prioridade</p>
+                                </div>
+                                <div style="background: #FFCDD2; padding: 20px; border-radius: 10px; border: 3px solid #F44336;">
+                                    <h5 style="color: #C62828; margin-bottom: 10px;">🗑️ Baixo Valor + Alto Esforço</h5>
+                                    <p style="font-size: 0.95rem;"><strong>EVITAR!</strong> Desperdício de recursos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Dica de Ouro do PO</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Use <strong>múltiplas técnicas combinadas</strong>! MoSCoW para escopo inicial, depois Valor vs Esforço para ordenar Must-haves. Eisenhower para lidar com urgências que surgem.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: BACKLOG REFINEMENT -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔧 Product Backlog Refinement</h2>
+                    <p>Mantendo o backlog saudável</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Backlog Refinement é como jardinagem: cuidado constante! 🌱</div>
+
+                    <div class="content-box po-box">
+                        <h3>📋 O Que É Refinement (Grooming)?</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 15px;">
+                            Processo contínuo de revisar, detalhar, estimar e reordenar itens do Product Backlog. 
+                            <strong>NÃO é um evento oficial do Scrum</strong>, mas é essencial para o sucesso!
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="technique-card" style="animation-delay: 0s;">
+                            <h4>⏰ Quando Fazer?</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">• <strong>10% do Sprint:</strong> Reservar tempo</li>
+                                <li style="padding: 8px 0;">• <strong>Sessões regulares:</strong> 1-2x por semana</li>
+                                <li style="padding: 8px 0;">• <strong>1-2 horas:</strong> Duração típica</li>
+                                <li style="padding: 8px 0;">• <strong>Time todo:</strong> Ou parte dele</li>
+                            </ul>
+                        </div>
+
+                        <div class="technique-card" style="animation-delay: 0.1s;">
+                            <h4>🎯 Objetivos</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">✓ Esclarecer histórias</li>
+                                <li style="padding: 8px 0;">✓ Adicionar detalhes</li>
+                                <li style="padding: 8px 0;">✓ Estimar esforço</li>
+                                <li style="padding: 8px 0;">✓ Quebrar épicos grandes</li>
+                                <li style="padding: 8px 0;">✓ Reordenar prioridades</li>
+                                <li style="padding: 8px 0;">✓ Remover itens obsoletos</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--po-blue);">
+                        <h4 style="color: var(--po-blue);">📊 Regra dos 2 Sprints</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 15px;">
+                            <strong>Topo do Backlog (próximos 2 Sprints):</strong><br>
+                            ✅ Histórias detalhadas e "Ready"<br>
+                            ✅ Critérios de aceitação definidos<br>
+                            ✅ Estimadas com Planning Poker<br>
+                            ✅ Tamanho adequado (cabem no Sprint)<br>
+                            ✅ Sem bloqueadores técnicos
+                        </p>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 15px;">
+                            <strong>Meio do Backlog (Sprints 3-5):</strong><br>
+                            • Histórias com descrição básica<br>
+                            • Podem ter estimativas aproximadas<br>
+                            • Detalhamento gradual conforme sobem
+                        </p>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 15px;">
+                            <strong>Fundo do Backlog (Futuro distante):</strong><br>
+                            • Ideias, épicos grandes<br>
+                            • Descrição mínima suficiente<br>
+                            • Serão refinados quando aproximarem
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚠️ Sinais de Backlog Mal Cuidado</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">🚨 Sprint Planning leva > 4 horas (histórias não estão prontas!)</li>
+                            <li style="padding: 8px 0;">🚨 Time não sabe estimar (falta clareza nas histórias)</li>
+                            <li style="padding: 8px 0;">🚨 Muitas mudanças de prioridade durante Sprint</li>
+                            <li style="padding: 8px 0;">🚨 Backlog tem 200+ itens sem organização</li>
+                            <li style="padding: 8px 0;">🚨 Histórias obsoletas de 6 meses atrás ainda lá</li>
+                        </ul>
+                    </div>
+
+                    <div class="quote-box">
+                        Um backlog bem refinado é 50% do sucesso de um Sprint!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Invista tempo no refinement, vale a pena!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: MÉTRICAS DO PO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Métricas do Product Owner</h2>
+                    <p>Como medir sucesso do PO</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">"You can't improve what you don't measure!" 📈</div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="metric-card" style="animation-delay: 0s;">
+                            <h4>💰 Valor Entregue</h4>
+                            <div class="metric-value">R$ 2.5M</div>
+                            <p>Receita/economia gerada pelas features entregues nos últimos 3 meses</p>
+                        </div>
+
+                        <div class="metric-card" style="animation-delay: 0.1s;">
+                            <h4>📦 Velocity</h4>
+                            <div class="metric-value">42 pts</div>
+                            <p>Story points completados por Sprint (média dos últimos 3)</p>
+                        </div>
+
+                        <div class="metric-card" style="animation-delay: 0.2s;">
+                            <h4>😊 NPS Stakeholders</h4>
+                            <div class="metric-value">+65</div>
+                            <p>Net Promoter Score de satisfação dos stakeholders</p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box po-box">
+                            <h3>📈 Métricas de Produto</h3>
+                            <ul>
+                                <li><strong>Adoção de Features:</strong> % usuários usando nova feature</li>
+                                <li><strong>Retenção:</strong> Usuários que voltam após 7/30 dias</li>
+                                <li><strong>Tempo para Valor:</strong> Da ideia à produção</li>
+                                <li><strong>ROI de Features:</strong> Custo vs benefício gerado</li>
+                                <li><strong>Bugs em Produção:</strong> Qualidade das entregas</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box po-box">
+                            <h3>🎯 Métricas de Processo</h3>
+                            <ul>
+                                <li><strong>Lead Time:</strong> Tempo do backlog até "Done"</li>
+                                <li><strong>Cycle Time:</strong> Tempo "In Progress" até "Done"</li>
+                                <li><strong>Backlog Health:</strong> Itens "Ready" para 2 sprints</li>
+                                <li><strong>Sprint Goal Success:</strong> % de goals atingidos</li>
+                                <li><strong>Satisfação do Time:</strong> Clima e moral da equipe</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--po-purple);">
+                        <h4 style="color: var(--po-purple);">📊 Dashboard do PO - Exemplo</h4>
+                        <div style="background: #F5F5F5; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr style="border-bottom: 2px solid var(--po-purple);">
+                                    <th style="text-align: left; padding: 12px; color: var(--po-purple);">Métrica</th>
+                                    <th style="text-align: center; padding: 12px; color: var(--po-purple);">Atual</th>
+                                    <th style="text-align: center; padding: 12px; color: var(--po-purple);">Meta</th>
+                                    <th style="text-align: center; padding: 12px; color: var(--po-purple);">Status</th>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E0E0E0;">
+                                    <td style="padding: 12px;">Velocity (média)</td>
+                                    <td style="text-align: center; padding: 12px; font-weight: 600;">42 pts</td>
+                                    <td style="text-align: center; padding: 12px;">40 pts</td>
+                                    <td style="text-align: center; padding: 12px;">✅</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E0E0E0;">
+                                    <td style="padding: 12px;">NPS Stakeholders</td>
+                                    <td style="text-align: center; padding: 12px; font-weight: 600;">+65</td>
+                                    <td style="text-align: center; padding: 12px;">+70</td>
+                                    <td style="text-align: center; padding: 12px;">⚠️</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E0E0E0;">
+                                    <td style="padding: 12px;">Feature Adoption</td>
+                                    <td style="text-align: center; padding: 12px; font-weight: 600;">78%</td>
+                                    <td style="text-align: center; padding: 12px;">60%</td>
+                                    <td style="text-align: center; padding: 12px;">✅</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #E0E0E0;">
+                                    <td style="padding: 12px;">Bugs em Produção</td>
+                                    <td style="text-align: center; padding: 12px; font-weight: 600;">3/sprint</td>
+                                    <td style="text-align: center; padding: 12px;">< 5/sprint</td>
+                                    <td style="text-align: center; padding: 12px;">✅</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px;">Sprint Goal Success</td>
+                                    <td style="text-align: center; padding: 12px; font-weight: 600;">85%</td>
+                                    <td style="text-align: center; padding: 12px;">90%</td>
+                                    <td style="text-align: center; padding: 12px;">⚠️</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚠️ Cuidado com Métricas de Vaidade!</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            ❌ <strong>Número de features lançadas:</strong> Quantidade ≠ Qualidade<br>
+                            ❌ <strong>Tamanho do backlog:</strong> Maior não é melhor!<br>
+                            ❌ <strong>Horas trabalhadas:</strong> Esforço ≠ Valor<br>
+                            ✅ <strong>Foque em:</strong> VALOR entregue, satisfação do usuário, impacto no negócio
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: PO VS OUTROS PAPÉIS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🆚 PO vs Outros Papéis</h2>
+                    <p>Diferenças e colaboração</p>
+                </div>
+                <div class="slide-body">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>👔 Product Owner</th>
+                                <th>🧙 Scrum Master</th>
+                                <th>👨‍💻 Developers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Foco Principal</strong></td>
+                                <td>PRODUTO e seu valor</td>
+                                <td>PROCESSO e time</td>
+                                <td>IMPLEMENTAÇÃO técnica</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Responsabilidade</strong></td>
+                                <td>Maximizar valor do produto</td>
+                                <td>Garantir Scrum funciona</td>
+                                <td>Construir incremento "Done"</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Decide O QUÊ</strong></td>
+                                <td>✅ SIM (prioridades)</td>
+                                <td>❌ NÃO (facilita)</td>
+                                <td>❌ NÃO (implementa)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Decide COMO</strong></td>
+                                <td>❌ NÃO (confia no time)</td>
+                                <td>❌ NÃO (coaching)</td>
+                                <td>✅ SIM (arquitetura, código)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Trabalha Com</strong></td>
+                                <td>Stakeholders + Time</td>
+                                <td>Time + Organização</td>
+                                <td>Time + Tecnologia</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Métrica-Chave</strong></td>
+                                <td>Valor entregue, ROI</td>
+                                <td>Saúde do time, fluxo</td>
+                                <td>Qualidade, velocity</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pode Mudar Sprint?</strong></td>
+                                <td>❌ NÃO (estabilidade)</td>
+                                <td>❌ NÃO (protege time)</td>
+                                <td>❌ NÃO (Sprint Goal fixo)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card" style="border-color: var(--po-blue);">
+                            <h4 style="color: var(--po-blue);">🤝 PO + SM: Parceria Essencial</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">✓ <strong>SM ajuda PO:</strong> Técnicas ágeis, facilita eventos</li>
+                                <li style="padding: 8px 0;">✓ <strong>PO ajuda SM:</strong> Clareza de visão, engajamento stakeholders</li>
+                                <li style="padding: 8px 0;">✓ <strong>Juntos protegem:</strong> Time de interrupções e mudanças</li>
+                                <li style="padding: 8px 0;">✓ <strong>Comunicação:</strong> Diária e transparente</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">⚠️ Anti-Padrões Comuns</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">❌ <strong>PO Proxy:</strong> PO delega decisões demais</li>
+                                <li style="padding: 8px 0;">❌ <strong>Committee PO:</strong> Comitê decide, não uma pessoa</li>
+                                <li style="padding: 8px 0;">❌ <strong>PO Developer:</strong> PO também desenvolve (conflito!)</li>
+                                <li style="padding: 8px 0;">❌ <strong>Absent PO:</strong> PO nunca disponível</li>
+                                <li style="padding: 8px 0;">❌ <strong>Technical PO:</strong> PO dita soluções técnicas</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        PO, SM e Developers são como três pernas de um tripé: retirar uma e tudo desmorona!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Colaboração > Hierarquia</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: CASOS PRÁTICOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📚 Casos Práticos</h2>
+                    <p>POs reais em ação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card" style="animation-delay: 0s; border-color: #4CAF50;">
+                        <h4 style="color: #4CAF50;">✅ SUCESSO: PO da Spotify</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            <strong>Contexto:</strong> Spotify tem centenas de squads, cada um com seu PO. Model descentralizado mas alinhado.
+                        </p>
+                        <p style="margin-top: 10px; line-height: 1.7;">
+                            <strong>O que fizeram certo:</strong><br>
+                            • POs têm autonomia REAL para decidir roadmap do squad<br>
+                            • Alignment através de Tribes e Chapters, não command-and-control<br>
+                            • POs são especialistas no domínio (música, pagamentos, etc)<br>
+                            • Cultura de experimentação - PO pode testar hipóteses livremente<br>
+                            • Data-driven: Decisões baseadas em métricas de uso real
+                        </p>
+                        <p style="margin-top: 10px; font-weight: 600; color: #4CAF50;">
+                            <strong>Resultado:</strong> Spotify cresceu de startup para gigante mantendo agilidade!
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.1s; border-color: #2196F3;">
+                        <h4 style="color: #2196F3;">✅ SUCESSO: PO da iFood (Brasil)</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            <strong>Desafio:</strong> Crescimento explosivo - como POs mantêm foco com 1000+ demandas?
+                        </p>
+                        <p style="margin-top: 10px; line-height: 1.7;">
+                            <strong>Estratégia do PO:</strong><br>
+                            • Definiu OKRs trimestrais CLAROS (ex: reduzir tempo de entrega em 20%)<br>
+                            • Disse "NÃO" para 90% das solicitações que não alinhavam com OKR<br>
+                            • Priorização brutal: apenas features que movem métricas-chave<br>
+                            • Weekly refinement com time para manter backlog enxuto (< 30 itens)<br>
+                            • Roadmap público para stakeholders - transparência reduz pressão
+                        </p>
+                        <p style="margin-top: 10px; font-weight: 600; color: #2196F3;">
+                            <strong>Lição:</strong> Dizer NÃO é tão importante quanto dizer SIM!
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="animation-delay: 0.2s; border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ FRACASSO: Proxy PO em Grande Banco</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            <strong>Problema:</strong> Executivo sênior era "PO oficial", mas delegou 100% para analista júnior.
+                        </p>
+                        <p style="margin-top: 10px; line-height: 1.7;">
+                            <strong>O que deu errado:</strong><br>
+                            • Analista não tinha autoridade para tomar decisões<br>
+                            • Toda decisão precisava "subir para aprovação" - semanas de espera<br>
+                            • Executivo só aparecia em Sprint Review para criticar<br>
+                            • Time frustrado: não sabiam quem realmente mandava<br>
+                            • Prioridades mudavam toda semana baseado em "politicagem" interna
+                        </p>
+                        <p style="margin-top: 10px; font-weight: 600; color: #F44336;">
+                            <strong>Resultado:</strong> Projeto atrasou 8 meses. Time dissolvido. PO "oficial" nunca assumiu culpa.
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: #F44336;">
+                            <strong>Moral:</strong> Proxy PO = Scrum falso. PO precisa de PODER REAL de decisão!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Padrões de Sucesso Comuns</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">✅ PO passa > 50% do tempo com time e usuários</li>
+                            <li style="padding: 8px 0;">✅ PO tem métricas claras de sucesso do produto</li>
+                            <li style="padding: 8px 0;">✅ PO diz NÃO com frequência e sem culpa</li>
+                            <li style="padding: 8px 0;">✅ Backlog é enxuto (< 50 itens) e sempre atualizado</li>
+                            <li style="padding: 8px 0;">✅ Stakeholders confiam nas decisões do PO</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: RESUMO E TRABALHO 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Trabalho 2</h2>
+                    <p>O que aprendemos e próximos passos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você aprendeu o papel MAIS importante do Scrum! 👔</div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box po-box">
+                            <h3>👔 Product Owner</h3>
+                            <ul>
+                                <li>Responsável por valor do produto</li>
+                                <li>Gerencia Product Backlog</li>
+                                <li>Uma pessoa com autonomia</li>
+                                <li>40% stakeholders, 35% time, 25% backlog</li>
+                                <li>Diz O QUÊ, não COMO</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box po-box">
+                            <h3>📖 User Stories</h3>
+                            <ul>
+                                <li>Como [usuário] eu quero [ação] para [valor]</li>
+                                <li>INVEST: 6 características de qualidade</li>
+                                <li>3 Cs: Card, Conversation, Confirmation</li>
+                                <li>Critérios de aceitação claros</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box po-box">
+                            <h3>🎯 Priorização</h3>
+                            <ul>
+                                <li>MoSCoW: Must/Should/Could/Won't</li>
+                                <li>Eisenhower: Urgente vs Importante</li>
+                                <li>Valor vs Esforço: ROI rápido</li>
+                                <li>Dizer NÃO é essencial!</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box po-box">
+                            <h3>🔧 Backlog & Métricas</h3>
+                            <ul>
+                                <li>Refinement: 10% do Sprint</li>
+                                <li>Topo: próximos 2 sprints "Ready"</li>
+                                <li>Métricas: valor, NPS, velocity</li>
+                                <li>Evitar métricas de vaidade</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>📝 TRABALHO 2 - Product Backlog Inicial</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Prazo:</strong> Próxima aula (Terça 24/02) - ENTREGAR HOJE!
+                        </p>
+                        <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <h4 style="margin-bottom: 15px;">O que entregar:</h4>
+                            <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                                <li style="padding: 8px 0;">1️⃣ <strong>Product Backlog com 15-20 itens</strong> (User Stories)</li>
+                                <li style="padding: 8px 0;">2️⃣ Escrever no formato: Como [usuário] eu quero [ação] para [valor]</li>
+                                <li style="padding: 8px 0;">3️⃣ <strong>Ordenar por prioridade/valor</strong> (mais importante no topo)</li>
+                                <li style="padding: 8px 0;">4️⃣ Adicionar <strong>critérios de aceitação</strong> para TOP 5 histórias</li>
+                                <li style="padding: 8px 0;">5️⃣ Definir <strong>Product Goal</strong> (objetivo de longo prazo do produto)</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 15px; font-size: 1.05rem;">
+                            <strong>Formato:</strong> Google Docs ou Excel compartilhado<br>
+                            <strong>Enviar para:</strong> [email do professor]<br>
+                            <strong>Assunto:</strong> "Trabalho 2 - Product Backlog - [Nome da Equipe]"
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (25/02)</h3>
+                            <ul>
+                                <li><strong>Scrum Master</strong></li>
+                                <li>Facilitador e Servant Leader</li>
+                                <li>Remover impedimentos</li>
+                                <li>Coach do time</li>
+                                <li>Guardiã do processo Scrum</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Finalizar Trabalho 2!</li>
+                                <li>Ler sobre Scrum Master</li>
+                                <li>Pensar: quem seria melhor PO no grupo?</li>
+                                <li>Praticar escrever User Stories</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "A melhor forma de predizer o futuro é criá-lo. E o Product Owner é quem define QUAL futuro criar!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Seja estratégico! 🎯</div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado! Até quarta-feira! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Caprichem no Product Backlog!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 12</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .user-story-card, .technique-card, .metric-card, .comparison-table, .quote-box');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

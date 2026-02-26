@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 6 - Scrum Master | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --sm-green: #00897B;
+            --sm-teal: #26A69A;
+            --sm-purple: #7E57C2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .sm-box {
+            background: #E0F2F1;
+            border-left-color: var(--sm-green);
+        }
+
+        .sm-box h3 {
+            color: var(--sm-green);
+        }
+
+        .sm-box li::before {
+            color: var(--sm-green);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -48px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .servant-card {
+            background: linear-gradient(135deg, var(--sm-green) 0%, var(--sm-teal) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .servant-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+
+        .responsibility-card {
+            background: white;
+            border-left: 5px solid var(--sm-green);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .responsibility-card h4 {
+            color: var(--sm-green);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .impediment-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .impediment-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .solution-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .solution-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        .comparison-table th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .comparison-table td {
+            background: var(--unifil-light);
+            padding: 20px;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table td:first-child {
+            border-radius: 10px 0 0 10px;
+            font-weight: 600;
+            color: var(--unifil-orange);
+        }
+
+        .comparison-table td:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .vs-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+        .vs-side {
+            padding: 30px;
+            border-radius: 15px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .vs-sm {
+            background: linear-gradient(135deg, var(--sm-green) 0%, var(--sm-teal) 100%);
+            color: white;
+        }
+
+        .vs-pm {
+            background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+            color: white;
+        }
+
+        .vs-divider {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            animation: scaleIn 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 1.3rem;
+            text-align: center;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            opacity: 0.3;
+        }
+
+        .skill-card {
+            background: white;
+            border-top: 5px solid var(--sm-green);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .skill-card h4 {
+            color: var(--sm-green);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">🧙 Aula 6</h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Scrum Master</h3>
+                        <p style="font-size: 1.5rem; color: var(--sm-green); margin-bottom: 15px; font-weight: 600;">O Facilitador e Servant Leader</p>
+                        <p style="font-size: 1.3rem; color: var(--unifil-gray); margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                        <p style="font-size: 1.1rem; color: var(--unifil-gray);">Quarta-feira, 25 de Fevereiro de 2026</p>
+                    </div>
+                    <div class="big-idea">"Scrum Master não é chefe. É servo-líder que remove obstáculos!" 🙏</div>
+                    <div style="margin-top: 40px; color: var(--unifil-gray); font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                        <p style="margin-top: 10px;">⌨️ ← Anterior | Próximo →</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: AGENDA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Agenda da Aula</h2>
+                    <p>Dominando o papel de Scrum Master</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item" style="animation-delay: 0s;">
+                            <h4>1️⃣ O que é Scrum Master? (20 min)</h4>
+                            <p>Servant Leadership, características, SM vs gerente tradicional</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.1s;">
+                            <h4>2️⃣ Servindo o Time (20 min)</h4>
+                            <p>Facilitação, coaching, remoção de impedimentos</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4>3️⃣ Servindo PO e Organização (20 min)</h4>
+                            <p>Como SM ajuda Product Owner e transforma a empresa</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.3s;">
+                            <h4>4️⃣ Habilidades e Casos Práticos (30 min)</h4>
+                            <p>Skills essenciais, impedimentos reais, SM em ação</p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Objetivos de Aprendizagem</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Entender Servant Leadership na prática</li>
+                            <li style="padding: 8px 0;">✅ Dominar as 3 áreas de atuação do SM</li>
+                            <li style="padding: 8px 0;">✅ Aprender a facilitar eventos Scrum</li>
+                            <li style="padding: 8px 0;">✅ Identificar e remover impedimentos</li>
+                            <li style="padding: 8px 0;">✅ Diferenciar SM de Project Manager</li>
+                        </ul>
+                    </div>
+                    <div class="big-idea" style="background: linear-gradient(135deg, var(--sm-green) 0%, var(--sm-teal) 100%);">Hoje você aprenderá a SER um Scrum Master! 🌟</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: O QUE É SCRUM MASTER -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧙 O Que É Scrum Master?</h2>
+                    <p>Definição e essência do papel</p>
+                </div>
+                <div class="slide-body">
+                    <div class="servant-card" style="animation-delay: 0s;">
+                        <h4>📖 Definição Oficial do Scrum Guide</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            "Scrum Master é responsável por <strong>estabelecer o Scrum</strong> como definido no Scrum Guide. 
+                            Faz isso <strong>ajudando todos a entenderem</strong> a teoria e prática do Scrum, tanto dentro do Scrum Team quanto na organização."
+                        </p>
+                    </div>
+
+                    <div class="big-idea">SM é COACH + FACILITADOR + PROFESSOR + REMOVEDOR DE OBSTÁCULOS! 🎯</div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box sm-box">
+                            <h3>✅ O Que SM É</h3>
+                            <ul>
+                                <li><strong>Servo-Líder:</strong> Lidera servindo o time</li>
+                                <li><strong>Facilitador:</strong> Facilita eventos e comunicação</li>
+                                <li><strong>Coach:</strong> Treina time em auto-organização</li>
+                                <li><strong>Professor:</strong> Ensina Scrum e Agile</li>
+                                <li><strong>Protetor:</strong> Protege time de interrupções</li>
+                                <li><strong>Removedor:</strong> Remove impedimentos</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">❌ O Que SM NÃO É</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">❌ <strong>NÃO é chefe:</strong> Não manda no time</li>
+                                <li style="padding: 8px 0;">❌ <strong>NÃO é PM:</strong> Não aloca tarefas</li>
+                                <li style="padding: 8px 0;">❌ <strong>NÃO é secretário:</strong> Não apenas anota</li>
+                                <li style="padding: 8px 0;">❌ <strong>NÃO é desenvolvedor:</strong> Não escreve código</li>
+                                <li style="padding: 8px 0;">❌ <strong>NÃO é Product Owner:</strong> Não decide backlog</li>
+                                <li style="padding: 8px 0;">❌ <strong>NÃO é bombeiro:</strong> Ensina time a prevenir</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--sm-green);">
+                        <h4 style="color: var(--sm-green);">🎭 Metáfora: Maestro vs DJ</h4>
+                        <div class="two-column" style="gap: 20px; margin-top: 15px;">
+                            <div style="background: #FFEBEE; padding: 20px; border-radius: 10px;">
+                                <h5 style="color: #D32F2F; margin-bottom: 10px;">❌ Gerente Tradicional = Maestro</h5>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    Fica de frente para orquestra, dita cada nota, cada tempo. 
+                                    Músicos apenas executam comandos. Maestro é estrela.
+                                </p>
+                            </div>
+                            <div style="background: #E0F2F1; padding: 20px; border-radius: 10px;">
+                                <h5 style="color: var(--sm-green); margin-bottom: 10px;">✅ Scrum Master = DJ</h5>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    Cria ambiente para time brilhar. Remove ruídos. 
+                                    Ajusta ritmo quando necessário. Time é estrela!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        O melhor Scrum Master é aquele que trabalha para se tornar desnecessário!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Time maduro se auto-organiza!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: SERVANT LEADERSHIP -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🙏 Servant Leadership</h2>
+                    <p>A essência do Scrum Master</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Servant Leadership = Liderar SERVINDO, não comandando! 👑→🙏</div>
+
+                    <div class="servant-card" style="animation-delay: 0s;">
+                        <h4>📖 O Que É Servant Leadership?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            Filosofia de liderança onde o líder <strong>serve primeiro</strong> e lidera depois. 
+                            Prioriza crescimento e bem-estar das pessoas. Foco no <strong>empoderamento do time</strong>, 
+                            não no poder pessoal. Criado por Robert K. Greenleaf em 1970.
+                        </p>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="skill-card" style="animation-delay: 0s;">
+                            <h4>👂 Escuta Ativa</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                SM ouve profundamente, entende antes de julgar. 
+                                Faz perguntas ao invés de dar respostas prontas.
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.1s;">
+                            <h4>❤️ Empatia</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Entende sentimentos e perspectivas do time. 
+                                Reconhece que pessoas não são recursos.
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.2s;">
+                            <h4>🌱 Crescimento</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Investe no desenvolvimento do time. 
+                                Celebra aprendizado, não apenas resultados.
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.3s;">
+                            <h4>💪 Empoderamento</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Confia no time para tomar decisões. 
+                                Dá autonomia, não controle.
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.4s;">
+                            <h4>🔮 Visão</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Enxerga onde time pode chegar. 
+                                Inspira e guia, não empurra.
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.5s;">
+                            <h4>🤝 Comunidade</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Cria senso de pertencimento. 
+                                "Nós" antes de "eu".
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="vs-container" style="margin-top: 40px;">
+                        <div class="vs-side" style="background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%); animation-delay: 0s;">
+                            <h4 style="text-align: center; margin-bottom: 15px;">❌ Líder Comando-Controle</h4>
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">• "Faça como eu mando"</li>
+                                <li style="padding: 8px 0;">• Toma todas as decisões</li>
+                                <li style="padding: 8px 0;">• Time depende dele</li>
+                                <li style="padding: 8px 0;">• Microgerencia tudo</li>
+                                <li style="padding: 8px 0;">• Busca crédito pessoal</li>
+                            </ul>
+                        </div>
+
+                        <div class="vs-divider">VS</div>
+
+                        <div class="vs-side vs-sm" style="animation-delay: 0.2s;">
+                            <h4 style="text-align: center; margin-bottom: 15px;">✅ Servant Leader (SM)</h4>
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">• "Como posso ajudar?"</li>
+                                <li style="padding: 8px 0;">• Time toma decisões</li>
+                                <li style="padding: 8px 0;">• Time se auto-organiza</li>
+                                <li style="padding: 8px 0;">• Confia e empodera</li>
+                                <li style="padding: 8px 0;">• Crédito vai para time</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Teste do Servant Leader</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Pergunta-chave: <strong>"As pessoas que você serve estão crescendo?"</strong><br>
+                            Elas estão se tornando mais sábias, livres, autônomas e propensas a servir outras? 
+                            Se SIM, você é servant leader!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: SERVINDO O TIME -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>👨‍💻 Servindo o Developers Team</h2>
+                    <p>Como SM ajuda o time de desenvolvimento</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Time de alta performance não acontece por acaso. SM é jardineiro! 🌱</div>
+
+                    <div class="responsibility-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Facilitação de Auto-Organização</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>O quê:</strong> Ajuda time a organizar seu próprio trabalho sem precisar de "chefe"<br>
+                            <strong>Como:</strong><br>
+                            • Faz perguntas poderosas: "Como vocês poderiam resolver isso?"<br>
+                            • Evita dar respostas prontas - deixa time descobrir<br>
+                            • Cria espaço seguro para experimentação e falhas<br>
+                            • Celebra quando time resolve problemas sozinho
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.1s;">
+                        <h4>2️⃣ Remoção de Impedimentos</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>O quê:</strong> Elimina bloqueios que impedem time de progredir<br>
+                            <strong>Tipos de impedimentos:</strong><br>
+                            • <strong>Internos:</strong> Conflitos, falta de skill → Coach time<br>
+                            • <strong>Externos:</strong> Dependências, burocracia → Remove SM<br>
+                            • <strong>Organizacionais:</strong> Políticas ruins → Influencia mudança<br>
+                            <strong>NÃO faz:</strong> Resolve tudo sozinho - ensina time a prevenir e resolver!
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.2s;">
+                        <h4>3️⃣ Facilitação de Eventos Scrum</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>O quê:</strong> Garante que eventos aconteçam, sejam produtivos e dentro do timebox<br>
+                            <strong>Como:</strong><br>
+                            • <strong>Daily:</strong> Mantém foco e timeboxing (15min)<br>
+                            • <strong>Planning:</strong> Facilita discussão de prioridades e capacidade<br>
+                            • <strong>Review:</strong> Promove colaboração com stakeholders<br>
+                            • <strong>Retrospective:</strong> Cria ambiente seguro para feedback honesto
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.3s;">
+                        <h4>4️⃣ Coaching em Práticas Ágeis</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>O quê:</strong> Treina time em engenharia ágil e melhores práticas<br>
+                            <strong>Exemplos:</strong><br>
+                            • TDD, Pair Programming, Code Review<br>
+                            • Integração Contínua, Automação de Testes<br>
+                            • Estimativas com Planning Poker<br>
+                            • Definition of Done rigoroso
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.4s;">
+                        <h4>5️⃣ Proteção do Time</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>O quê:</strong> Protege time de interrupções e mudanças durante Sprint<br>
+                            <strong>Como:</strong><br>
+                            • Filtra pedidos urgentes que chegam direto ao time<br>
+                            • Defende Sprint Goal contra mudanças arbitrárias<br>
+                            • Gerencia expectativas de stakeholders ansiosos<br>
+                            • Diz NÃO quando necessário (com diplomacia!)
+                        </p>
+                    </div>
+
+                    <div class="quote-box">
+                        SM não resolve problemas PARA o time. Ensina o time a resolver seus próprios problemas!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Pesca, não dê o peixe!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: SERVINDO O PO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>👔 Servindo o Product Owner</h2>
+                    <p>Como SM ajuda o PO</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">SM + PO = Parceria poderosa para sucesso do produto! 🤝</div>
+
+                    <div class="responsibility-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Ensinar Técnicas de Produto</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Como SM ajuda PO a melhorar:</strong><br>
+                            • Treinar em técnicas de priorização (MoSCoW, WSJF, etc)<br>
+                            • Ensinar a escrever User Stories eficazes (INVEST)<br>
+                            • Facilitar Product Backlog Refinement<br>
+                            • Introduzir métricas de produto relevantes<br>
+                            • Compartilhar ferramentas de gestão de backlog
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.1s;">
+                        <h4>2️⃣ Facilitar Comunicação</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>SM como ponte:</strong><br>
+                            • Facilita conversas entre PO e Time Dev<br>
+                            • Ajuda PO a comunicar visão claramente<br>
+                            • Traduz "tecnicês" para linguagem de negócio<br>
+                            • Organiza workshops de discovery e refinement<br>
+                            • Garante que PO está disponível quando necessário
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.2s;">
+                        <h4>3️⃣ Colaboração com Stakeholders</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>SM facilitando relacionamentos:</strong><br>
+                            • Organiza Sprint Reviews eficazes com stakeholders<br>
+                            • Ensina stakeholders sobre Scrum (não pedir mudanças no Sprint!)<br>
+                            • Ajuda PO a gerenciar expectativas<br>
+                            • Facilita alinhamento entre múltiplos stakeholders<br>
+                            • Cria canais de feedback estruturados
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.3s;">
+                        <h4>4️⃣ Manter Backlog Saudável</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>SM garantindo qualidade do backlog:</strong><br>
+                            • Lembrar PO de refinar backlog regularmente<br>
+                            • Assegurar que topo do backlog está "Ready"<br>
+                            • Facilitar sessões de refinement semanais<br>
+                            • Ajudar a quebrar épicos grandes em histórias<br>
+                            • Observar quando backlog está muito grande/pequeno
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--sm-green);">
+                        <h4 style="color: var(--sm-green);">🤝 Exemplo Real de Colaboração SM + PO</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Situação:</strong> PO está sobrecarregado, backlog desorganizado, time confuso sobre prioridades.<br><br>
+                                <strong>SM age:</strong><br>
+                                • Conversa 1-on-1 com PO: "Como posso ajudar?"<br>
+                                • Propõe sessões de refinement 2x por semana<br>
+                                • Facilita workshop com stakeholders para alinhar visão<br>
+                                • Ensina técnica de priorização Valor vs Esforço<br>
+                                • Ajuda PO a dizer NÃO para demandas de baixo valor<br><br>
+                                <strong>Resultado:</strong> Backlog enxuto (30 itens), topo sempre "Ready", time confiante, PO menos estressado!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>⚠️ Atenção: Limites da Ajuda</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            SM <strong>NÃO</strong> pode ser "Proxy PO"! Decisões de produto são exclusivas do PO. 
+                            SM pode facilitar, ensinar, sugerir - mas NUNCA decidir O QUÊ construir!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: SERVINDO A ORGANIZAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏢 Servindo a Organização</h2>
+                    <p>SM como agente de mudança cultural</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">SM transforma empresa inteira, não apenas um time! 🌍</div>
+
+                    <div class="responsibility-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Liderar Adoção de Scrum/Agile</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>SM como professor da organização:</strong><br>
+                            • Treina outros times em Scrum<br>
+                            • Dá workshops para gerência sobre mindset ágil<br>
+                            • Apresenta Scrum para novos colaboradores<br>
+                            • Cria materiais educativos (guias, vídeos, FAQs)<br>
+                            • Compartilha sucessos e aprendizados
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.1s;">
+                        <h4>2️⃣ Remover Impedimentos Organizacionais</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Impedimentos sistêmicos que SM ataca:</strong><br>
+                            • <strong>Processos burocráticos:</strong> Aprovações que levam semanas<br>
+                            • <strong>Silos departamentais:</strong> Times que não colaboram<br>
+                            • <strong>Infraestrutura:</strong> Ambientes dev/teste inadequados<br>
+                            • <strong>Políticas antiquadas:</strong> Regras que atrapalham agilidade<br>
+                            • <strong>Estrutura hierárquica:</strong> Command-control que sufoca time
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.2s;">
+                        <h4>3️⃣ Colaborar com Outros SMs</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Comunidade de Scrum Masters:</strong><br>
+                            • Scrum of Scrums: Coordenação entre times<br>
+                            • Compartilhar impedimentos comuns e soluções<br>
+                            • Alinhar práticas e padrões<br>
+                            • Mentorar SMs iniciantes<br>
+                            • Criar CoP (Community of Practice) de agilidade
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.3s;">
+                        <h4>4️⃣ Influenciar Mudança Cultural</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>SM como agente de transformação:</strong><br>
+                            • Desafiar status quo educadamente<br>
+                            • Propor melhorias nos processos da empresa<br>
+                            • Promover transparência e inspeção-adaptação<br>
+                            • Defender valores ágeis (colaboração > contratos)<br>
+                            • Criar experimentos seguros para mudança
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--sm-green);">
+                        <h4 style="color: var(--sm-green);">📊 Exemplo: SM Removendo Impedimento Organizacional</h4>
+                        <div class="two-column" style="gap: 20px; margin-top: 15px;">
+                            <div class="impediment-card">
+                                <h4>🚨 Impedimento</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    <strong>Problema:</strong> Times precisam esperar 3 semanas para provisionar servidor de testes. 
+                                    Processo exige 5 aprovações manuais de diferentes gerentes.
+                                </p>
+                            </div>
+                            <div class="solution-card">
+                                <h4>✅ Ação do SM</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    1. Mapeia processo atual<br>
+                                    2. Mostra impacto: 15 dias perdidos/sprint<br>
+                                    3. Propõe à TI: self-service com limite<br>
+                                    4. Piloto com 2 times<br>
+                                    5. Sucesso → expand organizacao
+                                </p>
+                            </div>
+                        </div>
+                        <p style="margin-top: 15px; font-weight: 600; color: var(--sm-green);">
+                            <strong>Resultado:</strong> De 3 semanas para 15 minutos! Times mais produtivos, TI menos sobrecarregada.
+                        </p>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>💡 Níveis de Influência do SM</h3>
+                        <div class="three-column" style="margin-top: 20px; gap: 15px;">
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">🏃 TIME (Direto)</h4>
+                                <p>Facilita, coach, remove impedimentos</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">🏢 ORGANIZAÇÃO (Influência)</h4>
+                                <p>Propõe, argumenta, demonstra valor</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">🌍 COMUNIDADE (Exemplo)</h4>
+                                <p>Compartilha, ensina, inspira</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: FACILITAÇÃO DE EVENTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎪 Facilitação de Eventos Scrum</h2>
+                    <p>SM como maestro dos eventos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Bons eventos = Time produtivo. Eventos ruins = Time frustrado! 🎯</div>
+
+                    <div class="responsibility-card" style="animation-delay: 0s; border-left-color: #1976D2;">
+                        <h4 style="color: #1976D2;">🗓️ Sprint Planning</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Papel do SM:</strong><br>
+                            • Garantir que Planning acontece no horário<br>
+                            • Facilitar discussão sem dominar<br>
+                            • Manter timeboxing (máx 8h para Sprint 1 mês)<br>
+                            • Ajudar time a definir Sprint Goal claro<br>
+                            • Observar dinâmica e ajustar se necessário<br>
+                            <strong>❌ Não faz:</strong> Definir o que vai no Sprint (time decide!)
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.1s; border-left-color: #388E3C;">
+                        <h4 style="color: #388E3C;">☀️ Daily Scrum</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Papel do SM:</strong><br>
+                            • Garantir que Daily acontece (mesmo lugar/horário)<br>
+                            • Proteger timebox de 15 minutos RELIGIOSAMENTE<br>
+                            • Observar (não participa, a menos que seja dev)<br>
+                            • Anotar impedimentos mencionados<br>
+                            • Intervir APENAS se Daily virar reunião de status<br>
+                            <strong>✅ Ideal:</strong> Time faz Daily sozinho, SM nem precisa estar lá!
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.2s; border-left-color: #F57C00;">
+                        <h4 style="color: #F57C00;">📦 Sprint Review</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Papel do SM:</strong><br>
+                            • Convidar stakeholders certos<br>
+                            • Facilitar demo do incremento (time apresenta!)<br>
+                            • Promover colaboração, não apenas "show"<br>
+                            • Capturar feedback para backlog<br>
+                            • Manter foco em trabalho "Done"<br>
+                            <strong>⚠️ Evitar:</strong> PowerPoint! Review é DEMO ao vivo + conversa
+                        </p>
+                    </div>
+
+                    <div class="responsibility-card" style="animation-delay: 0.3s; border-left-color: #7B1FA2;">
+                        <h4 style="color: #7B1FA2;">🔄 Sprint Retrospective</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Papel do SM:</strong><br>
+                            • <strong>MAIS IMPORTANTE evento para SM!</strong><br>
+                            • Criar ambiente psicologicamente seguro<br>
+                            • Usar técnicas variadas (Start-Stop-Continue, Sailboat, etc)<br>
+                            • Focar em melhorias ACIONÁVEIS<br>
+                            • Garantir que ações saem com responsável<br>
+                            • Seguir progresso das ações na próxima retro<br>
+                            <strong>💡 Segredo:</strong> Variar formato! Retro igual todo Sprint fica chata
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--sm-green);">
+                        <h4 style="color: var(--sm-green);">🎭 Técnicas de Facilitação Avançadas</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;"><strong>✓ Parking Lot:</strong> Anote tópicos off-topic para depois</li>
+                                <li style="padding: 8px 0;"><strong>✓ Timeboxing Visível:</strong> Timer projetado na parede</li>
+                                <li style="padding: 8px 0;"><strong>✓ Round Robin:</strong> Todos falam, ninguém domina</li>
+                                <li style="padding: 8px 0;"><strong>✓ Silent Brainstorm:</strong> Escrever ideias antes de discutir</li>
+                                <li style="padding: 8px 0;"><strong>✓ Dot Voting:</strong> Priorizar visualmente com adesivos</li>
+                                <li style="padding: 8px 0;"><strong>✓ Fist of Five:</strong> Consenso rápido (0-5 dedos)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        Facilitação não é sobre controlar a reunião. É sobre liberar inteligência coletiva do time!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Menos você fala, melhor você facilita!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: REMOÇÃO DE IMPEDIMENTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🚧 Remoção de Impedimentos</h2>
+                    <p>A super-habilidade do Scrum Master</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Impedimento = Qualquer coisa que impede time de atingir Sprint Goal! 🎯❌</div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="impediment-card" style="animation-delay: 0s; background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);">
+                            <h4>🟡 Técnicos</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 10px;">
+                                <li style="padding: 5px 0;">• Build quebrado</li>
+                                <li style="padding: 5px 0;">• Ambiente dev lento</li>
+                                <li style="padding: 5px 0;">• Falta ferramenta</li>
+                                <li style="padding: 5px 0;">• Débito técnico alto</li>
+                                <li style="padding: 5px 0;">• Falta de acesso</li>
+                            </ul>
+                        </div>
+
+                        <div class="impediment-card" style="animation-delay: 0.1s;">
+                            <h4>🔴 Organizacionais</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 10px;">
+                                <li style="padding: 5px 0;">• Burocracia excessiva</li>
+                                <li style="padding: 5px 0;">• Dependência outros times</li>
+                                <li style="padding: 5px 0;">• Aprovações lentas</li>
+                                <li style="padding: 5px 0;">• Prioridades conflitantes</li>
+                                <li style="padding: 5px 0;">• Falta recursos</li>
+                            </ul>
+                        </div>
+
+                        <div class="impediment-card" style="animation-delay: 0.2s; background: linear-gradient(135deg, #AB47BC 0%, #8E24AA 100%);">
+                            <h4>🟣 Humanos</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 10px;">
+                                <li style="padding: 5px 0;">• Conflitos no time</li>
+                                <li style="padding: 5px 0;">• Falta de skill</li>
+                                <li style="padding: 5px 0;">• Comunicação ruim</li>
+                                <li style="padding: 5px 0;">• Burnout</li>
+                                <li style="padding: 5px 0;">• Medo de falhar</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--sm-green);">
+                        <h4 style="color: var(--sm-green);">🎯 Estratégias de Remoção por Tipo</h4>
+                        
+                        <div style="background: #FFF3E0; padding: 20px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #FFA726;">
+                            <h5 style="color: #F57C00; margin-bottom: 10px;">🟡 Impedimentos Técnicos</h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>❌ Ruim:</strong> SM tenta resolver tecnicamente sozinho<br>
+                                <strong>✅ Bom:</strong> SM pergunta "Time, como podemos resolver?" → Empodera time<br>
+                                <strong>✅ Melhor:</strong> SM facilita pair programming, mob programming, ou traz expert externo
+                            </p>
+                        </div>
+
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #FF4757;">
+                            <h5 style="color: #D32F2F; margin-bottom: 10px;">🔴 Impedimentos Organizacionais</h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Ação SM:</strong> Escalar para gerência/liderança<br>
+                                • Documenta impacto no negócio (dias perdidos, valor não entregue)<br>
+                                • Propõe solução, não apenas reclama<br>
+                                • Faz experimento piloto se possível<br>
+                                • Persiste com educação, não desiste
+                            </p>
+                        </div>
+
+                        <div style="background: #F3E5F5; padding: 20px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #AB47BC;">
+                            <h5 style="color: #7B1FA2; margin-bottom: 10px;">🟣 Impedimentos Humanos</h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>Ação SM:</strong> Coaching 1-on-1 ou mediação<br>
+                                • Conflitos: Facilita conversa difícil em ambiente seguro<br>
+                                • Falta skill: Organiza training, pair programming, mentorias<br>
+                                • Burnout: Conversa sobre workload, férias, ajuda a redistribuir<br>
+                                • Medo: Cria cultura de experimentação e aprendizado com erro
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Framework: Impediment Board</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            SM mantém quadro visível de impedimentos com:<br>
+                            <strong>1. Identificado</strong> (quando surgiu)<br>
+                            <strong>2. Analisando</strong> (entendendo causa raiz)<br>
+                            <strong>3. Agindo</strong> (solução em andamento)<br>
+                            <strong>4. Resolvido</strong> (com data e aprendizado)<br><br>
+                            Cada impedimento tem: Descrição, Impacto, Responsável, Ações, Status
+                        </p>
+                    </div>
+
+                    <div class="quote-box">
+                        SM ensina time a PREVENIR impedimentos, não apenas removê-los!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Retro é onde time aprende a evitar impedimentos recorrentes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: SM VS PROJECT MANAGER -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🆚 Scrum Master vs Project Manager</h2>
+                    <p>Diferenças fundamentais</p>
+                </div>
+                <div class="slide-body">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>🧙 Scrum Master</th>
+                                <th>📊 Project Manager</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Foco</strong></td>
+                                <td>PROCESSO e saúde do time</td>
+                                <td>ENTREGA e cronograma</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Autoridade</strong></td>
+                                <td>Nenhuma! Influência por coaching</td>
+                                <td>Autoridade formal sobre projeto</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Toma Decisões?</strong></td>
+                                <td>❌ NÃO - Time é auto-organizado</td>
+                                <td>✅ SIM - PM decide alocações</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Aloca Tarefas?</strong></td>
+                                <td>❌ NUNCA - Time pull tasks</td>
+                                <td>✅ SIM - PM atribui tarefas</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Gerencia Pessoas?</strong></td>
+                                <td>❌ NÃO - Não é gerente</td>
+                                <td>✅ SIM - Gerencia recursos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Define Escopo?</strong></td>
+                                <td>❌ NÃO - PO define</td>
+                                <td>✅ SIM - PM define com cliente</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Controla?</strong></td>
+                                <td>❌ Não controla - Facilita</td>
+                                <td>✅ Controla escopo/tempo/custo</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Responsabilidade</strong></td>
+                                <td>Eficácia do Scrum</td>
+                                <td>Sucesso do projeto</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Relação com Time</strong></td>
+                                <td>Servo-líder, coach, colega</td>
+                                <td>Chefe, reportam para PM</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Quando o trabalho acaba?</strong></td>
+                                <td>Continua com time (permanente)</td>
+                                <td>Projeto termina, PM vai embora</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="vs-container" style="margin-top: 40px;">
+                        <div class="vs-pm" style="animation-delay: 0s;">
+                            <h4 style="text-align: center; margin-bottom: 15px;">📊 Project Manager</h4>
+                            <p style="font-size: 1.15rem; text-align: center; margin-bottom: 20px; font-weight: 600;">
+                                "Vou garantir que entreguem no prazo!"
+                            </p>
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">• Cria plano detalhado</li>
+                                <li style="padding: 8px 0;">• Aloca pessoas a tarefas</li>
+                                <li style="padding: 8px 0;">• Controla progresso</li>
+                                <li style="padding: 8px 0;">• Reporta para gerência</li>
+                                <li style="padding: 8px 0;">• Resolve problemas</li>
+                                <li style="padding: 8px 0;">• Responsável por resultado</li>
+                            </ul>
+                        </div>
+
+                        <div class="vs-divider">≠</div>
+
+                        <div class="vs-sm" style="animation-delay: 0.2s;">
+                            <h4 style="text-align: center; margin-bottom: 15px;">🧙 Scrum Master</h4>
+                            <p style="font-size: 1.15rem; text-align: center; margin-bottom: 20px; font-weight: 600;">
+                                "Como posso ajudar o time a crescer?"
+                            </p>
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">• Facilita auto-organização</li>
+                                <li style="padding: 8px 0;">• Time escolhe suas tarefas</li>
+                                <li style="padding: 8px 0;">• Time inspecciona progresso</li>
+                                <li style="padding: 8px 0;">• Transparência para todos</li>
+                                <li style="padding: 8px 0;">• Ensina time a resolver</li>
+                                <li style="padding: 8px 0;">• Time responsável</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Pode haver SM e PM no mesmo projeto?</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Resposta curta: SIM, mas com cuidado!</strong><br><br>
+                            PM pode existir em contexto corporativo/contratual para gerir orçamento, contratos, stakeholders externos. 
+                            MAS SM deve ter autonomia para Scrum Team trabalhar com auto-organização. 
+                            PM <strong>não pode</strong> microgerenciar time Scrum ou desrespeitar Sprint!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: HABILIDADES DO SM -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎓 Habilidades Essenciais do SM</h2>
+                    <p>O que faz um grande Scrum Master</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">SM é T-shaped: Profundo em Scrum + Amplo em soft skills! 📚</div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="skill-card" style="animation-delay: 0s;">
+                            <h4>🎪 Facilitação</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Conduzir reuniões produtivas, manter foco, gerenciar dinâmicas de grupo, extrair participação de todos
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.1s;">
+                            <h4>🏋️ Coaching</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Fazer perguntas poderosas, ouvir ativamente, ajudar pessoas a encontrarem suas próprias respostas
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.2s;">
+                            <h4>🧠 Mentoring</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Compartilhar experiências, ensinar práticas ágeis, guiar aprendizado sobre Scrum
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.3s;">
+                            <h4>🤝 Negociação</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Mediar conflitos, encontrar win-win, equilibrar interesses diferentes, influenciar sem autoridade
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.4s;">
+                            <h4>👂 Escuta Ativa</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Ouvir para entender (não responder), captar comunicação não-verbal, fazer follow-up relevante
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.5s;">
+                            <h4>❤️ Inteligência Emocional</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Reconhecer emoções próprias e dos outros, gerenciar tensões, criar ambiente psicologicamente seguro
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.6s;">
+                            <h4>🔍 Pensamento Sistêmico</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Ver padrões maiores, entender interdependências, identificar causa raiz de problemas
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.7s;">
+                            <h4>📊 Facilitação Visual</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Usar quadros, sticky notes, diagramas para facilitar entendimento e colaboração
+                            </p>
+                        </div>
+
+                        <div class="skill-card" style="animation-delay: 0.8s;">
+                            <h4>🎯 Influência</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                Liderar sem autoridade, persuadir com dados e lógica, construir relacionamentos de confiança
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px; border-color: var(--sm-green);">
+                        <h4 style="color: var(--sm-green);">📚 Como Desenvolver Essas Habilidades</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;"><strong>📖 Ler:</strong> "Coaching Agile Teams" (Lyssa Adkins), "Servant Leadership" (Greenleaf)</li>
+                                <li style="padding: 8px 0;"><strong>🎓 Certificações:</strong> PSM (Scrum.org), CSM (Scrum Alliance), ICP-ACC (ICAgile)</li>
+                                <li style="padding: 8px 0;"><strong>👥 Praticar:</strong> Facilitar meetups, coaching em projetos open source</li>
+                                <li style="padding: 8px 0;"><strong>🤝 Mentorar:</strong> Encontrar SM experiente para mentorar você</li>
+                                <li style="padding: 8px 0;"><strong>🗣️ Comunidade:</strong> Participar de grupos Agile locais, conferências</li>
+                                <li style="padding: 8px 0;"><strong>🧘 Auto-conhecimento:</strong> Terapia, meditação, journaling</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box">
+                        Scrum Master é papel mais difícil do Scrum. Requer maturidade emocional e técnica!
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Não é para juniores. É para mestres! 🧙</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você aprendeu a essência do Scrum Master! 🧙✨</div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box sm-box">
+                            <h3>🧙 Scrum Master</h3>
+                            <ul>
+                                <li>Servo-líder, não chefe</li>
+                                <li>Coach + Facilitador + Professor</li>
+                                <li>Remove impedimentos</li>
+                                <li>Protege time de interrupções</li>
+                                <li>Influencia sem autoridade</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box sm-box">
+                            <h3>🎯 3 Áreas de Atuação</h3>
+                            <ul>
+                                <li><strong>Time:</strong> Facilita auto-organização</li>
+                                <li><strong>PO:</strong> Ensina técnicas de produto</li>
+                                <li><strong>Organização:</strong> Agente de mudança</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box sm-box">
+                            <h3>🎪 Facilitação de Eventos</h3>
+                            <ul>
+                                <li>Planning: Define Sprint Goal</li>
+                                <li>Daily: 15min religiosamente</li>
+                                <li>Review: Demo + feedback</li>
+                                <li>Retro: Melhoria contínua</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box sm-box">
+                            <h3>🎓 Habilidades</h3>
+                            <ul>
+                                <li>Facilitação e coaching</li>
+                                <li>Inteligência emocional</li>
+                                <li>Negociação e influência</li>
+                                <li>Pensamento sistêmico</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚖️ SM ≠ Project Manager</h3>
+                        <div class="two-column" style="margin-top: 20px; gap: 15px;">
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">🧙 SM</h4>
+                                <p>Facilita, coaching, sem autoridade, foco no processo e time</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                                <h4 style="margin-bottom: 10px;">📊 PM</h4>
+                                <p>Comanda, aloca, autoridade formal, foco em entrega</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (01/03)</h3>
+                            <ul>
+                                <li><strong>Sprint Planning</strong></li>
+                                <li>Como planejar Sprint eficaz</li>
+                                <li>Definir Sprint Goal</li>
+                                <li>Estimar com Planning Poker</li>
+                                <li>Criar Sprint Backlog</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Ler Scrum Guide (seção SM)</li>
+                                <li>Assistir: "Agile Product Ownership in a Nutshell" (YouTube)</li>
+                                <li>Pensar: quem seria SM no grupo?</li>
+                                <li>Preparar dúvidas sobre papéis</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "O verdadeiro mestre é aquele que trabalha para se tornar desnecessário!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Empodere seu time! 🌟</div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado! Até sábado! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Próximo encontro: Sprint Planning!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 12</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .servant-card, .responsibility-card, .impediment-card, .solution-card, .skill-card, .comparison-table, .quote-box, .vs-side');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 4 - Implementação de Endpoint POST | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 100px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--unifil-dark);
+            color: #00ff00;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            overflow-x: auto;
+            animation: fadeInUp 0.6s ease-out 0.3s forwards;
+            opacity: 0;
+            border: 2px solid var(--unifil-orange);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .method-get { background: #4CAF50; }
+        .method-post { background: #2196F3; }
+        .method-put { background: #FF9800; }
+        .method-delete { background: #F44336; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            margin: 5px;
+            font-size: 1rem;
+        }
+
+        .status-200 { background: #4CAF50; }
+        .status-201 { background: #00ACC1; }
+        .status-400 { background: #FF9800; }
+        .status-404 { background: #F44336; }
+        .status-422 { background: #E91E63; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .key-takeaway {
+            background: #FFF3E0;
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            border-radius: 10px;
+            animation: fadeInUp 0.6s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .key-takeaway h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .validation-box {
+            background: #E3F2FD;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .validation-box h4 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .error-box {
+            background: #FFEBEE;
+            border: 2px solid #F44336;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .error-box h4 {
+            color: #F44336;
+            margin-bottom: 10px;
+        }
+
+        .success-box {
+            background: #E8F5E9;
+            border: 2px solid #4CAF50;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .success-box h4 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: scale(1.05);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            color: var(--unifil-dark);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .slide-header h1 { font-size: 1.8rem; }
+            .slide-header h2 { font-size: 1.4rem; }
+            .two-column, .three-column { grid-template-columns: 1fr; }
+            .slide-body { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>📱 Desenvolvimento de Aplicativos Móveis</h1>
+                    <p>Criação de API REST Básica</p>
+                </div>
+                <div class="slide-body">
+                    <div style="text-align: center; margin-top: 80px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px; animation: fadeInUp 0.6s ease-out;">
+                            Aula 4
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 40px; animation: fadeInUp 0.6s ease-out 0.2s; opacity: 0; animation-fill-mode: forwards;">
+                            Implementação de Endpoint POST
+                        </h3>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 60px;">
+                        <div class="content-box">
+                            <h3>📅 Informações</h3>
+                            <ul>
+                                <li><strong>Data:</strong> Sexta, 20/02/2026</li>
+                                <li><strong>Duração:</strong> 1,5 horas</li>
+                                <li><strong>Formato:</strong> Teórico + Prático</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 Objetivos</h3>
+                            <ul>
+                                <li>Implementar rota POST</li>
+                                <li>Validar dados de entrada</li>
+                                <li>Tratar erros adequadamente</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📚 Agenda de Hoje</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <div>
+                                <strong>🔄 Parte 1 (15min)</strong><br>
+                                Revisão e Dúvidas da Aula 3
+                            </div>
+                            <div>
+                                <strong>📨 Parte 2 (40min)</strong><br>
+                                Método POST em profundidade
+                            </div>
+                            <div>
+                                <strong>💻 Parte 3 (35min)</strong><br>
+                                Implementação com validações
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="big-idea">
+                        "Hoje vamos CRIAR recursos na nossa API!" 🚀
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: REVISÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Revisão Rápida da Aula 3</h2>
+                    <p>O que vimos sobre GET</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>✅ GET - O que Aprendemos</h3>
+                            <ul>
+                                <li>Listar todos os recursos</li>
+                                <li>Buscar por ID (path params)</li>
+                                <li>Filtros (query params)</li>
+                                <li>Ordenação de resultados</li>
+                                <li>Paginação básica</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📊 Exemplos GET</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+GET /api/produtos
+GET /api/produtos/1
+GET /api/produtos?categoria=Tech
+GET /api/produtos?ordem=preco
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Mas tem um problema...</h3>
+                        <p style="font-size: 1.3rem; margin-top: 15px;">
+                            GET só <strong>LÊ</strong> dados! 📖<br><br>
+                            Como fazemos para <strong>CRIAR</strong> novos produtos?<br>
+                            Como adicionamos itens ao nosso array?
+                        </p>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 30px;">
+                        É aqui que o POST entra! 📨
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Lembrete Importante</h4>
+                        <p>Até agora, nosso array de produtos era fixo no código. 
+                        Com POST, vamos permitir que o cliente da API adicione novos produtos dinamicamente!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: GET VS POST -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚖️ GET vs POST - Diferenças Fundamentais</h2>
+                    <p>Duas faces da mesma moeda</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>📚 Analogia: Biblioteca</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>GET:</strong> "Quero VER um livro da prateleira" 👀<br>
+                            → Você olha, lê, mas não leva nada<br>
+                            → A biblioteca continua igual<br><br>
+                            <strong>POST:</strong> "Quero DOAR um livro novo para a biblioteca" 📚<br>
+                            → Você adiciona um livro à coleção<br>
+                            → A biblioteca agora tem um livro a mais
+                        </p>
+                    </div>
+
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Aspecto</th>
+                            <th><span class="method-badge method-get">GET</span></th>
+                            <th><span class="method-badge method-post">POST</span></th>
+                        </tr>
+                        <tr>
+                            <td><strong>Propósito</strong></td>
+                            <td>Ler/Consultar dados</td>
+                            <td>Criar novos recursos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tem Body?</strong></td>
+                            <td>❌ Não</td>
+                            <td>✅ Sim (JSON com dados)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Modifica Dados?</strong></td>
+                            <td>❌ Nunca</td>
+                            <td>✅ Sempre</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Idempotente?</strong></td>
+                            <td>✅ Sim (pode repetir)</td>
+                            <td>❌ Não (cada vez cria novo)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status de Sucesso</strong></td>
+                            <td>200 OK</td>
+                            <td>201 Created</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Exemplo de URL</strong></td>
+                            <td>/api/produtos</td>
+                            <td>/api/produtos</td>
+                        </tr>
+                    </table>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>📖 Exemplo GET</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #4CAF50;">GET</span> /api/produtos
+
+<span style="color: #6A9955;">// Sem body</span>
+<span style="color: #6A9955;">// Retorna lista</span>
+                            </div>
+                        </div>
+
+                        <div class="example-card" style="animation-delay: 0.2s;">
+                            <h4>✍️ Exemplo POST</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+<span style="color: #2196F3;">POST</span> /api/produtos
+
+<span style="color: #6A9955;">// COM body (JSON)</span>
+{
+  "nome": "Mouse Gamer",
+  "preco": 150
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>🎯 Regra de Ouro</h4>
+                        <p><strong>GET:</strong> Ler sem modificar (seguro, pode repetir)<br>
+                        <strong>POST:</strong> Criar novo recurso (modifica, não repita!)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: ANATOMIA DO POST -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔍 Anatomia de uma Requisição POST</h2>
+                    <p>Entendendo cada parte</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📨 Requisição POST Completa</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #2196F3; font-weight: bold;">POST</span> <span style="color: #CE9178;">/api/produtos</span> HTTP/1.1
+<span style="color: #9CDCFE;">Host:</span> localhost:3000
+<span style="color: #9CDCFE;">Content-Type:</span> application/json
+<span style="color: #9CDCFE;">Content-Length:</span> 89
+
+{
+    <span style="color: #CE9178;">"nome"</span>: <span style="color: #CE9178;">"Teclado Mecânico RGB"</span>,
+    <span style="color: #CE9178;">"preco"</span>: <span style="color: #B5CEA8;">450</span>,
+    <span style="color: #CE9178;">"categoria"</span>: <span style="color: #CE9178;">"Informática"</span>,
+    <span style="color: #CE9178;">"estoque"</span>: <span style="color: #B5CEA8;">20</span>
+}
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>1️⃣ Método e URL</h3>
+                            <p style="margin-top: 10px;">
+                                <code>POST /api/produtos</code><br><br>
+                                Indica que queremos criar um novo produto
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>2️⃣ Headers</h3>
+                            <p style="margin-top: 10px;">
+                                <code>Content-Type: application/json</code><br><br>
+                                Informa que o body é JSON
+                            </p>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.4s;">
+                            <h3>3️⃣ Body (Corpo)</h3>
+                            <p style="margin-top: 10px;">
+                                Objeto JSON com os dados do novo produto
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚠️ MUITO IMPORTANTE!</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            O header <code>Content-Type: application/json</code> é <strong>OBRIGATÓRIO</strong>!<br><br>
+                            Sem ele, o Express não consegue interpretar o JSON do body.
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>✅ Resposta de Sucesso (201 Created)</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+HTTP/1.1 <span style="color: #4CAF50;">201 Created</span>
+<span style="color: #9CDCFE;">Content-Type:</span> application/json
+
+{
+    <span style="color: #CE9178;">"id"</span>: <span style="color: #B5CEA8;">5</span>,
+    <span style="color: #CE9178;">"nome"</span>: <span style="color: #CE9178;">"Teclado Mecânico RGB"</span>,
+    <span style="color: #CE9178;">"preco"</span>: <span style="color: #B5CEA8;">450</span>,
+    <span style="color: #CE9178;">"categoria"</span>: <span style="color: #CE9178;">"Informática"</span>,
+    <span style="color: #CE9178;">"estoque"</span>: <span style="color: #B5CEA8;">20</span>
+}
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Observe</h4>
+                        <p>O servidor <strong>gera o ID</strong> automaticamente!<br>
+                        O cliente envia os dados, mas o servidor decide o ID.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: MIDDLEWARE JSON -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚙️ Middleware para Parsing de JSON</h2>
+                    <p>Preparando o Express para receber JSON</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>📮 Analogia: Carta no Envelope</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            Imagine que você recebe uma carta:<br><br>
+                            <strong>Sem middleware:</strong> Você recebe o envelope fechado 💌<br>
+                            → Não consegue ler o conteúdo<br><br>
+                            <strong>Com middleware:</strong> Alguém abre o envelope para você 📖<br>
+                            → Você recebe a carta já aberta e legível<br><br>
+                            <code>express.json()</code> é esse "abridor de envelopes" para JSON!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Configurando o Middleware (OBRIGATÓRIO!)</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">express</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'express'</span>);
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">app</span> = <span style="color: #DCDCAA;">express</span>();
+
+<span style="color: #6A9955;">// MIDDLEWARE ESSENCIAL - Adicione SEMPRE no início!</span>
+app.<span style="color: #DCDCAA;">use</span>(express.<span style="color: #DCDCAA;">json</span>());
+
+<span style="color: #6A9955;">// Agora você pode acessar req.body em qualquer rota POST</span>
+app.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(req.<span style="color: #9CDCFE;">body</span>); <span style="color: #6A9955;">// Objeto JavaScript pronto!</span>
+});
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="error-box">
+                            <h4>❌ Sem express.json()</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+console.log(req.body);
+// undefined 😵
+
+// Você não consegue acessar
+// os dados enviados!
+                            </div>
+                        </div>
+
+                        <div class="success-box" style="animation-delay: 0.2s;">
+                            <h4>✅ Com express.json()</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+console.log(req.body);
+// { nome: "Mouse", preco: 150 }
+
+// Dados prontos para usar! 🎉
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 O que o Middleware faz?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">1️⃣ Intercepta requisições com body JSON</li>
+                            <li style="padding: 8px 0;">2️⃣ Faz o parsing (converte texto para objeto)</li>
+                            <li style="padding: 8px 0;">3️⃣ Coloca o objeto em <code>req.body</code></li>
+                            <li style="padding: 8px 0;">4️⃣ Passa para a próxima função (sua rota)</li>
+                        </ul>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>⚠️ NUNCA esqueça!</h4>
+                        <p>Sem <code>app.use(express.json())</code>, suas rotas POST não funcionam!<br>
+                        Sempre adicione no INÍCIO do arquivo, antes de definir as rotas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: GERAÇÃO DE IDs -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔢 Geração de IDs Únicos</h2>
+                    <p>Cada recurso precisa de um identificador</p>
+                </div>
+                <div class="slide-body">
+                    <div class="highlight-box">
+                        <h3>🎯 Por que o servidor gera o ID?</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            O <strong>cliente NÃO deve</strong> escolher o ID!<br><br>
+                            Motivos:<br>
+                            • Evitar IDs duplicados<br>
+                            • Garantir sequência correta<br>
+                            • Segurança (cliente não controla identificadores)
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Correto (Servidor gera)</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+<span style="color: #6A9955;">// Cliente envia:</span>
+{
+  "nome": "Mouse",
+  "preco": 150
+}
+
+<span style="color: #6A9955;">// Servidor responde:</span>
+{
+  <strong style="color: #4CAF50;">"id": 5,</strong>  ← Gerado!
+  "nome": "Mouse",
+  "preco": 150
+}
+                            </div>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>❌ Errado (Cliente escolhe)</h3>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+<span style="color: #6A9955;">// Cliente envia:</span>
+{
+  <strong style="color: #F44336;">"id": 999,</strong>  ← NÃO!
+  "nome": "Mouse",
+  "preco": 150
+}
+
+<span style="color: #6A9955;">// Pode causar conflitos!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💻 Estratégias para Gerar IDs</h4>
+                        
+                        <div style="margin-top: 20px;">
+                            <h5 style="color: var(--unifil-orange); margin-bottom: 10px;">Opção 1: Incrementar do último ID (Simples)</h5>
+                            <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #6A9955;">// Pegar o maior ID atual e adicionar 1</span>
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">novoId</span> = produtos.<span style="color: #9CDCFE;">length</span> > <span style="color: #B5CEA8;">0</span>
+    ? <span style="color: #4EC9B0;">Math</span>.<span style="color: #DCDCAA;">max</span>(...produtos.<span style="color: #DCDCAA;">map</span>(<span style="color: #9CDCFE;">p</span> => p.<span style="color: #9CDCFE;">id</span>)) + <span style="color: #B5CEA8;">1</span>
+    : <span style="color: #B5CEA8;">1</span>;
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <h5 style="color: var(--unifil-orange); margin-bottom: 10px;">Opção 2: Variável contador (Mais simples ainda)</h5>
+                            <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">proximoId</span> = <span style="color: #B5CEA8;">5</span>; <span style="color: #6A9955;">// Começa de onde parou</span>
+
+app.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">novoProduto</span> = {
+        <span style="color: #9CDCFE;">id</span>: proximoId++, <span style="color: #6A9955;">// Usa e incrementa</span>
+        ...req.<span style="color: #9CDCFE;">body</span>
+    };
+});
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <h5 style="color: var(--unifil-orange); margin-bottom: 10px;">Opção 3: UUID (Produção real)</h5>
+                            <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">v4</span>: <span style="color: #9CDCFE;">uuidv4</span> } = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'uuid'</span>);
+
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">novoId</span> = <span style="color: #DCDCAA;">uuidv4</span>();
+<span style="color: #6A9955;">// "f47ac10b-58cc-4372-a567-0e02b2c3d479"</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Recomendação</h4>
+                        <p>Para nossas aulas, use a <strong>Opção 2</strong> (variável contador).<br>
+                        É simples, funcional e fácil de entender!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: IMPLEMENTAÇÃO POST BÁSICA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Implementação POST Básica</h2>
+                    <p>Criando o primeiro endpoint</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📝 Código Completo - POST /api/produtos</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">express</span> = <span style="color: #DCDCAA;">require</span>(<span style="color: #CE9178;">'express'</span>);
+<span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">app</span> = <span style="color: #DCDCAA;">express</span>();
+
+<span style="color: #6A9955;">// ESSENCIAL: Middleware JSON</span>
+app.<span style="color: #DCDCAA;">use</span>(express.<span style="color: #DCDCAA;">json</span>());
+
+<span style="color: #6A9955;">// Dados em memória</span>
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">produtos</span> = [
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">1</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Notebook"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">3500</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span> },
+    { <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">2</span>, <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Mouse"</span>, <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">150</span>, <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Informática"</span> }
+];
+
+<span style="color: #C586C0;">let</span> <span style="color: #9CDCFE;">proximoId</span> = <span style="color: #B5CEA8;">3</span>; <span style="color: #6A9955;">// Controla próximo ID</span>
+
+<span style="color: #6A9955;">// POST /api/produtos - Criar novo produto</span>
+app.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// 1. Pegar dados do body</span>
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">preco</span>, <span style="color: #9CDCFE;">categoria</span> } = req.<span style="color: #9CDCFE;">body</span>;
+    
+    <span style="color: #6A9955;">// 2. Criar objeto do novo produto</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">novoProduto</span> = {
+        <span style="color: #9CDCFE;">id</span>: proximoId++,    <span style="color: #6A9955;">// Gera ID e incrementa</span>
+        <span style="color: #9CDCFE;">nome</span>,
+        <span style="color: #9CDCFE;">preco</span>,
+        <span style="color: #9CDCFE;">categoria</span>
+    };
+    
+    <span style="color: #6A9955;">// 3. Adicionar ao array</span>
+    produtos.<span style="color: #DCDCAA;">push</span>(novoProduto);
+    
+    <span style="color: #6A9955;">// 4. Retornar produto criado com status 201</span>
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">201</span>).<span style="color: #DCDCAA;">json</span>(novoProduto);
+});
+
+app.<span style="color: #DCDCAA;">listen</span>(<span style="color: #B5CEA8;">3000</span>, () => <span style="color: #9CDCFE;">console</span>.<span style="color: #DCDCAA;">log</span>(<span style="color: #CE9178;">'🚀 API na porta 3000'</span>));
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="success-box">
+                            <h4>✅ Testando no Postman</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+<strong>Método:</strong> POST
+<strong>URL:</strong> http://localhost:3000/api/produtos
+
+<strong>Headers:</strong>
+Content-Type: application/json
+
+<strong>Body (raw JSON):</strong>
+{
+  "nome": "Teclado RGB",
+  "preco": 450,
+  "categoria": "Informática"
+}
+                            </div>
+                        </div>
+
+                        <div class="success-box" style="animation-delay: 0.2s;">
+                            <h4>📥 Resposta (201 Created)</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.9rem;">
+{
+  "id": 3,
+  "nome": "Teclado RGB",
+  "preco": 450,
+  "categoria": "Informática"
+}
+
+<span style="color: #6A9955;">// Produto foi adicionado ao array!</span>
+<span style="color: #6A9955;">// GET /api/produtos agora retorna 3 itens</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>🎯 Fluxo do POST</h4>
+                        <p>1. Cliente envia dados no body<br>
+                        2. Servidor gera ID único<br>
+                        3. Servidor adiciona ao array<br>
+                        4. Servidor retorna produto criado com 201</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: VALIDAÇÕES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>✅ Validação de Dados - Essencial!</h2>
+                    <p>Nunca confie cegamente no cliente</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>🛡️ Analogia: Segurança do Aeroporto</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8;">
+                            <strong>Sem validação:</strong> Deixar qualquer um entrar no avião 😱<br>
+                            → Pessoas sem passaporte<br>
+                            → Bagagens sem verificar<br>
+                            → Caos total!<br><br>
+                            <strong>Com validação:</strong> Verificar cada passageiro 🛂<br>
+                            → Documento válido?<br>
+                            → Bagagem dentro dos limites?<br>
+                            → Segurança garantida!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Por que Validar?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.15rem;">
+                            <li style="padding: 10px 0;">❌ <strong>Sem validação:</strong></li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• Produtos sem nome</li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• Preços negativos ou zero</li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• Tipos errados (string no lugar de número)</li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• Dados inconsistentes</li>
+                            <li style="padding: 10px 0; margin-top: 15px;">✅ <strong>Com validação:</strong></li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• Dados sempre corretos</li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• Banco de dados limpo</li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• Menos bugs</li>
+                            <li style="padding: 5px 0; padding-left: 40px;">• API profissional</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>💻 Tipos de Validação</h4>
+                        <table class="comparison-table" style="margin-top: 15px;">
+                            <tr>
+                                <th>Validação</th>
+                                <th>O que verifica</th>
+                                <th>Exemplo</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Obrigatório</strong></td>
+                                <td>Campo está presente?</td>
+                                <td><code>if (!nome)</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tipo</strong></td>
+                                <td>Tipo de dado correto?</td>
+                                <td><code>typeof preco === 'number'</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Formato</strong></td>
+                                <td>Formato válido?</td>
+                                <td><code>email.includes('@')</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Faixa</strong></td>
+                                <td>Valor dentro dos limites?</td>
+                                <td><code>preco > 0</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tamanho</strong></td>
+                                <td>String no tamanho certo?</td>
+                                <td><code>nome.length >= 3</code></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="error-box">
+                            <h4>❌ Dados Inválidos</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+{
+  "nome": "",           ← Vazio!
+  "preco": -50,         ← Negativo!
+  "categoria": null     ← Nulo!
+}
+
+{
+  "preco": 100          ← Falta nome!
+}
+
+{
+  "nome": "A",          ← Muito curto!
+  "preco": "duzentos"   ← String!
+}
+                            </div>
+                        </div>
+
+                        <div class="success-box" style="animation-delay: 0.2s;">
+                            <h4>✅ Dados Válidos</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+{
+  "nome": "Mouse Gamer",
+  "preco": 150,
+  "categoria": "Informática"
+}
+
+{
+  "nome": "Livro JavaScript",
+  "preco": 89.90,
+  "categoria": "Livros"
+}
+
+<span style="color: #6A9955;">// Todos os campos presentes</span>
+<span style="color: #6A9955;">// Tipos corretos</span>
+<span style="color: #6A9955;">// Valores válidos</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: IMPLEMENTAÇÃO COM VALIDAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🛡️ POST com Validação Completa</h2>
+                    <p>Código profissional e robusto</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>💻 Implementação Profissional</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4; font-size: 0.88rem;">
+app.<span style="color: #DCDCAA;">post</span>(<span style="color: #CE9178;">'/api/produtos'</span>, (<span style="color: #9CDCFE;">req</span>, <span style="color: #9CDCFE;">res</span>) => {
+    <span style="color: #6A9955;">// 1. Extrair dados do body</span>
+    <span style="color: #C586C0;">const</span> { <span style="color: #9CDCFE;">nome</span>, <span style="color: #9CDCFE;">preco</span>, <span style="color: #9CDCFE;">categoria</span> } = req.<span style="color: #9CDCFE;">body</span>;
+    
+    <span style="color: #6A9955;">// 2. VALIDAÇÕES - Campos obrigatórios</span>
+    <span style="color: #C586C0;">if</span> (!nome || !preco || !categoria) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Campos obrigatórios: nome, preco, categoria"</span>
+        });
+    }
+    
+    <span style="color: #6A9955;">// 3. VALIDAÇÕES - Tipo de dado</span>
+    <span style="color: #C586C0;">if</span> (<span style="color: #C586C0;">typeof</span> preco !== <span style="color: #CE9178;">'number'</span>) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Preço deve ser um número"</span>
+        });
+    }
+    
+    <span style="color: #6A9955;">// 4. VALIDAÇÕES - Regra de negócio (preço positivo)</span>
+    <span style="color: #C586C0;">if</span> (preco <= <span style="color: #B5CEA8;">0</span>) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Preço deve ser maior que zero"</span>
+        });
+    }
+    
+    <span style="color: #6A9955;">// 5. VALIDAÇÕES - Tamanho mínimo</span>
+    <span style="color: #C586C0;">if</span> (nome.<span style="color: #9CDCFE;">length</span> < <span style="color: #B5CEA8;">3</span>) {
+        <span style="color: #C586C0;">return</span> res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">400</span>).<span style="color: #DCDCAA;">json</span>({
+            <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Nome deve ter pelo menos 3 caracteres"</span>
+        });
+    }
+    
+    <span style="color: #6A9955;">// 6. Se passou em TODAS as validações, criar produto</span>
+    <span style="color: #C586C0;">const</span> <span style="color: #9CDCFE;">novoProduto</span> = {
+        <span style="color: #9CDCFE;">id</span>: proximoId++,
+        <span style="color: #9CDCFE;">nome</span>,
+        <span style="color: #9CDCFE;">preco</span>,
+        <span style="color: #9CDCFE;">categoria</span>
+    };
+    
+    <span style="color: #6A9955;">// 7. Adicionar ao array</span>
+    produtos.<span style="color: #DCDCAA;">push</span>(novoProduto);
+    
+    <span style="color: #6A9955;">// 8. Retornar sucesso com 201 Created</span>
+    res.<span style="color: #DCDCAA;">status</span>(<span style="color: #B5CEA8;">201</span>).<span style="color: #DCDCAA;">json</span>(novoProduto);
+});
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="error-box">
+                            <h4>❌ Falta Campo</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+POST /api/produtos
+{
+  "nome": "Mouse"
+  <span style="color: #6A9955;">// Falta preco!</span>
+}
+
+<strong style="color: #F44336;">400 Bad Request</strong>
+{
+  "erro": "Campos obrigatórios:
+   nome, preco, categoria"
+}
+                            </div>
+                        </div>
+
+                        <div class="error-box" style="animation-delay: 0.2s;">
+                            <h4>❌ Preço Inválido</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+POST /api/produtos
+{
+  "nome": "Mouse",
+  "preco": -50,
+  "categoria": "Tech"
+}
+
+<strong style="color: #F44336;">400 Bad Request</strong>
+{
+  "erro": "Preço deve ser
+   maior que zero"
+}
+                            </div>
+                        </div>
+
+                        <div class="success-box" style="animation-delay: 0.4s;">
+                            <h4>✅ Tudo Certo!</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark); font-size: 0.85rem;">
+POST /api/produtos
+{
+  "nome": "Mouse Gamer",
+  "preco": 150,
+  "categoria": "Tech"
+}
+
+<strong style="color: #4CAF50;">201 Created</strong>
+{
+  "id": 3,
+  "nome": "Mouse Gamer",
+  "preco": 150,
+  "categoria": "Tech"
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>💡 Padrão de Validação</h4>
+                        <p>1. Verificar → 2. Se erro, retornar 400 → 3. Se ok, continuar<br>
+                        Use <code>return</code> para parar execução quando houver erro!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: STATUS CODES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Status Codes no POST</h2>
+                    <p>Comunicando o resultado corretamente</p>
+                </div>
+                <div class="slide-body">
+                    <div class="highlight-box">
+                        <h3>🎯 Status Codes Importantes para POST</h3>
+                        <div style="margin-top: 20px;">
+                            <div style="margin-bottom: 20px;">
+                                <span class="status-badge status-201">201 Created</span>
+                                <p style="margin-top: 10px; font-size: 1.1rem;">
+                                    <strong>Quando usar:</strong> Recurso criado com sucesso<br>
+                                    <strong>O que retornar:</strong> O recurso recém-criado (com ID)
+                                </p>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <span class="status-badge status-400">400 Bad Request</span>
+                                <p style="margin-top: 10px; font-size: 1.1rem;">
+                                    <strong>Quando usar:</strong> Dados inválidos, campos faltando<br>
+                                    <strong>O que retornar:</strong> Objeto com mensagem de erro clara
+                                </p>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <span class="status-badge status-422">422 Unprocessable Entity</span>
+                                <p style="margin-top: 10px; font-size: 1.1rem;">
+                                    <strong>Quando usar:</strong> Dados válidos mas regra de negócio falhou<br>
+                                    <strong>Exemplo:</strong> Produto duplicado, estoque insuficiente
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>✅ 201 Created</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+res.<span style="color: #DCDCAA;">status</span>(<span style="color: #4CAF50; font-weight: bold;">201</span>).<span style="color: #DCDCAA;">json</span>({
+    <span style="color: #9CDCFE;">id</span>: <span style="color: #B5CEA8;">3</span>,
+    <span style="color: #9CDCFE;">nome</span>: <span style="color: #CE9178;">"Mouse"</span>,
+    <span style="color: #9CDCFE;">preco</span>: <span style="color: #B5CEA8;">150</span>,
+    <span style="color: #9CDCFE;">categoria</span>: <span style="color: #CE9178;">"Tech"</span>
+});
+
+<span style="color: #6A9955;">// Cliente sabe que foi criado!</span>
+                            </div>
+                        </div>
+
+                        <div class="example-card" style="animation-delay: 0.2s;">
+                            <h4>❌ 400 Bad Request</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+res.<span style="color: #DCDCAA;">status</span>(<span style="color: #F44336; font-weight: bold;">400</span>).<span style="color: #DCDCAA;">json</span>({
+    <span style="color: #9CDCFE;">erro</span>: <span style="color: #CE9178;">"Preço inválido"</span>,
+    <span style="color: #9CDCFE;">detalhes</span>: <span style="color: #CE9178;">"Deve ser > 0"</span>
+});
+
+<span style="color: #6A9955;">// Cliente sabe o que errou!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💡 Diferença: 400 vs 422</h4>
+                        <table class="comparison-table">
+                            <tr>
+                                <th>Situação</th>
+                                <th>Status Code</th>
+                                <th>Exemplo</th>
+                            </tr>
+                            <tr>
+                                <td>Campo faltando</td>
+                                <td><strong>400</strong></td>
+                                <td>"nome" é obrigatório</td>
+                            </tr>
+                            <tr>
+                                <td>Tipo errado</td>
+                                <td><strong>400</strong></td>
+                                <td>preco deve ser número</td>
+                            </tr>
+                            <tr>
+                                <td>Formato inválido</td>
+                                <td><strong>400</strong></td>
+                                <td>Email sem @</td>
+                            </tr>
+                            <tr>
+                                <td>Regra de negócio</td>
+                                <td><strong>422</strong></td>
+                                <td>Produto já existe</td>
+                            </tr>
+                            <tr>
+                                <td>Constraint violada</td>
+                                <td><strong>422</strong></td>
+                                <td>CPF já cadastrado</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <h4>🎯 Regra Simples</h4>
+                        <p><strong>400:</strong> Dados malformados/inválidos (cliente errou ao enviar)<br>
+                        <strong>422:</strong> Dados válidos mas não processáveis (regra de negócio)<br>
+                        <strong>201:</strong> Tudo certo, recurso criado!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: BOAS PRÁTICAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⭐ Boas Práticas no POST</h2>
+                    <p>Código limpo e profissional</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">1️⃣ SEMPRE Valide os Dados</h4>
+                            <p>Nunca confie cegamente no cliente. Valide tipo, presença e regras de negócio.</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">2️⃣ Retorne 201 (não 200!)</h4>
+                            <p>201 Created é o status correto para criação. 200 é para GET/PUT.</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">3️⃣ Retorne o Recurso Criado</h4>
+                            <p>O cliente precisa saber o ID gerado e confirmar os dados salvos.</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.6s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">4️⃣ Mensagens de Erro Claras</h4>
+                            <p>Não retorne "Erro". Diga QUAL campo está errado e POR QUÊ.</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.8s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">5️⃣ Use 'return' nas Validações</h4>
+                            <p>Evita executar código desnecessário após encontrar erro.</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 1s;">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">6️⃣ Campos Opcionais com Valor Padrão</h4>
+                            <p>Se um campo é opcional, defina um valor padrão sensato.</p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="error-box">
+                            <h4>❌ Mensagem Ruim</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+{
+  "erro": "Erro"
+}
+
+<span style="color: #6A9955;">// Cliente não sabe o que fazer! 😵</span>
+                            </div>
+                        </div>
+
+                        <div class="success-box" style="animation-delay: 0.2s;">
+                            <h4>✅ Mensagem Boa</h4>
+                            <div class="code-block" style="background: white; color: var(--unifil-dark);">
+{
+  "erro": "Campo 'preco' inválido",
+  "detalhes": "Deve ser número > 0",
+  "recebido": -50
+}
+
+<span style="color: #6A9955;">// Cliente sabe exatamente o problema!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💡 Exemplo: Campo Opcional com Padrão</h4>
+                        <div class="code-block" style="background: #1e1e1e; color: #d4d4d4;">
+<span style="color: #C586C0;">const</span> { 
+    <span style="color: #9CDCFE;">nome</span>, 
+    <span style="color: #9CDCFE;">preco</span>, 
+    <span style="color: #9CDCFE;">categoria</span>, 
+    <span style="color: #9CDCFE;">estoque</span> = <span style="color: #B5CEA8;">0</span>  <span style="color: #6A9955;">// Valor padrão!</span>
+} = req.<span style="color: #9CDCFE;">body</span>;
+
+<span style="color: #6A9955;">// Se cliente não enviar 'estoque', assume 0</span>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Checklist do POST Perfeito</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">☐ Middleware express.json() configurado</li>
+                            <li style="padding: 8px 0;">☐ Validação de campos obrigatórios</li>
+                            <li style="padding: 8px 0;">☐ Validação de tipos de dados</li>
+                            <li style="padding: 8px 0;">☐ Validação de regras de negócio</li>
+                            <li style="padding: 8px 0;">☐ Geração automática de ID</li>
+                            <li style="padding: 8px 0;">☐ Retorno com status 201</li>
+                            <li style="padding: 8px 0;">☐ Retorno do recurso criado</li>
+                            <li style="padding: 8px 0;">☐ Mensagens de erro descritivas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que conquistamos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Hoje aprendemos a CRIAR recursos com POST! 🎊
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Hoje Dominamos</h3>
+                            <ul>
+                                <li>Diferença entre GET e POST</li>
+                                <li>Middleware express.json()</li>
+                                <li>Geração de IDs únicos</li>
+                                <li>Validação de dados</li>
+                                <li>Status code 201</li>
+                                <li>Tratamento de erros</li>
+                                <li>Boas práticas de POST</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>🎯 CRUD Completado</h3>
+                            <ul>
+                                <li>✅ <strong>C</strong>reate → POST</li>
+                                <li>✅ <strong>R</strong>ead → GET</li>
+                                <li>⏳ <strong>U</strong>pdate → PUT/PATCH</li>
+                                <li>⏳ <strong>D</strong>elete → DELETE</li>
+                            </ul>
+                            <p style="margin-top: 15px; font-size: 1.1rem;">
+                                Estamos em 50% do CRUD! 🎉
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 TRABALHO 1 - VALE NOTA!</h3>
+                        <div style="margin-top: 20px; font-size: 1.1rem;">
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">📝 Documentar Todos os Endpoints</strong><br><br>
+                                Crie um documento (README.md ou PDF) com:<br>
+                                • Lista de TODOS os endpoints (GET e POST)<br>
+                                • Para cada endpoint: método, URL, body, resposta<br>
+                                • Exemplos de requisição no Postman<br>
+                                • Capturas de tela dos testes<br>
+                                • Explicação de validações implementadas
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <strong style="color: var(--unifil-orange);">💻 Implementar na Sua API</strong><br><br>
+                                Na API que você criou (livros/filmes/etc):<br>
+                                • Endpoint POST funcionando<br>
+                                • Validações COMPLETAS<br>
+                                • Criar pelo menos 5 recursos via POST<br>
+                                • Testar e salvar Collection do Postman
+                            </div>
+
+                            <div style="background: white; color: var(--unifil-dark); padding: 20px; border-radius: 10px;">
+                                <strong style="color: var(--unifil-orange);">📅 Prazo de Entrega</strong><br><br>
+                                Entregar até: <strong>Segunda, 23/02/2026</strong><br>
+                                Formato: README.md + código + Collection Postman<br>
+                                Via: Git (link do repositório)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (Segunda, 23/02)</h3>
+                            <ul>
+                                <li><strong>PUT e PATCH</strong></li>
+                                <li>Atualizar recursos</li>
+                                <li>Diferença entre PUT e PATCH</li>
+                                <li>Validações em updates</li>
+                                <li><strong>DELETE</strong></li>
+                                <li>Remover recursos</li>
+                                <li>CRUD 100% completo!</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="animation-delay: 0.2s;">
+                            <h3>📖 Leitura Recomendada</h3>
+                            <ul>
+                                <li>HTTP Status Codes completos</li>
+                                <li>Validação de dados em APIs</li>
+                                <li>RESTful API design patterns</li>
+                                <li>Segurança em APIs REST</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Valide SEMPRE! Cliente confiável não existe!" 🛡️
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.2rem;">Excelente trabalho hoje! 🙌</p>
+                        <p style="font-size: 1rem; margin-top: 10px;">Nos vemos na próxima com PUT e DELETE!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 12</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .code-block, .big-idea, .key-takeaway, .comparison-table, .analogy-box, .timeline-item, .validation-box, .error-box, .success-box');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

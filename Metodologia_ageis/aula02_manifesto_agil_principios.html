@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 2 - Manifesto Ágil e Princípios | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 100px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -48px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .timeline-item p {
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        .manifesto-value {
+            background: white;
+            border: 3px solid var(--unifil-orange);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .manifesto-value:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(255, 140, 0, 0.3);
+        }
+
+        .manifesto-value h3 {
+            color: var(--unifil-orange);
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .manifesto-value .value-statement {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .manifesto-value .value-over {
+            color: var(--unifil-orange);
+            font-weight: 700;
+        }
+
+        .principle-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid var(--unifil-orange);
+            margin: 15px 0;
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .principle-card:hover {
+            transform: translateX(10px);
+            background: white;
+            box-shadow: 0 5px 20px rgba(255, 140, 0, 0.2);
+        }
+
+        .principle-number {
+            display: inline-block;
+            background: var(--unifil-orange);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: 700;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .principle-card h4 {
+            display: inline;
+            color: var(--unifil-orange);
+            font-size: 1.2rem;
+        }
+
+        .principle-card p {
+            margin-top: 15px;
+            color: var(--unifil-gray);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .analogy-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            animation: slideInRight 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .analogy-box p {
+            font-size: 1.15rem;
+            line-height: 1.7;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        .comparison-table th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .comparison-table td {
+            background: var(--unifil-light);
+            padding: 20px;
+            font-size: 1.05rem;
+            border-top: 2px solid white;
+            border-bottom: 2px solid white;
+        }
+
+        .comparison-table td:first-child {
+            border-left: 2px solid white;
+            border-radius: 10px 0 0 10px;
+            font-weight: 600;
+            color: var(--unifil-orange);
+        }
+
+        .comparison-table td:last-child {
+            border-right: 2px solid white;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .interactive-quiz {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .interactive-quiz h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .quiz-option {
+            background: white;
+            border: 2px solid var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--unifil-orange);
+            transform: translateX(10px);
+        }
+
+        .quiz-option.correct {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .quiz-option.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 1.3rem;
+            text-align: center;
+            animation: scaleIn 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            opacity: 0.3;
+        }
+
+        .quote-box::after {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            bottom: -30px;
+            right: 20px;
+            opacity: 0.3;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: var(--unifil-orange);
+            transition: width 0.3s ease;
+            z-index: 1001;
+        }
+
+        /* Animações */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Scrollbar customizada */
+        .slide-body::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb:hover {
+            background: var(--unifil-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <img src="UniFil_Logo_Vertical-01.jpg" alt="UniFil Logo" class="logo">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">
+                            📜 Aula 2
+                        </h2>
+                        <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">
+                            Manifesto Ágil e Princípios
+                        </h3>
+                        <p style="font-size: 1.3rem; color: var(--unifil-gray); margin-bottom: 10px;">
+                            Prof. Tiago Galvão
+                        </p>
+                        <p style="font-size: 1.1rem; color: var(--unifil-gray);">
+                            Quarta-feira, 11 de Fevereiro de 2026
+                        </p>
+                    </div>
+
+                    <div class="big-idea">
+                        "Valores e princípios guiam decisões melhor que processos rígidos."
+                    </div>
+
+                    <div style="margin-top: 40px; color: var(--unifil-gray); font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                        <p style="margin-top: 10px;">⌨️ ← Anterior | Próximo →</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: AGENDA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Agenda da Aula</h2>
+                    <p>O que vamos estudar hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item" style="animation-delay: 0s;">
+                            <h4>1️⃣ Os 4 Valores do Manifesto (40 min)</h4>
+                            <p>Análise detalhada de cada valor com exemplos práticos e discussões</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.1s;">
+                            <h4>2️⃣ Os 12 Princípios do Ágil (40 min)</h4>
+                            <p>Compreender cada princípio, exemplos de aplicação, dilemas e trade-offs</p>
+                        </div>
+
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4>3️⃣ Mentalidade Ágil vs "Fazer Ágil" (10 min)</h4>
+                            <p>Diferença entre adotar práticas e ter mindset ágil. Agile vs Agility</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>🎯 Objetivos de Aprendizagem</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Estudar em profundidade o Manifesto Ágil</li>
+                            <li style="padding: 8px 0;">✅ Compreender os 12 princípios</li>
+                            <li style="padding: 8px 0;">✅ Internalizar a mentalidade ágil</li>
+                            <li style="padding: 8px 0;">✅ Aplicar valores e princípios em cenários reais</li>
+                        </ul>
+                    </div>
+
+                    <div class="quote-box">
+                        Estamos descobrindo maneiras melhores de desenvolver software, fazendo-o nós mesmos e ajudando outros a fazerem o mesmo.
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Manifesto Ágil, 2001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: CONTEXTO DO MANIFESTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏔️ O Manifesto Ágil</h2>
+                    <p>68 palavras que mudaram o desenvolvimento de software</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);">
+                        Snowbird, Utah - Fevereiro de 2001<br>
+                        17 desenvolvedores. 2 dias. 1 manifesto revolucionário.
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📜 O Documento Completo</h4>
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px; margin-top: 15px; font-size: 1.1rem; line-height: 1.8;">
+                            <p style="font-style: italic; margin-bottom: 20px;">
+                                "Estamos descobrindo maneiras melhores de desenvolver software, fazendo-o nós mesmos e ajudando outros a fazerem o mesmo. Através deste trabalho, passamos a valorizar:"
+                            </p>
+                            <p style="margin: 15px 0;"><strong>Indivíduos e interações</strong> <span style="color: var(--unifil-orange);">mais que</span> processos e ferramentas</p>
+                            <p style="margin: 15px 0;"><strong>Software em funcionamento</strong> <span style="color: var(--unifil-orange);">mais que</span> documentação abrangente</p>
+                            <p style="margin: 15px 0;"><strong>Colaboração com o cliente</strong> <span style="color: var(--unifil-orange);">mais que</span> negociação de contratos</p>
+                            <p style="margin: 15px 0;"><strong>Responder a mudanças</strong> <span style="color: var(--unifil-orange);">mais que</span> seguir um plano</p>
+                            <p style="font-style: italic; margin-top: 20px; font-size: 0.95rem;">
+                                "Ou seja, mesmo havendo valor nos itens à direita, valorizamos mais os itens à esquerda."
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🔑 O Grande Insight</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            O Manifesto não diz que processos, documentação, contratos e planos são ruins. Diz que <strong>valorizamos MAIS</strong> as coisas à esquerda!
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            É sobre <strong>equilíbrio e priorização</strong>, não sobre extremos.
+                        </p>
+                    </div>
+
+                    <div class="analogy-box">
+                        <h3>🎯 Analogia: Viajando</h3>
+                        <p>
+                            Você valoriza mais <strong>chegar ao destino</strong> do que <strong>seguir o GPS cegamente</strong>.
+                        </p>
+                        <p style="margin-top: 15px;">
+                            Se o GPS te leva para um caminho bloqueado, você adapta a rota. O objetivo (chegar) é mais importante que o plano inicial (rota do GPS).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: VALOR 1 - INDIVÍDUOS E INTERAÇÕES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>👥 Valor 1: Indivíduos e Interações</h2>
+                    <p>Mais que processos e ferramentas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="manifesto-value">
+                        <h3>1️⃣ Primeiro Valor</h3>
+                        <div class="value-statement">
+                            <span style="color: var(--unifil-dark);">Indivíduos e interações</span>
+                            <span class="value-over"> mais que </span>
+                            <span style="color: var(--unifil-gray);">processos e ferramentas</span>
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7;">
+                            <strong>O que significa:</strong> As pessoas da sua equipe e como elas se comunicam são mais importantes do que ter o processo perfeito ou a ferramenta mais cara.
+                        </p>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>✅ Por que isso importa?</h3>
+                            <ul>
+                                <li>Software é feito por pessoas para pessoas</li>
+                                <li>Comunicação eficaz > processo burocrático</li>
+                                <li>Colaboração > hierarquia rígida</li>
+                                <li>Confiança > controle excessivo</li>
+                                <li>Criatividade precisa de autonomia</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚠️ O que NÃO significa</h3>
+                            <ul>
+                                <li>Processos são inúteis</li>
+                                <li>Ferramentas não importam</li>
+                                <li>Caos completo</li>
+                                <li>Sem documentação</li>
+                                <li>Reuniões o dia todo</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📖 Exemplo Prático: Bloqueio no Projeto</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            <strong>Abordagem Tradicional:</strong> "Abra um ticket no sistema de chamados, espere ser triado, aguarde atribuição, espere resposta formal (3-5 dias úteis)."
+                        </p>
+                        <p style="margin-top: 15px; line-height: 1.7; color: var(--unifil-orange); font-weight: 600;">
+                            <strong>Abordagem Ágil:</strong> "Ei, estou travado aqui. Podemos conversar 5 minutos agora?" (Resolvido em minutos!)
+                        </p>
+                    </div>
+
+                    <div class="analogy-box">
+                        <h3>🏀 Analogia: Time de Basquete</h3>
+                        <p>
+                            <strong>Time A:</strong> Jogadores medianos, mas com entrosamento incrível. Se comunicam com olhares.
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>Time B:</strong> Estrelas individuais, zero química, cada um fazendo seu jogo.
+                        </p>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Quem ganha? Time A! Interação > habilidade individual.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: VALOR 2 - SOFTWARE FUNCIONANDO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Valor 2: Software Funcionando</h2>
+                    <p>Mais que documentação abrangente</p>
+                </div>
+                <div class="slide-body">
+                    <div class="manifesto-value">
+                        <h3>2️⃣ Segundo Valor</h3>
+                        <div class="value-statement">
+                            <span style="color: var(--unifil-dark);">Software em funcionamento</span>
+                            <span class="value-over"> mais que </span>
+                            <span style="color: var(--unifil-gray);">documentação abrangente</span>
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7;">
+                            <strong>O que significa:</strong> Software que realmente funciona e agrega valor é a principal medida de progresso. Documentos extensos não pagam contas!
+                        </p>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>✅ Por que isso importa?</h3>
+                            <ul>
+                                <li>Cliente não paga por documentos</li>
+                                <li>Software funcionando valida ideias</li>
+                                <li>Feedback real só vem de software real</li>
+                                <li>Documentação desatualiza rápido</li>
+                                <li>Código bem escrito é autodocumentável</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚠️ O que NÃO significa</h3>
+                            <ul>
+                                <li>Zero documentação</li>
+                                <li>Código sem comentários</li>
+                                <li>Sem arquitetura</li>
+                                <li>Sem especificações</li>
+                                <li>Caos completo</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📊 A Regra de Ouro</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>"Documentação suficiente, não excessiva!"</strong>
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Documente o necessário para o time trabalhar bem. Nada mais, nada menos.
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📖 Exemplo Prático: Projeto de 6 Meses</h4>
+                        <table style="width: 100%; margin-top: 15px;">
+                            <tr style="background: var(--unifil-light);">
+                                <th style="padding: 10px; text-align: left;">Cascata</th>
+                                <th style="padding: 10px; text-align: left;">Ágil</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 15px; vertical-align: top;">
+                                    • Mês 1-2: Documentar tudo (500 páginas)<br>
+                                    • Mês 3-5: Desenvolver<br>
+                                    • Mês 6: Entregar<br>
+                                    <strong style="color: #dc3545;">Cliente vê software só no mês 6!</strong>
+                                </td>
+                                <td style="padding: 15px; vertical-align: top;">
+                                    • Semana 1: Docs mínimos + primeira entrega<br>
+                                    • A cada 2 semanas: nova versão funcionando<br>
+                                    • Mês 6: 12 versões entregues!<br>
+                                    <strong style="color: #28a745;">Cliente viu e usou desde semana 1!</strong>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="analogy-box">
+                        <h3>🏠 Analogia: Construindo uma Casa</h3>
+                        <p>
+                            <strong>Documentação:</strong> Plantas arquitetônicas lindas, maquetes perfeitas, renderizações 3D incríveis.
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>Software funcionando:</strong> Uma casa real onde você pode morar!
+                        </p>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Você prefere plantas bonitas ou uma casa de verdade? 🏡
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: VALOR 3 - COLABORAÇÃO COM CLIENTE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🤝 Valor 3: Colaboração com Cliente</h2>
+                    <p>Mais que negociação de contratos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="manifesto-value">
+                        <h3>3️⃣ Terceiro Valor</h3>
+                        <div class="value-statement">
+                            <span style="color: var(--unifil-dark);">Colaboração com o cliente</span>
+                            <span class="value-over"> mais que </span>
+                            <span style="color: var(--unifil-gray);">negociação de contratos</span>
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7;">
+                            <strong>O que significa:</strong> Cliente é parceiro, não adversário. Trabalhamos JUNTOS para criar o melhor produto, não brigamos por cláusulas contratuais.
+                        </p>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>✅ Por que isso importa?</h3>
+                            <ul>
+                                <li>Requisitos mudam (e tudo bem!)</li>
+                                <li>Cliente aprende durante o projeto</li>
+                                <li>Feedback contínuo melhora produto</li>
+                                <li>Confiança mútua acelera decisões</li>
+                                <li>Todos querem o melhor resultado</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚠️ O que NÃO significa</h3>
+                            <ul>
+                                <li>Sem contratos</li>
+                                <li>Cliente manda em tudo</li>
+                                <li>Aceitar qualquer mudança</li>
+                                <li>Trabalhar de graça</li>
+                                <li>Sem limites</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📖 Exemplo Prático: Mudança de Requisito</h4>
+                        <div style="margin-top: 15px;">
+                            <p style="padding: 15px; background: #f8d7da; border-left: 5px solid #dc3545; margin: 10px 0;">
+                                <strong>❌ Mentalidade Contratual:</strong><br>
+                                "Isso não estava no escopo original! Vai custar R$ 50.000 extras e 3 meses de delay. Assine aqui o aditivo contratual antes de continuarmos."
+                            </p>
+                            <p style="padding: 15px; background: #d4edda; border-left: 5px solid #28a745; margin: 10px 0;">
+                                <strong>✅ Mentalidade Colaborativa:</strong><br>
+                                "Entendi! Isso muda as prioridades? Vamos revisar o backlog juntos. Podemos trocar essa feature por outra menos importante agora. O que você acha?"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>💡 A Mudança de Paradigma</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Antes:</strong> "Nós vs Eles" - Desenvolvedores x Cliente em lados opostos da mesa
+                        </p>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Ágil:</strong> "Nós juntos" - Mesmo lado da mesa, olhando para o problema juntos
+                        </p>
+                    </div>
+
+                    <div class="analogy-box">
+                        <h3>🎨 Analogia: Tatuagem</h3>
+                        <p>
+                            <strong>Abordagem Contratual:</strong> "Você assinou contrato pedindo um dragão. Mesmo que você tenha mudado de ideia e queira uma rosa, vou tatuar o dragão. Contrato é contrato!"
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>Abordagem Colaborativa:</strong> "Vejo que você mudou de ideia. Vamos conversar sobre o design da rosa. O importante é você ficar feliz com sua tatuagem!"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: VALOR 4 - RESPONDER A MUDANÇAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Valor 4: Responder a Mudanças</h2>
+                    <p>Mais que seguir um plano</p>
+                </div>
+                <div class="slide-body">
+                    <div class="manifesto-value">
+                        <h3>4️⃣ Quarto Valor</h3>
+                        <div class="value-statement">
+                            <span style="color: var(--unifil-dark);">Responder a mudanças</span>
+                            <span class="value-over"> mais que </span>
+                            <span style="color: var(--unifil-gray);">seguir um plano</span>
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7;">
+                            <strong>O que significa:</strong> Capacidade de se adaptar rapidamente é mais valiosa do que seguir cegamente um plano feito há 6 meses atrás.
+                        </p>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>✅ Por que isso importa?</h3>
+                            <ul>
+                                <li>Mundo muda rápido (COVID, anyone?)</li>
+                                <li>Concorrência inova</li>
+                                <li>Tecnologia evolui</li>
+                                <li>Aprendemos durante o projeto</li>
+                                <li>Clientes mudam de ideia</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚠️ O que NÃO significa</h3>
+                            <ul>
+                                <li>Sem planejamento</li>
+                                <li>Caos total</li>
+                                <li>Mudar por mudar</li>
+                                <li>Sem estratégia</li>
+                                <li>Sem visão de longo prazo</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>🎯 O Ponto-Chave</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>"Planejar é essencial. Planos são descartáveis."</strong>
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            O ato de planejar nos prepara. Mas ser escravo do plano original é burrice.
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📖 Exemplo Prático: Pandemia de 2020</h4>
+                        <div style="margin-top: 15px; line-height: 1.7;">
+                            <p style="margin-bottom: 15px;">
+                                <strong>Empresas Tradicionais:</strong> "Nosso plano de 2020 não previa pandemia. Vamos seguir o plano mesmo assim. Resultado: 50% faliram ou demitiram em massa."
+                            </p>
+                            <p style="color: var(--unifil-orange); font-weight: 600;">
+                                <strong>Empresas Ágeis:</strong> "Pivô imediato! Trabalho remoto em 48h, produtos adaptados para nova realidade, novos serviços digitais. Resultado: Muitas cresceram!"
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🎮 Caso Real: Nintendo Switch</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            A Nintendo planejava lançar apenas como console caseiro. Durante desenvolvimento, perceberam: "E se for portátil TAMBÉM?"
+                        </p>
+                        <p style="margin-top: 15px; font-weight: 600; color: var(--unifil-orange);">
+                            Mudaram o plano. Resultado: Um dos consoles mais bem-sucedidos da história!
+                        </p>
+                    </div>
+
+                    <div class="analogy-box">
+                        <h3>⛵ Analogia: Velejando</h3>
+                        <p>
+                            <strong>Seguir o Plano:</strong> "Traçamos uma linha reta no mapa. Vamos seguir essa linha exata, mesmo que o vento esteja contra nós. Vai ser mais lento, mas é o plano!"
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>Responder a Mudanças:</strong> "O vento mudou! Vamos ajustar as velas e mudar a rota. O objetivo é chegar lá, não seguir a linha!"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: OS 12 PRINCÍPIOS - PARTE 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📜 Os 12 Princípios Ágeis - Parte 1</h2>
+                    <p>Princípios 1 a 6</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        Os valores guiam. Os princípios operacionalizam!
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0s;">
+                        <span class="principle-number">1</span>
+                        <h4>Satisfação do Cliente</h4>
+                        <p>
+                            "Nossa maior prioridade é satisfazer o cliente através da <strong>entrega contínua e adiantada</strong> de software com valor agregado."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Não espere 6 meses. Entregue valor desde a semana 1!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.1s;">
+                        <span class="principle-number">2</span>
+                        <h4>Mudanças são Bem-Vindas</h4>
+                        <p>
+                            "Aceitar mudanças de requisitos, <strong>mesmo no fim do desenvolvimento</strong>. Processos ágeis tiram vantagem das mudanças visando vantagem competitiva para o cliente."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Mudança não é problema. É oportunidade de melhorar!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.2s;">
+                        <span class="principle-number">3</span>
+                        <h4>Entregas Frequentes</h4>
+                        <p>
+                            "Entregar software funcionando <strong>frequentemente</strong>, na escala de semanas até meses, com preferência aos períodos mais curtos."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Ciclos curtos de 1-4 semanas, não 6 meses!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.3s;">
+                        <span class="principle-number">4</span>
+                        <h4>Trabalho Conjunto Diário</h4>
+                        <p>
+                            "Pessoas de negócio e desenvolvedores devem trabalhar <strong>diariamente em conjunto</strong> por todo o projeto."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Cliente não some após assinar contrato. Está junto todo dia!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.4s;">
+                        <span class="principle-number">5</span>
+                        <h4>Indivíduos Motivados</h4>
+                        <p>
+                            "Construa projetos em torno de <strong>indivíduos motivados</strong>. Dê a eles o ambiente e o suporte necessário e confie neles para fazer o trabalho."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Autonomia + Confiança = Alta performance!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.5s;">
+                        <span class="principle-number">6</span>
+                        <h4>Conversa Face a Face</h4>
+                        <p>
+                            "O método mais eficiente e eficaz de transmitir informações é através de <strong>conversa face a face</strong>."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → 5 min de conversa > 50 emails trocados!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: OS 12 PRINCÍPIOS - PARTE 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📜 Os 12 Princípios Ágeis - Parte 2</h2>
+                    <p>Princípios 7 a 12</p>
+                </div>
+                <div class="slide-body">
+                    <div class="principle-card" style="animation-delay: 0s;">
+                        <span class="principle-number">7</span>
+                        <h4>Software Funcionando</h4>
+                        <p>
+                            "Software funcionando é a <strong>medida primária de progresso</strong>."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Não conte quantos docs você fez. Mostre o que está funcionando!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.1s;">
+                        <span class="principle-number">8</span>
+                        <h4>Desenvolvimento Sustentável</h4>
+                        <p>
+                            "Processos ágeis promovem desenvolvimento sustentável. Os patrocinadores, desenvolvedores e usuários devem ser capazes de manter um <strong>ritmo constante indefinidamente</strong>."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Maratonas matam. Sprints sustentáveis vencem!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.2s;">
+                        <span class="principle-number">9</span>
+                        <h4>Excelência Técnica</h4>
+                        <p>
+                            "Contínua atenção à <strong>excelência técnica</strong> e bom design aumenta a agilidade."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Código ruim trava agilidade. Qualidade acelera!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.3s;">
+                        <span class="principle-number">10</span>
+                        <h4>Simplicidade</h4>
+                        <p>
+                            "Simplicidade - a arte de <strong>maximizar a quantidade de trabalho não realizado</strong> - é essencial."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Faça o mínimo necessário. YAGNI (You Aren't Gonna Need It)!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.4s;">
+                        <span class="principle-number">11</span>
+                        <h4>Times Auto-Organizados</h4>
+                        <p>
+                            "As melhores arquiteturas, requisitos e designs emergem de <strong>times auto-organizados</strong>."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Quem faz, decide como fazer. Autonomia gera excelência!
+                        </p>
+                    </div>
+
+                    <div class="principle-card" style="animation-delay: 0.5s;">
+                        <span class="principle-number">12</span>
+                        <h4>Reflexão e Ajuste</h4>
+                        <p>
+                            "Em intervalos regulares, o time <strong>reflete sobre como se tornar mais eficaz</strong> e então refina e ajusta seu comportamento de acordo."
+                        </p>
+                        <p style="margin-top: 10px; font-style: italic; color: var(--unifil-orange);">
+                            → Melhoria contínua não é opcional. É obrigatória!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Percebeu o Padrão?</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Todos os princípios giram em torno de: <strong>Pessoas, Colaboração, Adaptação, Entrega de Valor e Melhoria Contínua!</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: MENTALIDADE ÁGIL VS FAZER ÁGIL -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧠 Mentalidade Ágil vs "Fazer Ágil"</h2>
+                    <p>Agile vs Agility - A diferença crucial</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);">
+                        "Você pode fazer ágil sem SER ágil. E isso é um desastre!"
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 40px;">
+                        <thead>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>❌ Fazer Ágil (Rituals)</th>
+                                <th>✅ Ser Ágil (Mindset)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Foco</strong></td>
+                                <td>Seguir práticas e rituais</td>
+                                <td>Internalizar valores e princípios</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Daily</strong></td>
+                                <td>Status report para o chefe</td>
+                                <td>Sincronização da equipe</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Retrospectiva</strong></td>
+                                <td>Formalidade burocrática</td>
+                                <td>Melhoria contínua genuína</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mudanças</strong></td>
+                                <td>Resistência disfarçada</td>
+                                <td>Abraçadas como oportunidade</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Scrum Master</strong></td>
+                                <td>Gerente de projeto renomeado</td>
+                                <td>Servant leader genuíno</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Resultado</strong></td>
+                                <td>Mesmos problemas, novos nomes</td>
+                                <td>Transformação real</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🎭 Sinais de "Fake Agile" (Agile Theatre)</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                🚩 Daily de 1 hora com todo mundo reportando ao "Scrum Master-gerente"
+                            </li>
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                🚩 Retrospectivas onde nada muda de verdade
+                            </li>
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                🚩 "Sprints" de 6 meses
+                            </li>
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                🚩 Product Owner que não tem poder de decisão
+                            </li>
+                            <li style="padding: 10px 0; border-bottom: 1px solid var(--unifil-light);">
+                                🚩 Time que não pode falar com cliente diretamente
+                            </li>
+                            <li style="padding: 10px 0;">
+                                🚩 Resistência feroz a mudanças de requisitos
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 A Verdade Dura</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Muitas empresas adotam o <strong>vocabulário</strong> ágil sem mudar a <strong>cultura</strong>.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Resultado: Command & control disfarçado de ágil. Isso é pior que não fazer nada!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: DILEMAS E DISCUSSÕES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🤔 Dilemas e Discussões</h2>
+                    <p>Quando valores entram em conflito</p>
+                </div>
+                <div class="slide-body">
+                    <div class="analogy-box">
+                        <h3>⚖️ Nem sempre é preto no branco!</h3>
+                        <p>
+                            Os valores do Manifesto às vezes entram em conflito entre si. E tudo bem! Ágil é sobre fazer trade-offs conscientes.
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🎯 Dilema 1: Documentação Zero?</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            <strong>Situação:</strong> Time de 100 desenvolvedores em sistema bancário crítico.
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Pergunta:</strong> "Software funcionando > Documentação" significa zero documentação?
+                        </p>
+                        <p style="margin-top: 15px; color: var(--unifil-orange); font-weight: 600;">
+                            <strong>Resposta:</strong> NÃO! Contexto importa. Sistema bancário precisa de documentação para auditoria, compliance, onboarding. A questão é: documentação SUFICIENTE, não EXCESSIVA.
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🎯 Dilema 2: Cliente Sempre Tem Razão?</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            <strong>Situação:</strong> Cliente pede feature tecnicamente impossível ou muito cara.
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Pergunta:</strong> "Colaboração com cliente" significa aceitar tudo?
+                        </p>
+                        <p style="margin-top: 15px; color: var(--unifil-orange); font-weight: 600;">
+                            <strong>Resposta:</strong> NÃO! Colaboração é via de mão dupla. Você educa o cliente sobre viabilidade técnica, ele te educa sobre necessidades de negócio. Juntos encontram a melhor solução!
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🎯 Dilema 3: Mudar TUDO o Tempo Todo?</h4>
+                        <p style="margin-top: 15px; line-height: 1.7;">
+                            <strong>Situação:</strong> Cliente quer mudar 50% do backlog toda semana.
+                        </p>
+                        <p style="margin-top: 10px;">
+                            <strong>Pergunta:</strong> "Responder a mudanças" significa aceitar qualquer mudança?
+                        </p>
+                        <p style="margin-top: 15px; color: var(--unifil-orange); font-weight: 600;">
+                            <strong>Resposta:</strong> NÃO! Mudanças devem agregar valor. Mudança por mudança é caos. Converse com cliente sobre impacto, priorize, tomem decisões juntos!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🧭 Guia de Navegação</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Quando em dúvida, pergunte-se:
+                        </p>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">✅ Isso entrega VALOR para o cliente?</li>
+                            <li style="padding: 8px 0;">✅ Isso promove COLABORAÇÃO?</li>
+                            <li style="padding: 8px 0;">✅ Isso aumenta nossa AGILIDADE?</li>
+                            <li style="padding: 8px 0;">✅ Isso melhora o PRODUTO?</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-size: 1.05rem;">
+                            Se a resposta for "não" para todas, provavelmente não é uma boa ideia!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Hoje você internalizou os valores e princípios que guiam o Ágil! 🚀
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>📜 Os 4 Valores</h3>
+                            <ul>
+                                <li>Indivíduos e interações > processos</li>
+                                <li>Software funcionando > documentação</li>
+                                <li>Colaboração com cliente > contratos</li>
+                                <li>Responder a mudanças > seguir plano</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Pontos-Chave</h3>
+                            <ul>
+                                <li>12 princípios operacionalizam valores</li>
+                                <li>Ser ágil ≠ Fazer ágil</li>
+                                <li>Contexto importa sempre</li>
+                                <li>Trade-offs são necessários</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>📚 TRABALHO 1 - Para Próxima Aula (Terça, 17/02)</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>📋 Formar equipes de 4-5 pessoas</strong>
+                        </p>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣</strong> Escolher tema do projeto (app, sistema, produto)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣</strong> Criar documentação inicial (será o Product Backlog)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣</strong> Listar 10-15 requisitos/funcionalidades iniciais
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣</strong> Enviar por email: nome da equipe, integrantes e tema
+                            </li>
+                        </ul>
+                        <p style="margin-top: 15px; font-style: italic; font-size: 1rem;">
+                            💡 Dica: Escolham algo que vocês tenham interesse real! Vai ser mais motivador.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (17/02)</h3>
+                            <ul>
+                                <li>Métodos Tradicionais vs Ágeis</li>
+                                <li>Quando usar cada abordagem</li>
+                                <li>Modelos híbridos</li>
+                                <li>Árvore de decisão</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Atendimento:</strong> Terças 18h-19h</p>
+                            <p><strong>Moodle:</strong> Fórum disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        Não deixe que a busca por perfeição impeça que o progresso seja feito.
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Winston Churchill (adaptado)</div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela participação! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Nos vemos na próxima aula!</p>
+                        <p style="font-size: 0.9rem; margin-top: 20px; font-style: italic;">
+                            "Valores guiam. Princípios operacionalizam. Práticas implementam." 🎯
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 12</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            // Update counter
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Reset animations
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .manifesto-value, .principle-card, .analogy-box, .comparison-table, .quote-box, .interactive-quiz');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

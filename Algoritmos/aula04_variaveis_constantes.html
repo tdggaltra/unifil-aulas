@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 4 - Variáveis e Constantes | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .code-block .keyword {
+            color: #c678dd;
+        }
+
+        .code-block .function {
+            color: #61afef;
+        }
+
+        .code-block .string {
+            color: #98c379;
+        }
+
+        .code-block .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .code-block .number {
+            color: #d19a66;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .analogy-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #533f03;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--unifil-orange);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 20px 0;
+            animation: fadeInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--unifil-orange);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+
+        .timeline-item h4 {
+            color: var(--unifil-orange);
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin: 30px 0;
+            border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--unifil-light);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .warning-box {
+            background: #ffebee;
+            border: 3px solid #f44336;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .warning-box h3 {
+            color: #c62828;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .warning-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #b71c1c;
+        }
+
+        .good-bad-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .good-box {
+            background: #e8f5e9;
+            border: 3px solid #4caf50;
+            border-radius: 15px;
+            padding: 25px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .good-box h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .bad-box {
+            background: #ffebee;
+            border: 3px solid #f44336;
+            border-radius: 15px;
+            padding: 25px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .bad-box h3 {
+            color: #c62828;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            min-width: 80px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1001;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: var(--unifil-gray);
+            font-weight: 500;
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb:hover {
+            background: var(--unifil-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Lógica de Programação e Algoritmos</h1>
+                    <p>Aula 04 - Variáveis e Constantes</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="font-size: 6rem; margin-bottom: 30px;">📦</div>
+                    <h2 style="font-size: 2.5rem; color: var(--unifil-orange); margin-bottom: 20px;">
+                        Armazenando Dados na Memória
+                    </h2>
+                    <p style="font-size: 1.3rem; color: var(--unifil-gray); max-width: 800px; margin-bottom: 40px;">
+                        Aprenda a declarar, inicializar e usar variáveis e constantes corretamente em seus programas.
+                    </p>
+                    <div class="two-column" style="width: 100%; max-width: 900px; margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="number">2</div>
+                            <div class="label">Conceitos Principais</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">∞</div>
+                            <div class="label">Possibilidades</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 50px; font-size: 1.1rem; color: var(--unifil-gray);">
+                        <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                        <p><strong>Data:</strong> Quinta-feira, 20 de Fevereiro de 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: O QUE É UMA VARIÁVEL? -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🤔 O que é uma Variável?</h2>
+                    <p>Conceito fundamental da programação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Uma <strong>variável</strong> é um espaço nomeado na memória do computador para armazenar dados que podem <strong>mudar</strong> durante a execução do programa
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 40px;">
+                        <h3>📦 Analogia: Caixa Etiquetada</h3>
+                        <p>
+                            Imagine uma variável como uma <strong>caixa com etiqueta</strong>:
+                        </p>
+                        <ul style="margin-top: 15px; padding-left: 30px;">
+                            <li><strong>Etiqueta:</strong> Nome da variável (ex: "idade", "preco")</li>
+                            <li><strong>Conteúdo:</strong> Valor armazenado (ex: 25, 19.99)</li>
+                            <li><strong>Tamanho da caixa:</strong> Tipo de dado (int, float, string...)</li>
+                            <li><strong>Trocar conteúdo:</strong> Você pode mudar o valor quando quiser!</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            A etiqueta (nome) permanece, mas o conteúdo (valor) pode variar! 📝
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Características de Variáveis</h3>
+                            <ul>
+                                <li><strong>Nome:</strong> Identificador único</li>
+                                <li><strong>Tipo:</strong> Define que dados pode guardar</li>
+                                <li><strong>Valor:</strong> Conteúdo armazenado</li>
+                                <li><strong>Mutável:</strong> Pode ser alterada</li>
+                                <li><strong>Escopo:</strong> Onde ela existe/é acessível</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Para que servem?</h3>
+                            <ul>
+                                <li>Armazenar dados temporariamente</li>
+                                <li>Fazer cálculos intermediários</li>
+                                <li>Guardar resultados de operações</li>
+                                <li>Receber entrada do usuário</li>
+                                <li>Controlar fluxo do programa</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Exemplo Simples</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>idade = 25</strong>
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">
+                            → "idade" é o <strong>nome</strong> da variável<br>
+                            → 25 é o <strong>valor</strong> armazenado<br>
+                            → Depois posso fazer: <strong>idade = 26</strong> (valor mudou!)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: DECLARAÇÃO E INICIALIZAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Declaração e Inicialização</h2>
+                    <p>Como criar e usar variáveis</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="content-box">
+                            <h3>1️⃣ DECLARAÇÃO</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                <strong>Criar</strong> a variável e definir seu tipo:
+                            </p>
+                            <ul style="margin-top: 15px;">
+                                <li>Reserva espaço na memória</li>
+                                <li>Define o nome</li>
+                                <li>Especifica o tipo de dado</li>
+                                <li>Variável existe, mas sem valor inicial</li>
+                            </ul>
+                            <p style="margin-top: 15px; background: var(--code-bg); color: white; padding: 10px; border-radius: 8px; font-family: monospace;">
+                                <span style="color: #c678dd;">int</span> idade;
+                            </p>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>2️⃣ INICIALIZAÇÃO</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                <strong>Atribuir</strong> o primeiro valor à variável:
+                            </p>
+                            <ul style="margin-top: 15px;">
+                                <li>Define o valor inicial</li>
+                                <li>Preenche o espaço na memória</li>
+                                <li>Torna a variável pronta para uso</li>
+                                <li>Boa prática: sempre inicializar!</li>
+                            </ul>
+                            <p style="margin-top: 15px; background: var(--code-bg); color: white; padding: 10px; border-radius: 8px; font-family: monospace;">
+                                idade = <span style="color: #d19a66;">25</span>;
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>⚡ Declaração + Inicialização Juntas</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            É possível (e recomendado) fazer as duas operações em uma única linha:
+                        </p>
+                        <p style="margin-top: 15px; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; font-family: monospace; font-size: 1.2rem;">
+                            <span style="color: #fff;">int</span> idade = <span style="color: #fee140;">25</span>;
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            ✅ Declara a variável "idade" do tipo inteiro<br>
+                            ✅ E já atribui o valor 25 a ela
+                        </p>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="comment">// Declaração</span>
+        <span class="keyword">inteiro</span> idade
+        
+        <span class="comment">// Inicialização</span>
+        idade = <span class="number">25</span>
+        
+        <span class="comment">// Declaração + Inicialização</span>
+        <span class="keyword">real</span> altura = <span class="number">1.75</span>
+    }
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="comment">// Declaração</span>
+    <span class="keyword">int</span> idade;
+    
+    <span class="comment">// Inicialização</span>
+    idade = <span class="number">25</span>;
+    
+    <span class="comment">// Declaração + Inicialização</span>
+    <span class="keyword">float</span> altura = <span class="number">1.75</span>;
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <div class="code-block">
+<span class="keyword">public class</span> Exemplo 
+{
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        <span class="comment">// Declaração</span>
+        <span class="keyword">int</span> idade;
+        
+        <span class="comment">// Inicialização</span>
+        idade = <span class="number">25</span>;
+        
+        <span class="comment">// Declaração + Inicialização</span>
+        <span class="keyword">float</span> altura = <span class="number">1.75f</span>;
+    }
+}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: NOMENCLATURA DE VARIÁVEIS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏷️ Nomenclatura de Variáveis</h2>
+                    <p>Regras e boas práticas para nomear</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        O nome de uma variável deve ser <strong>descritivo, claro e seguir regras específicas</strong> de cada linguagem
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ REGRAS Obrigatórias</h3>
+                            <ul>
+                                <li>Começar com <strong>letra</strong> ou <strong>_</strong> (underscore)</li>
+                                <li>Pode conter letras, números e _</li>
+                                <li><strong>NÃO</strong> pode conter espaços</li>
+                                <li><strong>NÃO</strong> pode usar palavras reservadas (if, int, for...)</li>
+                                <li><strong>Case-sensitive:</strong> idade ≠ Idade ≠ IDADE</li>
+                                <li><strong>NÃO</strong> usar acentos (ã, é, ç...)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💡 BOAS PRÁTICAS</h3>
+                            <ul>
+                                <li>Nomes <strong>descritivos</strong> e significativos</li>
+                                <li>Evitar abreviações confusas</li>
+                                <li>Use inglês ou português (seja consistente)</li>
+                                <li>Variáveis curtas (i, j, k) só em loops</li>
+                                <li>Mais de uma palavra: use padrão</li>
+                                <li>Evite nomes muito longos (max 20 caracteres)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="good-bad-box" style="margin-top: 30px;">
+                        <div class="good-box">
+                            <h3>✅ NOMES VÁLIDOS E BONS</h3>
+                            <ul style="list-style: none; padding: 0;">
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✓ idade</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✓ nomeCompleto</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✓ precoTotal</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✓ contador</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✓ salario_bruto</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✓ _temp</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✓ numero1</li>
+                            </ul>
+                        </div>
+
+                        <div class="bad-box">
+                            <h3>❌ NOMES INVÁLIDOS OU RUINS</h3>
+                            <ul style="list-style: none; padding: 0;">
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✗ 1numero (começa com número)</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✗ nome completo (tem espaço)</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✗ int (palavra reservada)</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✗ preço (tem acento)</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✗ x (não descritivo)</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✗ vlr (abreviação confusa)</li>
+                                <li style="padding: 8px 0; font-family: monospace; font-size: 1.1rem;">✗ a1b2c3 (sem significado)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>⚠️ Atenção: Case Sensitive!</h3>
+                        <p>
+                            As linguagens diferenciam maiúsculas de minúsculas:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px;">
+                            <li><strong>idade</strong> é diferente de <strong>Idade</strong></li>
+                            <li><strong>nome</strong> é diferente de <strong>NOME</strong></li>
+                            <li>São variáveis completamente distintas na memória!</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PADRÕES DE NOMENCLATURA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📐 Padrões de Nomenclatura</h2>
+                    <p>Convenções de estilo para múltiplas palavras</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Quando o nome tem múltiplas palavras, use um <strong>padrão consistente</strong> para tornar legível
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 40px;">
+                        <thead>
+                            <tr>
+                                <th>Padrão</th>
+                                <th>Descrição</th>
+                                <th>Exemplo</th>
+                                <th>Uso Comum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>camelCase</strong></td>
+                                <td>Primeira palavra minúscula, demais com inicial maiúscula</td>
+                                <td><code>nomeCompleto</code><br><code>idadeAluno</code><br><code>precoTotal</code></td>
+                                <td>Java (variáveis e métodos)<br>JavaScript</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PascalCase</strong></td>
+                                <td>Todas as palavras com inicial maiúscula</td>
+                                <td><code>NomeCompleto</code><br><code>IdadeAluno</code><br><code>PrecoTotal</code></td>
+                                <td>Java (classes)<br>C# (classes e métodos)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>snake_case</strong></td>
+                                <td>Palavras separadas por underscore, tudo minúsculo</td>
+                                <td><code>nome_completo</code><br><code>idade_aluno</code><br><code>preco_total</code></td>
+                                <td>C (variáveis)<br>Python<br>SQL</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SCREAMING_SNAKE_CASE</strong></td>
+                                <td>snake_case em MAIÚSCULAS</td>
+                                <td><code>NOME_COMPLETO</code><br><code>IDADE_ALUNO</code><br><code>PRECO_TOTAL</code></td>
+                                <td><strong>CONSTANTES</strong><br>(todas as linguagens)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>🟢 Portugol</h3>
+                            <p style="margin-top: 15px;">Aceita qualquer padrão, mas recomenda-se:</p>
+                            <ul style="margin-top: 10px;">
+                                <li><code>camelCase</code> ou</li>
+                                <li><code>snake_case</code></li>
+                            </ul>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">real</span> salarioBruto
+<span class="keyword">real</span> salario_liquido
+                            </div>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🔵 C</h3>
+                            <p style="margin-top: 15px;">Convenção tradicional:</p>
+                            <ul style="margin-top: 10px;">
+                                <li><code>snake_case</code> (mais comum)</li>
+                                <li>Constantes em <code>MAIÚSCULAS</code></li>
+                            </ul>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">float</span> salario_bruto;
+<span class="keyword">float</span> salario_liquido;
+                            </div>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🟠 Java</h3>
+                            <p style="margin-top: 15px;">Convenção oficial:</p>
+                            <ul style="margin-top: 10px;">
+                                <li><code>camelCase</code> (variáveis)</li>
+                                <li><code>PascalCase</code> (classes)</li>
+                            </ul>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">float</span> salarioBruto;
+<span class="keyword">float</span> salarioLiquido;
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Regra de Ouro</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Escolha um padrão e seja consistente!</strong> Não misture <code>nomeCompleto</code> com <code>idade_pessoa</code> no mesmo projeto.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Nesta disciplina, vamos usar <strong>camelCase</strong> em Portugol e Java, e <strong>snake_case</strong> em C.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: O QUE SÃO CONSTANTES? -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔒 O que são Constantes?</h2>
+                    <p>Valores que NÃO mudam</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Uma <strong>constante</strong> é um valor que é definido uma vez e <strong>NÃO pode ser alterado</strong> durante a execução do programa
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 40px;">
+                        <h3>🔐 Analogia: Cofre Lacrado</h3>
+                        <p>
+                            Se uma variável é uma <strong>caixa que você pode abrir e trocar o conteúdo</strong>,
+                            uma constante é um <strong>cofre lacrado</strong>:
+                        </p>
+                        <ul style="margin-top: 15px; padding-left: 30px;">
+                            <li>Você coloca o valor UMA vez</li>
+                            <li>O cofre é lacrado (trancado)</li>
+                            <li>Não pode mais ser alterado</li>
+                            <li>Pode apenas LER o valor, nunca MODIFICAR</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Tentou mudar? ERRO! 🚫
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>❓ Quando usar CONSTANTES?</h3>
+                            <ul>
+                                <li><strong>Valores matemáticos:</strong> PI = 3.14159</li>
+                                <li><strong>Configurações fixas:</strong> MAX_ALUNOS = 40</li>
+                                <li><strong>Valores de referência:</strong> SALARIO_MINIMO</li>
+                                <li><strong>Taxas fixas:</strong> TAXA_JUROS = 0.05</li>
+                                <li><strong>Limites:</strong> IDADE_MINIMA = 18</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Vantagens das Constantes</h3>
+                            <ul>
+                                <li><strong>Segurança:</strong> Evita mudanças acidentais</li>
+                                <li><strong>Clareza:</strong> Indica que o valor não muda</li>
+                                <li><strong>Manutenção:</strong> Alterar em um único lugar</li>
+                                <li><strong>Performance:</strong> Compilador pode otimizar</li>
+                                <li><strong>Legibilidade:</strong> Nome descritivo</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 30px;">
+                        <thead>
+                            <tr>
+                                <th>Característica</th>
+                                <th>Variável</th>
+                                <th>Constante</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Valor pode mudar?</strong></td>
+                                <td>✅ Sim, quantas vezes quiser</td>
+                                <td>❌ Não, valor fixo</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Deve ser inicializada?</strong></td>
+                                <td>Recomendado, mas não obrigatório</td>
+                                <td>✅ Sim, obrigatório na declaração</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nomenclatura</strong></td>
+                                <td>camelCase ou snake_case</td>
+                                <td>MAIÚSCULAS_COM_UNDERSCORE</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Palavra-chave</strong></td>
+                                <td>int, float, char...</td>
+                                <td>const (C/C++), final (Java), - (Portugol)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Exemplo</strong></td>
+                                <td><code>int idade = 25;</code></td>
+                                <td><code>const float PI = 3.14159;</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>⚠️ Erro Comum</h3>
+                        <p>
+                            Tentar modificar uma constante após sua declaração resulta em <strong>ERRO DE COMPILAÇÃO</strong>:
+                        </p>
+                        <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">const float</span> PI = <span class="number">3.14159</span>;
+PI = <span class="number">3.14</span>;  <span class="comment">// ❌ ERRO! Não pode alterar constante</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: DECLARANDO CONSTANTES NAS 3 LINGUAGENS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔒 Declarando Constantes</h2>
+                    <p>Sintaxe em Portugol, C e Java</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="example-card">
+                            <h4>🟢 Portugol</h4>
+                            <p style="margin-top: 10px;">Portugol Web Studio não possui palavra-chave específica para constantes. Use convenção de nomenclatura em MAIÚSCULAS:</p>
+                            <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="comment">// "Constantes" por convenção</span>
+    <span class="keyword">real</span> PI = <span class="number">3.14159</span>
+    <span class="keyword">inteiro</span> MAX_ALUNOS = <span class="number">40</span>
+    
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="comment">// Use, mas não modifique</span>
+        <span class="function">escreva</span>(<span class="string">"PI = "</span>, PI)
+    }
+}
+                            </div>
+                            <p style="margin-top: 10px; font-style: italic; color: var(--unifil-gray);">
+                                ⚠️ Portugol não impede modificação, mas por convenção NÃO alteramos MAIÚSCULAS
+                            </p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <p style="margin-top: 10px;">Use a palavra-chave <code>const</code> antes do tipo:</p>
+                            <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="comment">// Constantes globais</span>
+<span class="keyword">const float</span> PI = <span class="number">3.14159</span>;
+<span class="keyword">const int</span> MAX_ALUNOS = <span class="number">40</span>;
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="comment">// Constante local</span>
+    <span class="keyword">const float</span> TAXA = <span class="number">0.05</span>;
+    
+    <span class="function">printf</span>(<span class="string">"PI = %.5f\n"</span>, PI);
+    
+    <span class="comment">// PI = 3.14;  // ❌ ERRO!</span>
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <p style="margin-top: 10px;">Use a palavra-chave <code>final</code> antes do tipo:</p>
+                            <div class="code-block">
+<span class="keyword">public class</span> Exemplo 
+{
+    <span class="comment">// Constantes da classe</span>
+    <span class="keyword">public static final float</span> PI = <span class="number">3.14159f</span>;
+    <span class="keyword">public static final int</span> MAX_ALUNOS = <span class="number">40</span>;
+    
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        <span class="comment">// Constante local</span>
+        <span class="keyword">final float</span> TAXA = <span class="number">0.05f</span>;
+        
+        System.out.<span class="function">println</span>(<span class="string">"PI = "</span> + PI);
+        
+        <span class="comment">// PI = 3.14f;  // ❌ ERRO!</span>
+    }
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>📋 Convenções de Nomenclatura para Constantes</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Em TODAS as linguagens, constantes seguem a mesma convenção:
+                        </p>
+                        <ul style="font-size: 1.1rem; margin-top: 15px; list-style: none; padding: 0;">
+                            <li style="padding: 10px 0;">✅ Todas as letras em <strong>MAIÚSCULAS</strong></li>
+                            <li style="padding: 10px 0;">✅ Palavras separadas por <strong>_</strong> (underscore)</li>
+                            <li style="padding: 10px 0;">✅ Nomes descritivos e significativos</li>
+                        </ul>
+                        <p style="font-size: 1.1rem; margin-top: 15px; font-family: monospace; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+                            Exemplos: PI, TAXA_JUROS, SALARIO_MINIMO, MAX_TENTATIVAS
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Bons Exemplos</h3>
+                            <ul style="font-family: monospace; font-size: 1.05rem;">
+                                <li>const float PI = 3.14159;</li>
+                                <li>const int MAX_IDADE = 120;</li>
+                                <li>const float TAXA_JUROS = 0.05;</li>
+                                <li>final String NOME_EMPRESA = "UniFil";</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>❌ Evite</h3>
+                            <ul style="font-family: monospace; font-size: 1.05rem;">
+                                <li>const float pi = 3.14;  // minúscula</li>
+                                <li>const int x = 10;  // nome não descritivo</li>
+                                <li>const float TaxaJuros = 0.05;  // camelCase</li>
+                                <li>final int idade = 25;  // não é constante</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: ESCOPO DE VARIÁVEIS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🌍 Escopo de Variáveis</h2>
+                    <p>Onde a variável existe e pode ser acessada</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        <strong>Escopo</strong> define onde uma variável é visível e acessível no programa
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>🏠 ESCOPO LOCAL</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                Variável declarada <strong>dentro</strong> de uma função/bloco:
+                            </p>
+                            <ul style="margin-top: 15px;">
+                                <li>Existe apenas dentro do bloco { }</li>
+                                <li>Criada quando entra no bloco</li>
+                                <li>Destruída quando sai do bloco</li>
+                                <li>Não é acessível fora do bloco</li>
+                                <li>Mais comum e recomendado</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🌐 ESCOPO GLOBAL</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                Variável declarada <strong>fora</strong> de todas as funções:
+                            </p>
+                            <ul style="margin-top: 15px;">
+                                <li>Acessível em todo o programa</li>
+                                <li>Existe durante toda execução</li>
+                                <li>Compartilhada entre funções</li>
+                                <li>Use com moderação</li>
+                                <li>Pode causar confusão</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="comment">// Global</span>
+    <span class="keyword">inteiro</span> global = <span class="number">100</span>
+    
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="comment">// Local</span>
+        <span class="keyword">inteiro</span> local = <span class="number">50</span>
+        
+        <span class="function">escreva</span>(global)  <span class="comment">// OK</span>
+        <span class="function">escreva</span>(local)   <span class="comment">// OK</span>
+    }
+    
+    <span class="keyword">funcao</span> <span class="function">outra</span>()
+    {
+        <span class="function">escreva</span>(global)  <span class="comment">// OK</span>
+        <span class="comment">// escreva(local) // ERRO!</span>
+    }
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="comment">// Global</span>
+<span class="keyword">int</span> global = <span class="number">100</span>;
+
+<span class="keyword">void</span> <span class="function">outra</span>() 
+{
+    <span class="function">printf</span>(<span class="string">"%d"</span>, global);  <span class="comment">// OK</span>
+}
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="comment">// Local</span>
+    <span class="keyword">int</span> local = <span class="number">50</span>;
+    
+    <span class="function">printf</span>(<span class="string">"%d"</span>, global);  <span class="comment">// OK</span>
+    <span class="function">printf</span>(<span class="string">"%d"</span>, local);   <span class="comment">// OK</span>
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <div class="code-block">
+<span class="keyword">public class</span> Exemplo 
+{
+    <span class="comment">// Global (campo da classe)</span>
+    <span class="keyword">static int</span> global = <span class="number">100</span>;
+    
+    <span class="keyword">public static void</span> <span class="function">outra</span>() 
+    {
+        System.out.<span class="function">println</span>(global);  <span class="comment">// OK</span>
+    }
+    
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        <span class="comment">// Local</span>
+        <span class="keyword">int</span> local = <span class="number">50</span>;
+        
+        System.out.<span class="function">println</span>(global);  <span class="comment">// OK</span>
+        System.out.<span class="function">println</span>(local);   <span class="comment">// OK</span>
+    }
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>⚠️ Cuidado com Variáveis Globais!</h3>
+                        <p>
+                            Embora convenientes, variáveis globais podem causar problemas:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px;">
+                            <li>Difícil rastrear onde é modificada</li>
+                            <li>Pode causar bugs difíceis de encontrar</li>
+                            <li>Dificulta reutilização de código</li>
+                            <li>Consome memória durante toda execução</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            💡 Boa prática: Prefira variáveis locais sempre que possível!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: ATRIBUIÇÃO E REATRIBUIÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Atribuição e Reatribuição</h2>
+                    <p>Modificando valores de variáveis</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        O operador de <strong>atribuição</strong> (=) define ou modifica o valor de uma variável
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>⚠️ IMPORTANTE: = não é "igual"!</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Em programação, o símbolo <strong>=</strong> significa <strong>ATRIBUIÇÃO</strong>, não comparação!
+                        </p>
+                        <div style="margin-top: 20px; background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                            <p style="font-size: 1.2rem; font-family: monospace;">
+                                x = 5  <span style="font-size: 0.9rem;">→ "x RECEBE o valor 5"</span>
+                            </p>
+                            <p style="font-size: 1.2rem; font-family: monospace; margin-top: 15px;">
+                                x = x + 1  <span style="font-size: 0.9rem;">→ "x RECEBE o valor de x + 1"</span>
+                            </p>
+                        </div>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Para comparar se dois valores são iguais, usamos <strong>==</strong> (dois sinais de igual)
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📝 Sequência de Atribuições</h4>
+                        <div class="code-block">
+<span class="keyword">int</span> x;                    <span class="comment">// 1. Declaração (x não tem valor)</span>
+
+x = <span class="number">10</span>;                      <span class="comment">// 2. Primeira atribuição (x vale 10)</span>
+
+x = <span class="number">20</span>;                      <span class="comment">// 3. Reatribuição (x agora vale 20, não 10)</span>
+
+x = x + <span class="number">5</span>;                   <span class="comment">// 4. x recebe x+5 (20+5=25, x agora vale 25)</span>
+
+x = x * <span class="number">2</span>;                   <span class="comment">// 5. x recebe x*2 (25*2=50, x agora vale 50)</span>
+                        </div>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            📌 A variável <strong>sempre guarda apenas o ÚLTIMO valor</strong> atribuído!
+                        </p>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> idade = <span class="number">25</span>
+        <span class="function">escreva</span>(idade)  <span class="comment">// 25</span>
+        
+        idade = <span class="number">26</span>
+        <span class="function">escreva</span>(idade)  <span class="comment">// 26</span>
+        
+        idade = idade + <span class="number">1</span>
+        <span class="function">escreva</span>(idade)  <span class="comment">// 27</span>
+    }
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="keyword">int</span> idade = <span class="number">25</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, idade);  <span class="comment">// 25</span>
+    
+    idade = <span class="number">26</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, idade);  <span class="comment">// 26</span>
+    
+    idade = idade + <span class="number">1</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, idade);  <span class="comment">// 27</span>
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <div class="code-block">
+<span class="keyword">public class</span> Exemplo 
+{
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        <span class="keyword">int</span> idade = <span class="number">25</span>;
+        System.out.<span class="function">println</span>(idade);  <span class="comment">// 25</span>
+        
+        idade = <span class="number">26</span>;
+        System.out.<span class="function">println</span>(idade);  <span class="comment">// 26</span>
+        
+        idade = idade + <span class="number">1</span>;
+        System.out.<span class="function">println</span>(idade);  <span class="comment">// 27</span>
+    }
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>📦 Analogia: Troca de Roupa</h3>
+                        <p>
+                            Imagine que a variável é uma pessoa:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px;">
+                            <li><strong>x = 10:</strong> A pessoa veste a camisa "10"</li>
+                            <li><strong>x = 20:</strong> A pessoa TIRA a camisa "10" e veste a "20"</li>
+                            <li><strong>x = x + 5:</strong> Pega o número da camisa atual (20), soma 5, veste a nova "25"</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Ela só pode usar UMA camisa por vez - o valor anterior é "esquecido"!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: EXERCÍCIOS PROPOSTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Exercícios Propostos</h2>
+                    <p>Pratique variáveis e constantes</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Pratique declaração, inicialização, nomenclatura e uso de variáveis e constantes!
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📌 Exercício 1: Troca de Valores</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Declare duas variáveis inteiras: <strong>a = 10</strong> e <strong>b = 20</strong></li>
+                            <li>Mostre os valores iniciais</li>
+                            <li>TROQUE os valores (a deve ficar com 20, b com 10)</li>
+                            <li>Mostre os valores finais</li>
+                        </ul>
+                        <p style="margin-top: 15px; background: var(--unifil-light); padding: 15px; border-radius: 10px;">
+                            <strong>Dica:</strong> Você vai precisar de uma terceira variável auxiliar (tipo "temp")
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 2: Calculadora de Área</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Declare a constante: <strong>PI = 3.14159</strong></li>
+                            <li>Declare variável: <strong>raio</strong> (real)</li>
+                            <li>Leia o raio de um círculo</li>
+                            <li>Calcule a área: <strong>area = PI × raio × raio</strong></li>
+                            <li>Mostre o resultado</li>
+                        </ul>
+                        <p style="margin-top: 15px; background: var(--unifil-light); padding: 15px; border-radius: 10px;">
+                            <strong>Teste:</strong> raio = 5 → área = 78.53975
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 3: Nomenclatura Correta</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Corrija os nomes de variáveis abaixo para seguir as boas práticas:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem; font-family: monospace;">
+                            <li>❌ 1numero → ✅ _______</li>
+                            <li>❌ nome completo → ✅ _______</li>
+                            <li>❌ preço → ✅ _______</li>
+                            <li>❌ x → ✅ _______ (para idade)</li>
+                            <li>❌ salarioBruto_valor → ✅ _______</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 4: Conversão de Unidades</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Declare constante: <strong>METROS_POR_KM = 1000</strong></li>
+                            <li>Declare variáveis: <strong>distanciaKm</strong> e <strong>distanciaMetros</strong> (reais)</li>
+                            <li>Leia uma distância em quilômetros</li>
+                            <li>Converta para metros</li>
+                            <li>Mostre: "X km = Y metros"</li>
+                        </ul>
+                        <p style="margin-top: 15px; background: var(--unifil-light); padding: 15px; border-radius: 10px;">
+                            <strong>Teste:</strong> 5.5 km = 5500 metros
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Entrega (Opcional)</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Resolva os 4 exercícios em <strong>Portugol</strong> no Portugol Web Studio.
+                            Na próxima aula, vamos trabalhar com <strong>Operadores Aritméticos</strong>!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Você dominou variáveis e constantes - fundação da programação! 🎉
+                    </div>
+
+                    <div class="timeline" style="margin-top: 40px;">
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Variáveis</h4>
+                            <p>Espaços nomeados na memória que podem mudar de valor</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Declaração e Inicialização</h4>
+                            <p>Criar variável (declaração) e atribuir primeiro valor (inicialização)</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Nomenclatura</h4>
+                            <p>Regras obrigatórias e boas práticas para nomear variáveis</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Padrões</h4>
+                            <p>camelCase, snake_case, PascalCase, SCREAMING_SNAKE_CASE</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Constantes</h4>
+                            <p>Valores fixos que não podem ser alterados (const, final)</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Escopo</h4>
+                            <p>Local (dentro de blocos) vs Global (todo o programa)</p>
+                        </div>
+
+                        <div class="timeline-item">
+                            <h4 style="color: var(--unifil-orange); margin-bottom: 8px;">✅ Atribuição</h4>
+                            <p>Operador = para definir/modificar valores</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para a Próxima Aula (Quarta, 25/02)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣ Praticar:</strong> Resolver os 4 exercícios propostos
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣ Revisar:</strong> Padrões de nomenclatura (camelCase, snake_case)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣ Testar:</strong> Declarar variáveis nas 3 linguagens
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣ Trazer dúvidas:</strong> Sobre variáveis e constantes
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula</h3>
+                            <ul>
+                                <li>Operadores Aritméticos (+, -, *, /, %)</li>
+                                <li>Precedência de operadores</li>
+                                <li>Expressões aritméticas</li>
+                                <li>Operadores de incremento (++, --)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Atendimento:</strong> Terças 18h-19h</p>
+                            <p style="margin-bottom: 10px;"><strong>Sala:</strong> Bloco C - Sala 205</p>
+                            <p><strong>Moodle:</strong> Fórum sempre disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Variáveis são como gavetas: organize bem para encontrar fácil! 📦"
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Nos vemos na quarta-feira!</p>
+                        <p style="font-size: 0.9rem; margin-top: 20px; font-style: italic;">
+                            "Declare, inicialize, use - e seja feliz!" 😊
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 11</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .stat-card, .analogy-box, .comparison-table, .warning-box, .good-box, .bad-box');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                changeSlide(1);
+            }
+            if (touchEndX > touchStartX + 50) {
+                changeSlide(-1);
+            }
+        }
+
+        showSlide(0);
+    </script>
+</body>
+</html>
