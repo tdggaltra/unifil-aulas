@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 5 - Operadores Aritméticos | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .code-block .keyword {
+            color: #c678dd;
+        }
+
+        .code-block .function {
+            color: #61afef;
+        }
+
+        .code-block .string {
+            color: #98c379;
+        }
+
+        .code-block .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .code-block .number {
+            color: #d19a66;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .analogy-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #533f03;
+        }
+
+        .operator-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            text-align: center;
+        }
+
+        .operator-card .symbol {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .operator-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin: 30px 0;
+            border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--unifil-light);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .warning-box {
+            background: #ffebee;
+            border: 3px solid #f44336;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .warning-box h3 {
+            color: #c62828;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .warning-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #b71c1c;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            min-width: 80px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1001;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: var(--unifil-gray);
+            font-weight: 500;
+        }
+
+        .precedence-box {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .precedence-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb:hover {
+            background: var(--unifil-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Lógica de Programação e Algoritmos</h1>
+                    <p>Aula 05 - Operadores Aritméticos</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="font-size: 6rem; margin-bottom: 30px;">➗</div>
+                    <h2 style="font-size: 2.5rem; color: var(--unifil-orange); margin-bottom: 20px;">
+                        Fazendo Cálculos e Operações
+                    </h2>
+                    <p style="font-size: 1.3rem; color: var(--unifil-gray); max-width: 800px; margin-bottom: 40px;">
+                        Aprenda a usar operadores aritméticos para realizar cálculos, entender precedência e criar expressões matemáticas.
+                    </p>
+                    <div class="two-column" style="width: 100%; max-width: 900px; margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="number">5</div>
+                            <div class="label">Operadores Básicos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">∞</div>
+                            <div class="label">Expressões Possíveis</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 50px; font-size: 1.1rem; color: var(--unifil-gray);">
+                        <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                        <p><strong>Data:</strong> Quarta-feira, 25 de Fevereiro de 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: OS 5 OPERADORES ARITMÉTICOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>➕ Os 5 Operadores Aritméticos Básicos</h2>
+                    <p>Realizando operações matemáticas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Operadores aritméticos permitem realizar <strong>cálculos matemáticos</strong> com números
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="operator-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="symbol">+</div>
+                            <h3>ADIÇÃO</h3>
+                            <p style="font-size: 1.2rem; margin-top: 15px;">5 + 3 = 8</p>
+                            <p style="margin-top: 10px;">Soma dois valores</p>
+                        </div>
+
+                        <div class="operator-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="symbol">-</div>
+                            <h3>SUBTRAÇÃO</h3>
+                            <p style="font-size: 1.2rem; margin-top: 15px;">10 - 4 = 6</p>
+                            <p style="margin-top: 10px;">Subtrai o segundo do primeiro</p>
+                        </div>
+
+                        <div class="operator-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="symbol">*</div>
+                            <h3>MULTIPLICAÇÃO</h3>
+                            <p style="font-size: 1.2rem; margin-top: 15px;">7 * 2 = 14</p>
+                            <p style="margin-top: 10px;">Multiplica dois valores</p>
+                        </div>
+
+                        <div class="operator-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <div class="symbol">/</div>
+                            <h3>DIVISÃO</h3>
+                            <p style="font-size: 1.2rem; margin-top: 15px;">10 / 2 = 5</p>
+                            <p style="margin-top: 10px;">Divide o primeiro pelo segundo</p>
+                        </div>
+
+                        <div class="operator-card" style="background: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%);">
+                            <div class="symbol">%</div>
+                            <h3>MÓDULO (RESTO)</h3>
+                            <p style="font-size: 1.2rem; margin-top: 15px;">10 % 3 = 1</p>
+                            <p style="margin-top: 10px;">Resto da divisão inteira</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Observação Importante</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Todos esses operadores funcionam <strong>igualmente</strong> em Portugol, C e Java!
+                            A sintaxe é universal em praticamente todas as linguagens de programação.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: OPERADOR MÓDULO (%) -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔢 Operador Módulo (%) - O Resto da Divisão</h2>
+                    <p>Um operador especial e muito útil</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        O operador <strong>% (módulo)</strong> retorna o <strong>RESTO</strong> da divisão inteira entre dois números
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 40px;">
+                        <h3>🍬 Analogia: Dividindo Balas</h3>
+                        <p>
+                            Imagine que você tem <strong>10 balas</strong> e quer dividir igualmente entre <strong>3 crianças</strong>:
+                        </p>
+                        <ul style="margin-top: 15px; padding-left: 30px;">
+                            <li><strong>10 / 3 = 3</strong> → Cada criança recebe 3 balas</li>
+                            <li><strong>10 % 3 = 1</strong> → Sobra 1 bala (o RESTO)</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            O % te diz quantas balas vão sobrar! 🍬
+                        </p>
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 30px;">
+                        <thead>
+                            <tr>
+                                <th>Expressão</th>
+                                <th>Resultado</th>
+                                <th>Explicação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>10 % 3</code></td>
+                                <td><strong>1</strong></td>
+                                <td>10 ÷ 3 = 3, sobra 1</td>
+                            </tr>
+                            <tr>
+                                <td><code>17 % 5</code></td>
+                                <td><strong>2</strong></td>
+                                <td>17 ÷ 5 = 3, sobra 2</td>
+                            </tr>
+                            <tr>
+                                <td><code>8 % 2</code></td>
+                                <td><strong>0</strong></td>
+                                <td>8 ÷ 2 = 4, sobra 0 (divisão exata)</td>
+                            </tr>
+                            <tr>
+                                <td><code>7 % 7</code></td>
+                                <td><strong>0</strong></td>
+                                <td>7 ÷ 7 = 1, sobra 0</td>
+                            </tr>
+                            <tr>
+                                <td><code>5 % 10</code></td>
+                                <td><strong>5</strong></td>
+                                <td>5 ÷ 10 = 0, sobra 5 (dividendo menor que divisor)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>✅ Usos Comuns do %</h3>
+                            <ul>
+                                <li><strong>Par ou ímpar:</strong> x % 2 == 0 → par</li>
+                                <li><strong>Múltiplo de N:</strong> x % N == 0</li>
+                                <li><strong>Último dígito:</strong> x % 10</li>
+                                <li><strong>Ciclos:</strong> dia % 7 (dia da semana)</li>
+                                <li><strong>Distribuição:</strong> dividir em grupos</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>📌 Exemplo Prático</h3>
+                            <p style="margin-top: 15px; font-size: 1.1rem;">
+                                <strong>Verificar se um número é par:</strong>
+                            </p>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">se</span> (numero % <span class="number">2</span> == <span class="number">0</span>) {
+    <span class="function">escreva</span>(<span class="string">"Par"</span>)
+} <span class="keyword">senao</span> {
+    <span class="function">escreva</span>(<span class="string">"Ímpar"</span>)
+}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: EXPRESSÕES ARITMÉTICAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧮 Expressões Aritméticas</h2>
+                    <p>Combinando múltiplos operadores</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Uma <strong>expressão aritmética</strong> combina valores, variáveis e operadores para calcular um resultado
+                    </div>
+
+                    <div class="example-card" style="margin-top: 40px;">
+                        <h4>📌 Exemplos de Expressões</h4>
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Expressão</th>
+                                    <th>Resultado</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>5 + 3 * 2</code></td>
+                                    <td><strong>11</strong> (não 16!)</td>
+                                    <td>Precedência: * antes de +</td>
+                                </tr>
+                                <tr>
+                                    <td><code>(5 + 3) * 2</code></td>
+                                    <td><strong>16</strong></td>
+                                    <td>Parênteses alteram ordem</td>
+                                </tr>
+                                <tr>
+                                    <td><code>10 / 2 + 3</code></td>
+                                    <td><strong>8</strong></td>
+                                    <td>Divisão primeiro, depois soma</td>
+                                </tr>
+                                <tr>
+                                    <td><code>10 + 20 / 5</code></td>
+                                    <td><strong>14</strong></td>
+                                    <td>20/5=4, depois 10+4=14</td>
+                                </tr>
+                                <tr>
+                                    <td><code>15 % 4 + 2</code></td>
+                                    <td><strong>5</strong></td>
+                                    <td>15%4=3, depois 3+2=5</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> a = <span class="number">10</span>, b = <span class="number">5</span>
+        <span class="keyword">inteiro</span> resultado
+        
+        resultado = a + b * <span class="number">2</span>
+        <span class="function">escreva</span>(resultado)  <span class="comment">// 20</span>
+        
+        resultado = (a + b) * <span class="number">2</span>
+        <span class="function">escreva</span>(resultado)  <span class="comment">// 30</span>
+    }
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="keyword">int</span> a = <span class="number">10</span>, b = <span class="number">5</span>;
+    <span class="keyword">int</span> resultado;
+    
+    resultado = a + b * <span class="number">2</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, resultado);  <span class="comment">// 20</span>
+    
+    resultado = (a + b) * <span class="number">2</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, resultado);  <span class="comment">// 30</span>
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <div class="code-block">
+<span class="keyword">public class</span> Exemplo 
+{
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        <span class="keyword">int</span> a = <span class="number">10</span>, b = <span class="number">5</span>;
+        <span class="keyword">int</span> resultado;
+        
+        resultado = a + b * <span class="number">2</span>;
+        System.out.<span class="function">println</span>(resultado);  <span class="comment">// 20</span>
+        
+        resultado = (a + b) * <span class="number">2</span>;
+        System.out.<span class="function">println</span>(resultado);  <span class="comment">// 30</span>
+    }
+}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PRECEDÊNCIA DE OPERADORES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Precedência de Operadores</h2>
+                    <p>Ordem de execução das operações</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Quando há múltiplos operadores, a <strong>precedência</strong> define qual é executado primeiro
+                    </div>
+
+                    <div class="precedence-box" style="margin-top: 40px;">
+                        <h3>📊 Ordem de Precedência (da maior para menor)</h3>
+                        <table class="comparison-table" style="margin-top: 20px;">
+                            <thead>
+                                <tr>
+                                    <th>Prioridade</th>
+                                    <th>Operadores</th>
+                                    <th>Descrição</th>
+                                    <th>Exemplo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>1ª (Maior)</strong></td>
+                                    <td><code>( )</code></td>
+                                    <td>Parênteses</td>
+                                    <td>(5 + 3) executa primeiro</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>2ª</strong></td>
+                                    <td><code>* / %</code></td>
+                                    <td>Multiplicação, Divisão, Módulo</td>
+                                    <td>3 * 2 antes de 5 + ...</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>3ª (Menor)</strong></td>
+                                    <td><code>+ -</code></td>
+                                    <td>Adição e Subtração</td>
+                                    <td>Executam por último</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🎓 Regra Mnemônica: PEMDAS</h3>
+                        <p>
+                            Lembre da ordem usando a sigla <strong>PEMDAS</strong>:
+                        </p>
+                        <ul style="margin-top: 15px; padding-left: 30px; font-size: 1.15rem;">
+                            <li><strong>P</strong>arênteses → ( )</li>
+                            <li><strong>E</strong>xpoentes → ** (não vimos ainda)</li>
+                            <li><strong>M</strong>ultiplicação e <strong>D</strong>ivisão → * / %</li>
+                            <li><strong>A</strong>dição e <strong>S</strong>ubtração → + -</li>
+                        </ul>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Operadores de mesma prioridade são executados da <strong>ESQUERDA para DIREITA</strong>
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📝 Exemplos Passo a Passo</h4>
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.15rem; margin-bottom: 15px;"><strong>Exemplo 1:</strong> 5 + 3 * 2</p>
+                            <p style="padding-left: 20px;">→ Passo 1: 3 * 2 = 6 (multiplicação primeiro)</p>
+                            <p style="padding-left: 20px;">→ Passo 2: 5 + 6 = <strong>11</strong></p>
+
+                            <p style="font-size: 1.15rem; margin: 25px 0 15px;"><strong>Exemplo 2:</strong> (5 + 3) * 2</p>
+                            <p style="padding-left: 20px;">→ Passo 1: (5 + 3) = 8 (parênteses primeiro)</p>
+                            <p style="padding-left: 20px;">→ Passo 2: 8 * 2 = <strong>16</strong></p>
+
+                            <p style="font-size: 1.15rem; margin: 25px 0 15px;"><strong>Exemplo 3:</strong> 10 + 20 / 5 * 2</p>
+                            <p style="padding-left: 20px;">→ Passo 1: 20 / 5 = 4 (divisão)</p>
+                            <p style="padding-left: 20px;">→ Passo 2: 4 * 2 = 8 (multiplicação)</p>
+                            <p style="padding-left: 20px;">→ Passo 3: 10 + 8 = <strong>18</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>⚠️ Dica de Ouro</h3>
+                        <p>
+                            Na dúvida, <strong>USE PARÊNTESES</strong>! Eles tornam o código mais claro e evitam erros:
+                        </p>
+                        <p style="margin-top: 10px; font-family: monospace; font-size: 1.1rem;">
+                            resultado = (base * altura) / 2;  ✅ Claro!<br>
+                            resultado = base * altura / 2;    ⚠️ Funciona, mas menos óbvio
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: DIVISÃO INTEIRA VS REAL -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚠️ Divisão Inteira vs Divisão Real</h2>
+                    <p>Uma diferença CRUCIAL!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        O resultado da divisão depende do <strong>TIPO</strong> dos operandos!
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>🔢 DIVISÃO INTEIRA</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                Quando <strong>ambos</strong> os operandos são <strong>inteiros</strong>:
+                            </p>
+                            <ul style="margin-top: 15px;">
+                                <li>Resultado é <strong>truncado</strong> (corta decimal)</li>
+                                <li>10 / 3 = <strong>3</strong> (não 3.333...)</li>
+                                <li>7 / 2 = <strong>3</strong> (não 3.5)</li>
+                                <li>5 / 10 = <strong>0</strong> (não 0.5)</li>
+                            </ul>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">int</span> a = <span class="number">10</span>, b = <span class="number">3</span>;
+<span class="keyword">int</span> resultado = a / b;
+<span class="comment">// resultado = 3</span>
+                            </div>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💰 DIVISÃO REAL</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                Quando <strong>pelo menos um</strong> operando é <strong>real</strong>:
+                            </p>
+                            <ul style="margin-top: 15px;">
+                                <li>Resultado mantém <strong>decimais</strong></li>
+                                <li>10.0 / 3 = <strong>3.333...</strong></li>
+                                <li>7 / 2.0 = <strong>3.5</strong></li>
+                                <li>5.0 / 10.0 = <strong>0.5</strong></li>
+                            </ul>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">float</span> a = <span class="number">10.0</span>, b = <span class="number">3.0</span>;
+<span class="keyword">float</span> resultado = a / b;
+<span class="comment">// resultado = 3.333...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>⚠️ ERRO MUITO COMUM!</h3>
+                        <p>
+                            Declarar variável como <code>float</code> mas usar valores inteiros:
+                        </p>
+                        <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">float</span> media;
+<span class="keyword">int</span> n1 = <span class="number">7</span>, n2 = <span class="number">8</span>, n3 = <span class="number">10</span>;
+
+media = (n1 + n2 + n3) / <span class="number">3</span>;  <span class="comment">// ❌ ERRADO! (7+8+10)/3 = 25/3 = 8 (inteiro)</span>
+<span class="function">printf</span>(<span class="string">"%.2f"</span>, media);          <span class="comment">// Mostra 8.00 (não 8.33!)</span>
+
+media = (n1 + n2 + n3) / <span class="number">3.0</span>; <span class="comment">// ✅ CORRETO! 25/3.0 = 8.333...</span>
+<span class="function">printf</span>(<span class="string">"%.2f"</span>, media);          <span class="comment">// Mostra 8.33</span>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Solução: Casting (Conversão Explícita)</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Force a conversão para real usando <strong>casting</strong>:
+                        </p>
+                        <div class="code-block" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+<span class="keyword">int</span> a = <span class="number">10</span>, b = <span class="number">3</span>;
+<span class="keyword">float</span> resultado;
+
+<span class="comment">// Opção 1: Converter um dos operandos</span>
+resultado = (<span class="keyword">float</span>)a / b;        <span class="comment">// 10.0 / 3 = 3.333...</span>
+
+<span class="comment">// Opção 2: Adicionar .0 a um número</span>
+resultado = a / <span class="number">3.0</span>;              <span class="comment">// 10 / 3.0 = 3.333...</span>
+
+<span class="comment">// Opção 3: Multiplicar por 1.0</span>
+resultado = <span class="number">1.0</span> * a / b;           <span class="comment">// 1.0*10 / 3 = 3.333...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: OPERADORES DE INCREMENTO/DECREMENTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⬆️⬇️ Operadores de Incremento e Decremento</h2>
+                    <p>Atalhos úteis (++ e --)</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        <strong>++ e --</strong> são atalhos para adicionar ou subtrair 1 de uma variável
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 40px;">
+                        <thead>
+                            <tr>
+                                <th>Operador</th>
+                                <th>Nome</th>
+                                <th>Equivalente</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>x++</code></td>
+                                <td>Pós-incremento</td>
+                                <td><code>x = x + 1</code></td>
+                                <td>Aumenta x em 1 (usa valor ANTES)</td>
+                            </tr>
+                            <tr>
+                                <td><code>++x</code></td>
+                                <td>Pré-incremento</td>
+                                <td><code>x = x + 1</code></td>
+                                <td>Aumenta x em 1 (usa valor DEPOIS)</td>
+                            </tr>
+                            <tr>
+                                <td><code>x--</code></td>
+                                <td>Pós-decremento</td>
+                                <td><code>x = x - 1</code></td>
+                                <td>Diminui x em 1 (usa valor ANTES)</td>
+                            </tr>
+                            <tr>
+                                <td><code>--x</code></td>
+                                <td>Pré-decremento</td>
+                                <td><code>x = x - 1</code></td>
+                                <td>Diminui x em 1 (usa valor DEPOIS)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>📝 Uso Simples (Pós vs Pré são iguais)</h4>
+                            <div class="code-block">
+<span class="keyword">int</span> contador = <span class="number">5</span>;
+
+contador++;    <span class="comment">// contador = 6</span>
+contador++;    <span class="comment">// contador = 7</span>
+contador--;    <span class="comment">// contador = 6</span>
+
+<span class="comment">// Neste caso, x++ = ++x</span>
+<span class="comment">// Ambos incrementam x</span>
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>⚠️ Diferença em Expressões</h4>
+                            <div class="code-block">
+<span class="keyword">int</span> x = <span class="number">5</span>, y;
+
+<span class="comment">// Pós-incremento (usa ANTES)</span>
+y = x++;  <span class="comment">// y = 5, depois x = 6</span>
+
+<span class="comment">// Pré-incremento (usa DEPOIS)</span>
+x = <span class="number">5</span>;
+y = ++x;  <span class="comment">// x = 6, depois y = 6</span>
+
+<span class="comment">// Resumo:</span>
+<span class="comment">// x++: usa o valor, DEPOIS incrementa</span>
+<span class="comment">// ++x: incrementa, DEPOIS usa o valor</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🎫 Analogia: Senhas do Banco</h3>
+                        <p>
+                            <strong>Pós-incremento (x++):</strong> Você pega a senha atual, <strong>DEPOIS</strong> o sistema avança para a próxima.<br>
+                            → Máquina mostra "023", você pega 023, máquina muda para 024
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>Pré-incremento (++x):</strong> O sistema avança <strong>ANTES</strong>, você pega a nova senha.<br>
+                            → Máquina está em 023, avança para 024, você pega 024
+                        </p>
+                    </div>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>💡 Dica Prática</h3>
+                        <p>
+                            Na maioria dos casos (99%), use <strong>pós-incremento (x++)</strong> sozinho em uma linha:
+                        </p>
+                        <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) {  <span class="comment">// ✅ Uso mais comum</span>
+    <span class="function">printf</span>(<span class="string">"%d "</span>, i);
+}
+                        </div>
+                        <p style="margin-top: 15px;">
+                            A diferença entre <code>x++</code> e <code>++x</code> só importa quando usado <strong>dentro de expressões</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: OPERADORES DE ATRIBUIÇÃO COMPOSTA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔗 Operadores de Atribuição Composta</h2>
+                    <p>Atalhos para operações comuns</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Operadores compostos combinam <strong>operação + atribuição</strong> em um único símbolo
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 40px;">
+                        <thead>
+                            <tr>
+                                <th>Operador</th>
+                                <th>Equivalente</th>
+                                <th>Exemplo</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>x += 5</code></td>
+                                <td><code>x = x + 5</code></td>
+                                <td>Se x = 10, então x += 5</td>
+                                <td>x = 15</td>
+                            </tr>
+                            <tr>
+                                <td><code>x -= 3</code></td>
+                                <td><code>x = x - 3</code></td>
+                                <td>Se x = 10, então x -= 3</td>
+                                <td>x = 7</td>
+                            </tr>
+                            <tr>
+                                <td><code>x *= 2</code></td>
+                                <td><code>x = x * 2</code></td>
+                                <td>Se x = 10, então x *= 2</td>
+                                <td>x = 20</td>
+                            </tr>
+                            <tr>
+                                <td><code>x /= 5</code></td>
+                                <td><code>x = x / 5</code></td>
+                                <td>Se x = 10, então x /= 5</td>
+                                <td>x = 2</td>
+                            </tr>
+                            <tr>
+                                <td><code>x %= 3</code></td>
+                                <td><code>x = x % 3</code></td>
+                                <td>Se x = 10, então x %= 3</td>
+                                <td>x = 1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>🟢 Portugol</h4>
+                            <p style="margin-top: 10px; font-style: italic; color: var(--unifil-gray);">
+                                ⚠️ Portugol Web Studio NÃO suporta +=, -=, etc.
+                            </p>
+                            <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> x = <span class="number">10</span>
+        
+        <span class="comment">// Portugol: use forma longa</span>
+        x = x + <span class="number">5</span>   <span class="comment">// x = 15</span>
+        x = x * <span class="number">2</span>   <span class="comment">// x = 30</span>
+        x = x - <span class="number">10</span>  <span class="comment">// x = 20</span>
+    }
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="keyword">int</span> x = <span class="number">10</span>;
+    
+    x += <span class="number">5</span>;   <span class="comment">// x = 15</span>
+    x *= <span class="number">2</span>;   <span class="comment">// x = 30</span>
+    x -= <span class="number">10</span>;  <span class="comment">// x = 20</span>
+    x /= <span class="number">5</span>;   <span class="comment">// x = 4</span>
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <div class="code-block">
+<span class="keyword">public class</span> Exemplo 
+{
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        <span class="keyword">int</span> x = <span class="number">10</span>;
+        
+        x += <span class="number">5</span>;   <span class="comment">// x = 15</span>
+        x *= <span class="number">2</span>;   <span class="comment">// x = 30</span>
+        x -= <span class="number">10</span>;  <span class="comment">// x = 20</span>
+        x /= <span class="number">5</span>;   <span class="comment">// x = 4</span>
+    }
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Quando Usar?</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Use operadores compostos para tornar o código mais <strong>conciso</strong> e <strong>legível</strong>:
+                        </p>
+                        <div style="margin-top: 20px; background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
+                            <p style="font-size: 1.1rem;">
+                                ✅ <code>contador += 1;</code> → Mais curto que <code>contador = contador + 1;</code>
+                            </p>
+                            <p style="font-size: 1.1rem; margin-top: 10px;">
+                                ✅ <code>total *= 2;</code> → Mais claro que <code>total = total * 2;</code>
+                            </p>
+                            <p style="font-size: 1.1rem; margin-top: 10px;">
+                                ✅ <code>saldo -= desconto;</code> → Evita repetir nome longo
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: EXERCÍCIOS PROPOSTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Exercícios Propostos</h2>
+                    <p>Pratique operadores aritméticos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Pratique expressões aritméticas, precedência e operadores!
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📌 Exercício 1: Calcule Mentalmente</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Qual o resultado das expressões abaixo? (Sem usar calculadora!)
+                        </p>
+                        <ul style="margin-top: 15px; padding-left: 30px; font-size: 1.05rem; font-family: monospace;">
+                            <li>a) 10 + 5 * 2 = _______</li>
+                            <li>b) (10 + 5) * 2 = _______</li>
+                            <li>c) 20 / 4 + 3 = _______</li>
+                            <li>d) 15 % 4 + 2 * 3 = _______</li>
+                            <li>e) 10 / 3 = _______ (inteiros)</li>
+                            <li>f) 10.0 / 3.0 = _______ (reais)</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 2: Calculadora Simples</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo em PORTUGOL que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia dois números (a e b)</li>
+                            <li>Calcule e mostre: soma, subtração, multiplicação, divisão e módulo</li>
+                            <li>Formato: "10 + 5 = 15"</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 3: Média Aritmética</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia 4 notas (reais)</li>
+                            <li>Calcule a média: (n1 + n2 + n3 + n4) / 4</li>
+                            <li>Mostre o resultado com 2 casas decimais</li>
+                            <li><strong>ATENÇÃO:</strong> Use divisão real (4.0)!</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 4: Par ou Ímpar</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Use o operador <strong>%</strong> para verificar se um número é par ou ímpar:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia um número inteiro</li>
+                            <li>Calcule: resto = numero % 2</li>
+                            <li>Se resto == 0, é par; senão, é ímpar</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 5: Conversão de Horas</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Converta minutos totais em horas e minutos:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia total de minutos (ex: 150)</li>
+                            <li>Calcule: horas = minutos / 60</li>
+                            <li>Calcule: resto = minutos % 60</li>
+                            <li>Mostre: "150 minutos = 2 horas e 30 minutos"</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Entrega (Opcional)</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Resolva os exercícios e teste no Portugol Web Studio.
+                            Na próxima aula: <strong>Operadores Relacionais e Lógicos</strong>!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Você dominou os operadores aritméticos fundamentais! 🎉
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Operadores Básicos</h3>
+                            <ul>
+                                <li><strong>+</strong> Adição</li>
+                                <li><strong>-</strong> Subtração</li>
+                                <li><strong>*</strong> Multiplicação</li>
+                                <li><strong>/</strong> Divisão</li>
+                                <li><strong>%</strong> Módulo (resto)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Precedência</h3>
+                            <ul>
+                                <li><strong>1º:</strong> Parênteses ( )</li>
+                                <li><strong>2º:</strong> * / %</li>
+                                <li><strong>3º:</strong> + -</li>
+                                <li>Mesma prioridade: esquerda → direita</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Divisão Inteira vs Real</h3>
+                            <ul>
+                                <li>Inteiro / Inteiro = Inteiro (trunca)</li>
+                                <li>Real / qualquer = Real (mantém decimal)</li>
+                                <li>Use casting ou .0 para forçar real</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Atalhos</h3>
+                            <ul>
+                                <li><strong>++</strong> incremento (x = x + 1)</li>
+                                <li><strong>--</strong> decremento (x = x - 1)</li>
+                                <li><strong>+=</strong> atribuição composta</li>
+                                <li><strong>-=, *=, /=, %=</strong> também</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para a Próxima Aula (Quinta, 26/02)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣ Praticar:</strong> Resolver os 5 exercícios propostos
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣ Testar:</strong> Expressões com diferentes precedências
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣ Entender:</strong> Diferença entre divisão inteira e real
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣ Revisar:</strong> Operador módulo (%) e seus usos
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula</h3>
+                            <ul>
+                                <li>Operadores Relacionais (>, <, ==, !=)</li>
+                                <li>Operadores Lógicos (E, OU, NÃO)</li>
+                                <li>Expressões booleanas</li>
+                                <li>Tabelas verdade</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Atendimento:</strong> Terças 18h-19h</p>
+                            <p style="margin-bottom: 10px;"><strong>Sala:</strong> Bloco C - Sala 205</p>
+                            <p><strong>Moodle:</strong> Fórum sempre disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Operadores são a calculadora do programador! 🧮"
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Nos vemos na quinta-feira!</p>
+                        <p style="font-size: 0.9rem; margin-top: 20px; font-style: italic;">
+                            "Pratique as expressões - você vai usá-las SEMPRE!" 💪
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 10</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .analogy-box, .comparison-table, .warning-box, .operator-card, .precedence-box');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                changeSlide(1);
+            }
+            if (touchEndX > touchStartX + 50) {
+                changeSlide(-1);
+            }
+        }
+
+        showSlide(0);
+    </script>
+</body>
+</html>
