@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 08 - Prática: Estruturas de Decisão | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        /* ── SLIDES ── */
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev   { transform: translateX(-100%); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white;
+            position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p  { font-size: 1.1rem; opacity: 0.95; }
+
+        /* ── BODY ── */
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        /* ── GRID ── */
+        .two-column   { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+
+        /* ── CONTENT BOX ── */
+        .content-box {
+            background: var(--unifil-light); padding: 30px;
+            border-radius: 15px; border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.4rem; }
+        .content-box p  { font-size: 1.05rem; line-height: 1.7; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li { padding: 8px 0 8px 30px; position: relative; font-size: 1.05rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; font-size: 1.2rem; }
+
+        /* ── HIGHLIGHT BOX ── */
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .highlight-box p  { font-size: 1.1rem; line-height: 1.7; }
+        .highlight-box ul { list-style: none; padding: 0; }
+        .highlight-box li { padding: 8px 0; font-size: 1.05rem; line-height: 1.6; }
+
+        /* ── EXAMPLE CARD ── */
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+        .example-card p  { font-size: 1.05rem; line-height: 1.7; margin-bottom: 8px; }
+
+        /* ── CODE BLOCK ── */
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem; overflow-x: auto;
+            margin: 15px 0; line-height: 1.65; white-space: pre;
+        }
+        .code-block .keyword  { color: #c678dd; font-weight: 600; }
+        .code-block .function { color: #61afef; }
+        .code-block .string   { color: #98c379; }
+        .code-block .comment  { color: #5c6370; font-style: italic; }
+        .code-block .number   { color: #d19a66; }
+        .code-block .operator { color: #FF8C00; font-weight: 600; }
+
+        /* ── BIG IDEA ── */
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white; padding: 35px 40px; border-radius: 20px;
+            font-size: 1.6rem; font-weight: 600; text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(74,144,226,0.3);
+        }
+
+        /* ── ANALOGY BOX ── */
+        .analogy-box {
+            background: #fff3cd; border: 3px solid #ffc107;
+            border-radius: 15px; padding: 30px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .analogy-box h3 { color: #856404; margin-bottom: 15px; font-size: 1.4rem; }
+        .analogy-box p  { font-size: 1.05rem; line-height: 1.7; color: #533f03; margin-top: 8px; }
+
+        /* ── WARNING BOX ── */
+        .warning-box {
+            background: #ffebee; border: 3px solid #f44336;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .warning-box h3 { color: #c62828; margin-bottom: 15px; font-size: 1.3rem; }
+        .warning-box p  { font-size: 1.05rem; line-height: 1.6; color: #b71c1c; }
+        .warning-box ul { list-style: none; padding: 0; }
+        .warning-box li { padding: 6px 0; font-size: 1rem; line-height: 1.6; color: #b71c1c; }
+
+        /* ── SUCCESS BOX ── */
+        .success-box {
+            background: #e8f5e9; border: 3px solid #4caf50;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .success-box h3 { color: #2e7d32; margin-bottom: 15px; font-size: 1.3rem; }
+        .success-box p  { font-size: 1.05rem; line-height: 1.7; color: #1b5e20; }
+        .success-box ul { list-style: none; padding: 0; }
+        .success-box li { padding: 5px 0; font-size: 1rem; line-height: 1.6; color: #1b5e20; }
+
+        /* ── STAT CARD ── */
+        .stat-card {
+            text-align: center; padding: 25px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 3rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 10px; }
+        .stat-card .label  { font-size: 1.05rem; color: var(--unifil-gray); font-weight: 500; }
+
+        /* ── COMPARISON TABLE ── */
+        .comparison-table {
+            width: 100%; margin: 20px 0; border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            background: white; border-radius: 10px; overflow: hidden;
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 16px 20px; text-align: left; font-size: 1.05rem;
+        }
+        .comparison-table td { padding: 13px 20px; border-bottom: 1px solid var(--unifil-light); font-size: 1rem; line-height: 1.6; }
+        .comparison-table tr:hover td { background: var(--unifil-light); }
+
+        /* ── STEP BADGE ── */
+        .step-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--unifil-orange); color: white;
+            font-weight: 700; font-size: 1rem; flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        /* ── EXERCISE BOX ── */
+        .exercise-box {
+            background: #f0f4ff; border: 2px solid #3f51b5;
+            border-radius: 15px; padding: 25px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .exercise-box h4 { color: #283593; margin-bottom: 12px; font-size: 1.2rem; }
+        .exercise-box p  { font-size: 1.05rem; line-height: 1.7; color: #1a237e; }
+        .exercise-box ul { list-style: none; padding: 0; }
+        .exercise-box li { padding: 5px 0; font-size: 1rem; color: #1a237e; line-height: 1.6; }
+        .exercise-box li::before { content: '📌 '; }
+
+        /* ── NAVIGATION ── */
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 25px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 80px; text-align: center; font-size: 1.1rem; }
+
+        /* ── PROGRESS BAR ── */
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.2); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); transition: width 0.3s ease; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0; padding: 2px 6px;
+            border-radius: 4px; font-size: 0.93em; color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar">
+    <div class="progress-fill" id="progressBar"></div>
+</div>
+
+<div class="presentation">
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 1: TÍTULO                                            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide active">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h1>Lógica de Programação e Algoritmos</h1>
+                <p>Aula 08 - Prática: Estruturas de Decisão</p>
+            </div>
+            <div class="slide-body" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <div style="font-size:6rem; margin-bottom:30px;">⚙️</div>
+                <h2 style="font-size:2.5rem; color:var(--unifil-orange); margin-bottom:20px;">
+                    Mão na Massa!
+                </h2>
+                <p style="font-size:1.3rem; color:var(--unifil-gray); max-width:800px; margin-bottom:40px;">
+                    Hoje vamos <strong>resolver exercícios progressivos</strong>, validar dados, classificar informações
+                    e construir um mini-projeto completo com estruturas de decisão.
+                </p>
+
+                <div class="three-column" style="width:100%; max-width:1000px; margin-top:20px;">
+                    <div class="stat-card">
+                        <div class="number">4</div>
+                        <div class="label">Exercícios Resolvidos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">3</div>
+                        <div class="label">Linguagens</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">1</div>
+                        <div class="label">Mini-Projeto Final</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:45px; font-size:1.1rem; color:var(--unifil-gray);">
+                    <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                    <p style="margin-top:6px;"><strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 2: ROTEIRO DA AULA                                   -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🗺️ Roteiro da Aula Prática</h2>
+                <p>Exercícios em ordem crescente de complexidade</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Cada exercício introduz um conceito novo. Ao final, você terá um programa completo e funcional! 🚀
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div class="content-box">
+                        <h3>📋 Exercícios de Hoje</h3>
+                        <ul>
+                            <li><strong>Ex. 1 — </strong>Par ou Ímpar (if/else)</li>
+                            <li><strong>Ex. 2 — </strong>Classificação de Triângulo (else if)</li>
+                            <li><strong>Ex. 3 — </strong>Validação de Login (operadores lógicos + if)</li>
+                            <li><strong>Ex. 4 — </strong>Calculadora Completa (switch + if aninhado)</li>
+                            <li><strong>Mini-Projeto — </strong>Sistema de Matrícula com Validação</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🎯 Objetivos</h3>
+                        <ul>
+                            <li>Escrever código nas <strong>3 linguagens</strong></li>
+                            <li>Identificar a estrutura mais adequada</li>
+                            <li>Tracing manual antes de programar</li>
+                            <li>Testar casos extremos (limites)</li>
+                            <li>Combinar <strong>if, else if</strong> e <strong>switch</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="analogy-box" style="margin-top:10px;">
+                    <h3>💡 Metodologia: "Pense antes de digitar!"</h3>
+                    <p><strong>1.</strong> Leia o problema com atenção &nbsp;→&nbsp;
+                       <strong>2.</strong> Trace à mão com 3 exemplos &nbsp;→&nbsp;
+                       <strong>3.</strong> Escreva em Portugol &nbsp;→&nbsp;
+                       <strong>4.</strong> Converta para C e Java &nbsp;→&nbsp;
+                       <strong>5.</strong> Teste no computador</p>
+                </div>
+
+                <div class="highlight-box">
+                    <h3>🔑 Revisão Rápida — Estruturas disponíveis</h3>
+                    <ul>
+                        <li>✅ <strong>if</strong> — executa bloco somente se verdadeiro</li>
+                        <li>✅ <strong>if / else</strong> — dois caminhos obrigatórios</li>
+                        <li>✅ <strong>if / else if / else</strong> — múltiplas condições encadeadas</li>
+                        <li>✅ <strong>switch / case</strong> — múltiplos valores exatos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 3: EXERCÍCIO 1 — PAR OU ÍMPAR                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 1 — Par ou Ímpar</h2>
+                <p>Estrutura if/else simples com operador módulo</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box">
+                    <h4>📌 Enunciado</h4>
+                    <p>
+                        Leia um número inteiro digitado pelo usuário e informe se ele é
+                        <strong>PAR</strong> ou <strong>ÍMPAR</strong>.
+                        Lembre-se: um número é par quando o resto da divisão por 2 é igual a zero.
+                    </p>
+                </div>
+
+                <div class="analogy-box" style="margin-top:10px; margin-bottom:10px;">
+                    <h3>🔍 Trace Manual — antes de programar!</h3>
+                    <p><strong>n = 8:</strong> &nbsp;8 % 2 = 0 → PAR &nbsp;&nbsp;|&nbsp;&nbsp;
+                       <strong>n = 7:</strong> &nbsp;7 % 2 = 1 → ÍMPAR &nbsp;&nbsp;|&nbsp;&nbsp;
+                       <strong>n = 0:</strong> &nbsp;0 % 2 = 0 → PAR</p>
+                </div>
+
+                <div class="three-column" style="margin-top:5px;">
+                    <div class="example-card">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"ParImpar"</span>
+<span class="keyword">var</span>
+  n: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Digite um número: "</span>)
+  <span class="function">leia</span>(n)
+
+  <span class="keyword">se</span> (n <span class="operator">%</span> <span class="number">2</span> <span class="operator">==</span> <span class="number">0</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(n, <span class="string">" é PAR"</span>)
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(n, <span class="string">" é ÍMPAR"</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>()
+{
+  <span class="keyword">int</span> n;
+
+  <span class="function">printf</span>(<span class="string">"Digite um número: "</span>);
+  <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;n);
+
+  <span class="keyword">if</span> (n <span class="operator">%</span> <span class="number">2</span> <span class="operator">==</span> <span class="number">0</span>) {
+    <span class="function">printf</span>(<span class="string">"%d é PAR\n"</span>, n);
+  } <span class="keyword">else</span> {
+    <span class="function">printf</span>(<span class="string">"%d é ÍMPAR\n"</span>, n);
+  }
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🟠 Java</h4>
+                        <div class="code-block"><span class="keyword">import</span> java.util.Scanner;
+
+<span class="keyword">public class</span> ParImpar {
+  <span class="keyword">public static void</span> <span class="function">main</span>
+      (String[] args) {
+    Scanner sc =
+      <span class="keyword">new</span> Scanner(System.in);
+
+    System.out.<span class="function">print</span>(
+      <span class="string">"Digite um número: "</span>);
+    <span class="keyword">int</span> n = sc.<span class="function">nextInt</span>();
+
+    <span class="keyword">if</span> (n <span class="operator">%</span> <span class="number">2</span> <span class="operator">==</span> <span class="number">0</span>) {
+      System.out.<span class="function">println</span>(
+        n + <span class="string">" é PAR"</span>);
+    } <span class="keyword">else</span> {
+      System.out.<span class="function">println</span>(
+        n + <span class="string">" é ÍMPAR"</span>);
+    }
+  }
+}</div>
+                    </div>
+                </div>
+
+                <div class="success-box" style="margin-top:10px;">
+                    <h3>✅ Conceito-chave: Operador Módulo (%)</h3>
+                    <p>O operador <code>%</code> retorna o <strong>resto da divisão inteira</strong>.
+                    Todo número par tem resto 0 quando dividido por 2. Números negativos também funcionam: <code>-4 % 2 = 0</code> → PAR.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 4: EXERCÍCIO 2 — CLASSIFICAÇÃO DE TRIÂNGULO          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 2 — Classificação de Triângulo</h2>
+                <p>Múltiplas condições com operadores lógicos</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box">
+                    <h4>📌 Enunciado</h4>
+                    <p>
+                        Leia os três lados de um triângulo (a, b, c). Primeiro verifique se é um
+                        triângulo válido — a soma de dois lados deve ser sempre maior que o terceiro.
+                        Se válido, classifique como: <strong>Equilátero</strong> (3 lados iguais),
+                        <strong>Isósceles</strong> (2 lados iguais) ou <strong>Escaleno</strong> (todos diferentes).
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Triangulo"</span>
+<span class="keyword">var</span>
+  a, b, c: <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Lado A: "</span>) <span class="function">leia</span>(a)
+  <span class="function">escreva</span>(<span class="string">"Lado B: "</span>) <span class="function">leia</span>(b)
+  <span class="function">escreva</span>(<span class="string">"Lado C: "</span>) <span class="function">leia</span>(c)
+
+  <span class="keyword">se</span> ((a<span class="operator">+</span>b <span class="operator">&gt;</span> c) <span class="keyword">e</span> (a<span class="operator">+</span>c <span class="operator">&gt;</span> b) <span class="keyword">e</span> (b<span class="operator">+</span>c <span class="operator">&gt;</span> a)) <span class="keyword">entao</span>
+    <span class="keyword">se</span> (a <span class="operator">==</span> b) <span class="keyword">e</span> (b <span class="operator">==</span> c) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"Equilátero"</span>)
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span> (a<span class="operator">==</span>b) <span class="keyword">ou</span> (b<span class="operator">==</span>c) <span class="keyword">ou</span> (a<span class="operator">==</span>c) <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"Isósceles"</span>)
+      <span class="keyword">senao</span>
+        <span class="function">escreva</span>(<span class="string">"Escaleno"</span>)
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"NÃO é triângulo!"</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🔵 C / 🟠 Java (mesma lógica)</h4>
+                            <div class="code-block"><span class="comment">// Versão em C</span>
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">float</span> a, b, c;
+  <span class="function">scanf</span>(<span class="string">"%f %f %f"</span>, &amp;a, &amp;b, &amp;c);
+
+  <span class="keyword">if</span>((a+b&gt;c) &amp;&amp; (a+c&gt;b) &amp;&amp; (b+c&gt;a)){
+    <span class="keyword">if</span>(a==b &amp;&amp; b==c)
+      <span class="function">printf</span>(<span class="string">"Equilátero\n"</span>);
+    <span class="keyword">else if</span>(a==b || b==c || a==c)
+      <span class="function">printf</span>(<span class="string">"Isósceles\n"</span>);
+    <span class="keyword">else</span>
+      <span class="function">printf</span>(<span class="string">"Escaleno\n"</span>);
+  } <span class="keyword">else</span> {
+    <span class="function">printf</span>(<span class="string">"NÃO é triângulo!\n"</span>);
+  }
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                        </div>
+
+                        <table class="comparison-table" style="margin-top:15px;">
+                            <thead>
+                                <tr><th>Lados</th><th>Válido?</th><th>Tipo</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>3, 3, 3</td><td>✅</td><td><strong>Equilátero</strong></td></tr>
+                                <tr><td>5, 5, 3</td><td>✅</td><td><strong>Isósceles</strong></td></tr>
+                                <tr><td>3, 4, 5</td><td>✅</td><td><strong>Escaleno</strong></td></tr>
+                                <tr><td>1, 2, 10</td><td>❌</td><td>Não é triângulo</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 5: EXERCÍCIO 3 — VALIDAÇÃO DE LOGIN                  -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 3 — Validação de Login</h2>
+                <p>Operadores lógicos combinados com if/else</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box">
+                    <h4>📌 Enunciado</h4>
+                    <p>
+                        Simule o login de um sistema. O usuário deve digitar <strong>usuário</strong> e <strong>senha</strong>.
+                        O acesso só é liberado se o usuário for <code>"admin"</code>
+                        <strong>E</strong> a senha for <code>"1234"</code>.
+                        Exiba mensagem de boas-vindas ou de acesso negado.
+                    </p>
+                </div>
+
+                <div class="three-column" style="margin-top:10px;">
+                    <div class="example-card">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Login"</span>
+<span class="keyword">var</span>
+  usuario, senha: <span class="keyword">caractere</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Usuário: "</span>)
+  <span class="function">leia</span>(usuario)
+  <span class="function">escreva</span>(<span class="string">"Senha: "</span>)
+  <span class="function">leia</span>(senha)
+
+  <span class="keyword">se</span> (usuario <span class="operator">==</span> <span class="string">"admin"</span>) <span class="keyword">e</span>
+     (senha    <span class="operator">==</span> <span class="string">"1234"</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"Bem-vindo, Admin!"</span>)
+    <span class="function">escreva</span>(<span class="string">"Acesso liberado ✔"</span>)
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"Acesso negado ✖"</span>)
+    <span class="function">escreva</span>(<span class="string">"Usuário/senha errado"</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;string.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>()
+{
+  <span class="keyword">char</span> usuario[<span class="number">50</span>], senha[<span class="number">50</span>];
+
+  <span class="function">printf</span>(<span class="string">"Usuário: "</span>);
+  <span class="function">scanf</span>(<span class="string">"%s"</span>, usuario);
+  <span class="function">printf</span>(<span class="string">"Senha: "</span>);
+  <span class="function">scanf</span>(<span class="string">"%s"</span>, senha);
+
+  <span class="keyword">if</span> (<span class="function">strcmp</span>(usuario,<span class="string">"admin"</span>)<span class="operator">==</span><span class="number">0</span>
+   &amp;&amp; <span class="function">strcmp</span>(senha,  <span class="string">"1234"</span>) <span class="operator">==</span><span class="number">0</span>) {
+    <span class="function">printf</span>(<span class="string">"Bem-vindo, Admin!\n"</span>);
+    <span class="function">printf</span>(<span class="string">"Acesso liberado\n"</span>);
+  } <span class="keyword">else</span> {
+    <span class="function">printf</span>(<span class="string">"Acesso negado!\n"</span>);
+  }
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🟠 Java</h4>
+                        <div class="code-block"><span class="keyword">import</span> java.util.Scanner;
+
+<span class="keyword">public class</span> Login {
+ <span class="keyword">public static void</span> <span class="function">main</span>
+     (String[] args) {
+  Scanner sc =
+    <span class="keyword">new</span> Scanner(System.in);
+
+  System.out.<span class="function">print</span>(
+    <span class="string">"Usuário: "</span>);
+  String u = sc.<span class="function">next</span>();
+  System.out.<span class="function">print</span>(
+    <span class="string">"Senha: "</span>);
+  String s = sc.<span class="function">next</span>();
+
+  <span class="keyword">if</span> (u.<span class="function">equals</span>(<span class="string">"admin"</span>) &amp;&amp;
+      s.<span class="function">equals</span>(<span class="string">"1234"</span>)) {
+   System.out.<span class="function">println</span>(
+     <span class="string">"Bem-vindo, Admin!"</span>);
+  } <span class="keyword">else</span> {
+   System.out.<span class="function">println</span>(
+     <span class="string">"Acesso negado!"</span>);
+  }
+ }
+}</div>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top:10px;">
+                    <h3>⚠️ Atenção: Comparar Strings</h3>
+                    <ul>
+                        <li>→ <strong>C:</strong> use <code>strcmp(a, b) == 0</code> — o operador <code>==</code> compara endereços de memória, não conteúdo!</li>
+                        <li>→ <strong>Java:</strong> use <code>a.equals(b)</code> — nunca use <code>==</code> para comparar objetos String!</li>
+                        <li>→ <strong>Portugol:</strong> <code>==</code> funciona normalmente para caractere.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 6: EXERCÍCIO 4 — IMC COM CLASSIFICAÇÃO               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 4 — Calculadora de IMC</h2>
+                <p>else if encadeado com faixas de valores reais</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box">
+                    <h4>📌 Enunciado</h4>
+                    <p>
+                        Leia o peso (kg) e a altura (m) de uma pessoa. Calcule o IMC (<strong>peso / altura²</strong>)
+                        e classifique segundo a tabela da OMS.
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div>
+                        <table class="comparison-table" style="margin-top:0;">
+                            <thead>
+                                <tr><th>IMC</th><th>Classificação</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Abaixo de 18,5</td><td>Abaixo do peso</td></tr>
+                                <tr><td>18,5 a 24,9</td><td>Peso normal ✅</td></tr>
+                                <tr><td>25,0 a 29,9</td><td>Sobrepeso</td></tr>
+                                <tr><td>30,0 a 39,9</td><td>Obesidade</td></tr>
+                                <tr><td>40,0 ou mais</td><td>Obesidade grave</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="analogy-box" style="margin-top:15px;">
+                            <h3>🔍 Exemplo de Trace</h3>
+                            <p><strong>Peso=70, Alt=1.75:</strong><br>
+                            IMC = 70 / (1.75²) = 70 / 3.0625 ≈ 22.9 → Peso normal ✅</p>
+                            <p><strong>Peso=90, Alt=1.70:</strong><br>
+                            IMC = 90 / (1.70²) = 90 / 2.89 ≈ 31.1 → Obesidade</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"IMC"</span>
+<span class="keyword">var</span>
+  peso, altura, imc: <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Peso (kg): "</span>)  <span class="function">leia</span>(peso)
+  <span class="function">escreva</span>(<span class="string">"Altura (m): "</span>) <span class="function">leia</span>(altura)
+
+  imc <span class="operator">&lt;-</span> peso <span class="operator">/</span> (altura <span class="operator">*</span> altura)
+  <span class="function">escreva</span>(<span class="string">"IMC: "</span>, imc:<span class="number">5</span>:<span class="number">2</span>)
+
+  <span class="keyword">se</span> (imc <span class="operator">&lt;</span> <span class="number">18.5</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"Abaixo do peso"</span>)
+  <span class="keyword">senao</span>
+    <span class="keyword">se</span> (imc <span class="operator">&lt;</span> <span class="number">25.0</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"Peso normal ✅"</span>)
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span> (imc <span class="operator">&lt;</span> <span class="number">30.0</span>) <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"Sobrepeso"</span>)
+      <span class="keyword">senao</span>
+        <span class="keyword">se</span> (imc <span class="operator">&lt;</span> <span class="number">40.0</span>) <span class="keyword">entao</span>
+          <span class="function">escreva</span>(<span class="string">"Obesidade"</span>)
+        <span class="keyword">senao</span>
+          <span class="function">escreva</span>(<span class="string">"Obesidade grave"</span>)
+        <span class="keyword">fimse</span>
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 7: EX 4 — IMC (C e Java)                             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 4 — IMC em C e Java</h2>
+                <p>Mesmo algoritmo, sintaxe diferente — else if encadeado</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>()
+{
+  <span class="keyword">float</span> peso, altura, imc;
+
+  <span class="function">printf</span>(<span class="string">"Peso (kg): "</span>);
+  <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;peso);
+  <span class="function">printf</span>(<span class="string">"Altura (m): "</span>);
+  <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;altura);
+
+  imc = peso <span class="operator">/</span> (altura <span class="operator">*</span> altura);
+  <span class="function">printf</span>(<span class="string">"IMC: %.2f\n"</span>, imc);
+
+  <span class="keyword">if</span>      (imc <span class="operator">&lt;</span> <span class="number">18.5f</span>) <span class="function">printf</span>(<span class="string">"Abaixo do peso\n"</span>);
+  <span class="keyword">else if</span> (imc <span class="operator">&lt;</span> <span class="number">25.0f</span>) <span class="function">printf</span>(<span class="string">"Peso normal\n"</span>);
+  <span class="keyword">else if</span> (imc <span class="operator">&lt;</span> <span class="number">30.0f</span>) <span class="function">printf</span>(<span class="string">"Sobrepeso\n"</span>);
+  <span class="keyword">else if</span> (imc <span class="operator">&lt;</span> <span class="number">40.0f</span>) <span class="function">printf</span>(<span class="string">"Obesidade\n"</span>);
+  <span class="keyword">else</span>                  <span class="function">printf</span>(<span class="string">"Obesidade grave\n"</span>);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>🟠 Java</h4>
+                        <div class="code-block"><span class="keyword">import</span> java.util.Scanner;
+
+<span class="keyword">public class</span> IMC {
+  <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) {
+    Scanner sc = <span class="keyword">new</span> Scanner(System.in);
+
+    System.out.<span class="function">print</span>(<span class="string">"Peso (kg): "</span>);
+    <span class="keyword">double</span> peso = sc.<span class="function">nextDouble</span>();
+    System.out.<span class="function">print</span>(<span class="string">"Altura (m): "</span>);
+    <span class="keyword">double</span> alt  = sc.<span class="function">nextDouble</span>();
+
+    <span class="keyword">double</span> imc = peso <span class="operator">/</span> (alt <span class="operator">*</span> alt);
+    System.out.<span class="function">printf</span>(<span class="string">"IMC: %.2f%n"</span>, imc);
+
+    <span class="keyword">if</span>      (imc <span class="operator">&lt;</span> <span class="number">18.5</span>) System.out.<span class="function">println</span>(<span class="string">"Abaixo do peso"</span>);
+    <span class="keyword">else if</span> (imc <span class="operator">&lt;</span> <span class="number">25.0</span>) System.out.<span class="function">println</span>(<span class="string">"Peso normal ✅"</span>);
+    <span class="keyword">else if</span> (imc <span class="operator">&lt;</span> <span class="number">30.0</span>) System.out.<span class="function">println</span>(<span class="string">"Sobrepeso"</span>);
+    <span class="keyword">else if</span> (imc <span class="operator">&lt;</span> <span class="number">40.0</span>) System.out.<span class="function">println</span>(<span class="string">"Obesidade"</span>);
+    <span class="keyword">else</span>               System.out.<span class="function">println</span>(<span class="string">"Obesidade grave"</span>);
+  }
+}</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;">
+                    <h3>💡 Por que usar else if e não ifs separados?</h3>
+                    <p>
+                        Com <strong>ifs separados</strong>, <em>todos</em> seriam testados mesmo depois de encontrar o correto —
+                        desperdício e risco de múltiplas saídas. Com <strong>else if</strong>, ao encontrar a
+                        primeira condição verdadeira o programa <em>pula o restante</em>, economizando processamento e
+                        garantindo exatamente um resultado.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 8: MINI-PROJETO — SISTEMA DE MATRÍCULA               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🏗️ Mini-Projeto — Sistema de Matrícula</h2>
+                <p>Integrando if/else, else if e switch em um programa completo</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box">
+                    <h4>📌 Especificação do Projeto</h4>
+                    <p>
+                        Crie um sistema de matrícula universitária que:
+                    </p>
+                    <ul style="margin-top:10px;">
+                        <li>Leia nome, idade e nota do vestibular (0–100) do candidato</li>
+                        <li>Valide se a idade é ≥ 17 anos e a nota é ≥ 60</li>
+                        <li>Se aprovado, leia a opção de curso (1-Eng. Software, 2-Sistemas, 3-Ciência da Comp.)</li>
+                        <li>Exiba uma mensagem de confirmação de matrícula completa</li>
+                    </ul>
+                </div>
+
+                <div class="two-column" style="margin-top:15px;">
+                    <div class="content-box">
+                        <h3>📐 Estrutura do Algoritmo</h3>
+                        <ul>
+                            <li><strong>Passo 1:</strong> Ler nome, idade, nota</li>
+                            <li><strong>Passo 2:</strong> Validar com <code>if</code> (idade ≥ 17 <strong>E</strong> nota ≥ 60)</li>
+                            <li><strong>Passo 3:</strong> Dentro do bloco aprovado, ler opção de curso</li>
+                            <li><strong>Passo 4:</strong> Usar <code>switch</code> para exibir o curso escolhido</li>
+                            <li><strong>Passo 5:</strong> No bloco reprovado, indicar o motivo</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🧪 Casos de Teste</h3>
+                        <ul>
+                            <li><strong>João, 20, 75, curso 1</strong> → Matrícula em Eng. Software ✅</li>
+                            <li><strong>Ana, 16, 80, —</strong> → Reprovado (menor de idade) ❌</li>
+                            <li><strong>Pedro, 19, 50, —</strong> → Reprovado (nota insuficiente) ❌</li>
+                            <li><strong>Maria, 17, 60, curso 3</strong> → Matrícula em Ciência da Comp. ✅</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="analogy-box" style="margin-top:15px;">
+                    <h3>🔑 Decisões combinadas no projeto</h3>
+                    <p>
+                        <strong>if/else</strong> → validação de acesso (idade E nota) &nbsp;|&nbsp;
+                        <strong>else if</strong> → mensagem de reprovação personalizada por motivo &nbsp;|&nbsp;
+                        <strong>switch</strong> → seleção do curso após aprovação
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 9: MINI-PROJETO — CÓDIGO PORTUGOL                    -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Mini-Projeto — Código em Portugol</h2>
+                <p>Sistema de Matrícula completo passo a passo</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol — Parte 1: Leitura e Validação</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Matricula"</span>
+<span class="keyword">var</span>
+  nome  : <span class="keyword">caractere</span>
+  idade : <span class="keyword">inteiro</span>
+  nota  : <span class="keyword">real</span>
+  curso : <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"=== SISTEMA DE MATRÍCULA ==="</span>)
+  <span class="function">escreva</span>(<span class="string">"Nome: "</span>)      <span class="function">leia</span>(nome)
+  <span class="function">escreva</span>(<span class="string">"Idade: "</span>)     <span class="function">leia</span>(idade)
+  <span class="function">escreva</span>(<span class="string">"Nota vest.: "</span>) <span class="function">leia</span>(nota)
+
+  <span class="keyword">se</span> (idade <span class="operator">&gt;=</span> <span class="number">17</span>) <span class="keyword">e</span> (nota <span class="operator">&gt;=</span> <span class="number">60</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"✔ Candidato aprovado!"</span>)
+    <span class="function">escreva</span>(<span class="string">"1-Eng.Software  2-Sistemas"</span>)
+    <span class="function">escreva</span>(<span class="string">"3-Ciência Comp. : "</span>)
+    <span class="function">leia</span>(curso)
+    <span class="comment">// ... switch abaixo</span>
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"✖ Matrícula negada."</span>)
+    <span class="keyword">se</span> (idade <span class="operator">&lt;</span> <span class="number">17</span>) <span class="keyword">e</span> (nota <span class="operator">&lt;</span> <span class="number">60</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"Motivo: idade e nota."</span>)
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span> (idade <span class="operator">&lt;</span> <span class="number">17</span>) <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"Motivo: menor de idade."</span>)
+      <span class="keyword">senao</span>
+        <span class="function">escreva</span>(<span class="string">"Motivo: nota insuficiente."</span>)
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol — Parte 2: Seleção de Curso</h4>
+                        <div class="code-block"><span class="comment">// Dentro do bloco "aprovado", após ler curso:</span>
+
+  <span class="keyword">escolha</span> (curso)
+    <span class="keyword">caso</span> <span class="number">1</span>
+      <span class="function">escreva</span>(<span class="string">"Curso: Eng. de Software"</span>)
+      <span class="function">escreva</span>(<span class="string">"Período: Noturno"</span>)
+      <span class="function">escreva</span>(<span class="string">"Duração: 4 anos"</span>)
+    <span class="keyword">caso</span> <span class="number">2</span>
+      <span class="function">escreva</span>(<span class="string">"Curso: Sistemas de Info."</span>)
+      <span class="function">escreva</span>(<span class="string">"Período: Noturno"</span>)
+      <span class="function">escreva</span>(<span class="string">"Duração: 4 anos"</span>)
+    <span class="keyword">caso</span> <span class="number">3</span>
+      <span class="function">escreva</span>(<span class="string">"Curso: Ciência da Comp."</span>)
+      <span class="function">escreva</span>(<span class="string">"Período: Integral"</span>)
+      <span class="function">escreva</span>(<span class="string">"Duração: 4 anos"</span>)
+    <span class="keyword">outrocaso</span>
+      <span class="function">escreva</span>(<span class="string">"Opção inválida!"</span>)
+  <span class="keyword">fimescolha</span>
+
+  <span class="function">escreva</span>(<span class="string">"Matrícula de "</span>, nome,
+          <span class="string">" realizada com sucesso!"</span>)</div>
+
+                        <div class="success-box" style="margin-top:15px;">
+                            <h3>✅ Estruturas usadas no projeto</h3>
+                            <ul>
+                                <li><code>if + &&</code> — validação dupla (idade E nota)</li>
+                                <li><code>if/else if/else</code> — motivo de reprovação</li>
+                                <li><code>switch/case</code> — seleção de curso</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 10: MINI-PROJETO — CÓDIGO C E JAVA                   -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Mini-Projeto — Código em C e Java</h2>
+                <p>Mesma lógica, sintaxe de produção</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">char</span>  nome[<span class="number">50</span>];
+  <span class="keyword">int</span>   idade, curso;
+  <span class="keyword">float</span> nota;
+
+  <span class="function">printf</span>(<span class="string">"Nome: "</span>);  <span class="function">scanf</span>(<span class="string">"%s"</span>, nome);
+  <span class="function">printf</span>(<span class="string">"Idade: "</span>); <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;idade);
+  <span class="function">printf</span>(<span class="string">"Nota: "</span>);  <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;nota);
+
+  <span class="keyword">if</span> (idade <span class="operator">&gt;=</span> <span class="number">17</span> &amp;&amp; nota <span class="operator">&gt;=</span> <span class="number">60</span>) {
+    <span class="function">printf</span>(<span class="string">"Aprovado! Escolha o curso:\n"</span>);
+    <span class="function">printf</span>(<span class="string">"1-Eng.SW 2-Sistemas 3-CC: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;curso);
+    <span class="keyword">switch</span>(curso) {
+      <span class="keyword">case</span> <span class="number">1</span>: <span class="function">printf</span>(<span class="string">"Eng. Software\n"</span>);  <span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">2</span>: <span class="function">printf</span>(<span class="string">"Sistemas Info.\n"</span>); <span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">3</span>: <span class="function">printf</span>(<span class="string">"Ciência Comp.\n"</span>); <span class="keyword">break</span>;
+      <span class="keyword">default</span>:<span class="function">printf</span>(<span class="string">"Opção inválida\n"</span>);
+    }
+    <span class="function">printf</span>(<span class="string">"Matrícula de %s OK!\n"</span>, nome);
+  } <span class="keyword">else if</span> (idade &lt; <span class="number">17</span> &amp;&amp; nota &lt; <span class="number">60</span>) {
+    <span class="function">printf</span>(<span class="string">"Negada: idade e nota.\n"</span>);
+  } <span class="keyword">else if</span> (idade &lt; <span class="number">17</span>) {
+    <span class="function">printf</span>(<span class="string">"Negada: menor de idade.\n"</span>);
+  } <span class="keyword">else</span> {
+    <span class="function">printf</span>(<span class="string">"Negada: nota insuficiente.\n"</span>);
+  }
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟠 Java</h4>
+                        <div class="code-block"><span class="keyword">import</span> java.util.Scanner;
+<span class="keyword">public class</span> Matricula {
+ <span class="keyword">public static void</span> <span class="function">main</span>(String[] args){
+  Scanner sc = <span class="keyword">new</span> Scanner(System.in);
+  System.out.<span class="function">print</span>(<span class="string">"Nome: "</span>);
+  String nome  = sc.<span class="function">next</span>();
+  System.out.<span class="function">print</span>(<span class="string">"Idade: "</span>);
+  <span class="keyword">int</span> idade = sc.<span class="function">nextInt</span>();
+  System.out.<span class="function">print</span>(<span class="string">"Nota: "</span>);
+  <span class="keyword">double</span> nota = sc.<span class="function">nextDouble</span>();
+
+  <span class="keyword">if</span> (idade <span class="operator">&gt;=</span> <span class="number">17</span> &amp;&amp; nota <span class="operator">&gt;=</span> <span class="number">60</span>) {
+   System.out.<span class="function">print</span>(
+     <span class="string">"1-EngSW 2-Sist 3-CC: "</span>);
+   <span class="keyword">int</span> c = sc.<span class="function">nextInt</span>();
+   <span class="keyword">switch</span>(c) {
+    <span class="keyword">case</span> <span class="number">1</span>: System.out.<span class="function">println</span>(
+      <span class="string">"Eng. Software"</span>);   <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">2</span>: System.out.<span class="function">println</span>(
+      <span class="string">"Sistemas Info."</span>);  <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">3</span>: System.out.<span class="function">println</span>(
+      <span class="string">"Ciência Comp."</span>);   <span class="keyword">break</span>;
+    <span class="keyword">default</span>:System.out.<span class="function">println</span>(
+      <span class="string">"Inválido"</span>);
+   }
+   System.out.<span class="function">println</span>(
+     <span class="string">"Matrícula de "</span>+nome+<span class="string">" OK!"</span>);
+  } <span class="keyword">else if</span> (idade&lt;<span class="number">17</span> &amp;&amp; nota&lt;<span class="number">60</span>) {
+   System.out.<span class="function">println</span>(<span class="string">"Negada: ambos."</span>);
+  } <span class="keyword">else if</span> (idade &lt; <span class="number">17</span>) {
+   System.out.<span class="function">println</span>(<span class="string">"Negada: idade."</span>);
+  } <span class="keyword">else</span> {
+   System.out.<span class="function">println</span>(<span class="string">"Negada: nota."</span>);
+  }
+ }
+}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 11: EXERCÍCIOS PROPOSTOS                             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📝 Exercícios Propostos</h2>
+                <p>Resolva individualmente — coloque a mão na massa!</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Pratique agora! Tente sozinho antes de ver a solução. 💪
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div>
+                        <div class="exercise-box">
+                            <h4>📌 Exercício A — Classificação de Idade</h4>
+                            <p>Leia a idade de uma pessoa e classifique:</p>
+                            <ul>
+                                <li>0 a 12 anos → Criança</li>
+                                <li>13 a 17 anos → Adolescente</li>
+                                <li>18 a 59 anos → Adulto</li>
+                                <li>60+ anos → Idoso</li>
+                            </ul>
+                            <p style="margin-top:10px;"><strong>Dica:</strong> use <code>else if</code> encadeado.</p>
+                        </div>
+
+                        <div class="exercise-box">
+                            <h4>📌 Exercício B — Calculadora com Histórico</h4>
+                            <p>Faça uma calculadora com 4 operações usando <code>switch</code>.
+                            Exiba o histórico: <em>"10 + 5 = 15"</em>.
+                            Trate divisão por zero com <code>if</code> dentro do <code>case 4</code>.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="exercise-box">
+                            <h4>📌 Exercício C — Semáforo Inteligente</h4>
+                            <p>Leia a cor de um semáforo (1=Verde, 2=Amarelo, 3=Vermelho) e exiba a instrução correta com <code>switch</code>. Se o valor for inválido, exiba um aviso.</p>
+                        </div>
+
+                        <div class="exercise-box">
+                            <h4>📌 Exercício D — Desconto Progressivo</h4>
+                            <p>Leia o valor de uma compra e aplique o desconto correspondente:</p>
+                            <ul>
+                                <li>Até R$ 100 → sem desconto</li>
+                                <li>R$ 100 a R$ 300 → 5% de desconto</li>
+                                <li>R$ 300 a R$ 500 → 10% de desconto</li>
+                                <li>Acima de R$ 500 → 15% de desconto</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;">
+                    <h3>🎯 Entrega</h3>
+                    <p>
+                        Resolva pelo menos <strong>2 exercícios</strong> no Portugol Web Studio e envie via Google Classroom.
+                        Na próxima aula: <strong>Estruturas de Repetição (while / for)</strong>!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 12: RESUMO E PRÓXIMOS PASSOS                         -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🎯 Resumo e Próximos Passos</h2>
+                <p>O que praticamos hoje</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Decisões dominadas! Você combinou if, else if e switch em um projeto real! 🏆
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>✅ Exercícios Resolvidos</h3>
+                        <ul>
+                            <li><strong>Ex. 1 — Par ou Ímpar</strong><br>if/else + operador módulo</li>
+                            <li><strong>Ex. 2 — Triângulo</strong><br>Decisões aninhadas + operadores lógicos</li>
+                            <li><strong>Ex. 3 — Login</strong><br>Comparação de strings + &&</li>
+                            <li><strong>Ex. 4 — IMC</strong><br>else if com faixas de valores reais</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>✅ Mini-Projeto: Matrícula</h3>
+                        <ul>
+                            <li>Validação com <code>if + &&</code></li>
+                            <li>Motivo de reprovação com <code>else if</code></li>
+                            <li>Seleção de curso com <code>switch</code></li>
+                            <li>Programa completo, funcional e testado!</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🔑 Lições Aprendidas</h3>
+                        <ul>
+                            <li>Trace manual antes de programar</li>
+                            <li>Testar casos extremos e limites</li>
+                            <li>Escolher a estrutura certa para o problema</li>
+                            <li>Combinar estruturas de decisão é poderoso</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🔥 Próximas Aulas</h3>
+                        <ul>
+                            <li><strong>Aula 09:</strong> Laço ENQUANTO (while)</li>
+                            <li><strong>Aula 10:</strong> Laço FAÇA-ENQUANTO (do-while)</li>
+                            <li><strong>Aula 11:</strong> Laço PARA (for)</li>
+                            <li><strong>Aula 12:</strong> Prática: Repetição</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:20px;">
+                    <h3>📚 Para a Próxima Aula</h3>
+                    <ul>
+                        <li style="padding:8px 0;"><strong>1️⃣ Entregar:</strong> Resolver pelo menos 2 exercícios propostos no Google Classroom</li>
+                        <li style="padding:8px 0;"><strong>2️⃣ Expandir:</strong> Adicionar uma 4ª opção de curso ao mini-projeto</li>
+                        <li style="padding:8px 0;"><strong>3️⃣ Pesquisar:</strong> O que é um laço de repetição? Para que serve?</li>
+                    </ul>
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div class="content-box">
+                        <h3>💬 Dúvidas?</h3>
+                        <p style="margin-bottom:10px;"><strong>E-mail:</strong> tiago.galvao@unifil.br</p>
+                        <p style="margin-bottom:10px;"><strong>Atendimento:</strong> Terças 18h–19h</p>
+                        <p><strong>Google Classroom:</strong> Fórum disponível</p>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center;">
+                        <div style="text-align:center; color:var(--unifil-gray);">
+                            <p style="font-size:1.3rem; font-weight:600;">Ótima aula! 🙏</p>
+                            <p style="font-size:1.1rem; margin-top:8px;">Nos vemos na próxima!</p>
+                            <p style="font-size:0.9rem; margin-top:16px; font-style:italic;">
+                                "A prática leva à perfeição — e à programação! 💻"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 12</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+</div><!-- /presentation -->
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active', 'prev'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+
+        document.getElementById('slideCounter').textContent =
+            `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width =
+            ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box, .example-card, .highlight-box, .big-idea, ' +
+            '.stat-card, .analogy-box, .comparison-table, .warning-box, ' +
+            '.success-box, .exercise-box'
+        );
+        animated.forEach((el, i) => {
+            el.style.animation = 'none';
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.07}s forwards`;
+            }, 10);
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend',   e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

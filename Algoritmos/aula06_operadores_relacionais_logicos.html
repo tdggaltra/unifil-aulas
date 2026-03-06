@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 6 - Operadores Relacionais e Lógicos | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .code-block .keyword {
+            color: #c678dd;
+        }
+
+        .code-block .function {
+            color: #61afef;
+        }
+
+        .code-block .string {
+            color: #98c379;
+        }
+
+        .code-block .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .code-block .number {
+            color: #d19a66;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .analogy-box h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .analogy-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #533f03;
+        }
+
+        .operator-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            text-align: center;
+        }
+
+        .operator-card .symbol {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .operator-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin: 30px 0;
+            border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--unifil-light);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--unifil-light);
+        }
+
+        .warning-box {
+            background: #ffebee;
+            border: 3px solid #f44336;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .warning-box h3 {
+            color: #c62828;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .warning-box p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #b71c1c;
+        }
+
+        .truth-table {
+            background: white;
+            border: 3px solid var(--unifil-orange);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .truth-table h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+
+        .truth-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .truth-table th {
+            background: var(--unifil-orange);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .truth-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 1.05rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .truth-table .true {
+            background: #c8e6c9;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .truth-table .false {
+            background: #ffcdd2;
+            font-weight: bold;
+            color: #c62828;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            min-width: 80px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1001;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-card .number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: var(--unifil-gray);
+            font-weight: 500;
+        }
+
+        .slide-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide-body::-webkit-scrollbar-track {
+            background: var(--unifil-light);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb {
+            background: var(--unifil-orange);
+            border-radius: 10px;
+        }
+
+        .slide-body::-webkit-scrollbar-thumb:hover {
+            background: var(--unifil-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Lógica de Programação e Algoritmos</h1>
+                    <p>Aula 06 - Operadores Relacionais e Lógicos</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="font-size: 6rem; margin-bottom: 30px;">⚖️</div>
+                    <h2 style="font-size: 2.5rem; color: var(--unifil-orange); margin-bottom: 20px;">
+                        Tomando Decisões com Comparações
+                    </h2>
+                    <p style="font-size: 1.3rem; color: var(--unifil-gray); max-width: 800px; margin-bottom: 40px;">
+                        Aprenda a comparar valores e combinar condições para criar expressões lógicas e tomar decisões em seus programas.
+                    </p>
+                    <div class="three-column" style="width: 100%; max-width: 1000px; margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="number">6</div>
+                            <div class="label">Operadores Relacionais</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">3</div>
+                            <div class="label">Operadores Lógicos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">∞</div>
+                            <div class="label">Combinações</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 50px; font-size: 1.1rem; color: var(--unifil-gray);">
+                        <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                        <p><strong>Data:</strong> Quinta-feira, 27 de Fevereiro de 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: OPERADORES RELACIONAIS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚖️ Operadores Relacionais</h2>
+                    <p>Comparando valores</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Operadores relacionais <strong>comparam</strong> dois valores e retornam <strong>verdadeiro</strong> ou <strong>falso</strong>
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 40px;">
+                        <thead>
+                            <tr>
+                                <th>Operador</th>
+                                <th>Nome</th>
+                                <th>Exemplo</th>
+                                <th>Resultado</th>
+                                <th>Significado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>&gt;</code></td>
+                                <td><strong>Maior que</strong></td>
+                                <td><code>5 &gt; 3</code></td>
+                                <td>verdadeiro</td>
+                                <td>5 é maior que 3?</td>
+                            </tr>
+                            <tr>
+                                <td><code>&lt;</code></td>
+                                <td><strong>Menor que</strong></td>
+                                <td><code>5 &lt; 3</code></td>
+                                <td>falso</td>
+                                <td>5 é menor que 3?</td>
+                            </tr>
+                            <tr>
+                                <td><code>&gt;=</code></td>
+                                <td><strong>Maior ou igual</strong></td>
+                                <td><code>5 &gt;= 5</code></td>
+                                <td>verdadeiro</td>
+                                <td>5 é maior ou igual a 5?</td>
+                            </tr>
+                            <tr>
+                                <td><code>&lt;=</code></td>
+                                <td><strong>Menor ou igual</strong></td>
+                                <td><code>3 &lt;= 5</code></td>
+                                <td>verdadeiro</td>
+                                <td>3 é menor ou igual a 5?</td>
+                            </tr>
+                            <tr>
+                                <td><code>==</code></td>
+                                <td><strong>Igual a</strong></td>
+                                <td><code>5 == 5</code></td>
+                                <td>verdadeiro</td>
+                                <td>5 é igual a 5?</td>
+                            </tr>
+                            <tr>
+                                <td><code>!=</code></td>
+                                <td><strong>Diferente de</strong></td>
+                                <td><code>5 != 3</code></td>
+                                <td>verdadeiro</td>
+                                <td>5 é diferente de 3?</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>⚠️ ERRO MUITO COMUM!</h3>
+                        <p>
+                            <strong>Atribuição (=)</strong> é diferente de <strong>Comparação (==)</strong>:
+                        </p>
+                        <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">int</span> x = <span class="number">5</span>;       <span class="comment">// ✅ ATRIBUIÇÃO: x recebe 5</span>
+
+<span class="keyword">if</span> (x == <span class="number">5</span>) {    <span class="comment">// ✅ COMPARAÇÃO: x é igual a 5?</span>
+    <span class="function">printf</span>(<span class="string">"Igual!"</span>);
+}
+
+<span class="keyword">if</span> (x = <span class="number">5</span>) {     <span class="comment">// ❌ ERRO! Atribuindo 5 a x, não comparando!</span>
+    <span class="function">printf</span>(<span class="string">"Bug!"</span>);
+}
+                        </div>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            Use <strong>=</strong> para atribuir, <strong>==</strong> para comparar!
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Observação Importante</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            O resultado de uma comparação é sempre um valor <strong>lógico</strong> (booleano):
+                        </p>
+                        <ul style="font-size: 1.1rem; margin-top: 15px; list-style: none; padding: 0;">
+                            <li style="padding: 8px 0;">✅ <code>verdadeiro</code> (Portugol), <code>true</code> (Java), <code>1</code> (C)</li>
+                            <li style="padding: 8px 0;">❌ <code>falso</code> (Portugol), <code>false</code> (Java), <code>0</code> (C)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: EXEMPLOS RELACIONAIS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Exemplos Práticos de Comparações</h2>
+                    <p>Testando operadores relacionais</p>
+                </div>
+                <div class="slide-body">
+                    <div class="three-column">
+                        <div class="example-card">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block">
+<span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> idade = <span class="number">20</span>
+        <span class="keyword">logico</span> resultado
+        
+        resultado = idade &gt;= <span class="number">18</span>
+        <span class="function">escreva</span>(resultado)  <span class="comment">// verdadeiro</span>
+        
+        resultado = idade == <span class="number">18</span>
+        <span class="function">escreva</span>(resultado)  <span class="comment">// falso</span>
+        
+        resultado = idade != <span class="number">20</span>
+        <span class="function">escreva</span>(resultado)  <span class="comment">// falso</span>
+    }
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() 
+{
+    <span class="keyword">int</span> idade = <span class="number">20</span>;
+    <span class="keyword">int</span> resultado;
+    
+    resultado = idade &gt;= <span class="number">18</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, resultado);  <span class="comment">// 1 (true)</span>
+    
+    resultado = idade == <span class="number">18</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, resultado);  <span class="comment">// 0 (false)</span>
+    
+    resultado = idade != <span class="number">20</span>;
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, resultado);  <span class="comment">// 0 (false)</span>
+    
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <div class="code-block">
+<span class="keyword">public class</span> Exemplo 
+{
+    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) 
+    {
+        <span class="keyword">int</span> idade = <span class="number">20</span>;
+        <span class="keyword">boolean</span> resultado;
+        
+        resultado = idade &gt;= <span class="number">18</span>;
+        System.out.<span class="function">println</span>(resultado);  <span class="comment">// true</span>
+        
+        resultado = idade == <span class="number">18</span>;
+        System.out.<span class="function">println</span>(resultado);  <span class="comment">// false</span>
+        
+        resultado = idade != <span class="number">20</span>;
+        System.out.<span class="function">println</span>(resultado);  <span class="comment">// false</span>
+    }
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📌 Testando Comparações</h4>
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Expressão</th>
+                                    <th>Resultado</th>
+                                    <th>Explicação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>10 &gt; 5</code></td>
+                                    <td><strong>verdadeiro</strong></td>
+                                    <td>10 é maior que 5</td>
+                                </tr>
+                                <tr>
+                                    <td><code>3 &lt; 2</code></td>
+                                    <td><strong>falso</strong></td>
+                                    <td>3 NÃO é menor que 2</td>
+                                </tr>
+                                <tr>
+                                    <td><code>5 &gt;= 5</code></td>
+                                    <td><strong>verdadeiro</strong></td>
+                                    <td>5 é igual a 5 (satisfaz o "ou igual")</td>
+                                </tr>
+                                <tr>
+                                    <td><code>7 &lt;= 3</code></td>
+                                    <td><strong>falso</strong></td>
+                                    <td>7 não é menor nem igual a 3</td>
+                                </tr>
+                                <tr>
+                                    <td><code>"ABC" == "ABC"</code></td>
+                                    <td><strong>verdadeiro</strong></td>
+                                    <td>Textos idênticos</td>
+                                </tr>
+                                <tr>
+                                    <td><code>10 != 5</code></td>
+                                    <td><strong>verdadeiro</strong></td>
+                                    <td>10 é diferente de 5</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: OPERADORES LÓGICOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔗 Operadores Lógicos</h2>
+                    <p>Combinando condições</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Operadores lógicos <strong>combinam</strong> múltiplas condições em uma única expressão
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="operator-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="symbol">&&</div>
+                            <h3>E / AND</h3>
+                            <p style="font-size: 1.15rem; margin-top: 15px;">
+                                Retorna <strong>verdadeiro</strong> se <strong>AMBAS</strong> as condições forem verdadeiras
+                            </p>
+                            <div class="code-block" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+(idade &gt;= <span class="number">18</span>) && (cpf != <span class="string">""</span>)
+<span class="comment">// Maior de idade E tem CPF</span>
+                            </div>
+                            <p style="margin-top: 15px; font-size: 1.1rem;">
+                                Portugol: <code>e</code><br>
+                                C/Java: <code>&&</code>
+                            </p>
+                        </div>
+
+                        <div class="operator-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="symbol">||</div>
+                            <h3>OU / OR</h3>
+                            <p style="font-size: 1.15rem; margin-top: 15px;">
+                                Retorna <strong>verdadeiro</strong> se <strong>PELO MENOS UMA</strong> condição for verdadeira
+                            </p>
+                            <div class="code-block" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+(dia == <span class="string">"sábado"</span>) || (dia == <span class="string">"domingo"</span>)
+<span class="comment">// Sábado OU domingo</span>
+                            </div>
+                            <p style="margin-top: 15px; font-size: 1.1rem;">
+                                Portugol: <code>ou</code><br>
+                                C/Java: <code>||</code>
+                            </p>
+                        </div>
+
+                        <div class="operator-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="symbol">!</div>
+                            <h3>NÃO / NOT</h3>
+                            <p style="font-size: 1.15rem; margin-top: 15px;">
+                                <strong>Inverte</strong> o valor lógico: verdadeiro vira falso, falso vira verdadeiro
+                            </p>
+                            <div class="code-block" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+!(idade &lt; <span class="number">18</span>)
+<span class="comment">// NÃO é menor de idade</span>
+<span class="comment">// Equivale a: idade >= 18</span>
+                            </div>
+                            <p style="margin-top: 15px; font-size: 1.1rem;">
+                                Portugol: <code>nao</code><br>
+                                C/Java: <code>!</code>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🚪 Analogia: Portas de Entrada</h3>
+                        <p>
+                            <strong>E (AND):</strong> Porta com 2 chaves. Você precisa das <strong>DUAS</strong> chaves para abrir.<br>
+                            → Exemplo: Entrar na boate (ser maior de 18 <strong>E</strong> estar na lista)
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>OU (OR):</strong> Porta com 2 fechaduras. Qualquer uma das chaves abre.<br>
+                            → Exemplo: Pagar conta (dinheiro <strong>OU</strong> cartão)
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>NÃO (NOT):</strong> Porta com trava invertida. Se está aberta, fecha. Se está fechada, abre.<br>
+                            → Exemplo: Entrar se <strong>NÃO</strong> estiver proibido
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: TABELAS VERDADE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Tabelas Verdade</h2>
+                    <p>Todas as combinações possíveis</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Tabelas verdade mostram o resultado de operações lógicas para <strong>todas</strong> as combinações de entrada
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="truth-table">
+                            <h3>E / AND (&&)</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>A</th>
+                                        <th>B</th>
+                                        <th>A && B</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="false">F</td>
+                                        <td class="false">F</td>
+                                        <td class="false">FALSO</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="false">F</td>
+                                        <td class="true">V</td>
+                                        <td class="false">FALSO</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="true">V</td>
+                                        <td class="false">F</td>
+                                        <td class="false">FALSO</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="true">V</td>
+                                        <td class="true">V</td>
+                                        <td class="true">VERDADEIRO</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p style="margin-top: 15px; font-size: 1.1rem; text-align: center; font-weight: 600;">
+                                Só é verdadeiro quando <strong>AMBOS</strong> são verdadeiros
+                            </p>
+                        </div>
+
+                        <div class="truth-table">
+                            <h3>OU / OR (||)</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>A</th>
+                                        <th>B</th>
+                                        <th>A || B</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="false">F</td>
+                                        <td class="false">F</td>
+                                        <td class="false">FALSO</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="false">F</td>
+                                        <td class="true">V</td>
+                                        <td class="true">VERDADEIRO</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="true">V</td>
+                                        <td class="false">F</td>
+                                        <td class="true">VERDADEIRO</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="true">V</td>
+                                        <td class="true">V</td>
+                                        <td class="true">VERDADEIRO</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p style="margin-top: 15px; font-size: 1.1rem; text-align: center; font-weight: 600;">
+                                É verdadeiro se <strong>PELO MENOS UM</strong> for verdadeiro
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="truth-table" style="max-width: 500px; margin: 40px auto;">
+                        <h3>NÃO / NOT (!)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>A</th>
+                                    <th>!A</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="false">FALSO</td>
+                                    <td class="true">VERDADEIRO</td>
+                                </tr>
+                                <tr>
+                                    <td class="true">VERDADEIRO</td>
+                                    <td class="false">FALSO</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p style="margin-top: 15px; font-size: 1.1rem; text-align: center; font-weight: 600;">
+                            Sempre <strong>INVERTE</strong> o valor
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Resumo Rápido</h3>
+                        <ul style="font-size: 1.15rem; margin-top: 15px; list-style: none; padding: 0;">
+                            <li style="padding: 10px 0;"><strong>E (&&):</strong> Só é verdadeiro se <strong>TUDO</strong> for verdadeiro</li>
+                            <li style="padding: 10px 0;"><strong>OU (||):</strong> Basta <strong>UM</strong> ser verdadeiro</li>
+                            <li style="padding: 10px 0;"><strong>NÃO (!):</strong> Inverte o valor</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: EXEMPLOS LÓGICOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧮 Exemplos de Expressões Lógicas</h2>
+                    <p>Combinando operadores</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>📌 Exemplo 1: Verificar Maioridade</h4>
+                        <div class="code-block">
+<span class="keyword">int</span> idade = <span class="number">20</span>;
+
+<span class="comment">// Maior ou igual a 18?</span>
+<span class="keyword">boolean</span> maiorIdade = idade &gt;= <span class="number">18</span>;  <span class="comment">// true</span>
+
+<span class="keyword">if</span> (maiorIdade) {
+    <span class="function">System.out.println</span>(<span class="string">"Pode entrar!"</span>);
+}
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exemplo 2: Faixa de Valores (E)</h4>
+                        <div class="code-block">
+<span class="keyword">int</span> nota = <span class="number">75</span>;
+
+<span class="comment">// Nota entre 70 e 100?</span>
+<span class="keyword">boolean</span> notaBoa = (nota &gt;= <span class="number">70</span>) && (nota &lt;= <span class="number">100</span>);  <span class="comment">// true</span>
+
+<span class="keyword">if</span> (notaBoa) {
+    <span class="function">System.out.println</span>(<span class="string">"Aprovado com distinção!"</span>);
+}
+                        </div>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            💡 O <strong>E (&&)</strong> garante que está dentro da faixa
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exemplo 3: Final de Semana (OU)</h4>
+                        <div class="code-block">
+<span class="keyword">String</span> dia = <span class="string">"sábado"</span>;
+
+<span class="comment">// É sábado OU domingo?</span>
+<span class="keyword">boolean</span> fimDeSemana = (dia == <span class="string">"sábado"</span>) || (dia == <span class="string">"domingo"</span>);  <span class="comment">// true</span>
+
+<span class="keyword">if</span> (fimDeSemana) {
+    <span class="function">System.out.println</span>(<span class="string">"Pode descansar!"</span>);
+}
+                        </div>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            💡 O <strong>OU (||)</strong> aceita qualquer uma das opções
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exemplo 4: Negação (NÃO)</h4>
+                        <div class="code-block">
+<span class="keyword">boolean</span> chovendo = <span class="keyword">false</span>;
+
+<span class="comment">// NÃO está chovendo?</span>
+<span class="keyword">boolean</span> podeSair = !chovendo;  <span class="comment">// true</span>
+
+<span class="keyword">if</span> (podeSair) {
+    <span class="function">System.out.println</span>(<span class="string">"Pode sair sem guarda-chuva!"</span>);
+}
+                        </div>
+                        <p style="margin-top: 15px; font-weight: 600;">
+                            💡 O <strong>NÃO (!)</strong> inverte: false vira true
+                        </p>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exemplo 5: Combinação Complexa</h4>
+                        <div class="code-block">
+<span class="keyword">int</span> idade = <span class="number">25</span>;
+<span class="keyword">boolean</span> temCNH = <span class="keyword">true</span>;
+<span class="keyword">boolean</span> temCarro = <span class="keyword">false</span>;
+
+<span class="comment">// Pode dirigir: (maior de 18 E tem CNH) E (tem carro OU pode alugar)</span>
+<span class="keyword">boolean</span> podeDirigir = (idade &gt;= <span class="number">18</span> && temCNH) && (temCarro || <span class="keyword">true</span>);
+
+<span class="function">System.out.println</span>(podeDirigir);  <span class="comment">// true</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: PRECEDÊNCIA COMPLETA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Precedência: Aritméticos + Relacionais + Lógicos</h2>
+                    <p>Ordem completa de execução</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Quando misturamos operadores, há uma <strong>ordem de precedência</strong> que determina qual é executado primeiro
+                    </div>
+
+                    <table class="comparison-table" style="margin-top: 40px;">
+                        <thead>
+                            <tr>
+                                <th>Prioridade</th>
+                                <th>Operadores</th>
+                                <th>Tipo</th>
+                                <th>Exemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1ª (Maior)</strong></td>
+                                <td><code>( )</code></td>
+                                <td>Parênteses</td>
+                                <td>(x + 5) executa primeiro</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2ª</strong></td>
+                                <td><code>!</code> (NÃO)</td>
+                                <td>Lógico (unário)</td>
+                                <td>!verdadeiro = falso</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3ª</strong></td>
+                                <td><code>* / %</code></td>
+                                <td>Aritméticos</td>
+                                <td>5 * 2 antes de +</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4ª</strong></td>
+                                <td><code>+ -</code></td>
+                                <td>Aritméticos</td>
+                                <td>Soma e subtração</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5ª</strong></td>
+                                <td><code>&gt; &lt; &gt;= &lt;=</code></td>
+                                <td>Relacionais</td>
+                                <td>Comparações de magnitude</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6ª</strong></td>
+                                <td><code>== !=</code></td>
+                                <td>Relacionais</td>
+                                <td>Igualdade e diferença</td>
+                            </tr>
+                            <tr>
+                                <td><strong>7ª</strong></td>
+                                <td><code>&&</code> (E)</td>
+                                <td>Lógico</td>
+                                <td>Conjunção</td>
+                            </tr>
+                            <tr>
+                                <td><strong>8ª (Menor)</strong></td>
+                                <td><code>||</code> (OU)</td>
+                                <td>Lógico</td>
+                                <td>Disjunção</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📝 Exemplo Passo a Passo</h4>
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.2rem; margin-bottom: 15px; font-weight: 600;">
+                                Expressão: <code>5 + 3 &gt; 10 / 2 && !falso</code>
+                            </p>
+                            <p style="padding-left: 20px; margin: 10px 0;">→ Passo 1: <strong>!</strong>falso = verdadeiro (NÃO)</p>
+                            <p style="padding-left: 20px; margin: 10px 0;">→ Passo 2: 10 <strong>/</strong> 2 = 5 (Divisão)</p>
+                            <p style="padding-left: 20px; margin: 10px 0;">→ Passo 3: 5 <strong>+</strong> 3 = 8 (Adição)</p>
+                            <p style="padding-left: 20px; margin: 10px 0;">→ Passo 4: 8 <strong>&gt;</strong> 5 = verdadeiro (Relacional)</p>
+                            <p style="padding-left: 20px; margin: 10px 0;">→ Passo 5: verdadeiro <strong>&&</strong> verdadeiro = <strong style="color: #2e7d32;">VERDADEIRO</strong> (E)</p>
+                        </div>
+                    </div>
+
+                    <div class="warning-box" style="margin-top: 30px;">
+                        <h3>💡 Dica de Ouro</h3>
+                        <p>
+                            Na dúvida sobre precedência, <strong>USE PARÊNTESES</strong>! Eles tornam a expressão mais clara:
+                        </p>
+                        <div class="code-block" style="margin-top: 15px;">
+<span class="comment">// Menos claro</span>
+<span class="keyword">if</span> (x &gt; <span class="number">5</span> && y &lt; <span class="number">10</span> || z == <span class="number">0</span>) { ... }
+
+<span class="comment">// Mais claro</span>
+<span class="keyword">if</span> ((x &gt; <span class="number">5</span> && y &lt; <span class="number">10</span>) || (z == <span class="number">0</span>)) { ... }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: CURTO-CIRCUITO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚡ Avaliação em Curto-Circuito</h2>
+                    <p>Otimização inteligente</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Operadores <strong>&& e ||</strong> param de avaliar assim que o resultado é conhecido
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>⚡ E (&&) - Curto-Circuito</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                Se a <strong>primeira</strong> condição for <strong>FALSA</strong>, a segunda nem é testada!
+                            </p>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">boolean</span> resultado;
+
+<span class="comment">// false && ??? = sempre false</span>
+resultado = (<span class="keyword">false</span> && qualquerCoisa);
+<span class="comment">// qualquerCoisa NEM é avaliado!</span>
+
+<span class="comment">// Exemplo prático:</span>
+<span class="keyword">int</span> x = <span class="number">5</span>;
+<span class="keyword">if</span> (x &gt; <span class="number">10</span> && x &lt; <span class="number">20</span>) {
+    <span class="comment">// x &lt; 20 NÃO é testado!</span>
+    <span class="comment">// Porque x &gt; 10 já é false</span>
+}
+                            </div>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚡ OU (||) - Curto-Circuito</h3>
+                            <p style="margin-top: 15px; font-size: 1.15rem;">
+                                Se a <strong>primeira</strong> condição for <strong>VERDADEIRA</strong>, a segunda nem é testada!
+                            </p>
+                            <div class="code-block" style="margin-top: 15px;">
+<span class="keyword">boolean</span> resultado;
+
+<span class="comment">// true || ??? = sempre true</span>
+resultado = (<span class="keyword">true</span> || qualquerCoisa);
+<span class="comment">// qualquerCoisa NEM é avaliado!</span>
+
+<span class="comment">// Exemplo prático:</span>
+<span class="keyword">int</span> x = <span class="number">15</span>;
+<span class="keyword">if</span> (x &gt; <span class="number">10</span> || x &lt; <span class="number">5</span>) {
+    <span class="comment">// x &lt; 5 NÃO é testado!</span>
+    <span class="comment">// Porque x &gt; 10 já é true</span>
+}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Por que isso é útil?</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>1. Performance:</strong> Economiza processamento ao não avaliar condições desnecessárias
+                        </p>
+                        <p style="font-size: 1.15rem; margin-top: 10px;">
+                            <strong>2. Segurança:</strong> Evita erros ao verificar condições que poderiam causar problemas
+                        </p>
+                        <div class="code-block" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+<span class="comment">// Exemplo de segurança:</span>
+<span class="keyword">int</span> divisor = <span class="number">0</span>;
+
+<span class="comment">// SEGURO: Verifica divisor != 0 ANTES de dividir</span>
+<span class="keyword">if</span> (divisor != <span class="number">0</span> && <span class="number">10</span> / divisor &gt; <span class="number">2</span>) {
+    <span class="comment">// Se divisor == 0, a divisão NEM acontece!</span>
+    <span class="comment">// Evita erro de divisão por zero</span>
+}
+                        </div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top: 30px;">
+                        <h3>🏃 Analogia: Corrida de Revezamento</h3>
+                        <p>
+                            <strong>E (&&):</strong> Equipe com 4 corredores. Se o <strong>primeiro cai</strong>, a equipe está eliminada. 
+                            Não precisa esperar os outros correrem!
+                        </p>
+                        <p style="margin-top: 15px;">
+                            <strong>OU (||):</strong> Competição onde basta <strong>UM ganhar</strong>. Se o primeiro vence, 
+                            não precisa esperar o resultado dos outros!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: EXERCÍCIOS PROPOSTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Exercícios Propostos</h2>
+                    <p>Pratique operadores relacionais e lógicos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Pratique comparações, operações lógicas e tabelas verdade!
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📌 Exercício 1: Avalie as Expressões</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Determine se cada expressão é VERDADEIRA ou FALSA:
+                        </p>
+                        <ul style="margin-top: 15px; padding-left: 30px; font-size: 1.05rem; font-family: monospace;">
+                            <li>a) 10 &gt; 5 → _______</li>
+                            <li>b) 3 &lt; 2 → _______</li>
+                            <li>c) 5 &gt;= 5 → _______</li>
+                            <li>d) 10 == 10 → _______</li>
+                            <li>e) 7 != 7 → _______</li>
+                            <li>f) (10 &gt; 5) && (3 &lt; 5) → _______</li>
+                            <li>g) (10 &lt; 5) || (3 &lt; 5) → _______</li>
+                            <li>h) !(10 == 10) → _______</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 2: Verificar Aprovação</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo em PORTUGOL que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia a média de um aluno</li>
+                            <li>Leia a frequência (em %)</li>
+                            <li>Use operadores para determinar: aprovado se (media &gt;= 7.0) <strong>E</strong> (frequencia &gt;= 75)</li>
+                            <li>Mostre "Aprovado" ou "Reprovado"</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 3: Faixa Etária</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que determine a faixa etária:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia a idade</li>
+                            <li>Criança: idade &lt; 12</li>
+                            <li>Adolescente: idade &gt;= 12 <strong>E</strong> idade &lt; 18</li>
+                            <li>Adulto: idade &gt;= 18 <strong>E</strong> idade &lt; 60</li>
+                            <li>Idoso: idade &gt;= 60</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 4: Número Par OU Múltiplo de 5</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Crie um algoritmo que:
+                        </p>
+                        <ul style="margin-top: 10px; padding-left: 30px; font-size: 1.05rem;">
+                            <li>Leia um número inteiro</li>
+                            <li>Verifique se é par <strong>OU</strong> múltiplo de 5</li>
+                            <li>Par: numero % 2 == 0</li>
+                            <li>Múltiplo de 5: numero % 5 == 0</li>
+                            <li>Mostre o resultado</li>
+                        </ul>
+                    </div>
+
+                    <div class="example-card">
+                        <h4>📌 Exercício 5: Tabela Verdade Completa</h4>
+                        <p style="margin-top: 15px; font-size: 1.1rem;">
+                            Complete a tabela verdade para a expressão: <code>(A && B) || (!A)</code>
+                        </p>
+                        <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                            <tr style="background: var(--unifil-light);">
+                                <th style="padding: 10px; border: 1px solid #ddd;">A</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">B</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">!A</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">A && B</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">(A && B) || (!A)</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">F</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">F</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">F</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">V</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">V</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">F</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">V</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">V</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">___</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Entrega (Opcional)</h3>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            Resolva os exercícios e teste no Portugol Web Studio.
+                            Na próxima aula: <strong>Estruturas de Decisão (if/else)</strong>!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Você dominou comparações e lógica! Pronto para if/else! 🎉
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ Operadores Relacionais</h3>
+                            <ul>
+                                <li><code>&gt;</code> maior que</li>
+                                <li><code>&lt;</code> menor que</li>
+                                <li><code>&gt;=</code> maior ou igual</li>
+                                <li><code>&lt;=</code> menor ou igual</li>
+                                <li><code>==</code> igual (não confundir com =)</li>
+                                <li><code>!=</code> diferente</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Operadores Lógicos</h3>
+                            <ul>
+                                <li><code>&&</code> E/AND (ambos verdadeiros)</li>
+                                <li><code>||</code> OU/OR (pelo menos um)</li>
+                                <li><code>!</code> NÃO/NOT (inverte)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Tabelas Verdade</h3>
+                            <ul>
+                                <li>E: só verdadeiro se TUDO verdadeiro</li>
+                                <li>OU: verdadeiro se PELO MENOS UM</li>
+                                <li>NÃO: sempre inverte</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>✅ Precedência Completa</h3>
+                            <ul>
+                                <li>1º: ( ) parênteses</li>
+                                <li>2º: ! NÃO</li>
+                                <li>3º: * / % aritméticos</li>
+                                <li>4º: + - aritméticos</li>
+                                <li>5º: &gt; &lt; &gt;= &lt;= relacionais</li>
+                                <li>6º: == != relacionais</li>
+                                <li>7º: && E</li>
+                                <li>8º: || OU</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para a Próxima Aula (Quarta, 04/03)</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;">
+                                <strong>1️⃣ Praticar:</strong> Resolver os 5 exercícios propostos
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>2️⃣ Memorizar:</strong> Tabelas verdade (E, OU, NÃO)
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>3️⃣ Entender:</strong> Diferença entre = e ==
+                            </li>
+                            <li style="padding: 10px 0;">
+                                <strong>4️⃣ Revisar:</strong> Precedência de operadores
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula</h3>
+                            <ul>
+                                <li>Estrutura de Decisão (if/else)</li>
+                                <li>if simples, if-else, if-else-if</li>
+                                <li>Decisões aninhadas</li>
+                                <li>Boas práticas</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>💬 Dúvidas?</h3>
+                            <p style="margin-bottom: 10px;"><strong>Email:</strong> tiago.galvao@unifil.br</p>
+                            <p style="margin-bottom: 10px;"><strong>Atendimento:</strong> Terças 18h-19h</p>
+                            <p style="margin-bottom: 10px;"><strong>Sala:</strong> Bloco C - Sala 205</p>
+                            <p><strong>Moodle:</strong> Fórum sempre disponível</p>
+                        </div>
+                    </div>
+
+                    <div class="big-idea" style="margin-top: 40px; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);">
+                        "Com comparações você pergunta. Com lógica você decide! 🧠"
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px; color: var(--unifil-gray);">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Nos vemos na quarta-feira!</p>
+                        <p style="font-size: 0.9rem; margin-top: 20px; font-style: italic;">
+                            "Operadores lógicos são o cérebro do programa! 🧠"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAVEGAÇÃO -->
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <span class="slide-counter" id="slideCounter">1 / 10</span>
+            <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+            });
+
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .analogy-box, .comparison-table, .warning-box, .operator-card, .truth-table');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => {
+                    el.style.animation = '';
+                }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                changeSlide(1);
+            }
+            if (touchEndX > touchStartX + 50) {
+                changeSlide(-1);
+            }
+        }
+
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 12 - Prática: Estruturas de Repetição | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white;
+            position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p  { font-size: 1.1rem; opacity: 0.95; }
+
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        .two-column   { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+
+        .content-box {
+            background: var(--unifil-light); padding: 30px;
+            border-radius: 15px; border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.4rem; }
+        .content-box p  { font-size: 1.05rem; line-height: 1.7; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li { padding: 8px 0 8px 30px; position: relative; font-size: 1.05rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; font-size: 1.2rem; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .highlight-box p  { font-size: 1.1rem; line-height: 1.7; }
+        .highlight-box ul { list-style: none; padding: 0; }
+        .highlight-box li { padding: 8px 0; font-size: 1.05rem; line-height: 1.6; }
+
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+        .example-card p  { font-size: 1.05rem; line-height: 1.7; margin-bottom: 8px; }
+
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem; overflow-x: auto;
+            margin: 15px 0; line-height: 1.65; white-space: pre;
+        }
+        .code-block .keyword  { color: #c678dd; font-weight: 600; }
+        .code-block .function { color: #61afef; }
+        .code-block .string   { color: #98c379; }
+        .code-block .comment  { color: #5c6370; font-style: italic; }
+        .code-block .number   { color: #d19a66; }
+        .code-block .operator { color: #FF8C00; font-weight: 600; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white; padding: 35px 40px; border-radius: 20px;
+            font-size: 1.6rem; font-weight: 600; text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(74,144,226,0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd; border: 3px solid #ffc107;
+            border-radius: 15px; padding: 30px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .analogy-box h3 { color: #856404; margin-bottom: 15px; font-size: 1.4rem; }
+        .analogy-box p  { font-size: 1.05rem; line-height: 1.7; color: #533f03; margin-top: 8px; }
+
+        .warning-box {
+            background: #ffebee; border: 3px solid #f44336;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .warning-box h3 { color: #c62828; margin-bottom: 15px; font-size: 1.3rem; }
+        .warning-box p  { font-size: 1.05rem; line-height: 1.6; color: #b71c1c; }
+        .warning-box ul { list-style: none; padding: 0; }
+        .warning-box li { padding: 6px 0; font-size: 1rem; line-height: 1.6; color: #b71c1c; }
+
+        .success-box {
+            background: #e8f5e9; border: 3px solid #4caf50;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .success-box h3 { color: #2e7d32; margin-bottom: 15px; font-size: 1.3rem; }
+        .success-box p  { font-size: 1.05rem; line-height: 1.7; color: #1b5e20; }
+        .success-box ul { list-style: none; padding: 0; }
+        .success-box li { padding: 5px 0; font-size: 1rem; line-height: 1.6; color: #1b5e20; }
+
+        .stat-card {
+            text-align: center; padding: 25px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 3rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 10px; }
+        .stat-card .label  { font-size: 1.05rem; color: var(--unifil-gray); font-weight: 500; }
+
+        .comparison-table {
+            width: 100%; margin: 20px 0; border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            background: white; border-radius: 10px; overflow: hidden;
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 16px 20px; text-align: left; font-size: 1.05rem;
+        }
+        .comparison-table td { padding: 13px 20px; border-bottom: 1px solid var(--unifil-light); font-size: 1rem; line-height: 1.6; }
+        .comparison-table tr:hover td { background: var(--unifil-light); }
+
+        .exercise-box {
+            background: #f0f4ff; border: 2px solid #3f51b5;
+            border-radius: 15px; padding: 25px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .exercise-box h4 { color: #283593; margin-bottom: 12px; font-size: 1.2rem; }
+        .exercise-box p  { font-size: 1.05rem; line-height: 1.7; color: #1a237e; }
+        .exercise-box ul { list-style: none; padding: 0; margin-top: 8px; }
+        .exercise-box li { padding: 5px 0; font-size: 1rem; color: #1a237e; line-height: 1.6; }
+        .exercise-box li::before { content: '📌 '; }
+
+        /* ── LEVEL BADGE ── */
+        .level-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; margin-bottom: 10px;
+        }
+        .level-easy   { background: #c8e6c9; color: #2e7d32; border: 1px solid #4caf50; }
+        .level-medium { background: #fff9c4; color: #f57f17; border: 1px solid #ffc107; }
+        .level-hard   { background: #ffcdd2; color: #c62828; border: 1px solid #f44336; }
+        .level-expert { background: #e1bee7; color: #6a1b9a; border: 1px solid #9c27b0; }
+
+        /* ── LAÇO BADGE ── */
+        .laco-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 700; margin-left: 8px; vertical-align: middle;
+            font-family: 'Courier New', monospace;
+        }
+        .laco-for    { background: #e3f2fd; color: #1565C0; border: 1px solid #1565C0; }
+        .laco-while  { background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32; }
+        .laco-dowhile{ background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .laco-any    { background: #f3e5f5; color: #6a1b9a; border: 1px solid #9c27b0; }
+
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 25px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 80px; text-align: center; font-size: 1.1rem; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.2); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); transition: width 0.3s ease; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0; padding: 2px 6px;
+            border-radius: 4px; font-size: 0.93em; color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+
+<div class="presentation">
+
+    <!-- ══════════════════════════════════════════ SLIDE 1 — TÍTULO -->
+    <div class="slide active">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h1>Lógica de Programação e Algoritmos</h1>
+                <p>Aula 12 — Prática: Estruturas de Repetição</p>
+            </div>
+            <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+                <div style="font-size:6rem;margin-bottom:30px;">⚙️</div>
+                <h2 style="font-size:2.5rem;color:var(--unifil-orange);margin-bottom:20px;">
+                    Mão na Massa — Repetição Completa!
+                </h2>
+                <p style="font-size:1.3rem;color:var(--unifil-gray);max-width:800px;margin-bottom:40px;">
+                    Vamos integrar <strong>for</strong>, <strong>while</strong> e <strong>do-while</strong>
+                    em exercícios progressivos e um mini-projeto completo de sistema de vendas.
+                </p>
+
+                <div class="three-column" style="width:100%;max-width:1000px;margin-top:20px;">
+                    <div class="stat-card"><div class="number">5</div><div class="label">Exercícios Resolvidos</div></div>
+                    <div class="stat-card"><div class="number">3</div><div class="label">Laços integrados</div></div>
+                    <div class="stat-card"><div class="number">1</div><div class="label">Mini-Projeto Final</div></div>
+                </div>
+
+                <div style="margin-top:45px;font-size:1.1rem;color:var(--unifil-gray);">
+                    <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                    <p style="margin-top:6px;"><strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ SLIDE 2 — ROTEIRO -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🗺️ Roteiro da Aula Prática</h2>
+                <p>Cinco exercícios + mini-projeto, em ordem crescente de complexidade</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Cada exercício escolhe o laço ideal para o problema.
+                    Justificar essa escolha é tão importante quanto o código! 🎯
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div class="content-box">
+                        <h3>📋 Exercícios de Hoje</h3>
+                        <ul>
+                            <li><span class="laco-badge laco-for">for</span> <strong>Ex. 1 —</strong> Sequência de Fibonacci</li>
+                            <li><span class="laco-badge laco-for">for</span> <strong>Ex. 2 —</strong> Números Primos até N</li>
+                            <li><span class="laco-badge laco-while">while</span> <strong>Ex. 3 —</strong> Soma até Sentinela</li>
+                            <li><span class="laco-badge laco-dowhile">do-while</span> <strong>Ex. 4 —</strong> Jogo: Adivinhe com Ranking</li>
+                            <li><span class="laco-badge laco-any">os 3</span> <strong>Ex. 5 —</strong> Relatório de Vendas</li>
+                            <li><span class="laco-badge laco-any">os 3</span> <strong>Mini-Projeto —</strong> Caixa de Supermercado</li>
+                        </ul>
+                    </div>
+                    <div class="content-box">
+                        <h3>🎯 Objetivos</h3>
+                        <ul>
+                            <li>Identificar o laço correto para cada situação</li>
+                            <li>Combinar laços com estruturas de decisão</li>
+                            <li>Usar contadores, acumuladores e sentinelas</li>
+                            <li>Fazer trace manual antes de programar</li>
+                            <li>Construir um programa completo e funcional</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-table" style="margin-top:10px;">
+                    <thead>
+                        <tr><th>Laço</th><th>Use quando...</th><th>Exemplo nesta aula</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>for</code></td><td>Número de iterações <strong>conhecido</strong></td><td>Fibonacci (N termos), primos até N</td></tr>
+                        <tr><td><code>while</code></td><td>Para por <strong>sentinela ou condição</strong>, pode ser 0 vezes</td><td>Soma com sentinela, relatório de vendas</td></tr>
+                        <tr><td><code>do-while</code></td><td>Executa <strong>ao menos uma vez</strong> — menu, login, jogo</td><td>Jogo adivinhe, caixa de supermercado</td></tr>
+                    </tbody>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════ SLIDE 3 — EX.1 FIBONACCI ══════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 1 — Sequência de Fibonacci</h2>
+                <p><span class="laco-badge laco-for" style="font-size:0.9rem;">for</span> &nbsp; N termos conhecidos → laço for com dois acumuladores</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Enunciado <span class="level-badge level-easy">Básico</span></h4>
+                    <p>
+                        Leia um número N e exiba os N primeiros termos da sequência de Fibonacci.
+                        Cada termo é a soma dos dois anteriores: <strong>0, 1, 1, 2, 3, 5, 8, 13, 21…</strong>
+                    </p>
+                </div>
+
+                <div class="analogy-box" style="margin-top:10px;">
+                    <h3>🔍 Trace para N = 7</h3>
+                    <p>
+                        <strong>a=0, b=1:</strong> exibe 0 → próximo=1 &nbsp;|&nbsp;
+                        exibe 1 → próximo=1 &nbsp;|&nbsp;
+                        exibe 1 → próximo=2 &nbsp;|&nbsp;
+                        exibe 2 → próximo=3 &nbsp;|&nbsp;
+                        exibe 3 → próximo=5 &nbsp;|&nbsp;
+                        exibe 5 → próximo=8 &nbsp;|&nbsp;
+                        exibe 8 → fim<br>
+                        <strong>Saída:</strong> 0  1  1  2  3  5  8
+                    </p>
+                </div>
+
+                <div class="three-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Fibonacci"</span>
+<span class="keyword">var</span>
+  n, i      : <span class="keyword">inteiro</span>
+  a, b, prox: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Qtd. termos: "</span>)
+  <span class="function">leia</span>(n)
+
+  a <span class="operator">&lt;-</span> <span class="number">0</span>
+  b <span class="operator">&lt;-</span> <span class="number">1</span>
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> n <span class="keyword">faca</span>
+    <span class="function">escreva</span>(a, <span class="string">" "</span>)
+    prox <span class="operator">&lt;-</span> a <span class="operator">+</span> b
+    a    <span class="operator">&lt;-</span> b
+    b    <span class="operator">&lt;-</span> prox
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>()
+{
+  <span class="keyword">int</span> n, a = <span class="number">0</span>, b = <span class="number">1</span>, prox;
+
+  <span class="function">printf</span>(<span class="string">"Qtd. termos: "</span>);
+  <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;n);
+
+  <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i <span class="operator">&lt;=</span> n; i<span class="operator">++</span>){
+    <span class="function">printf</span>(<span class="string">"%d  "</span>, a);
+    prox = a <span class="operator">+</span> b;
+    a    = b;
+    b    = prox;
+  }
+  <span class="function">printf</span>(<span class="string">"\n"</span>);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟠 Java</h4>
+                        <div class="code-block"><span class="keyword">import</span> java.util.Scanner;
+
+<span class="keyword">public class</span> Fibonacci {
+ <span class="keyword">public static void</span> <span class="function">main</span>
+     (String[] args) {
+  Scanner sc =
+    <span class="keyword">new</span> Scanner(System.in);
+  System.out.<span class="function">print</span>(
+    <span class="string">"Qtd. termos: "</span>);
+  <span class="keyword">int</span> n = sc.<span class="function">nextInt</span>();
+
+  <span class="keyword">int</span> a=<span class="number">0</span>, b=<span class="number">1</span>, prox;
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span>n; i<span class="operator">++</span>){
+    System.out.<span class="function">print</span>(a+<span class="string">"  "</span>);
+    prox = a + b;
+    a    = b;
+    b    = prox;
+  }
+ }
+}</div>
+                    </div>
+                </div>
+
+                <div class="success-box" style="margin-top:8px;">
+                    <h3>✅ Por que FOR aqui?</h3>
+                    <p>Sabemos exatamente <strong>N termos</strong> — o número de iterações é determinado no início. O <code>for</code> traduz isso diretamente: "para i de 1 até N, faça".</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════ SLIDE 4 — EX.2 NÚMEROS PRIMOS ═══════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 2 — Números Primos até N</h2>
+                <p><span class="laco-badge laco-for" style="font-size:0.9rem;">for</span> aninhado — verificar divisores de cada número</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Enunciado <span class="level-badge level-medium">Intermediário</span></h4>
+                    <p>
+                        Leia um número N e exiba todos os números primos de 2 até N.
+                        Um número é primo quando só é divisível por 1 e por ele mesmo.
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Primos"</span>
+<span class="keyword">var</span>
+  n, i, j: <span class="keyword">inteiro</span>
+  primo  : <span class="keyword">logico</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Até N: "</span>) <span class="function">leia</span>(n)
+  <span class="function">escreva</span>(<span class="string">"Primos:"</span>)
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">2</span> <span class="keyword">ate</span> n <span class="keyword">faca</span>
+    primo <span class="operator">&lt;-</span> verdadeiro
+
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">2</span> <span class="keyword">ate</span> i<span class="operator">-</span><span class="number">1</span> <span class="keyword">faca</span>
+      <span class="keyword">se</span> (i <span class="operator">%</span> j <span class="operator">==</span> <span class="number">0</span>) <span class="keyword">entao</span>
+        primo <span class="operator">&lt;-</span> falso
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimpara</span>
+
+    <span class="keyword">se</span> (primo) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(i, <span class="string">" "</span>)
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🔵 C (com otimização √n)</h4>
+                            <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;math.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">int</span> n;
+  <span class="function">printf</span>(<span class="string">"Até N: "</span>);
+  <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;n);
+
+  <span class="function">printf</span>(<span class="string">"Primos: "</span>);
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">2</span>; i<span class="operator">&lt;=</span>n; i<span class="operator">++</span>) {
+    <span class="keyword">int</span> primo = <span class="number">1</span>;
+
+    <span class="comment">// Testar até √i (otimização)</span>
+    <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">2</span>; j<span class="operator">&lt;=</span><span class="function">sqrt</span>(i); j<span class="operator">++</span>)
+      <span class="keyword">if</span>(i <span class="operator">%</span> j == <span class="number">0</span>){ primo=<span class="number">0</span>; <span class="keyword">break</span>; }
+
+    <span class="keyword">if</span>(primo)
+      <span class="function">printf</span>(<span class="string">"%d  "</span>, i);
+  }
+  <span class="function">printf</span>(<span class="string">"\n"</span>);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                        </div>
+
+                        <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>🔑 Lógica da Flag <code>primo</code></h3>
+                            <p>
+                                Começa como <strong>verdadeiro</strong>.
+                                Se encontrar algum divisor → vira <strong>falso</strong>.
+                                Ao final do for interno, se ainda for verdadeiro → o número é primo.
+                                Esse padrão de <em>flag booleana</em> é muito comum em programação.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════ SLIDE 5 — EX.3 SOMA SENTINELA ═════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 3 — Relatório de Vendas com Sentinela</h2>
+                <p><span class="laco-badge laco-while" style="font-size:0.9rem;">while</span> &nbsp; Número de entradas desconhecido → sentinela -1</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Enunciado <span class="level-badge level-medium">Intermediário</span></h4>
+                    <p>
+                        Leia valores de vendas de um vendedor (digite <strong>-1</strong> para encerrar).
+                        Calcule: total vendido, quantidade de vendas, maior venda, menor venda e média.
+                        Classifique o desempenho: Excelente (média ≥ 5000), Bom (≥ 3000), Regular (abaixo).
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Vendas"</span>
+<span class="keyword">var</span>
+  venda, total, maior, menor: <span class="keyword">real</span>
+  qtd                        : <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  total <span class="operator">&lt;-</span> <span class="number">0</span>
+  qtd   <span class="operator">&lt;-</span> <span class="number">0</span>
+
+  <span class="function">escreva</span>(<span class="string">"1ª venda (R$): "</span>) <span class="function">leia</span>(venda)
+  maior <span class="operator">&lt;-</span> venda
+  menor <span class="operator">&lt;-</span> venda
+
+  <span class="keyword">enquanto</span> (venda <span class="operator">&lt;&gt;</span> <span class="operator">-</span><span class="number">1</span>) <span class="keyword">faca</span>
+    total <span class="operator">&lt;-</span> total <span class="operator">+</span> venda
+    qtd   <span class="operator">&lt;-</span> qtd <span class="operator">+</span> <span class="number">1</span>
+    <span class="keyword">se</span> venda <span class="operator">&gt;</span> maior <span class="keyword">entao</span> maior <span class="operator">&lt;-</span> venda <span class="keyword">fimse</span>
+    <span class="keyword">se</span> venda <span class="operator">&lt;</span> menor <span class="keyword">entao</span> menor <span class="operator">&lt;-</span> venda <span class="keyword">fimse</span>
+
+    <span class="function">escreva</span>(<span class="string">"Próxima (-1 sair): "</span>) <span class="function">leia</span>(venda)
+  <span class="keyword">fimenquanto</span>
+
+  <span class="keyword">se</span> (qtd <span class="operator">&gt;</span> <span class="number">0</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"Total  : R$ "</span>, total:<span class="number">8</span>:<span class="number">2</span>)
+    <span class="function">escreva</span>(<span class="string">"Qtd.   : "</span>, qtd)
+    <span class="function">escreva</span>(<span class="string">"Média  : R$ "</span>, total<span class="operator">/</span>qtd:<span class="number">8</span>:<span class="number">2</span>)
+    <span class="function">escreva</span>(<span class="string">"Maior  : R$ "</span>, maior:<span class="number">8</span>:<span class="number">2</span>)
+    <span class="function">escreva</span>(<span class="string">"Menor  : R$ "</span>, menor:<span class="number">8</span>:<span class="number">2</span>)
+
+    <span class="keyword">se</span> (total<span class="operator">/</span>qtd <span class="operator">&gt;=</span> <span class="number">5000</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"🏆 Excelente!"</span>)
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span> (total<span class="operator">/</span>qtd <span class="operator">&gt;=</span> <span class="number">3000</span>) <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"👍 Bom!"</span>)
+      <span class="keyword">senao</span>
+        <span class="function">escreva</span>(<span class="string">"📈 Regular"</span>)
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"Nenhuma venda registrada."</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div>
+                        <div class="success-box" style="margin-top:0;">
+                            <h3>✅ Por que WHILE aqui?</h3>
+                            <ul>
+                                <li>Não sabemos quantas vendas haverá</li>
+                                <li>Pode ser que não haja venda nenhuma</li>
+                                <li>Parada por sentinela (-1) = condição desconhecida</li>
+                                <li>O <code>while</code> verifica antes → se não tiver vendas, não entra</li>
+                            </ul>
+                        </div>
+
+                        <div class="warning-box" style="margin-top:15px;">
+                            <h3>⚠️ Atenção: divisão por zero</h3>
+                            <p>
+                                Sempre verificar <code>se (qtd &gt; 0)</code> antes de calcular a média
+                                (<code>total / qtd</code>). Se o usuário digitar -1 na primeira entrada,
+                                <code>qtd = 0</code> e a divisão causaria erro fatal!
+                            </p>
+                        </div>
+
+                        <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>🔍 Exemplo de execução</h3>
+                            <p>
+                                Entradas: 4200, 6800, 3100, -1<br>
+                                Total=14100 | Qtd=3 | Média=4700<br>
+                                Maior=6800 | Menor=3100<br>
+                                <strong>Desempenho: 👍 Bom!</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════ SLIDE 6 — EX.4 ADIVINHE RANKING ══════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 4 — Adivinhe com Ranking</h2>
+                <p><span class="laco-badge laco-dowhile" style="font-size:0.9rem;">do-while</span> &nbsp; Jogo que classifica o jogador por número de tentativas</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Enunciado <span class="level-badge level-medium">Intermediário</span></h4>
+                    <p>
+                        O programa escolhe um número entre 1 e 50 (fixo: 37).
+                        O usuário tem <strong>até 7 tentativas</strong> para adivinhar.
+                        Ao final, exiba um ranking: ≤ 3 tentativas = Mestre, ≤ 5 = Bom, &gt; 5 = Iniciante.
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Adivinhe"</span>
+<span class="keyword">var</span>
+  secreto, chute, tent: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  secreto <span class="operator">&lt;-</span> <span class="number">37</span>
+  tent    <span class="operator">&lt;-</span> <span class="number">0</span>
+
+  <span class="function">escreva</span>(<span class="string">"=== ADIVINHE (1-50) ==="</span>)
+
+  <span class="keyword">repita</span>
+    tent <span class="operator">&lt;-</span> tent <span class="operator">+</span> <span class="number">1</span>
+    <span class="function">escreva</span>(<span class="string">"Tent. "</span>, tent, <span class="string">"/7: "</span>)
+    <span class="function">leia</span>(chute)
+
+    <span class="keyword">se</span>      (chute <span class="operator">&lt;</span> secreto) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"📈 Maior!"</span>)
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span> (chute <span class="operator">&gt;</span> secreto) <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"📉 Menor!"</span>)
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">ate</span> (chute <span class="operator">==</span> secreto) <span class="keyword">ou</span> (tent <span class="operator">==</span> <span class="number">7</span>)
+
+  <span class="keyword">se</span> (chute <span class="operator">==</span> secreto) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"🎉 Acertou em "</span>, tent, <span class="string">" tent.!"</span>)
+    <span class="keyword">se</span>      (tent <span class="operator">&lt;=</span> <span class="number">3</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"🏆 Ranking: MESTRE!"</span>)
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span> (tent <span class="operator">&lt;=</span> <span class="number">5</span>) <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"👍 Ranking: BOM!"</span>)
+      <span class="keyword">senao</span>
+        <span class="function">escreva</span>(<span class="string">"🌱 Ranking: INICIANTE"</span>)
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"💀 Game Over! Era "</span>, secreto)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div>
+                        <div class="success-box" style="margin-top:0;">
+                            <h3>✅ Por que DO-WHILE aqui?</h3>
+                            <ul>
+                                <li>O jogador sempre faz ao menos <strong>um chute</strong></li>
+                                <li>Impossível testar se acertou antes de tentar</li>
+                                <li>Bloco deve executar → depois verificar condição de parada</li>
+                                <li>Padrão clássico de jogos interativos</li>
+                            </ul>
+                        </div>
+
+                        <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>🏆 Tabela de Ranking</h3>
+                            <p>
+                                <strong>1–3 tentativas:</strong> 🏆 MESTRE — lógica binária perfeita<br>
+                                <strong>4–5 tentativas:</strong> 👍 BOM — boa estratégia<br>
+                                <strong>6–7 tentativas:</strong> 🌱 INICIANTE — continue praticando<br>
+                                <strong>7 e não acertou:</strong> 💀 Game Over
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════ SLIDE 7 — EX.5 NOTAS TURMA ══════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>✏️ Exercício 5 — Boletim Completo da Turma</h2>
+                <p><span class="laco-badge laco-for" style="font-size:0.9rem;">for</span> + <code>if/else if</code> — relatório com conceitos e estatísticas</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Enunciado <span class="level-badge level-hard">Avançado</span></h4>
+                    <p>
+                        Leia N alunos (nome + nota). Para cada aluno, calcule o conceito (A/B/C/D/F).
+                        Ao final: exiba aprovados, reprovados, maior nota, menor nota e média da turma.
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Boletim"</span>
+<span class="keyword">var</span>
+  n, i, aprov, reprov: <span class="keyword">inteiro</span>
+  nota, soma, maior, menor: <span class="keyword">real</span>
+  nome: <span class="keyword">caractere</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Qtd. alunos: "</span>) <span class="function">leia</span>(n)
+  soma<span class="operator">&lt;-</span><span class="number">0</span>  aprov<span class="operator">&lt;-</span><span class="number">0</span>  reprov<span class="operator">&lt;-</span><span class="number">0</span>
+  <span class="function">escreva</span>(<span class="string">"Nome 1: "</span>) <span class="function">leia</span>(nome)
+  <span class="function">escreva</span>(<span class="string">"Nota 1: "</span>) <span class="function">leia</span>(nota)
+  maior<span class="operator">&lt;-</span>nota  menor<span class="operator">&lt;-</span>nota
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> n <span class="keyword">faca</span>
+    <span class="keyword">se</span> i <span class="operator">&gt;</span> <span class="number">1</span> <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"Nome: "</span>) <span class="function">leia</span>(nome)
+      <span class="function">escreva</span>(<span class="string">"Nota: "</span>) <span class="function">leia</span>(nota)
+    <span class="keyword">fimse</span>
+    soma <span class="operator">&lt;-</span> soma <span class="operator">+</span> nota
+    <span class="keyword">se</span> nota <span class="operator">&gt;</span> maior <span class="keyword">entao</span> maior<span class="operator">&lt;-</span>nota <span class="keyword">fimse</span>
+    <span class="keyword">se</span> nota <span class="operator">&lt;</span> menor <span class="keyword">entao</span> menor<span class="operator">&lt;-</span>nota <span class="keyword">fimse</span>
+    <span class="keyword">se</span>      nota <span class="operator">&gt;=</span> <span class="number">9.0</span> <span class="keyword">entao</span>
+      <span class="function">escreva</span>(nome, <span class="string">": A - Aprovado ✔"</span>)  aprov<span class="operator">&lt;-</span>aprov<span class="operator">+</span><span class="number">1</span>
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span>  nota <span class="operator">&gt;=</span> <span class="number">7.0</span> <span class="keyword">entao</span>
+        <span class="function">escreva</span>(nome, <span class="string">": B - Aprovado ✔"</span>)  aprov<span class="operator">&lt;-</span>aprov<span class="operator">+</span><span class="number">1</span>
+      <span class="keyword">senao</span>
+        <span class="keyword">se</span> nota <span class="operator">&gt;=</span> <span class="number">5.0</span> <span class="keyword">entao</span>
+          <span class="function">escreva</span>(nome, <span class="string">": C - Aprovado ✔"</span>)  aprov<span class="operator">&lt;-</span>aprov<span class="operator">+</span><span class="number">1</span>
+        <span class="keyword">senao</span>
+          <span class="keyword">se</span> nota <span class="operator">&gt;=</span> <span class="number">3.0</span> <span class="keyword">entao</span>
+            <span class="function">escreva</span>(nome, <span class="string">": D - Reprovado ✖"</span>) reprov<span class="operator">&lt;-</span>reprov<span class="operator">+</span><span class="number">1</span>
+          <span class="keyword">senao</span>
+            <span class="function">escreva</span>(nome, <span class="string">": F - Reprovado ✖"</span>) reprov<span class="operator">&lt;-</span>reprov<span class="operator">+</span><span class="number">1</span>
+          <span class="keyword">fimse</span>
+        <span class="keyword">fimse</span>
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="function">escreva</span>(<span class="string">"─────────────────────"</span>)
+  <span class="function">escreva</span>(<span class="string">"Aprovados : "</span>, aprov)
+  <span class="function">escreva</span>(<span class="string">"Reprovados: "</span>, reprov)
+  <span class="function">escreva</span>(<span class="string">"Média turma: "</span>, soma<span class="operator">/</span>n:<span class="number">5</span>:<span class="number">2</span>)
+  <span class="function">escreva</span>(<span class="string">"Maior: "</span>, maior, <span class="string">" | Menor: "</span>, menor)
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div>
+                        <table class="comparison-table" style="margin-top:0;">
+                            <thead><tr><th>Nota</th><th>Conceito</th><th>Situação</th></tr></thead>
+                            <tbody>
+                                <tr><td>9,0 – 10,0</td><td><strong>A</strong></td><td>✅ Aprovado</td></tr>
+                                <tr><td>7,0 – 8,9</td><td><strong>B</strong></td><td>✅ Aprovado</td></tr>
+                                <tr><td>5,0 – 6,9</td><td><strong>C</strong></td><td>✅ Aprovado</td></tr>
+                                <tr><td>3,0 – 4,9</td><td><strong>D</strong></td><td>❌ Reprovado</td></tr>
+                                <tr><td>0,0 – 2,9</td><td><strong>F</strong></td><td>❌ Reprovado</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="success-box" style="margin-top:15px;">
+                            <h3>✅ Estruturas combinadas</h3>
+                            <ul>
+                                <li><strong>for</strong> — N alunos (número conhecido)</li>
+                                <li><strong>if/else if</strong> — conceito e aprovação</li>
+                                <li><strong>Acumuladores</strong> — soma, aprovados, reprovados</li>
+                                <li><strong>Comparação iterativa</strong> — maior e menor nota</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════ SLIDE 8 — MINI-PROJETO ESPECIFICAÇÃO ══ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🏗️ Mini-Projeto — Caixa de Supermercado</h2>
+                <p>Integrando os 3 laços em um sistema completo de vendas</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Especificação <span class="level-badge level-expert">Desafio</span></h4>
+                    <p>
+                        Simule um caixa de supermercado que:
+                    </p>
+                    <ul style="margin-top:8px;">
+                        <li>Exibe um menu (do-while): 1-Nova compra, 2-Relatório do dia, 0-Fechar caixa</li>
+                        <li>Em "Nova compra": lê produtos com preço e quantidade até sentinela 0 (while)</li>
+                        <li>Calcula subtotal de cada produto e total da compra</li>
+                        <li>Aplica desconto automático: compra ≥ R$ 200 = 10%, ≥ R$ 100 = 5%</li>
+                        <li>No "Relatório do dia": exibe total de compras e faturamento acumulado (for)</li>
+                    </ul>
+                </div>
+
+                <div class="two-column" style="margin-top:15px;">
+                    <div class="content-box">
+                        <h3>🧱 Estrutura do Programa</h3>
+                        <ul>
+                            <li><strong>do-while</strong> → loop principal do menu</li>
+                            <li><strong>while</strong> → leitura de produtos por sentinela</li>
+                            <li><strong>for</strong> → exibição do histórico no relatório</li>
+                            <li><strong>if/else if</strong> → cálculo do desconto</li>
+                            <li><strong>Acumuladores</strong> → total_dia, num_compras</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🧪 Casos de Teste</h3>
+                        <ul>
+                            <li><strong>1 produto, R$50:</strong> sem desconto → R$50,00</li>
+                            <li><strong>3 produtos, R$120 total:</strong> 5% desc → R$114,00</li>
+                            <li><strong>5 produtos, R$250 total:</strong> 10% desc → R$225,00</li>
+                            <li><strong>Relatório após 3 compras:</strong> exibir total do dia</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="analogy-box" style="margin-top:10px;">
+                    <h3>🔑 Mapa de laços do projeto</h3>
+                    <p>
+                        <span class="laco-badge laco-dowhile">do-while</span> Menu principal (ao menos 1 interação) &nbsp;→&nbsp;
+                        <span class="laco-badge laco-while">while</span> Produtos da compra (sentinela 0) &nbsp;→&nbsp;
+                        <span class="laco-badge laco-for">for</span> Histórico no relatório (N compras)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════ SLIDE 9 — MINI-PROJETO CÓDIGO ══════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Mini-Projeto — Código em Portugol</h2>
+                <p>Caixa de Supermercado: menu + leitura de produtos + relatório</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Parte 1: Menu e Loop de Compra</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Supermercado"</span>
+<span class="keyword">var</span>
+  op, num_compras, i       : <span class="keyword">inteiro</span>
+  preco, qtd, total_comp   : <span class="keyword">real</span>
+  total_dia, faturamento   : <span class="keyword">real</span>
+  desconto                 : <span class="keyword">real</span>
+  historico: <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">50</span>] <span class="keyword">de</span> <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+  num_compras <span class="operator">&lt;-</span> <span class="number">0</span>
+  faturamento <span class="operator">&lt;-</span> <span class="number">0</span>
+
+  <span class="keyword">repita</span>                       <span class="comment">← do-while: menu</span>
+    <span class="function">escreva</span>(<span class="string">"=== CAIXA ==="</span>)
+    <span class="function">escreva</span>(<span class="string">"1 - Nova compra"</span>)
+    <span class="function">escreva</span>(<span class="string">"2 - Relatório"</span>)
+    <span class="function">escreva</span>(<span class="string">"0 - Fechar"</span>)
+    <span class="function">escreva</span>(<span class="string">"Opção: "</span>) <span class="function">leia</span>(op)
+
+    <span class="keyword">se</span> (op <span class="operator">==</span> <span class="number">1</span>) <span class="keyword">entao</span>
+      total_comp <span class="operator">&lt;-</span> <span class="number">0</span>
+      <span class="function">escreva</span>(<span class="string">"Preço (0 sair): "</span>) <span class="function">leia</span>(preco)
+
+      <span class="keyword">enquanto</span> (preco <span class="operator">&lt;&gt;</span> <span class="number">0</span>) <span class="keyword">faca</span>  <span class="comment">← while: produtos</span>
+        <span class="function">escreva</span>(<span class="string">"Qtd.: "</span>) <span class="function">leia</span>(qtd)
+        total_comp <span class="operator">&lt;-</span> total_comp <span class="operator">+</span> (preco <span class="operator">*</span> qtd)
+        <span class="function">escreva</span>(<span class="string">"Subtotal: R$ "</span>, preco<span class="operator">*</span>qtd:<span class="number">7</span>:<span class="number">2</span>)
+        <span class="function">escreva</span>(<span class="string">"Próximo (0 sair): "</span>) <span class="function">leia</span>(preco)
+      <span class="keyword">fimenquanto</span>
+
+      <span class="comment">// Aplica desconto</span>
+      <span class="keyword">se</span>      total_comp <span class="operator">&gt;=</span> <span class="number">200</span> <span class="keyword">entao</span>
+        desconto <span class="operator">&lt;-</span> total_comp <span class="operator">*</span> <span class="number">0.10</span>
+        <span class="function">escreva</span>(<span class="string">"Desconto 10%: -R$ "</span>, desconto:<span class="number">7</span>:<span class="number">2</span>)
+      <span class="keyword">senao</span>
+        <span class="keyword">se</span> total_comp <span class="operator">&gt;=</span> <span class="number">100</span> <span class="keyword">entao</span>
+          desconto <span class="operator">&lt;-</span> total_comp <span class="operator">*</span> <span class="number">0.05</span>
+          <span class="function">escreva</span>(<span class="string">"Desconto 5%: -R$ "</span>, desconto:<span class="number">7</span>:<span class="number">2</span>)
+        <span class="keyword">senao</span>
+          desconto <span class="operator">&lt;-</span> <span class="number">0</span>
+        <span class="keyword">fimse</span>
+      <span class="keyword">fimse</span>
+
+      total_comp <span class="operator">&lt;-</span> total_comp <span class="operator">-</span> desconto
+      <span class="function">escreva</span>(<span class="string">"Total: R$ "</span>, total_comp:<span class="number">8</span>:<span class="number">2</span>)
+      num_compras <span class="operator">&lt;-</span> num_compras <span class="operator">+</span> <span class="number">1</span>
+      faturamento <span class="operator">&lt;-</span> faturamento <span class="operator">+</span> total_comp
+      historico[num_compras] <span class="operator">&lt;-</span> total_comp
+    <span class="keyword">fimse</span>
+  <span class="keyword">ate</span> (op <span class="operator">==</span> <span class="number">0</span>)                  <span class="comment">← fim do do-while</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Parte 2: Relatório com FOR</h4>
+                        <div class="code-block"><span class="comment">// Dentro do bloco op == 2:</span>
+
+    <span class="keyword">se</span> (op <span class="operator">==</span> <span class="number">2</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"=== RELATÓRIO DO DIA ==="</span>)
+      <span class="function">escreva</span>(<span class="string">"Compras realizadas: "</span>,
+              num_compras)
+
+      <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> num_compras <span class="keyword">faca</span>
+        <span class="function">escreva</span>(<span class="string">"  Compra #"</span>, i,
+                <span class="string">": R$ "</span>,
+                historico[i]:<span class="number">8</span>:<span class="number">2</span>)
+      <span class="keyword">fimpara</span>
+
+      <span class="function">escreva</span>(<span class="string">"──────────────────────"</span>)
+      <span class="function">escreva</span>(<span class="string">"Faturamento total:"</span>)
+      <span class="function">escreva</span>(<span class="string">"R$ "</span>, faturamento:<span class="number">10</span>:<span class="number">2</span>)
+    <span class="keyword">fimse</span></div>
+
+                        <div class="success-box" style="margin-top:15px;">
+                            <h3>✅ Os 3 laços em ação</h3>
+                            <ul>
+                                <li><strong>do-while</strong> → menu sempre aparece</li>
+                                <li><strong>while</strong> → produtos até digitar 0</li>
+                                <li><strong>for</strong> → histórico de N compras</li>
+                            </ul>
+                        </div>
+
+                        <div class="warning-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>⚠️ Nota sobre vetores</h3>
+                            <p>
+                                O vetor <code>historico[]</code> será estudado na Aula 15.
+                                Na versão simplificada, você pode omiti-lo e exibir apenas totais.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═════════════════════ SLIDE 10 — COMPARAÇÃO FINAL ════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>⚖️ Quando usar cada laço — Guia Final</h2>
+                <p>Consolidando a escolha do laço certo para cada problema</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    A escolha do laço correto é sinal de um programador que <strong>pensa antes de codificar</strong>! 🧠
+                </div>
+
+                <table class="comparison-table" style="margin-top:20px;">
+                    <thead>
+                        <tr><th>Pergunta-chave</th><th>Resposta</th><th>Laço ideal</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Quantas vezes vou repetir?</td><td>Sei exatamente: N vezes</td><td><code>for</code> <span class="laco-badge laco-for">para</span></td></tr>
+                        <tr><td>Quantas vezes vou repetir?</td><td>Não sei, pode ser 0</td><td><code>while</code> <span class="laco-badge laco-while">enquanto</span></td></tr>
+                        <tr><td>O bloco precisa rodar ao menos uma vez?</td><td>Sim, sempre</td><td><code>do-while</code> <span class="laco-badge laco-dowhile">repita</span></td></tr>
+                        <tr><td>Como vou parar?</td><td>Sentinela (valor especial)</td><td><code>while</code> <span class="laco-badge laco-while">enquanto</span></td></tr>
+                        <tr><td>Como vou parar?</td><td>Opção "0 – Sair" em um menu</td><td><code>do-while</code> <span class="laco-badge laco-dowhile">repita</span></td></tr>
+                        <tr><td>Percorro uma sequência numérica?</td><td>1 a N, pares, múltiplos…</td><td><code>for</code> <span class="laco-badge laco-for">para</span></td></tr>
+                        <tr><td>Valido entrada do usuário?</td><td>Repetir até dado válido</td><td><code>do-while</code> <span class="laco-badge laco-dowhile">repita</span></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="two-column" style="margin-top:15px;">
+                    <div class="analogy-box" style="margin-bottom:0;">
+                        <h3>🧠 Dica de Ouro: pergunte antes de codificar</h3>
+                        <p>
+                            <strong>"Eu sei quantas vezes?"</strong> → SIM: <code>for</code><br>
+                            <strong>"Pode ser zero vezes?"</strong> → SIM: <code>while</code><br>
+                            <strong>"Deve executar ao menos 1 vez?"</strong> → SIM: <code>do-while</code>
+                        </p>
+                    </div>
+                    <div class="success-box" style="margin-bottom:0;">
+                        <h3>✅ Lembre-se: são equivalentes!</h3>
+                        <p>
+                            Tecnicamente, qualquer <code>for</code> pode ser escrito como <code>while</code>
+                            e vice-versa. A escolha é sobre <strong>clareza e intenção</strong>:
+                            use o laço que torna o código mais legível e expressivo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════ SLIDE 11 — EXERCÍCIOS PROPOSTOS ═══ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📝 Exercícios Propostos para Casa</h2>
+                <p>Pratique sozinho — identifique e justifique o laço!</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">Para cada exercício: escreva qual laço usaria e por quê, antes de codificar! 💪</div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div>
+                        <div class="exercise-box">
+                            <h4>📌 Exercício A — Contagem de Dígitos <span class="level-badge level-easy">Básico</span></h4>
+                            <p>Leia um número inteiro positivo e conte quantos dígitos ele possui usando divisão por 10 repetidamente. Ex.: 4528 → 4 dígitos.</p>
+                        </div>
+
+                        <div class="exercise-box">
+                            <h4>📌 Exercício B — Pirâmide Numérica <span class="level-badge level-medium">Intermediário</span></h4>
+                            <p>Leia N e exiba uma pirâmide com fors aninhados:</p>
+                            <ul>
+                                <li>Linha 1: 1</li>
+                                <li>Linha 2: 1 2</li>
+                                <li>Linha 3: 1 2 3</li>
+                                <li>... até N</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="exercise-box">
+                            <h4>📌 Exercício C — Conversor de Temperaturas <span class="level-badge level-medium">Intermediário</span></h4>
+                            <p>
+                                Crie um menu (do-while) com opções: 1-Celsius→Fahrenheit, 2-Fahrenheit→Celsius, 0-Sair.
+                                Repita até o usuário sair. Fórmulas: F = C × 9/5 + 32 e C = (F − 32) × 5/9.
+                            </p>
+                        </div>
+
+                        <div class="exercise-box">
+                            <h4>📌 Exercício D — MDC pelo Algoritmo de Euclides <span class="level-badge level-hard">Avançado</span></h4>
+                            <p>
+                                Leia dois números inteiros positivos e calcule o MDC (Máximo Divisor Comum) usando o algoritmo de Euclides com while:
+                                enquanto b ≠ 0, faça temp=b, b=a%b, a=temp. O MDC é o valor final de a.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;">
+                    <h3>🎯 Entrega</h3>
+                    <p>
+                        Resolva ao menos <strong>2 exercícios</strong> no Portugol Web Studio e envie via Google Classroom.
+                        Na próxima aula: <strong>Laços Aninhados</strong> — matrizes, triângulos e padrões!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 12 — RESUMO ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🎯 Resumo e Próximos Passos</h2>
+                <p>Estruturas de Repetição — totalmente dominadas!</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Você domina os 3 laços e sabe combinar repetição com decisão em programas reais! 🏆
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>✅ Exercícios Resolvidos</h3>
+                        <ul>
+                            <li><strong>Fibonacci</strong> — for, dois acumuladores</li>
+                            <li><strong>Números Primos</strong> — for aninhado + flag</li>
+                            <li><strong>Relatório de Vendas</strong> — while + sentinela</li>
+                            <li><strong>Jogo Adivinhe</strong> — do-while + ranking</li>
+                            <li><strong>Boletim</strong> — for + else if + estatísticas</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>✅ Mini-Projeto: Supermercado</h3>
+                        <ul>
+                            <li><strong>do-while</strong> → menu interativo</li>
+                            <li><strong>while</strong> → produtos por sentinela</li>
+                            <li><strong>for</strong> → histórico de compras</li>
+                            <li><strong>if/else if</strong> → desconto automático</li>
+                            <li>Programa completo e funcional!</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>✅ Lições consolidadas</h3>
+                        <ul>
+                            <li>Justificar a escolha do laço antes de codificar</li>
+                            <li>Trace manual com tabela de variáveis</li>
+                            <li>Sempre inicializar acumuladores e contadores</li>
+                            <li>Combinar laços com decisões e entre si</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🔥 Próximas Aulas</h3>
+                        <ul>
+                            <li><strong>Aula 13:</strong> Laços aninhados e padrões</li>
+                            <li><strong>Aula 14:</strong> break e continue</li>
+                            <li><strong>Aula 15:</strong> Vetores (arrays)</li>
+                            <li><strong>Aula 16:</strong> Matrizes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:20px;">
+                    <h3>📚 Para a Próxima Aula</h3>
+                    <ul>
+                        <li style="padding:8px 0;"><strong>1️⃣ Entregar:</strong> 2 exercícios propostos no Google Classroom</li>
+                        <li style="padding:8px 0;"><strong>2️⃣ Expandir:</strong> Adicionar ao mini-projeto a opção de cancelar a compra antes de finalizar</li>
+                        <li style="padding:8px 0;"><strong>3️⃣ Pesquisar:</strong> O que é um vetor (array)? Onde você vê vetores no cotidiano?</li>
+                    </ul>
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div class="content-box">
+                        <h3>💬 Dúvidas?</h3>
+                        <p style="margin-bottom:10px;"><strong>E-mail:</strong> tiago.galvao@unifil.br</p>
+                        <p style="margin-bottom:10px;"><strong>Atendimento:</strong> Terças 18h–19h</p>
+                        <p><strong>Google Classroom:</strong> Fórum disponível</p>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:center;">
+                        <div style="text-align:center;color:var(--unifil-gray);">
+                            <p style="font-size:1.3rem;font-weight:600;">Excelente aula! 🙏</p>
+                            <p style="font-size:1.1rem;margin-top:8px;">Nos vemos na próxima!</p>
+                            <p style="font-size:0.9rem;margin-top:16px;font-style:italic;">
+                                "Repita até aprender — esse é o laço mais importante! 🔁"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 12</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box,.example-card,.highlight-box,.big-idea,.stat-card,' +
+            '.analogy-box,.comparison-table,.warning-box,.success-box,.exercise-box'
+        );
+        animated.forEach((el, i) => {
+            el.style.animation = 'none'; el.style.opacity = '0';
+            setTimeout(() => { el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.07}s forwards`; }, 10);
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend',   e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

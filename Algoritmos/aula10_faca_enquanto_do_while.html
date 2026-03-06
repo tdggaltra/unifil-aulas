@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 10 - Laço FAÇA-ENQUANTO (do-while) | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev   { transform: translateX(-100%); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white;
+            position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p  { font-size: 1.1rem; opacity: 0.95; }
+
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        .two-column   { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+
+        .content-box {
+            background: var(--unifil-light); padding: 30px;
+            border-radius: 15px; border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.4rem; }
+        .content-box p  { font-size: 1.05rem; line-height: 1.7; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li { padding: 8px 0 8px 30px; position: relative; font-size: 1.05rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; font-size: 1.2rem; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .highlight-box p  { font-size: 1.1rem; line-height: 1.7; }
+        .highlight-box ul { list-style: none; padding: 0; }
+        .highlight-box li { padding: 8px 0; font-size: 1.05rem; line-height: 1.6; }
+
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+        .example-card p  { font-size: 1.05rem; line-height: 1.7; margin-bottom: 8px; }
+
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem; overflow-x: auto;
+            margin: 15px 0; line-height: 1.65; white-space: pre;
+        }
+        .code-block .keyword  { color: #c678dd; font-weight: 600; }
+        .code-block .function { color: #61afef; }
+        .code-block .string   { color: #98c379; }
+        .code-block .comment  { color: #5c6370; font-style: italic; }
+        .code-block .number   { color: #d19a66; }
+        .code-block .operator { color: #FF8C00; font-weight: 600; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white; padding: 35px 40px; border-radius: 20px;
+            font-size: 1.6rem; font-weight: 600; text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(74,144,226,0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd; border: 3px solid #ffc107;
+            border-radius: 15px; padding: 30px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .analogy-box h3 { color: #856404; margin-bottom: 15px; font-size: 1.4rem; }
+        .analogy-box p  { font-size: 1.05rem; line-height: 1.7; color: #533f03; margin-top: 8px; }
+
+        .warning-box {
+            background: #ffebee; border: 3px solid #f44336;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .warning-box h3 { color: #c62828; margin-bottom: 15px; font-size: 1.3rem; }
+        .warning-box p  { font-size: 1.05rem; line-height: 1.6; color: #b71c1c; }
+        .warning-box ul { list-style: none; padding: 0; }
+        .warning-box li { padding: 6px 0; font-size: 1rem; line-height: 1.6; color: #b71c1c; }
+
+        .success-box {
+            background: #e8f5e9; border: 3px solid #4caf50;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .success-box h3 { color: #2e7d32; margin-bottom: 15px; font-size: 1.3rem; }
+        .success-box p  { font-size: 1.05rem; line-height: 1.7; color: #1b5e20; }
+        .success-box ul { list-style: none; padding: 0; }
+        .success-box li { padding: 5px 0; font-size: 1rem; line-height: 1.6; color: #1b5e20; }
+
+        .stat-card {
+            text-align: center; padding: 25px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 3rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 10px; }
+        .stat-card .label  { font-size: 1.05rem; color: var(--unifil-gray); font-weight: 500; }
+
+        .comparison-table {
+            width: 100%; margin: 20px 0; border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            background: white; border-radius: 10px; overflow: hidden;
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 16px 20px; text-align: left; font-size: 1.05rem;
+        }
+        .comparison-table td { padding: 13px 20px; border-bottom: 1px solid var(--unifil-light); font-size: 1rem; line-height: 1.6; }
+        .comparison-table tr:hover td { background: var(--unifil-light); }
+
+        .exercise-box {
+            background: #f0f4ff; border: 2px solid #3f51b5;
+            border-radius: 15px; padding: 25px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .exercise-box h4 { color: #283593; margin-bottom: 12px; font-size: 1.2rem; }
+        .exercise-box p  { font-size: 1.05rem; line-height: 1.7; color: #1a237e; }
+        .exercise-box ul { list-style: none; padding: 0; margin-top: 8px; }
+        .exercise-box li { padding: 5px 0; font-size: 1rem; color: #1a237e; line-height: 1.6; }
+        .exercise-box li::before { content: '📌 '; }
+
+        .trace-table {
+            width: 100%; border-collapse: collapse; margin: 15px 0;
+            border-radius: 10px; overflow: hidden;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .trace-table th { background: #4A90E2; color: white; padding: 12px 16px; text-align: center; font-size: 0.95rem; }
+        .trace-table td { padding: 10px 16px; border: 1px solid #ddd; text-align: center; font-family: 'Courier New', monospace; font-size: 0.95rem; }
+        .trace-table .true  { background: #c8e6c9; color: #2e7d32; font-weight: 700; }
+        .trace-table .false { background: #ffcdd2; color: #c62828; font-weight: 700; }
+        .trace-table .exec  { background: #fff9c4; color: #f57f17; }
+
+        /* ── FLUXOGRAMA ── */
+        .flowchart { display: flex; flex-direction: column; align-items: center; gap: 0; }
+        .flow-terminal {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; font-weight: 700; font-size: 1rem;
+            padding: 10px 28px; border-radius: 30px; text-align: center;
+        }
+        .flow-process {
+            background: #e8f5e9; border: 3px solid #4caf50; color: #2e7d32;
+            font-weight: 600; font-size: 0.9rem;
+            padding: 12px 22px; border-radius: 8px; text-align: center; min-width: 150px;
+        }
+        .flow-decision {
+            background: white; border: 3px solid #4A90E2; color: #1565C0;
+            font-weight: 700; font-size: 0.85rem;
+            min-width: 160px; text-align: center;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            height: 78px; display: flex; align-items: center; justify-content: center;
+        }
+        .flow-arrow { width: 2px; height: 26px; background: #aaa; position: relative; }
+        .flow-arrow::after { content: '▼'; position: absolute; bottom: -13px; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 0.65rem; }
+        .flow-label-true  { font-size: 0.78rem; font-weight: 700; color: #2e7d32; margin: 4px 0; }
+        .flow-label-false { font-size: 0.78rem; font-weight: 700; color: #c62828; margin: 4px 0; }
+
+        /* ── DIFF BADGE ── */
+        .diff-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; margin-left: 8px; vertical-align: middle;
+        }
+        .badge-before { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .badge-after  { background: #e8f5e9; color: #2e7d32; border: 1px solid #4caf50; }
+
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 25px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 80px; text-align: center; font-size: 1.1rem; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.2); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); transition: width 0.3s ease; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0; padding: 2px 6px;
+            border-radius: 4px; font-size: 0.93em; color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar">
+    <div class="progress-fill" id="progressBar"></div>
+</div>
+
+<div class="presentation">
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 1: TÍTULO                                            -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide active">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h1>Lógica de Programação e Algoritmos</h1>
+                <p>Aula 10 - Laço FAÇA-ENQUANTO (do-while)</p>
+            </div>
+            <div class="slide-body" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <div style="font-size:6rem; margin-bottom:30px;">🔂</div>
+                <h2 style="font-size:2.5rem; color:var(--unifil-orange); margin-bottom:20px;">
+                    Execute Primeiro, Verifique Depois!
+                </h2>
+                <p style="font-size:1.3rem; color:var(--unifil-gray); max-width:800px; margin-bottom:40px;">
+                    Aprenda o laço <strong>repita-até / do-while</strong> — o irmão do while que
+                    garante que o bloco execute <strong>ao menos uma vez</strong>, independente da condição.
+                </p>
+
+                <div class="three-column" style="width:100%; max-width:1000px; margin-top:20px;">
+                    <div class="stat-card">
+                        <div class="number">≥ 1</div>
+                        <div class="label">Execuções mínimas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" style="font-size:1.8rem;">DEPOIS</div>
+                        <div class="label">Condição testada</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">3</div>
+                        <div class="label">Linguagens</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:45px; font-size:1.1rem; color:var(--unifil-gray);">
+                    <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                    <p style="margin-top:6px;"><strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 2: REVISÃO DO WHILE + MOTIVAÇÃO                      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔁 Revisão: o while e seu limite</h2>
+                <p>Por que precisamos de um laço diferente?</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    O <strong>while</strong> pode executar <strong>zero vezes</strong>.
+                    E quando precisamos que o bloco execute <strong>ao menos uma vez</strong>? 🤔
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div class="content-box">
+                        <h3>🔁 while — problema real</h3>
+                        <div class="code-block" style="font-size:0.85rem;"><span class="comment">// Pedir senha ao usuário</span>
+<span class="keyword">enquanto</span> (senha <span class="operator">&lt;&gt;</span> <span class="string">"1234"</span>) <span class="keyword">faca</span>
+  <span class="function">escreva</span>(<span class="string">"Digite a senha: "</span>)
+  <span class="function">leia</span>(senha)
+<span class="keyword">fimenquanto</span>
+
+<span class="comment">// ❌ Problema: senha nem foi</span>
+<span class="comment">// lida ainda na 1ª verificação!</span>
+<span class="comment">// Precisa inicializar antes...</span></div>
+                        <div class="warning-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>⚠️ Solução gambiarra</h3>
+                            <p>Inicializar <code>senha &lt;- ""</code> antes do laço — funciona, mas é artificioso e confuso.</p>
+                        </div>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🔂 do-while — solução elegante</h3>
+                        <div class="code-block" style="font-size:0.85rem;"><span class="comment">// Pedir senha — versão limpa</span>
+<span class="keyword">repita</span>
+  <span class="function">escreva</span>(<span class="string">"Digite a senha: "</span>)
+  <span class="function">leia</span>(senha)
+<span class="keyword">ate</span> (senha <span class="operator">==</span> <span class="string">"1234"</span>)
+
+<span class="comment">// ✅ Lê PRIMEIRO, testa DEPOIS</span>
+<span class="comment">// Natural e direto!</span></div>
+                        <div class="success-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>✅ Por que é melhor aqui</h3>
+                            <p>Nenhuma inicialização artificial necessária. O bloco executa, lê a senha, e só então verifica se está correta.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analogy-box" style="margin-top:10px;">
+                    <h3>🍽️ Analogia: Restaurante</h3>
+                    <p>
+                        <strong>while</strong> = ligar antes de ir → se o restaurante estiver fechado, você nem sai de casa.<br>
+                        <strong>do-while</strong> = ir ao restaurante e, ao chegar, verificar se está aberto.
+                        Você sempre vai <em>ao menos uma vez</em> — mesmo que esteja fechado.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 3: ESTRUTURA DO DO-WHILE                              -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔂 Estrutura do FAÇA-ENQUANTO (do-while)</h2>
+                <p>Sintaxe, fluxograma e diferença fundamental em relação ao while</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-column" style="margin-top:10px; align-items:start;">
+
+                    <!-- FLUXOGRAMA -->
+                    <div class="content-box" style="display:flex; flex-direction:column; align-items:center;">
+                        <h3 style="margin-bottom:20px; width:100%;">📊 Fluxograma</h3>
+                        <div class="flowchart">
+                            <div class="flow-terminal">INÍCIO</div>
+                            <div class="flow-arrow" style="height:22px;"></div>
+                            <div class="flow-process">Bloco de<br>instruções</div>
+                            <div class="flow-arrow" style="height:22px;"></div>
+                            <div style="font-size:0.82rem; color:#666; background:#f0f0f0; padding:5px 14px; border-radius:6px;">atualização</div>
+                            <div class="flow-arrow" style="height:22px;"></div>
+                            <div class="flow-decision">condição?</div>
+                            <div style="display:flex; gap:50px; margin-top:8px;">
+                                <div style="display:flex; flex-direction:column; align-items:center;">
+                                    <div class="flow-label-true">✔ VERDADEIRO</div>
+                                    <div style="font-size:0.72rem; color:#856404; margin:2px 0;">↑ volta ao bloco</div>
+                                </div>
+                                <div style="display:flex; flex-direction:column; align-items:center;">
+                                    <div class="flow-label-false">✖ FALSO</div>
+                                    <div class="flow-arrow" style="height:18px;"></div>
+                                </div>
+                            </div>
+                            <div class="flow-terminal" style="margin-top:8px;">FIM</div>
+                        </div>
+                        <div class="analogy-box" style="margin-top:20px; margin-bottom:0;">
+                            <h3 style="font-size:1.1rem;">⚡ Diferença visual</h3>
+                            <p style="font-size:0.95rem;">
+                                No <strong>while</strong>, o losango (decisão) fica <em>antes</em> do bloco.<br>
+                                No <strong>do-while</strong>, o losango fica <em>depois</em>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- SINTAXE -->
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🟢 Portugol</h4>
+                            <div class="code-block"><span class="comment">// Atenção: condição é de PARADA</span>
+<span class="comment">// (para quando for verdadeira)</span>
+<span class="keyword">repita</span>
+    instrução_1
+    instrução_2
+    atualização
+<span class="keyword">ate</span> (condição_de_parada)</div>
+                        </div>
+                        <div class="example-card">
+                            <h4>🔵 C</h4>
+                            <div class="code-block"><span class="comment">// Condição é de CONTINUAÇÃO</span>
+<span class="comment">// (continua enquanto for verdadeira)</span>
+<span class="keyword">do</span> {
+    instrução_1;
+    instrução_2;
+    atualização;
+} <span class="keyword">while</span> (condição_de_continuação);</div>
+                        </div>
+                        <div class="example-card">
+                            <h4>🟠 Java</h4>
+                            <div class="code-block"><span class="comment">// Igual ao C — condição de CONTINUAÇÃO</span>
+<span class="keyword">do</span> {
+    instrução_1;
+    instrução_2;
+    atualização;
+} <span class="keyword">while</span> (condição_de_continuação);</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top:10px;">
+                    <h3>⚠️ Atenção: A condição é INVERTIDA no Portugol!</h3>
+                    <p>
+                        Em <strong>C/Java</strong>: a condição <code>while(...)</code> é de <strong>continuação</strong> (continua enquanto verdadeira) — igual ao while comum.<br>
+                        Em <strong>Portugol</strong>: <code>ate(...)</code> é condição de <strong>parada</strong> (para quando se torna verdadeira) — o oposto!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 4: TRACE MANUAL — DO-WHILE                           -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔍 Trace Manual — do-while</h2>
+                <p>Acompanhe a execução passo a passo e compare com o while</p>
+            </div>
+            <div class="slide-body">
+                <div class="analogy-box" style="margin-top:10px;">
+                    <h3>📋 Algoritmo analisado (C/Java)</h3>
+                    <p>
+                        <code>int i = 1; &nbsp; do &#123; printf(i); i++; &#125; while (i &lt;= 5);</code>
+                    </p>
+                </div>
+
+                <table class="trace-table" style="margin-top:15px;">
+                    <thead>
+                        <tr>
+                            <th>Iteração</th>
+                            <th>Executa bloco?</th>
+                            <th>Saída</th>
+                            <th>i após atualização</th>
+                            <th>Condição i ≤ 5</th>
+                            <th>Próximo passo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1ª</td>
+                            <td class="exec">✔ SIM (sempre!)</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td class="true">VERDADEIRO</td>
+                            <td>Repetir</td>
+                        </tr>
+                        <tr>
+                            <td>2ª</td>
+                            <td class="exec">✔ SIM</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td class="true">VERDADEIRO</td>
+                            <td>Repetir</td>
+                        </tr>
+                        <tr>
+                            <td>3ª</td>
+                            <td class="exec">✔ SIM</td>
+                            <td>3</td>
+                            <td>4</td>
+                            <td class="true">VERDADEIRO</td>
+                            <td>Repetir</td>
+                        </tr>
+                        <tr>
+                            <td>4ª</td>
+                            <td class="exec">✔ SIM</td>
+                            <td>4</td>
+                            <td>5</td>
+                            <td class="true">VERDADEIRO</td>
+                            <td>Repetir</td>
+                        </tr>
+                        <tr>
+                            <td>5ª</td>
+                            <td class="exec">✔ SIM</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td class="false">FALSO</td>
+                            <td>Encerrar</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="two-column" style="margin-top:15px;">
+                    <div class="success-box">
+                        <h3>✅ Quando condição já é falsa na largada</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="keyword">int</span> i = <span class="number">10</span>;
+<span class="keyword">do</span> {
+  <span class="function">printf</span>(<span class="string">"Executa!"</span>); <span class="comment">← executa 1x</span>
+  i<span class="operator">++</span>;
+} <span class="keyword">while</span> (i <span class="operator">&lt;=</span> <span class="number">5</span>); <span class="comment">← 10≤5 → FALSO</span>
+<span class="comment">// Saída: "Executa!" (1 vez)</span></div>
+                        <p style="margin-top:8px;">Mesmo com condição já falsa, executa <strong>uma vez</strong>!</p>
+                    </div>
+                    <div class="warning-box">
+                        <h3>⚠️ while com mesma condição</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="keyword">int</span> i = <span class="number">10</span>;
+<span class="keyword">while</span> (i <span class="operator">&lt;=</span> <span class="number">5</span>) {  <span class="comment">← 10≤5 → FALSO</span>
+  <span class="function">printf</span>(<span class="string">"Nunca!"</span>);
+  i<span class="operator">++</span>;
+}
+<span class="comment">// Saída: (nada) — 0 execuções</span></div>
+                        <p style="margin-top:8px;">O while não executa <strong>nenhuma vez</strong>!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 5: WHILE vs DO-WHILE — COMPARAÇÃO COMPLETA           -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>⚖️ while vs do-while — Comparação Completa</h2>
+                <p>Escolhendo a estrutura certa para cada situação</p>
+            </div>
+            <div class="slide-body">
+                <table class="comparison-table" style="margin-top:15px;">
+                    <thead>
+                        <tr>
+                            <th>Critério</th>
+                            <th>while (enquanto)</th>
+                            <th>do-while (repita-até)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Quando a condição é testada</strong></td>
+                            <td><span class="diff-badge badge-before">ANTES</span> de executar o bloco</td>
+                            <td><span class="diff-badge badge-after">DEPOIS</span> de executar o bloco</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mínimo de execuções</strong></td>
+                            <td>0 (pode nunca executar)</td>
+                            <td><strong>1</strong> (sempre executa ao menos uma vez)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Condição no Portugol</strong></td>
+                            <td><code>enquanto (continuar)</code> — de continuação</td>
+                            <td><code>ate (parar)</code> — de <strong>parada</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Condição em C/Java</strong></td>
+                            <td><code>while (continuar)</code> — de continuação</td>
+                            <td><code>while (continuar)</code> — de continuação (igual!)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Caso de uso típico</strong></td>
+                            <td>Processar listas (que podem estar vazias)</td>
+                            <td>Menus, pedido de dados, validação de entrada</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Exemplo clássico</strong></td>
+                            <td>Ler registros de arquivo (pode ser vazio)</td>
+                            <td>Exibir menu e ler opção do usuário</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="two-column" style="margin-top:15px;">
+                    <div class="content-box">
+                        <h3>✅ Use while quando...</h3>
+                        <ul>
+                            <li>O bloco pode precisar executar <strong>0 vezes</strong></li>
+                            <li>Você verifica a condição com dados já disponíveis</li>
+                            <li>Processar arquivos ou listas que podem estar vazios</li>
+                            <li>Iteração sobre coleções</li>
+                        </ul>
+                    </div>
+                    <div class="content-box">
+                        <h3>✅ Use do-while quando...</h3>
+                        <ul>
+                            <li>O bloco deve executar <strong>ao menos uma vez</strong></li>
+                            <li>Você precisa ler dados antes de validá-los</li>
+                            <li>Menus de sistemas interativos</li>
+                            <li>Loop de validação de entrada do usuário</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 6: EXEMPLO 1 — MENU INTERATIVO                       -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Exemplo 1 — Menu Interativo</h2>
+                <p>O caso de uso mais clássico do do-while</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Problema</h4>
+                    <p>Crie um menu com 3 opções e a opção 0 para sair. O menu deve aparecer sempre ao menos uma vez e se repetir até o usuário escolher sair.</p>
+                </div>
+
+                <div class="three-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Menu"</span>
+<span class="keyword">var</span>
+  opcao: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="keyword">repita</span>
+    <span class="function">escreva</span>(<span class="string">"=== MENU ==="</span>)
+    <span class="function">escreva</span>(<span class="string">"1 - Cadastrar"</span>)
+    <span class="function">escreva</span>(<span class="string">"2 - Consultar"</span>)
+    <span class="function">escreva</span>(<span class="string">"3 - Relatório"</span>)
+    <span class="function">escreva</span>(<span class="string">"0 - Sair"</span>)
+    <span class="function">escreva</span>(<span class="string">"Opção: "</span>)
+    <span class="function">leia</span>(opcao)
+
+    <span class="keyword">escolha</span>(opcao)
+      <span class="keyword">caso</span> <span class="number">1</span>: <span class="function">escreva</span>(<span class="string">"Cadastrando..."</span>)
+      <span class="keyword">caso</span> <span class="number">2</span>: <span class="function">escreva</span>(<span class="string">"Consultando..."</span>)
+      <span class="keyword">caso</span> <span class="number">3</span>: <span class="function">escreva</span>(<span class="string">"Gerando..."</span>)
+      <span class="keyword">caso</span> <span class="number">0</span>: <span class="function">escreva</span>(<span class="string">"Até logo!"</span>)
+      <span class="keyword">outrocaso</span>: <span class="function">escreva</span>(<span class="string">"Inválida!"</span>)
+    <span class="keyword">fimescolha</span>
+  <span class="keyword">ate</span> (opcao <span class="operator">==</span> <span class="number">0</span>)
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>()
+{
+  <span class="keyword">int</span> opcao;
+
+  <span class="keyword">do</span> {
+    <span class="function">printf</span>(<span class="string">"\n=== MENU ===\n"</span>);
+    <span class="function">printf</span>(<span class="string">"1 - Cadastrar\n"</span>);
+    <span class="function">printf</span>(<span class="string">"2 - Consultar\n"</span>);
+    <span class="function">printf</span>(<span class="string">"3 - Relatorio\n"</span>);
+    <span class="function">printf</span>(<span class="string">"0 - Sair\n"</span>);
+    <span class="function">printf</span>(<span class="string">"Opcao: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;opcao);
+
+    <span class="keyword">switch</span>(opcao) {
+      <span class="keyword">case</span> <span class="number">1</span>: <span class="function">printf</span>(<span class="string">"Cadastrando\n"</span>); <span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">2</span>: <span class="function">printf</span>(<span class="string">"Consultando\n"</span>); <span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">3</span>: <span class="function">printf</span>(<span class="string">"Gerando\n"</span>);    <span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">0</span>: <span class="function">printf</span>(<span class="string">"Ate logo!\n"</span>);  <span class="keyword">break</span>;
+      <span class="keyword">default</span>:<span class="function">printf</span>(<span class="string">"Invalida!\n"</span>);
+    }
+  } <span class="keyword">while</span> (opcao <span class="operator">!=</span> <span class="number">0</span>);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟠 Java</h4>
+                        <div class="code-block"><span class="keyword">import</span> java.util.Scanner;
+
+<span class="keyword">public class</span> Menu {
+ <span class="keyword">public static void</span> <span class="function">main</span>
+     (String[] args) {
+  Scanner sc =
+    <span class="keyword">new</span> Scanner(System.in);
+  <span class="keyword">int</span> op;
+
+  <span class="keyword">do</span> {
+   System.out.<span class="function">println</span>(
+     <span class="string">"\n=== MENU ==="</span>);
+   System.out.<span class="function">println</span>(
+     <span class="string">"1-Cadastrar"</span>);
+   System.out.<span class="function">println</span>(
+     <span class="string">"2-Consultar"</span>);
+   System.out.<span class="function">println</span>(
+     <span class="string">"0-Sair"</span>);
+   System.out.<span class="function">print</span>(<span class="string">"Opcao: "</span>);
+   op = sc.<span class="function">nextInt</span>();
+
+   <span class="keyword">switch</span>(op) {
+    <span class="keyword">case</span> <span class="number">1</span>: System.out.<span class="function">println</span>(
+      <span class="string">"Cadastrando"</span>); <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">2</span>: System.out.<span class="function">println</span>(
+      <span class="string">"Consultando"</span>); <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>: System.out.<span class="function">println</span>(
+      <span class="string">"Ate logo!"</span>);   <span class="keyword">break</span>;
+    <span class="keyword">default</span>:System.out.<span class="function">println</span>(
+      <span class="string">"Invalida!"</span>);
+   }
+  } <span class="keyword">while</span> (op <span class="operator">!=</span> <span class="number">0</span>);
+ }
+}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 7: EXEMPLO 2 — VALIDAÇÃO DE SENHA                    -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Exemplo 2 — Validação de Senha com Tentativas</h2>
+                <p>do-while com contador de tentativas e limite máximo</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Problema</h4>
+                    <p>
+                        Peça a senha ao usuário. Ele tem no máximo <strong>3 tentativas</strong>.
+                        Se acertar, exiba "Acesso liberado". Se esgotar as tentativas, bloqueie o acesso.
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Senha"</span>
+<span class="keyword">var</span>
+  senha    : <span class="keyword">caractere</span>
+  tentativa: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  tentativa <span class="operator">&lt;-</span> <span class="number">0</span>
+
+  <span class="keyword">repita</span>
+    tentativa <span class="operator">&lt;-</span> tentativa <span class="operator">+</span> <span class="number">1</span>
+    <span class="function">escreva</span>(<span class="string">"Tentativa "</span>, tentativa,
+            <span class="string">"/3 — Senha: "</span>)
+    <span class="function">leia</span>(senha)
+
+    <span class="keyword">se</span> (senha <span class="operator">&lt;&gt;</span> <span class="string">"1234"</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"❌ Senha incorreta!"</span>)
+    <span class="keyword">fimse</span>
+  <span class="keyword">ate</span> (senha <span class="operator">==</span> <span class="string">"1234"</span>)
+     <span class="keyword">ou</span> (tentativa <span class="operator">==</span> <span class="number">3</span>)
+
+  <span class="keyword">se</span> (senha <span class="operator">==</span> <span class="string">"1234"</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"✅ Acesso liberado!"</span>)
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"🔒 Conta bloqueada!"</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🔵 C</h4>
+                            <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;string.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">char</span> senha[<span class="number">20</span>];
+  <span class="keyword">int</span> tentativa = <span class="number">0</span>;
+
+  <span class="keyword">do</span> {
+    tentativa<span class="operator">++</span>;
+    <span class="function">printf</span>(<span class="string">"Tentativa %d/3: "</span>,
+            tentativa);
+    <span class="function">scanf</span>(<span class="string">"%s"</span>, senha);
+
+    <span class="keyword">if</span>(<span class="function">strcmp</span>(senha,<span class="string">"1234"</span>)<span class="operator">!=</span><span class="number">0</span>)
+      <span class="function">printf</span>(<span class="string">"Incorreta!\n"</span>);
+
+  } <span class="keyword">while</span>(<span class="function">strcmp</span>(senha,<span class="string">"1234"</span>)<span class="operator">!=</span><span class="number">0</span>
+      &amp;&amp; tentativa <span class="operator">&lt;</span> <span class="number">3</span>);
+
+  <span class="keyword">if</span>(<span class="function">strcmp</span>(senha,<span class="string">"1234"</span>)<span class="operator">==</span><span class="number">0</span>)
+    <span class="function">printf</span>(<span class="string">"Acesso liberado!\n"</span>);
+  <span class="keyword">else</span>
+    <span class="function">printf</span>(<span class="string">"Conta bloqueada!\n"</span>);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                        </div>
+
+                        <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>🔍 Trace com senha "0000", "abc", "1234"</h3>
+                            <p>
+                                <strong>Tent.1:</strong> "0000" ≠ "1234" → msg. erro, tentativa=1 → condição: não acertou E tentativa &lt; 3 → repete<br>
+                                <strong>Tent.2:</strong> "abc" ≠ "1234" → msg. erro, tentativa=2 → repete<br>
+                                <strong>Tent.3:</strong> "1234" = "1234" → tentativa=3 → condição falsa → sai → <strong>Acesso liberado!</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 8: EXEMPLO 3 — CALCULADORA COM REPETIÇÃO             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Exemplo 3 — Calculadora com Repetição</h2>
+                <p>do-while para permitir múltiplos cálculos na mesma sessão</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Problema</h4>
+                    <p>
+                        Crie uma calculadora que realiza uma operação e pergunta ao final
+                        se o usuário deseja fazer outro cálculo (<strong>S/N</strong>).
+                        A calculadora deve rodar ao menos uma vez.
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Calculadora"</span>
+<span class="keyword">var</span>
+  a, b    : <span class="keyword">real</span>
+  op      : <span class="keyword">inteiro</span>
+  continua: <span class="keyword">caractere</span>
+<span class="keyword">inicio</span>
+  <span class="keyword">repita</span>
+    <span class="function">escreva</span>(<span class="string">"1-+ 2-- 3-* 4-/: "</span>)
+    <span class="function">leia</span>(op)
+    <span class="function">escreva</span>(<span class="string">"A: "</span>) <span class="function">leia</span>(a)
+    <span class="function">escreva</span>(<span class="string">"B: "</span>) <span class="function">leia</span>(b)
+
+    <span class="keyword">escolha</span>(op)
+      <span class="keyword">caso</span> <span class="number">1</span>: <span class="function">escreva</span>(<span class="string">"= "</span>, a<span class="operator">+</span>b)
+      <span class="keyword">caso</span> <span class="number">2</span>: <span class="function">escreva</span>(<span class="string">"= "</span>, a<span class="operator">-</span>b)
+      <span class="keyword">caso</span> <span class="number">3</span>: <span class="function">escreva</span>(<span class="string">"= "</span>, a<span class="operator">*</span>b)
+      <span class="keyword">caso</span> <span class="number">4</span>:
+        <span class="keyword">se</span> (b <span class="operator">&lt;&gt;</span> <span class="number">0</span>) <span class="keyword">entao</span>
+          <span class="function">escreva</span>(<span class="string">"= "</span>, a<span class="operator">/</span>b)
+        <span class="keyword">senao</span>
+          <span class="function">escreva</span>(<span class="string">"Erro: div/0"</span>)
+        <span class="keyword">fimse</span>
+    <span class="keyword">fimescolha</span>
+
+    <span class="function">escreva</span>(<span class="string">"Outro cálculo? (S/N): "</span>)
+    <span class="function">leia</span>(continua)
+  <span class="keyword">ate</span> (continua <span class="operator">==</span> <span class="string">"N"</span>)
+     <span class="keyword">ou</span> (continua <span class="operator">==</span> <span class="string">"n"</span>)
+
+  <span class="function">escreva</span>(<span class="string">"Obrigado!"</span>)
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🔵 C</h4>
+                            <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">float</span> a, b;
+  <span class="keyword">int</span>   op;
+  <span class="keyword">char</span>  cont;
+
+  <span class="keyword">do</span> {
+    <span class="function">printf</span>(<span class="string">"1-+ 2-- 3-* 4-/: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;op);
+    <span class="function">printf</span>(<span class="string">"A: "</span>); <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;a);
+    <span class="function">printf</span>(<span class="string">"B: "</span>); <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;b);
+
+    <span class="keyword">switch</span>(op) {
+      <span class="keyword">case</span> <span class="number">1</span>: <span class="function">printf</span>(<span class="string">"=%.2f\n"</span>,a+b);<span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">2</span>: <span class="function">printf</span>(<span class="string">"=%.2f\n"</span>,a-b);<span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">3</span>: <span class="function">printf</span>(<span class="string">"=%.2f\n"</span>,a*b);<span class="keyword">break</span>;
+      <span class="keyword">case</span> <span class="number">4</span>:
+        <span class="keyword">if</span>(b!=<span class="number">0</span>) <span class="function">printf</span>(<span class="string">"=%.2f\n"</span>,a/b);
+        <span class="keyword">else</span>     <span class="function">printf</span>(<span class="string">"Div/0!\n"</span>);
+        <span class="keyword">break</span>;
+    }
+
+    <span class="function">printf</span>(<span class="string">"Outro? (S/N): "</span>);
+    <span class="function">scanf</span>(<span class="string">" %c"</span>, &amp;cont);  <span class="comment">← espaço!</span>
+  } <span class="keyword">while</span>(cont == <span class="string">'S'</span> || cont == <span class="string">'s'</span>);
+
+  <span class="function">printf</span>(<span class="string">"Obrigado!\n"</span>);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                        </div>
+
+                        <div class="success-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>✅ Por que do-while aqui?</h3>
+                            <p>
+                                Uma calculadora <strong>sempre</strong> precisa executar ao menos uma operação.
+                                Só faz sentido perguntar "continuar?" depois do cálculo — nunca antes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 9: EXEMPLO 4 — ADIVINHE O NÚMERO                     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Exemplo 4 — Jogo: Adivinhe o Número</h2>
+                <p>do-while com dicas ao usuário e contagem de tentativas</p>
+            </div>
+            <div class="slide-body">
+                <div class="exercise-box" style="margin-top:10px;">
+                    <h4>📌 Problema</h4>
+                    <p>
+                        O programa "pensa" em um número fixo (ex: 42). O usuário chuta valores.
+                        A cada tentativa, o programa diz se o número secreto é <strong>maior</strong> ou <strong>menor</strong>.
+                        O jogo termina quando acertar. Conte as tentativas.
+                    </p>
+                </div>
+
+                <div class="two-column" style="margin-top:10px;">
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🟢 Portugol</h4>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Adivinha"</span>
+<span class="keyword">var</span>
+  secreto, chute, tent: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  secreto <span class="operator">&lt;-</span> <span class="number">42</span>
+  tent    <span class="operator">&lt;-</span> <span class="number">0</span>
+
+  <span class="function">escreva</span>(<span class="string">"=== ADIVINHE O NÚMERO ==="</span>)
+  <span class="function">escreva</span>(<span class="string">"(entre 1 e 100)"</span>)
+
+  <span class="keyword">repita</span>
+    tent <span class="operator">&lt;-</span> tent <span class="operator">+</span> <span class="number">1</span>
+    <span class="function">escreva</span>(<span class="string">"Tentativa "</span>, tent,
+            <span class="string">": "</span>)
+    <span class="function">leia</span>(chute)
+
+    <span class="keyword">se</span> (chute <span class="operator">&lt;</span> secreto) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"📈 Maior!"</span>)
+    <span class="keyword">senao</span>
+      <span class="keyword">se</span> (chute <span class="operator">&gt;</span> secreto) <span class="keyword">entao</span>
+        <span class="function">escreva</span>(<span class="string">"📉 Menor!"</span>)
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">ate</span> (chute <span class="operator">==</span> secreto)
+
+  <span class="function">escreva</span>(<span class="string">"🎉 Acertou em "</span>,
+          tent, <span class="string">" tentativas!"</span>)
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+
+                    <div>
+                        <div class="example-card" style="margin-top:0;">
+                            <h4>🔵 C</h4>
+                            <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">int</span> secreto = <span class="number">42</span>;
+  <span class="keyword">int</span> chute, tent = <span class="number">0</span>;
+
+  <span class="function">printf</span>(<span class="string">"Adivinhe (1-100):\n"</span>);
+
+  <span class="keyword">do</span> {
+    tent<span class="operator">++</span>;
+    <span class="function">printf</span>(<span class="string">"Tent.%d: "</span>, tent);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;chute);
+
+    <span class="keyword">if</span>      (chute &lt; secreto)
+      <span class="function">printf</span>(<span class="string">"Maior!\n"</span>);
+    <span class="keyword">else if</span> (chute &gt; secreto)
+      <span class="function">printf</span>(<span class="string">"Menor!\n"</span>);
+
+  } <span class="keyword">while</span> (chute <span class="operator">!=</span> secreto);
+
+  <span class="function">printf</span>(<span class="string">"Acertou em %d tent.!\n"</span>,
+         tent);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                        </div>
+
+                        <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                            <h3>🔍 Por que do-while e não while?</h3>
+                            <p>
+                                O jogador sempre precisa fazer <strong>ao menos um chute</strong> — não faz sentido verificar se acertou antes de chutar!
+                                Com <code>do-while</code>, o fluxo é natural: chuta → recebe dica → tenta de novo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 10: ERROS COMUNS COM DO-WHILE                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🚨 Erros Comuns com do-while</h2>
+                <p>Armadilhas específicas desse laço — especialmente para quem vem do while</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-column" style="margin-top:10px;">
+                    <div>
+                        <div class="warning-box">
+                            <h3>❌ Erro 1: Condição invertida no Portugol</h3>
+                            <div class="code-block" style="font-size:0.82rem; margin-top:10px;"><span class="comment">// ERRADO: "ate (continuar)" sai logo</span>
+<span class="keyword">repita</span>
+  <span class="function">escreva</span>(<span class="string">"Menu..."</span>)
+  <span class="function">leia</span>(op)
+<span class="keyword">ate</span> (op <span class="operator">&lt;&gt;</span> <span class="number">0</span>)  <span class="comment">← sai quando op ≠ 0!</span>
+<span class="comment">// Qualquer opção que não seja 0</span>
+<span class="comment">// encerra o laço imediatamente!</span>
+
+<span class="comment">// CORRETO: condição de PARADA</span>
+<span class="keyword">ate</span> (op <span class="operator">==</span> <span class="number">0</span>)   <span class="comment">← sai quando op = 0</span></div>
+                        </div>
+
+                        <div class="warning-box">
+                            <h3>❌ Erro 2: Esquecer ponto e vírgula em C/Java</h3>
+                            <div class="code-block" style="font-size:0.82rem; margin-top:10px;"><span class="comment">// ERRADO: falta ; no final!</span>
+<span class="keyword">do</span> {
+  <span class="function">printf</span>(<span class="string">"Ola\n"</span>);
+  i<span class="operator">++</span>;
+} <span class="keyword">while</span> (i <span class="operator">&lt;=</span> <span class="number">5</span>)   <span class="comment">← sem ; → erro de compilação!</span>
+
+<span class="comment">// CORRETO</span>
+} <span class="keyword">while</span> (i <span class="operator">&lt;=</span> <span class="number">5</span>);  <span class="comment">← com ;</span></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="warning-box">
+                            <h3>❌ Erro 3: Usar do-while onde while é correto</h3>
+                            <div class="code-block" style="font-size:0.82rem; margin-top:10px;"><span class="comment">// PROBLEMA: processar arquivo vazio</span>
+<span class="comment">// Arquivo tem 0 registros</span>
+<span class="keyword">repita</span>
+  <span class="comment">// processa registro (não existe!)</span>
+  <span class="function">leia</span>(reg)
+<span class="keyword">ate</span> (semMaisRegistros)
+<span class="comment">// ❌ Processa lixo na 1ª iteração!</span>
+
+<span class="comment">// CORRETO: use while aqui</span>
+<span class="keyword">enquanto</span> (temRegistros) <span class="keyword">faca</span>
+  <span class="function">leia</span>(reg)
+<span class="keyword">fimenquanto</span></div>
+                        </div>
+
+                        <div class="warning-box">
+                            <h3>❌ Erro 4: Loop infinito por condição nunca atingida</h3>
+                            <div class="code-block" style="font-size:0.82rem; margin-top:10px;"><span class="comment">// ERRADO: usuario pode nunca digitar 0</span>
+<span class="keyword">repita</span>
+  <span class="function">leia</span>(n)
+  soma <span class="operator">&lt;-</span> soma <span class="operator">+</span> n
+<span class="keyword">ate</span> (n <span class="operator">==</span> <span class="number">0</span>)
+<span class="comment">// Se usuario só digitar valores</span>
+<span class="comment">// positivos, trava!</span>
+
+<span class="comment">// MELHOR: limitar tentativas ou</span>
+<span class="comment">// aceitar qualquer valor ≤ 0</span>
+<span class="keyword">ate</span> (n <span class="operator">&lt;=</span> <span class="number">0</span>)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="success-box" style="margin-top:15px;">
+                    <h3>✅ Regra prática para escolher while ou do-while</h3>
+                    <p>
+                        Pergunte: <strong>"O bloco precisa executar mesmo que a condição já seja falsa de início?"</strong><br>
+                        SIM → use <code>do-while</code> &nbsp;&nbsp;|&nbsp;&nbsp; NÃO → use <code>while</code>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 11: EXERCÍCIOS PROPOSTOS                             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📝 Exercícios Propostos</h2>
+                <p>Pratique escolhendo entre while e do-while!</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Para cada exercício: identifique qual laço usar e justifique! 💪
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div>
+                        <div class="exercise-box">
+                            <h4>📌 Exercício A — Caixa Eletrônico</h4>
+                            <p>
+                                Simule um caixa eletrônico. Mostre um menu (1-Saldo, 2-Saque, 3-Extrato, 0-Sair).
+                                O menu deve aparecer sempre ao menos uma vez.
+                                Use <code>do-while</code> + <code>switch</code>.
+                            </p>
+                        </div>
+
+                        <div class="exercise-box">
+                            <h4>📌 Exercício B — Soma até Negativo</h4>
+                            <p>
+                                Leia números inteiros e some todos. Pare quando o usuário digitar um número negativo.
+                                O número negativo <strong>não</strong> entra na soma.
+                                Exiba a soma e a quantidade de números somados.
+                            </p>
+                            <ul>
+                                <li>Dica: use do-while com sentinela</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="exercise-box">
+                            <h4>📌 Exercício C — Senha com Bloqueio</h4>
+                            <p>
+                                Peça a senha ao usuário. Ele tem <strong>3 tentativas</strong>.
+                                Se acertar: exibir "Acesso liberado!".
+                                Se errar 3 vezes: exibir "Usuário bloqueado por 24h!".
+                                Senha correta: <code>"unifil2026"</code>.
+                            </p>
+                        </div>
+
+                        <div class="exercise-box">
+                            <h4>📌 Exercício D — Adivinhe com Limite</h4>
+                            <p>
+                                Modifique o jogo da aula: o usuário tem <strong>7 tentativas</strong> no máximo.
+                                Se não acertar em 7 tentativas, exibir "Game Over! O número era X".
+                                Se acertar antes, exibir "Parabéns em N tentativas!".
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;">
+                    <h3>🎯 Entrega</h3>
+                    <p>
+                        Resolva pelo menos <strong>2 exercícios</strong> no Portugol Web Studio e envie via Google Classroom.
+                        Na próxima aula: <strong>Laço PARA (for)</strong> — o laço mais compacto de todos!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SLIDE 12: RESUMO E PRÓXIMOS PASSOS                         -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🎯 Resumo e Próximos Passos</h2>
+                <p>O que aprendemos sobre o laço FAÇA-ENQUANTO</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Agora você tem dois laços no arsenal: while e do-while. Escolha o certo! 🏆
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>✅ Estrutura do do-while</h3>
+                        <ul>
+                            <li>Bloco executa <strong>antes</strong> da condição ser testada</li>
+                            <li>Garante ao menos <strong>uma execução</strong></li>
+                            <li>Portugol: <code>repita...ate(parada)</code></li>
+                            <li>C/Java: <code>do&#123;&#125;while(continuação);</code></li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>✅ Quando usar cada laço</h3>
+                        <ul>
+                            <li><strong>while:</strong> quando pode executar 0 vezes</li>
+                            <li><strong>do-while:</strong> quando executa ao menos 1 vez</li>
+                            <li>Menus → do-while</li>
+                            <li>Validação de entrada → do-while</li>
+                            <li>Processar listas/arquivos → while</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>✅ Exemplos resolvidos</h3>
+                        <ul>
+                            <li>Menu interativo com switch</li>
+                            <li>Validação de senha (3 tentativas)</li>
+                            <li>Calculadora com repetição (S/N)</li>
+                            <li>Jogo: Adivinhe o número com dicas</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🔥 Próximas Aulas</h3>
+                        <ul>
+                            <li><strong>Aula 11:</strong> Laço PARA (for)</li>
+                            <li><strong>Aula 12:</strong> Prática: Repetição</li>
+                            <li><strong>Aula 13:</strong> Laços aninhados</li>
+                            <li><strong>Aula 14:</strong> break e continue</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:20px;">
+                    <h3>📚 Para a Próxima Aula</h3>
+                    <ul>
+                        <li style="padding:8px 0;"><strong>1️⃣ Entregar:</strong> Resolver 2 exercícios no Google Classroom</li>
+                        <li style="padding:8px 0;"><strong>2️⃣ Comparar:</strong> Reescreva o menu com while — perceba a diferença</li>
+                        <li style="padding:8px 0;"><strong>3️⃣ Pensar:</strong> Se você já sabe quantas vezes vai repetir, qual laço seria o ideal? (prévia do for)</li>
+                    </ul>
+                </div>
+
+                <div class="two-column" style="margin-top:20px;">
+                    <div class="content-box">
+                        <h3>💬 Dúvidas?</h3>
+                        <p style="margin-bottom:10px;"><strong>E-mail:</strong> tiago.galvao@unifil.br</p>
+                        <p style="margin-bottom:10px;"><strong>Atendimento:</strong> Terças 18h–19h</p>
+                        <p><strong>Google Classroom:</strong> Fórum disponível</p>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:center;">
+                        <div style="text-align:center; color:var(--unifil-gray);">
+                            <p style="font-size:1.3rem; font-weight:600;">Obrigado pela atenção! 🙏</p>
+                            <p style="font-size:1.1rem; margin-top:8px;">Nos vemos na próxima aula!</p>
+                            <p style="font-size:0.9rem; margin-top:16px; font-style:italic;">
+                                "Faça, verifique, repita — a essência do aprendizado! 🔂"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 12</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active', 'prev'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+
+        document.getElementById('slideCounter').textContent =
+            `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width =
+            ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box, .example-card, .highlight-box, .big-idea, ' +
+            '.stat-card, .analogy-box, .comparison-table, .warning-box, ' +
+            '.success-box, .exercise-box, .trace-table'
+        );
+        animated.forEach((el, i) => {
+            el.style.animation = 'none';
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.07}s forwards`;
+            }, 10);
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend',   e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

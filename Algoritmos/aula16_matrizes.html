@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 16 - Matrizes | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5; --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B; --code-bg: #282c34; --code-text: #abb2bf;
+        }
+        body { font-family: 'Segoe UI', sans-serif;
+               background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+               overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width:100%; height:100%; position:absolute; top:0; left:0;
+                 display:none; opacity:0; transform:translateX(100%);
+                 transition:all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); }
+        .slide.active { display:flex; opacity:1; transform:translateX(0); }
+        .slide-content { background:white; width:90%; max-width:1200px; height:90%;
+                         margin:auto; border-radius:20px;
+                         box-shadow:0 20px 60px rgba(0,0,0,0.3);
+                         display:flex; flex-direction:column; overflow:hidden; }
+        .slide-header { background:linear-gradient(135deg,var(--unifil-orange) 0%,var(--unifil-accent) 100%);
+                        padding:30px 50px; color:white; position:relative; flex-shrink:0; }
+        .slide-header::after { content:''; position:absolute; bottom:-20px; left:0; right:0; height:40px;
+                                background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                                clip-path:polygon(0 0,100% 0,100% 100%,0 0); }
+        .slide-header h1 { font-size:2.5rem; margin-bottom:10px; font-weight:700; }
+        .slide-header h2 { font-size:1.8rem; margin-bottom:10px; font-weight:600; }
+        .slide-header p  { font-size:1.1rem; opacity:0.95; }
+        .slide-body { flex:1; padding:60px 50px 40px; overflow-y:auto; }
+        .slide-body::-webkit-scrollbar { width:8px; }
+        .slide-body::-webkit-scrollbar-thumb { background:var(--unifil-orange); border-radius:10px; }
+        .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:35px; margin:25px 0; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:25px; margin:25px 0; }
+        .box { background:var(--unifil-light); padding:25px; border-radius:15px;
+               border-left:5px solid var(--unifil-orange);
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .box h3 { color:var(--unifil-orange); margin-bottom:12px; font-size:1.3rem; }
+        .box p  { font-size:1rem; line-height:1.7; }
+        .box ul { list-style:none; }
+        .box li { padding:7px 0 7px 28px; position:relative; font-size:1rem; line-height:1.6; }
+        .box li::before { content:'→'; position:absolute; left:0; color:var(--unifil-orange); font-weight:bold; }
+        .hi { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+              color:white; padding:28px; border-radius:15px; margin:25px 0;
+              animation:fadeInUp 0.6s ease-out 0.2s forwards; opacity:0; }
+        .hi h3 { margin-bottom:12px; font-size:1.4rem; }
+        .hi p  { font-size:1.05rem; line-height:1.7; }
+        .hi ul { list-style:none; }
+        .hi li { padding:7px 0; font-size:1rem; }
+        .card { background:white; border:2px solid var(--unifil-orange); padding:22px;
+                border-radius:12px; margin:16px 0;
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .card h4 { color:var(--unifil-orange); margin-bottom:10px; font-size:1.2rem; }
+        .code { background:var(--code-bg); color:var(--code-text); padding:18px;
+                border-radius:10px; font-family:'Courier New',monospace;
+                font-size:0.85rem; margin:12px 0; line-height:1.65; white-space:pre;
+                overflow-x:auto; }
+        .kw  { color:#c678dd; font-weight:600; }
+        .fn  { color:#61afef; }
+        .str { color:#98c379; }
+        .cm  { color:#5c6370; font-style:italic; }
+        .nm  { color:#d19a66; }
+        .op  { color:#FF8C00; font-weight:600; }
+        .ri  { color:#e5c07b; font-weight:700; } /* row index */
+        .ci  { color:#56b6c2; font-weight:700; } /* col index */
+        .big { background:linear-gradient(135deg,#4A90E2,#357ABD); color:white;
+               padding:30px 40px; border-radius:20px; font-size:1.5rem;
+               font-weight:600; text-align:center; margin:25px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel { background:#fff3cd; border:3px solid #ffc107; border-radius:15px;
+               padding:25px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel h3 { color:#856404; margin-bottom:12px; font-size:1.3rem; }
+        .yel p  { font-size:1rem; line-height:1.7; color:#533f03; margin-top:6px; }
+        .red { background:#ffebee; border:3px solid #f44336; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .red h3 { color:#c62828; margin-bottom:12px; font-size:1.2rem; }
+        .red p  { font-size:0.98rem; line-height:1.6; color:#b71c1c; }
+        .grn { background:#e8f5e9; border:3px solid #4caf50; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .grn h3 { color:#2e7d32; margin-bottom:12px; font-size:1.2rem; }
+        .grn p  { font-size:1rem; line-height:1.7; color:#1b5e20; }
+        .grn ul { list-style:none; }
+        .grn li { padding:5px 0; font-size:0.98rem; color:#1b5e20; }
+        .stat { text-align:center; padding:22px; background:white;
+                border-radius:15px; border:3px solid var(--unifil-orange);
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .stat .n { font-size:2.8rem; font-weight:700; color:var(--unifil-orange); margin-bottom:8px; }
+        .stat .l { font-size:1rem; color:var(--unifil-gray); font-weight:500; }
+        .ex { background:#f0f4ff; border:2px solid #3f51b5; border-radius:15px;
+              padding:22px; margin:18px 0;
+              animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .ex h4 { color:#283593; margin-bottom:10px; font-size:1.15rem; }
+        .ex p  { font-size:1rem; line-height:1.7; color:#1a237e; }
+        .ex ul { list-style:none; margin-top:8px; }
+        .ex li { padding:4px 0; font-size:0.96rem; color:#1a237e; }
+        .ex li::before { content:'📌 '; }
+        .tbl { width:100%; border-collapse:collapse; margin:15px 0;
+               border-radius:10px; overflow:hidden;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tbl th { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                  color:white; padding:13px 18px; text-align:left; font-size:0.98rem; }
+        .tbl td { padding:11px 18px; border-bottom:1px solid var(--unifil-light); font-size:0.95rem; }
+        .tbl tr:hover td { background:var(--unifil-light); }
+
+        /* ── MATRIX VISUAL ── */
+        .mat-wrap { margin:18px 0; animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .mat-wrap .col-heads { display:flex; margin-left:68px; margin-bottom:4px; }
+        .mat-wrap .col-heads span { width:58px; text-align:center;
+                                     font-size:0.75rem; font-weight:700;
+                                     color:#56b6c2; font-family:'Courier New',monospace; }
+        .mat-row { display:flex; align-items:center; margin-bottom:4px; }
+        .mat-row .row-label { width:64px; text-align:right; padding-right:8px;
+                              font-size:0.75rem; font-weight:700;
+                              color:#e5c07b; font-family:'Courier New',monospace; }
+        .mat-cell { width:54px; height:44px; border:2px solid var(--unifil-orange);
+                    display:flex; align-items:center; justify-content:center;
+                    font-family:'Courier New',monospace; font-size:0.95rem; font-weight:700;
+                    background:white; margin:0 2px; border-radius:6px;
+                    transition:background .2s; }
+        .mat-cell:hover { background:#fff3e0; }
+        .mat-cell.diag  { background:#fff3e0; border-color:var(--unifil-orange); }
+        .mat-cell.upper { background:#e3f2fd; border-color:#1565C0; }
+        .mat-cell.lower { background:#f3e5f5; border-color:#6a1b9a; }
+        .mat-cell.hi-cell { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                             color:white; }
+
+        .lv { display:inline-block; padding:3px 10px; border-radius:20px;
+              font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+        .lv-e { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .lv-m { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .lv-h { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+        .lv-x { background:#e1bee7; color:#6a1b9a; border:1px solid #9c27b0; }
+
+        .nav { position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+               display:flex; gap:20px; align-items:center;
+               background:rgba(255,255,255,0.95); padding:15px 30px;
+               border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:1000; }
+        .nb  { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+               color:white; border:none; padding:12px 24px; border-radius:25px;
+               cursor:pointer; font-size:1rem; font-weight:600; transition:all .3s; }
+        .nb:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,140,0,.4); }
+        .nb:disabled { opacity:.5; cursor:not-allowed; }
+        .sc { font-weight:600; color:var(--unifil-dark); min-width:80px; text-align:center; font-size:1.1rem; }
+        .pb { position:fixed; top:0; left:0; width:100%; height:5px;
+              background:rgba(255,255,255,0.2); z-index:1001; }
+        .pf { height:100%; background:linear-gradient(90deg,var(--unifil-orange),var(--unifil-accent));
+              transition:width .3s; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        code { font-family:'Courier New',monospace; background:#f0f0f0;
+               padding:2px 6px; border-radius:4px; font-size:.92em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="pf"></div></div>
+<div class="presentation">
+
+<!-- SLIDE 1 — TÍTULO -->
+<div class="slide active">
+<div class="slide-content">
+<div class="slide-header">
+<h1>Lógica de Programação e Algoritmos</h1>
+<p>Aula 16 — Matrizes (Vetores Bidimensionais)</p>
+</div>
+<div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<div style="font-size:5rem;margin-bottom:25px;">🔲</div>
+<h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:18px;">Linhas × Colunas — A Tabela Vira Código!</h2>
+<p style="font-size:1.2rem;color:var(--unifil-gray);max-width:820px;margin-bottom:35px;">
+  Uma <strong>matriz</strong> é um vetor de duas dimensões: linhas e colunas.
+  Usada para representar tabelas, grades, tabuleiros, imagens, planilhas
+  e qualquer dado com estrutura bidimensional.
+</p>
+<div class="mat-wrap" style="margin-bottom:30px;">
+  <div class="mat-wrap col-heads" style="margin-left:68px;display:flex;margin-bottom:4px;">
+    <span style="width:58px;text-align:center;font-size:0.75rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">[0]</span>
+    <span style="width:58px;text-align:center;font-size:0.75rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">[1]</span>
+    <span style="width:58px;text-align:center;font-size:0.75rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">[2]</span>
+    <span style="width:58px;text-align:center;font-size:0.75rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">[3]</span>
+  </div>
+  <div class="mat-row">
+    <span class="row-label" style="width:64px;text-align:right;padding-right:8px;font-size:0.75rem;font-weight:700;color:#e5c07b;font-family:'Courier New',monospace;">[0]</span>
+    <div class="mat-cell">1</div><div class="mat-cell">2</div><div class="mat-cell">3</div><div class="mat-cell">4</div>
+  </div>
+  <div class="mat-row">
+    <span class="row-label" style="width:64px;text-align:right;padding-right:8px;font-size:0.75rem;font-weight:700;color:#e5c07b;font-family:'Courier New',monospace;">[1]</span>
+    <div class="mat-cell">5</div><div class="mat-cell">6</div><div class="mat-cell hi-cell">7</div><div class="mat-cell">8</div>
+  </div>
+  <div class="mat-row">
+    <span class="row-label" style="width:64px;text-align:right;padding-right:8px;font-size:0.75rem;font-weight:700;color:#e5c07b;font-family:'Courier New',monospace;">[2]</span>
+    <div class="mat-cell">9</div><div class="mat-cell">10</div><div class="mat-cell">11</div><div class="mat-cell">12</div>
+  </div>
+</div>
+<p style="color:var(--unifil-gray);font-size:1rem;margin-bottom:20px;">Acesso: <code>m[1][2] = 7</code> — linha 1, coluna 2</p>
+<div class="three-col" style="width:100%;max-width:1000px;">
+  <div class="stat"><div class="n">L×C</div><div class="l">Total de elementos</div></div>
+  <div class="stat"><div class="n">[i][j]</div><div class="l">linha i, coluna j</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">laços aninhados para percorrer</div></div>
+</div>
+<div style="margin-top:28px;font-size:1.05rem;color:var(--unifil-gray);">
+  <strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2 — CONCEITO E DECLARAÇÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🏗️ Declaração e Estrutura da Matriz</h2>
+<p>De vetores 1D para tabelas 2D — o segundo índice representa a coluna</p>
+</div>
+<div class="slide-body">
+<div class="big">Matriz = vetor de vetores. Cada linha é um vetor; o conjunto de linhas forma a tabela! 🗂️</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🟢 Portugol</h4>
+<div class="code" style="font-size:0.84rem;"><span class="cm">// matriz[linhas, colunas]: tipo</span>
+<span class="kw">var</span>
+  notas   : <span class="kw">vetor</span>[<span class="nm">1</span>..<span class="nm">3</span>, <span class="nm">1</span>..<span class="nm">4</span>] <span class="kw">de</span> <span class="kw">real</span>
+  tabuleiro: <span class="kw">vetor</span>[<span class="nm">1</span>..<span class="nm">8</span>, <span class="nm">1</span>..<span class="nm">8</span>] <span class="kw">de</span> <span class="kw">inteiro</span>
+
+<span class="cm">// Acesso: notas[linha, coluna]</span>
+notas[<span class="nm">1</span>, <span class="nm">1</span>] <span class="op">&lt;-</span> <span class="nm">8.5</span>   <span class="cm">← linha 1, col 1</span>
+notas[<span class="nm">2</span>, <span class="nm">3</span>] <span class="op">&lt;-</span> <span class="nm">7.0</span>   <span class="cm">← linha 2, col 3</span>
+notas[<span class="nm">3</span>, <span class="nm">4</span>] <span class="op">&lt;-</span> <span class="nm">9.2</span>   <span class="cm">← linha 3, col 4</span>
+
+<span class="cm">// Índices: linhas 1..L, colunas 1..C</span></div>
+</div>
+<div class="card">
+<h4>🔵 C e 🟠 Java</h4>
+<div class="code" style="font-size:0.84rem;"><span class="cm">// C: tipo nome[linhas][colunas]</span>
+<span class="kw">float</span>  notas[<span class="nm">3</span>][<span class="nm">4</span>];       <span class="cm">← 3×4=12</span>
+<span class="kw">int</span>    grade[<span class="nm">8</span>][<span class="nm">8</span>];
+<span class="kw">char</span>   imagem[<span class="nm">100</span>][<span class="nm">100</span>];
+
+<span class="cm">// C — com inicialização</span>
+<span class="kw">int</span> m[<span class="nm">2</span>][<span class="nm">3</span>] = {{<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>},{<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>}};
+
+<span class="cm">// Java: tipo[][] nome = new tipo[L][C]</span>
+<span class="kw">float</span>[][] notas = <span class="kw">new</span> <span class="kw">float</span>[<span class="nm">3</span>][<span class="nm">4</span>];
+
+<span class="cm">// Acesso: notas[linha][coluna]</span>
+notas[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">8.5</span>;   <span class="cm">← linha 0, col 0</span>
+notas[<span class="nm">2</span>][<span class="nm">3</span>] = <span class="nm">9.2</span>;   <span class="cm">← linha 2, col 3</span>
+<span class="cm">// Índices: 0..L-1 × 0..C-1</span></div>
+</div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>📅 Analogia: Planilha do Excel</h3>
+<p>Uma planilha tem linhas (1, 2, 3…) e colunas (A, B, C…). Cada célula é identificada por linha + coluna: <strong>C3</strong> = coluna C, linha 3.<br><br>
+Uma matriz funciona exatamente igual: <code>m[2][2]</code> = linha 2, coluna 2. O índice duplo é o "endereço" da célula!</p>
+</div>
+<div class="box" style="margin-top:15px;">
+<h3>📐 Quantidade de elementos</h3>
+<ul>
+<li>Matriz L×C tem <strong>L × C elementos</strong></li>
+<li>Ex: 3×4 = 12 elementos no total</li>
+<li>Cada elemento ocupa posição <code>[i][j]</code></li>
+<li>Percorrer tudo: 2 laços aninhados</li>
+<li>Linha i toda: 1 laço interno (j=0..C-1)</li>
+</ul>
+</div>
+<div class="red" style="margin-top:12px;">
+<h3>⚠️ Diferença de índices</h3>
+<p><strong>Portugol:</strong> <code>[1..L, 1..C]</code><br>
+<strong>C / Java:</strong> <code>[0..L-1][0..C-1]</code></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3 — PERCORRER COM LAÇOS ANINHADOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🔁 Percorrendo a Matriz com Laços Aninhados</h2>
+<p>O laço externo percorre linhas; o interno percorre colunas de cada linha</p>
+</div>
+<div class="slide-body">
+<div class="big">Matriz + 2 laços aninhados = acesso a todos os L×C elementos! 🗺️</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🟢 Portugol — ler e exibir</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">algoritmo</span> <span class="str">"MatrizNotas"</span>
+<span class="kw">var</span>
+  m: <span class="kw">vetor</span>[<span class="nm">1</span>..<span class="nm">3</span>, <span class="nm">1</span>..<span class="nm">4</span>] <span class="kw">de</span> <span class="kw">real</span>
+  i, j: <span class="kw">inteiro</span>
+<span class="kw">inicio</span>
+  <span class="cm">// LEITURA</span>
+  <span class="kw">para</span> i <span class="op">&lt;-</span> <span class="nm">1</span> <span class="kw">ate</span> <span class="nm">3</span> <span class="kw">faca</span>    <span class="cm">← linhas</span>
+    <span class="kw">para</span> j <span class="op">&lt;-</span> <span class="nm">1</span> <span class="kw">ate</span> <span class="nm">4</span> <span class="kw">faca</span>  <span class="cm">← colunas</span>
+      <span class="fn">escreva</span>(<span class="str">"m["</span>,i,<span class="str">","</span>,j,<span class="str">"]: "</span>)
+      <span class="fn">leia</span>(m[<span class="ri">i</span>,<span class="ci">j</span>])
+    <span class="kw">fimpara</span>
+  <span class="kw">fimpara</span>
+
+  <span class="cm">// EXIBIÇÃO em formato tabela</span>
+  <span class="kw">para</span> i <span class="op">&lt;-</span> <span class="nm">1</span> <span class="kw">ate</span> <span class="nm">3</span> <span class="kw">faca</span>
+    <span class="kw">para</span> j <span class="op">&lt;-</span> <span class="nm">1</span> <span class="kw">ate</span> <span class="nm">4</span> <span class="kw">faca</span>
+      <span class="fn">escreva</span>(m[<span class="ri">i</span>,<span class="ci">j</span>]:<span class="nm">6</span>:<span class="nm">1</span>)
+    <span class="kw">fimpara</span>
+    <span class="fn">escreval</span>(<span class="str">""</span>)     <span class="cm">← quebra linha</span>
+  <span class="kw">fimpara</span>
+<span class="kw">fimalgoritmo</span></div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">#define</span> L <span class="nm">3</span>
+<span class="kw">#define</span> C <span class="nm">4</span>
+<span class="kw">float</span> m[L][C];
+
+<span class="cm">// LEITURA</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;L; i<span class="op">++</span>)      <span class="cm">← linha</span>
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;C; j<span class="op">++</span>) {  <span class="cm">← coluna</span>
+    <span class="fn">printf</span>(<span class="str">"m[%d][%d]: "</span>,i,j);
+    <span class="fn">scanf</span>(<span class="str">"%f"</span>, &amp;m[<span class="ri">i</span>][<span class="ci">j</span>]);
+  }
+
+<span class="cm">// EXIBIÇÃO em tabela</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;L; i<span class="op">++</span>) {
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;C; j<span class="op">++</span>)
+    <span class="fn">printf</span>(<span class="str">"%6.1f"</span>, m[<span class="ri">i</span>][<span class="ci">j</span>]);
+  <span class="fn">printf</span>(<span class="str">"\n"</span>);     <span class="cm">← quebra linha</span>
+}
+
+<span class="cm">// Saída (exemplo):</span>
+<span class="cm">// &nbsp;&nbsp;8.5   7.0   9.2   6.8</span>
+<span class="cm">// &nbsp;&nbsp;5.5   8.0   7.5   9.0</span>
+<span class="cm">// &nbsp;&nbsp;6.0   4.5   8.8   7.2</span></div>
+</div>
+<div class="grn" style="margin-top:12px;">
+<h3>✅ Padrão: externo=linha, interno=coluna</h3>
+<p>O laço <strong style="color:#e5c07b;">externo (i)</strong> percorre linhas. O laço <strong style="color:#56b6c2;">interno (j)</strong> percorre as colunas de cada linha. A quebra de linha (<code>printf("\n")</code>) fica <em>fora</em> do laço interno, mas <em>dentro</em> do externo.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4 — DIAGONAL E TRIÂNGULOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📐 Elementos Especiais: Diagonal, Triângulos e Bordas</h2>
+<p>Condições sobre i e j selecionam regiões específicas da matriz</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:15px;">
+<div>
+<!-- Matriz visual 4x4 -->
+<div class="mat-wrap" style="margin-bottom:5px;">
+  <div style="display:flex; margin-left:68px; margin-bottom:4px;">
+    <span style="width:58px;text-align:center;font-size:0.72rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">j=0</span>
+    <span style="width:58px;text-align:center;font-size:0.72rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">j=1</span>
+    <span style="width:58px;text-align:center;font-size:0.72rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">j=2</span>
+    <span style="width:58px;text-align:center;font-size:0.72rem;font-weight:700;color:#56b6c2;font-family:'Courier New',monospace;">j=3</span>
+  </div>
+  <div class="mat-row"><span class="row-label">i=0</span>
+    <div class="mat-cell diag">D</div><div class="mat-cell upper">U</div><div class="mat-cell upper">U</div><div class="mat-cell upper">U</div>
+  </div>
+  <div class="mat-row"><span class="row-label">i=1</span>
+    <div class="mat-cell lower">L</div><div class="mat-cell diag">D</div><div class="mat-cell upper">U</div><div class="mat-cell upper">U</div>
+  </div>
+  <div class="mat-row"><span class="row-label">i=2</span>
+    <div class="mat-cell lower">L</div><div class="mat-cell lower">L</div><div class="mat-cell diag">D</div><div class="mat-cell upper">U</div>
+  </div>
+  <div class="mat-row"><span class="row-label">i=3</span>
+    <div class="mat-cell lower">L</div><div class="mat-cell lower">L</div><div class="mat-cell lower">L</div><div class="mat-cell diag">D</div>
+  </div>
+</div>
+<div style="display:flex;gap:14px;margin-top:6px;font-size:0.82rem;">
+  <span style="background:#fff3e0;border:2px solid var(--unifil-orange);padding:3px 10px;border-radius:6px;font-weight:700;">D = diagonal (i==j)</span>
+  <span style="background:#e3f2fd;border:2px solid #1565C0;padding:3px 10px;border-radius:6px;font-weight:700;">U = superior (j>i)</span>
+  <span style="background:#f3e5f5;border:2px solid #6a1b9a;padding:3px 10px;border-radius:6px;font-weight:700;">L = inferior (j&lt;i)</span>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — regiões com condição sobre i e j</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;N; i<span class="op">++</span>) {
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;N; j<span class="op">++</span>) {
+
+    <span class="kw">if</span>(i == j)           <span class="cm">← diagonal</span>
+      <span class="fn">printf</span>(<span class="str">"[D]"</span>);
+
+    <span class="kw">else if</span>(j > i)       <span class="cm">← triâng. sup.</span>
+      <span class="fn">printf</span>(<span class="str">"[U]"</span>);
+
+    <span class="kw">else</span>                 <span class="cm">← triâng. inf.</span>
+      <span class="fn">printf</span>(<span class="str">"[L]"</span>);
+  }
+  <span class="fn">printf</span>(<span class="str">"\n"</span>);
+}
+
+<span class="cm">// Borda: i==0 || i==N-1</span>
+<span class="cm">//      || j==0 || j==N-1</span>
+
+<span class="cm">// Anti-diagonal: i+j == N-1</span></div>
+</div>
+<div class="yel" style="margin-top:12px; margin-bottom:0;">
+<h3>🧮 Condições úteis em matrizes N×N</h3>
+<p>
+  <code>i == j</code> → diagonal principal<br>
+  <code>i + j == N-1</code> → diagonal secundária<br>
+  <code>j &gt; i</code> → triângulo superior<br>
+  <code>j &lt; i</code> → triângulo inferior<br>
+  <code>i==0 || i==N-1 || j==0 || j==N-1</code> → borda
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5 — EXEMPLO 1: BOLETIM DE TURMA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 1 — Boletim de Turma (Matriz N×M)</h2>
+<p>Linhas = alunos, colunas = notas de cada bimestre. Média por aluno e por bimestre.</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>3 alunos × 4 bimestres. Calcule a média de cada aluno (por linha) e a média de cada bimestre (por coluna). Classifique: Aprovado ≥ 6.0.</p>
+</div>
+<div class="two-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — Boletim completo</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">#define</span> A <span class="nm">3</span>   <span class="cm">// alunos</span>
+<span class="kw">#define</span> B <span class="nm">4</span>   <span class="cm">// bimestres</span>
+<span class="kw">float</span> n[A][B], somaL, somaC[B]={<span class="nm">0</span>};
+
+<span class="cm">// Leitura</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;A; i<span class="op">++</span>)
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;B; j<span class="op">++</span>) {
+    <span class="fn">printf</span>(<span class="str">"Aluno %d Bim %d: "</span>,i+<span class="nm">1</span>,j+<span class="nm">1</span>);
+    <span class="fn">scanf</span>(<span class="str">"%f"</span>, &amp;n[<span class="ri">i</span>][<span class="ci">j</span>]);
+    somaC[j] <span class="op">+=</span> n[<span class="ri">i</span>][<span class="ci">j</span>];   <span class="cm">← soma por col</span>
+  }
+
+<span class="cm">// Média por ALUNO (linha)</span>
+<span class="fn">printf</span>(<span class="str">"\n=== MÉDIAS POR ALUNO ===\n"</span>);
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;A; i<span class="op">++</span>) {
+  somaL = <span class="nm">0</span>;
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;B; j<span class="op">++</span>)
+    somaL <span class="op">+=</span> n[<span class="ri">i</span>][<span class="ci">j</span>];
+  <span class="kw">float</span> med = somaL/B;
+  <span class="fn">printf</span>(<span class="str">"Aluno %d: %.2f %s\n"</span>, i+<span class="nm">1</span>,
+          med, med&gt;=<span class="nm">6</span>?<span class="str">"✅"</span>:<span class="str">"❌"</span>);
+}
+
+<span class="cm">// Média por BIMESTRE (coluna)</span>
+<span class="fn">printf</span>(<span class="str">"\n=== MÉDIAS POR BIMESTRE ===\n"</span>);
+<span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;B; j<span class="op">++</span>)
+  <span class="fn">printf</span>(<span class="str">"Bim %d: %.2f\n"</span>,j+<span class="nm">1</span>,somaC[j]/A);</div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>🔍 Trace: matriz 3×4</h3>
+<table style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:0.88rem;">
+<tr style="background:var(--unifil-orange);color:white;"><th style="padding:8px;">Aluno</th><th>B1</th><th>B2</th><th>B3</th><th>B4</th><th>Média</th></tr>
+<tr style="background:#e8f5e9;"><td style="padding:7px 12px;">1</td><td>8.0</td><td>7.5</td><td>9.0</td><td>6.5</td><td><strong>7.75 ✅</strong></td></tr>
+<tr style="background:#fff3e0;"><td style="padding:7px 12px;">2</td><td>5.0</td><td>4.5</td><td>6.0</td><td>5.5</td><td><strong>5.25 ❌</strong></td></tr>
+<tr style="background:#e8f5e9;"><td style="padding:7px 12px;">3</td><td>9.0</td><td>8.5</td><td>7.5</td><td>9.5</td><td><strong>8.63 ✅</strong></td></tr>
+<tr style="background:var(--unifil-light);font-weight:700;"><td style="padding:7px 12px;">Média col.</td><td>7.33</td><td>6.83</td><td>7.50</td><td>7.17</td><td>—</td></tr>
+</table>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ Chave: dois tipos de soma</h3>
+<p>
+  <strong>Por linha</strong> (média do aluno): <code>somaL</code> reinicia a cada linha → dentro do externo.<br>
+  <strong>Por coluna</strong> (média do bimestre): <code>somaC[j]</code> acumula ao longo de todas as linhas → vetor inicializado com zero antes da leitura.
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6 — EXEMPLO 2: SOMA DIAGONAL / TRANSPOSTA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 2 — Diagonal e Transposta</h2>
+<p>Operações clássicas de álgebra linear implementadas com matrizes</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="ex" style="margin-top:0;">
+<h4>📌 Soma da diagonal principal <span class="lv lv-e">Básico</span></h4>
+</div>
+<div class="card">
+<h4>🔵 C — diagonal (só precisa de 1 laço!)</h4>
+<div class="code" style="font-size:0.84rem;"><span class="kw">int</span> m[<span class="nm">4</span>][<span class="nm">4</span>] = {
+  {<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>},  {<span class="nm">5</span>,<span class="nm">6</span>,<span class="nm">7</span>,<span class="nm">8</span>},
+  {<span class="nm">9</span>,<span class="nm">10</span>,<span class="nm">11</span>,<span class="nm">12</span>}, {<span class="nm">13</span>,<span class="nm">14</span>,<span class="nm">15</span>,<span class="nm">16</span>}
+};
+<span class="kw">int</span> somaDiag = <span class="nm">0</span>;
+
+<span class="cm">// Só os elementos onde i == j</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">4</span>; i<span class="op">++</span>)
+  somaDiag <span class="op">+=</span> m[<span class="ri">i</span>][<span class="ri">i</span>];   <span class="cm">← i==j!</span>
+
+<span class="fn">printf</span>(<span class="str">"Soma diag: %d\n"</span>, somaDiag);
+<span class="cm">// 1 + 6 + 11 + 16 = 34</span>
+
+<span class="cm">// Anti-diagonal: i+j == N-1</span>
+<span class="kw">int</span> somaAnti = <span class="nm">0</span>;
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">4</span>; i<span class="op">++</span>)
+  somaAnti <span class="op">+=</span> m[<span class="ri">i</span>][<span class="nm">3</span>-<span class="ri">i</span>]; <span class="cm">← i+(N-1-i)</span>
+<span class="cm">// 4 + 7 + 10 + 13 = 34</span></div>
+</div>
+</div>
+<div>
+<div class="ex" style="margin-top:0;">
+<h4>📌 Transposta de uma matriz <span class="lv lv-m">Intermediário</span></h4>
+</div>
+<div class="card">
+<h4>🔵 C — transposta em matriz auxiliar</h4>
+<div class="code" style="font-size:0.84rem;"><span class="kw">#define</span> L <span class="nm">3</span>
+<span class="kw">#define</span> C <span class="nm">4</span>
+<span class="kw">int</span> original[L][C], transp[C][L];
+
+<span class="cm">// Transposta: troca linhas/colunas</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;L; i<span class="op">++</span>)
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;C; j<span class="op">++</span>)
+    transp[<span class="ci">j</span>][<span class="ri">i</span>] = original[<span class="ri">i</span>][<span class="ci">j</span>];
+<span class="cm">// transp[j][i] = original[i][j]</span>
+<span class="cm">// Matriz 3×4 vira 4×3!</span>
+
+<span class="cm">// Exemplo:</span>
+<span class="cm">// Original 3×4:    Transposta 4×3:</span>
+<span class="cm">// 1  2  3  4       1  5  9</span>
+<span class="cm">// 5  6  7  8       2  6 10</span>
+<span class="cm">// 9 10 11 12       3  7 11</span>
+<span class="cm">//                  4  8 12</span></div>
+</div>
+<div class="yel" style="margin-top:12px; margin-bottom:0;">
+<h3>🔑 Transposta: trocar índices</h3>
+<p>A operação de transposição simplesmente troca os índices: o que estava na posição <code>[i][j]</code> vai para <code>[j][i]</code>. A dimensão L×C vira C×L.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7 — EXEMPLO 3: JOGO DA VELHA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 3 — Jogo da Velha com Matriz 3×3</h2>
+<p>Matrizes representam tabuleiros — aplicação clássica e divertida!</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-h">Avançado</span></h4>
+<p>Implemente um Jogo da Velha em modo texto. Dois jogadores alternam entre X e O. Após cada jogada, verifique se há vencedor (linha, coluna ou diagonal) ou empate.</p>
+</div>
+<div class="two-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — estrutura principal</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">char</span> tab[<span class="nm">3</span>][<span class="nm">3</span>];
+<span class="kw">int</span> jogadas=<span class="nm">0</span>; <span class="kw">char</span> vez=<span class="str">'X'</span>;
+
+<span class="cm">// Inicializar com '.'</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">3</span>; i<span class="op">++</span>)
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;<span class="nm">3</span>; j<span class="op">++</span>)
+    tab[<span class="ri">i</span>][<span class="ci">j</span>] = <span class="str">'.'</span>;
+
+<span class="cm">// Loop principal do jogo</span>
+<span class="kw">while</span>(jogadas &lt; <span class="nm">9</span>) {
+  <span class="cm">// Exibir tabuleiro</span>
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;<span class="nm">3</span>;i<span class="op">++</span>) {
+    <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>;j&lt;<span class="nm">3</span>;j<span class="op">++</span>)
+      <span class="fn">printf</span>(<span class="str">"%c "</span>, tab[<span class="ri">i</span>][<span class="ci">j</span>]);
+    <span class="fn">printf</span>(<span class="str">"\n"</span>);
+  }
+  <span class="cm">// Ler jogada</span>
+  <span class="kw">int</span> li, lj;
+  <span class="fn">printf</span>(<span class="str">"%c - linha col: "</span>, vez);
+  <span class="fn">scanf</span>(<span class="str">"%d %d"</span>, &amp;li, &amp;lj);
+  <span class="kw">if</span>(tab[<span class="ri">li</span>][<span class="ci">lj</span>]==<span class="str">'.'</span>) {
+    tab[<span class="ri">li</span>][<span class="ci">lj</span>] = vez;
+    jogadas<span class="op">++</span>;
+    <span class="kw">if</span>(<span class="fn">vencedor</span>(tab, vez)) {
+      <span class="fn">printf</span>(<span class="str">"%c venceu!\n"</span>, vez);
+      <span class="kw">break</span>;
+    }
+    vez = (vez==<span class="str">'X'</span>)?<span class="str">'O'</span>:<span class="str">'X'</span>;
+  }
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — função vencedor()</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">int</span> <span class="fn">vencedor</span>(<span class="kw">char</span> t[<span class="nm">3</span>][<span class="nm">3</span>], <span class="kw">char</span> p) {
+  <span class="cm">// Verificar linhas</span>
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">3</span>; i<span class="op">++</span>)
+    <span class="kw">if</span>(t[<span class="ri">i</span>][<span class="nm">0</span>]==p &amp;&amp; t[<span class="ri">i</span>][<span class="nm">1</span>]==p
+                &amp;&amp; t[<span class="ri">i</span>][<span class="nm">2</span>]==p)
+      <span class="kw">return</span> <span class="nm">1</span>;
+
+  <span class="cm">// Verificar colunas</span>
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;<span class="nm">3</span>; j<span class="op">++</span>)
+    <span class="kw">if</span>(t[<span class="nm">0</span>][<span class="ci">j</span>]==p &amp;&amp; t[<span class="nm">1</span>][<span class="ci">j</span>]==p
+                &amp;&amp; t[<span class="nm">2</span>][<span class="ci">j</span>]==p)
+      <span class="kw">return</span> <span class="nm">1</span>;
+
+  <span class="cm">// Diagonal principal</span>
+  <span class="kw">if</span>(t[<span class="nm">0</span>][<span class="nm">0</span>]==p &amp;&amp; t[<span class="nm">1</span>][<span class="nm">1</span>]==p
+              &amp;&amp; t[<span class="nm">2</span>][<span class="nm">2</span>]==p) <span class="kw">return</span> <span class="nm">1</span>;
+
+  <span class="cm">// Diagonal secundária</span>
+  <span class="kw">if</span>(t[<span class="nm">0</span>][<span class="nm">2</span>]==p &amp;&amp; t[<span class="nm">1</span>][<span class="nm">1</span>]==p
+              &amp;&amp; t[<span class="nm">2</span>][<span class="nm">0</span>]==p) <span class="kw">return</span> <span class="nm">1</span>;
+
+  <span class="kw">return</span> <span class="nm">0</span>;
+}</div>
+</div>
+<div class="grn" style="margin-top:10px; margin-bottom:0;">
+<h3>✅ Matrizes como tabuleiros</h3>
+<p>A matriz 3×3 de <code>char</code> representa naturalmente o tabuleiro. Cada célula <code>[i][j]</code> guarda <code>'X'</code>, <code>'O'</code> ou <code>'.'</code>. Verificar vencedor = verificar linhas, colunas e diagonais da matriz.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8 — EXEMPLO 4: MULTIPLICAÇÃO DE MATRIZES -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 4 — Multiplicação de Matrizes</h2>
+<p>O algoritmo clássico: resultado[i][j] = soma dos produtos de linha i por coluna j</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-h">Avançado</span></h4>
+<p>Dadas A (L×K) e B (K×C), calcule C = A × B (dimensão L×C). <code>C[i][j] = Σ A[i][k] × B[k][j]</code></p>
+</div>
+<div class="two-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — 3 laços aninhados</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">#define</span> L <span class="nm">2</span>
+<span class="kw">#define</span> K <span class="nm">3</span>
+<span class="kw">#define</span> C <span class="nm">2</span>
+
+<span class="kw">int</span> A[L][K] = {{<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>},{<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>}};
+<span class="kw">int</span> B[K][C] = {{<span class="nm">7</span>,<span class="nm">8</span>},{<span class="nm">9</span>,<span class="nm">10</span>},{<span class="nm">11</span>,<span class="nm">12</span>}};
+<span class="kw">int</span> Res[L][C] = {{<span class="nm">0</span>}};
+
+<span class="cm">// Inicializar resultado com zero</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;L; i<span class="op">++</span>)  <span class="cm">← linha de A</span>
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;C; j<span class="op">++</span>)  <span class="cm">← col. de B</span>
+    <span class="kw">for</span>(<span class="kw">int</span> k=<span class="nm">0</span>; k&lt;K; k<span class="op">++</span>)  <span class="cm">← somatório</span>
+      Res[<span class="ri">i</span>][<span class="ci">j</span>] <span class="op">+=</span> A[<span class="ri">i</span>][k] <span class="op">*</span> B[k][<span class="ci">j</span>];
+
+<span class="cm">// Exibir resultado</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;L; i<span class="op">++</span>) {
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;C; j<span class="op">++</span>)
+    <span class="fn">printf</span>(<span class="str">"%5d"</span>, Res[<span class="ri">i</span>][<span class="ci">j</span>]);
+  <span class="fn">printf</span>(<span class="str">"\n"</span>);
+}</div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>🔍 Trace: C[0][0]</h3>
+<p style="font-family:'Courier New',monospace; font-size:0.88rem; line-height:1.9;">
+Res[0][0] = A[0][0]×B[0][0] + A[0][1]×B[1][0] + A[0][2]×B[2][0]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 1×7 + 2×9 + 3×11<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 7 + 18 + 33 = <strong>58</strong><br><br>
+Res[0][1] = 1×8 + 2×10 + 3×12 = <strong>64</strong><br>
+Res[1][0] = 4×7 + 5×9 + 6×11 = <strong>139</strong><br>
+Res[1][1] = 4×8 + 5×10 + 6×12 = <strong>154</strong>
+</p>
+</div>
+<div class="box" style="margin-top:14px;">
+<h3>📐 Análise do algoritmo</h3>
+<ul>
+<li><strong>3 laços:</strong> i (linhas A), j (colunas B), k (somatório)</li>
+<li><strong>Complexidade:</strong> O(L × K × C) ≈ O(N³)</li>
+<li><strong>Condição:</strong> colunas de A = linhas de B (ambas = K)</li>
+<li><strong>Resultado:</strong> dimensão L × C</li>
+<li><strong>Uso real:</strong> redes neurais, gráficos 3D, física</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9 — ERROS COMUNS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🚨 Erros Comuns com Matrizes</h2>
+<p>Bugs clássicos que derrubam programas com matrizes</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="red">
+<h3>❌ Erro 1: Índice fora dos limites</h3>
+<div class="code" style="font-size:0.82rem;"><span class="kw">int</span> m[<span class="nm">3</span>][<span class="nm">4</span>]; <span class="cm">// linhas 0..2, colunas 0..3</span>
+
+m[<span class="nm">3</span>][<span class="nm">0</span>] = <span class="nm">5</span>; <span class="cm">← ERRO! linha 3 não existe</span>
+m[<span class="nm">0</span>][<span class="nm">4</span>] = <span class="nm">5</span>; <span class="cm">← ERRO! coluna 4 não existe</span>
+
+<span class="cm">// No for, limite errado:</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i<span class="op">&lt;=</span><span class="nm">3</span>; i<span class="op">++</span>) <span class="cm">← deve ser i&lt;3 !</span>
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j<span class="op">&lt;=</span><span class="nm">4</span>; j<span class="op">++</span>) <span class="cm">← deve ser j&lt;4 !</span>
+    m[<span class="ri">i</span>][<span class="ci">j</span>] = <span class="nm">0</span>;</div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 2: Trocar laços externo/interno</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: j externo, i interno</span>
+<span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;C; j<span class="op">++</span>)      <span class="cm">← col. externo</span>
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;L; i<span class="op">++</span>)    <span class="cm">← linha interno</span>
+    <span class="fn">printf</span>(<span class="str">"%d\t"</span>, m[<span class="ri">i</span>][<span class="ci">j</span>]);
+<span class="cm">// Lê coluna por coluna — saída errada!</span>
+
+<span class="cm">// CORRETO: linha externo, coluna interno</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;L; i<span class="op">++</span>) {     <span class="cm">← linha ext.</span>
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;C; j<span class="op">++</span>)    <span class="cm">← col. int.</span>
+    <span class="fn">printf</span>(<span class="str">"%d\t"</span>, m[<span class="ri">i</span>][<span class="ci">j</span>]);
+  <span class="fn">printf</span>(<span class="str">"\n"</span>);                <span class="cm">← quebra linha</span>
+}</div>
+</div>
+</div>
+<div>
+<div class="red">
+<h3>❌ Erro 3: Não zerar resultado na multiplicação</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: resultado com lixo</span>
+<span class="kw">int</span> Res[L][C]; <span class="cm">← contém lixo!</span>
+<span class="kw">for</span>(...) Res[i][j] <span class="op">+=</span> A[i][k]*B[k][j];
+<span class="cm">// Soma sobre lixo de memória!</span>
+
+<span class="cm">// CORRETO: inicializar com zero</span>
+<span class="kw">int</span> Res[L][C] = {{<span class="nm">0</span>}};
+<span class="cm">// Ou em laço:</span>
+<span class="kw">for</span>(i) <span class="kw">for</span>(j) Res[<span class="ri">i</span>][<span class="ci">j</span>]=<span class="nm">0</span>;</div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 4: Confundir dimensões na transposta</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// Original: A[3][4] — 3 linhas, 4 colunas</span>
+<span class="cm">// Transposta: T[4][3] — 4 linhas, 3 colunas!</span>
+
+<span class="cm">// ERRADO: usar mesma dimensão</span>
+<span class="kw">int</span> T[<span class="nm">3</span>][<span class="nm">4</span>]; <span class="cm">← dimensões erradas!</span>
+T[<span class="ci">j</span>][<span class="ri">i</span>] = A[<span class="ri">i</span>][<span class="ci">j</span>]; <span class="cm">← vai acessar fora!</span>
+
+<span class="cm">// CORRETO: trocar dimensões</span>
+<span class="kw">int</span> T[<span class="nm">4</span>][<span class="nm">3</span>]; <span class="cm">← C linhas, L colunas</span>
+T[<span class="ci">j</span>][<span class="ri">i</span>] = A[<span class="ri">i</span>][<span class="ci">j</span>]; <span class="cm">← agora certo!</span></div>
+</div>
+</div>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ Checklist para matrizes</h3>
+<p>☑ Índices i: 0..L-1, j: 0..C-1 &nbsp;|&nbsp; ☑ Externo = linha (i), interno = coluna (j) &nbsp;|&nbsp; ☑ Quebra de linha entre externo e interno &nbsp;|&nbsp; ☑ Inicializar matriz resultado com zero &nbsp;|&nbsp; ☑ Transposta inverte dimensões!</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 10 — COMPARAÇÃO VETOR VS MATRIZ -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>⚖️ Vetor vs. Matriz — Quando usar cada um?</h2>
+<p>Escolhendo a estrutura certa para o problema certo</p>
+</div>
+<div class="slide-body">
+<table class="tbl" style="margin-top:15px;">
+<thead><tr><th>Critério</th><th>Vetor (1D)</th><th>Matriz (2D)</th></tr></thead>
+<tbody>
+<tr><td>Dimensões dos dados</td><td>Lista linear (sequência)</td><td>Tabela com linhas e colunas</td></tr>
+<tr><td>Acesso</td><td><code>v[i]</code> — 1 índice</td><td><code>m[i][j]</code> — 2 índices</td></tr>
+<tr><td>Percorrer tudo</td><td>1 laço <code>for</code></td><td>2 laços aninhados</td></tr>
+<tr><td>Exemplos de uso</td><td>Notas, temperaturas, lista de nomes</td><td>Boletim, tabuleiro, imagem, mapa</td></tr>
+<tr><td>Total de elementos</td><td>N</td><td>L × C</td></tr>
+<tr><td>Complexidade de memória</td><td>O(N)</td><td>O(L × C)</td></tr>
+</tbody>
+</table>
+<div class="two-col" style="margin-top:15px;">
+<div class="grn">
+<h3>✅ Use vetor quando...</h3>
+<ul>
+<li>Dados têm apenas uma dimensão (lista)</li>
+<li>Notas de 1 aluno ao longo dos bimestres</li>
+<li>Temperaturas de 30 dias</li>
+<li>Placar de 10 partidas</li>
+</ul>
+</div>
+<div class="grn">
+<h3>✅ Use matriz quando...</h3>
+<ul>
+<li>Dados têm duas dimensões naturais</li>
+<li>Notas de N alunos em M bimestres</li>
+<li>Tabuleiro de jogo (xadrez, sudoku)</li>
+<li>Imagem (pixels), mapa (células)</li>
+</ul>
+</div>
+</div>
+<div class="yel" style="margin-top:15px;">
+<h3>💡 Regra prática</h3>
+<p>Se você precisa de <strong>dois índices</strong> para localizar um dado ("o aluno X na prova Y", "a célula na linha X coluna Y"), use matriz. Se um índice basta, use vetor. Se precisar de três índices (cubo de dados), use vetor 3D — mas pense antes se uma struct ou outra abordagem seria mais clara!</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 11 — EXERCÍCIOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📝 Exercícios Propostos</h2>
+<p>Pratique matrizes com problemas do mundo real!</p>
+</div>
+<div class="slide-body">
+<div class="big">Em cada exercício: quais são as linhas? quais são as colunas? quais os laços? 🔲</div>
+<div class="two-col" style="margin-top:18px;">
+<div>
+<div class="ex">
+<h4>📌 Exercício A — Temperatura Semanal <span class="lv lv-e">Básico</span></h4>
+<p>Leia uma matriz 7×3 de temperaturas (7 dias × 3 medições por dia: manhã, tarde, noite). Calcule a média diária (por linha) e a média geral da semana. Indique o dia mais quente.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício B — Matriz Simétrica <span class="lv lv-m">Intermediário</span></h4>
+<p>Leia uma matriz N×N. Verifique se ela é simétrica (<code>m[i][j] == m[j][i]</code> para todo i,j). Exiba SIM ou NÃO. Dica: compare apenas o triângulo superior com o inferior.</p>
+</div>
+</div>
+<div>
+<div class="ex">
+<h4>📌 Exercício C — Relatório de Vendas <span class="lv lv-m">Intermediário</span></h4>
+<p>Uma empresa tem 5 vendedores e 4 trimestres. Armazene as vendas em uma matriz. Calcule: total por vendedor, total por trimestre, maior venda individual e qual vendedor/trimestre foi.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício D — Busca em Espiral <span class="lv lv-x">Desafio</span></h4>
+<p>Imprima os elementos de uma matriz N×N em ordem espiral: borda superior → direita → inferior → esquerda, fechando o espiral de fora para dentro. Use variáveis de limite (top, bottom, left, right) que se ajustam a cada volta.</p>
+</div>
+</div>
+</div>
+<div class="hi" style="margin-top:15px;">
+<h3>🎯 Entrega</h3>
+<p>Resolva ao menos <strong>2 exercícios</strong> em C ou Portugol e envie via Google Classroom. Na próxima aula: <strong>Funções e Procedimentos</strong> — organize seu código em blocos reutilizáveis!</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12 — RESUMO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎯 Resumo e Próximos Passos</h2>
+<p>Matrizes — estruturas bidimensionais para dados tabulares!</p>
+</div>
+<div class="slide-body">
+<div class="big">Com matrizes você representa qualquer tabela, tabuleiro ou grade no código! 🔲</div>
+<div class="two-col" style="margin-top:20px;">
+<div class="box">
+<h3>✅ Conceitos aprendidos</h3>
+<ul>
+<li>Matriz = vetor 2D com índices [linha][coluna]</li>
+<li>Portugol: <code>vetor[1..L, 1..C]</code></li>
+<li>C/Java: <code>tipo m[L][C]</code>, índices 0..N-1</li>
+<li>Percorrer: 2 laços aninhados (i=linha, j=coluna)</li>
+</ul>
+</div>
+<div class="box">
+<h3>✅ Exemplos resolvidos</h3>
+<ul>
+<li>Boletim: médias por linha e por coluna</li>
+<li>Diagonal principal e anti-diagonal</li>
+<li>Transposta (trocar dimensões e índices)</li>
+<li>Jogo da Velha (tabuleiro como matriz)</li>
+<li>Multiplicação de matrizes (3 laços)</li>
+</ul>
+</div>
+<div class="box">
+<h3>⚠️ Erros a evitar</h3>
+<ul>
+<li>Índice fora do range em qualquer dimensão</li>
+<li>Laços trocados (coluna externo, linha interno)</li>
+<li>Não inicializar resultado com zero</li>
+<li>Dimensões erradas na transposta</li>
+</ul>
+</div>
+<div class="box">
+<h3>🔥 Próximas Aulas</h3>
+<ul>
+<li><strong>Aula 17:</strong> Funções e procedimentos</li>
+<li><strong>Aula 18:</strong> Recursividade</li>
+<li><strong>Aula 19:</strong> Strings (cadeia de caracteres)</li>
+<li><strong>Aula 20:</strong> Structs e registros</li>
+</ul>
+</div>
+</div>
+<div class="hi" style="margin-top:18px;">
+<h3>📚 Para a Próxima Aula</h3>
+<p>1️⃣ <strong>Entregar:</strong> 2 exercícios no Google Classroom &nbsp;|&nbsp;
+2️⃣ <strong>Explorar:</strong> Tente representar um Sudoku 9×9 como matriz — o que cada célula guarda? &nbsp;|&nbsp;
+3️⃣ <strong>Pensar:</strong> Se você tivesse um cálculo que se repete em 10 lugares do código, como evitaria duplicação? (prévia de funções!)</p>
+</div>
+<div class="two-col" style="margin-top:16px;">
+<div class="box">
+<h3>💬 Dúvidas?</h3>
+<p><strong>E-mail:</strong> tiago.galvao@unifil.br<br><strong>Atendimento:</strong> Terças 18h–19h<br><strong>Google Classroom:</strong> Fórum disponível</p>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+<div style="text-align:center;color:var(--unifil-gray);">
+<p style="font-size:1.3rem;font-weight:600;">Excelente aula! 🙏</p>
+<p style="font-size:0.9rem;margin-top:12px;font-style:italic;">"m[i][j]: dois índices, infinitas possibilidades! 🔲"</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav">
+<button class="nb" id="pb" onclick="ch(-1)" disabled>← Anterior</button>
+<span class="sc" id="sc">1 / 12</span>
+<button class="nb" id="nb" onclick="ch(1)">Próximo →</button>
+</div>
+</div>
+<script>
+let cur=0;
+const sl=document.querySelectorAll('.slide'), tot=sl.length;
+function show(n){
+  sl.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; sl[cur].classList.add('active');
+  document.getElementById('sc').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===tot-1;
+  document.getElementById('pf').style.width=((cur+1)/tot*100)+'%';
+  sl[cur].querySelectorAll('.box,.card,.hi,.big,.stat,.yel,.red,.grn,.ex,.tbl,.mat-wrap')
+    .forEach((el,i)=>{el.style.animation='none';el.style.opacity='0';
+      setTimeout(()=>{el.style.animation=`fadeInUp .5s ease-out ${i*.07}s forwards`;},10);});
+}
+function ch(d){const n=cur+d;if(n>=0&&n<tot)show(n);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')ch(-1);if(e.key==='ArrowRight')ch(1);});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)ch(d>0?1:-1);});
+show(0);
+</script>
+</body>
+</html>

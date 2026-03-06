@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 13 - Laços Aninhados | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white;
+            position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p  { font-size: 1.1rem; opacity: 0.95; }
+
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        .two-column   { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+
+        .content-box {
+            background: var(--unifil-light); padding: 30px;
+            border-radius: 15px; border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.4rem; }
+        .content-box p  { font-size: 1.05rem; line-height: 1.7; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li { padding: 8px 0 8px 30px; position: relative; font-size: 1.05rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; font-size: 1.2rem; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .highlight-box p  { font-size: 1.1rem; line-height: 1.7; }
+        .highlight-box ul { list-style: none; padding: 0; }
+        .highlight-box li { padding: 8px 0; font-size: 1.05rem; line-height: 1.6; }
+
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem; overflow-x: auto;
+            margin: 15px 0; line-height: 1.65; white-space: pre;
+        }
+        .code-block .keyword  { color: #c678dd; font-weight: 600; }
+        .code-block .function { color: #61afef; }
+        .code-block .string   { color: #98c379; }
+        .code-block .comment  { color: #5c6370; font-style: italic; }
+        .code-block .number   { color: #d19a66; }
+        .code-block .operator { color: #FF8C00; font-weight: 600; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white; padding: 35px 40px; border-radius: 20px;
+            font-size: 1.6rem; font-weight: 600; text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(74,144,226,0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd; border: 3px solid #ffc107;
+            border-radius: 15px; padding: 30px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .analogy-box h3 { color: #856404; margin-bottom: 15px; font-size: 1.4rem; }
+        .analogy-box p  { font-size: 1.05rem; line-height: 1.7; color: #533f03; margin-top: 8px; }
+
+        .warning-box {
+            background: #ffebee; border: 3px solid #f44336;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .warning-box h3 { color: #c62828; margin-bottom: 15px; font-size: 1.3rem; }
+        .warning-box p  { font-size: 1.05rem; line-height: 1.6; color: #b71c1c; }
+        .warning-box ul { list-style: none; padding: 0; }
+        .warning-box li { padding: 6px 0; font-size: 1rem; line-height: 1.6; color: #b71c1c; }
+
+        .success-box {
+            background: #e8f5e9; border: 3px solid #4caf50;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .success-box h3 { color: #2e7d32; margin-bottom: 15px; font-size: 1.3rem; }
+        .success-box p  { font-size: 1.05rem; line-height: 1.7; color: #1b5e20; }
+        .success-box ul { list-style: none; padding: 0; }
+        .success-box li { padding: 5px 0; font-size: 1rem; line-height: 1.6; color: #1b5e20; }
+
+        .stat-card {
+            text-align: center; padding: 25px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 3rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 10px; }
+        .stat-card .label  { font-size: 1.05rem; color: var(--unifil-gray); font-weight: 500; }
+
+        .comparison-table {
+            width: 100%; margin: 20px 0; border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            background: white; border-radius: 10px; overflow: hidden;
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 16px 20px; text-align: left; font-size: 1.05rem;
+        }
+        .comparison-table td { padding: 13px 20px; border-bottom: 1px solid var(--unifil-light); font-size: 1rem; line-height: 1.6; }
+        .comparison-table tr:hover td { background: var(--unifil-light); }
+
+        .exercise-box {
+            background: #f0f4ff; border: 2px solid #3f51b5;
+            border-radius: 15px; padding: 25px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .exercise-box h4 { color: #283593; margin-bottom: 12px; font-size: 1.2rem; }
+        .exercise-box p  { font-size: 1.05rem; line-height: 1.7; color: #1a237e; }
+        .exercise-box ul { list-style: none; padding: 0; margin-top: 8px; }
+        .exercise-box li { padding: 5px 0; font-size: 1rem; color: #1a237e; line-height: 1.6; }
+        .exercise-box li::before { content: '📌 '; }
+
+        .trace-table {
+            width: 100%; border-collapse: collapse; margin: 15px 0;
+            border-radius: 10px; overflow: hidden;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .trace-table th { background: #4A90E2; color: white; padding: 12px 16px; text-align: center; font-size: 0.95rem; }
+        .trace-table td { padding: 10px 16px; border: 1px solid #ddd; text-align: center; font-family: 'Courier New', monospace; font-size: 0.92rem; }
+        .trace-table .outer { background: #fff3cd; font-weight: 700; }
+        .trace-table .inner { background: #e8f5e9; }
+        .trace-table .output { background: #e3f2fd; font-weight: 700; color: #1565C0; }
+
+        /* ── PADRÃO VISUAL ASCII ── */
+        .ascii-output {
+            background: #1e1e2e;
+            color: #98c379;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            padding: 20px 28px;
+            border-radius: 12px;
+            line-height: 1.8;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+
+        /* ── LEVEL BADGES ── */
+        .level-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; margin-bottom: 10px;
+        }
+        .level-easy   { background: #c8e6c9; color: #2e7d32; border: 1px solid #4caf50; }
+        .level-medium { background: #fff9c4; color: #f57f17; border: 1px solid #ffc107; }
+        .level-hard   { background: #ffcdd2; color: #c62828; border: 1px solid #f44336; }
+
+        /* ── LAÇO BADGE ── */
+        .laco-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 700; margin-left: 6px; vertical-align: middle;
+            font-family: 'Courier New', monospace;
+        }
+        .laco-for   { background: #e3f2fd; color: #1565C0; border: 1px solid #1565C0; }
+        .laco-ext   { background: #fce4ec; color: #880e4f; border: 1px solid #e91e63; }
+        .laco-int   { background: #e8f5e9; color: #1b5e20; border: 1px solid #2e7d32; }
+
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 25px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 80px; text-align: center; font-size: 1.1rem; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.2); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); transition: width 0.3s ease; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0; padding: 2px 6px;
+            border-radius: 4px; font-size: 0.93em; color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="presentation">
+
+<!-- ════════════════════════════════════════════ SLIDE 1 — TÍTULO -->
+<div class="slide active">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h1>Lógica de Programação e Algoritmos</h1>
+            <p>Aula 13 — Laços Aninhados</p>
+        </div>
+        <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+            <div style="font-size:6rem;margin-bottom:30px;">🔄</div>
+            <h2 style="font-size:2.5rem;color:var(--unifil-orange);margin-bottom:20px;">
+                Laço dentro de Laço!
+            </h2>
+            <p style="font-size:1.3rem;color:var(--unifil-gray);max-width:800px;margin-bottom:40px;">
+                Aprenda a usar <strong>laços dentro de laços</strong> para resolver problemas
+                com duas dimensões: linhas e colunas, tabelas, padrões e matrizes.
+            </p>
+            <div class="three-column" style="width:100%;max-width:1000px;margin-top:20px;">
+                <div class="stat-card"><div class="number">N×M</div><div class="label">Iterações totais</div></div>
+                <div class="stat-card"><div class="number">2</div><div class="label">Variáveis de controle</div></div>
+                <div class="stat-card"><div class="number">∞</div><div class="label">Padrões possíveis</div></div>
+            </div>
+            <div style="margin-top:45px;font-size:1.1rem;color:var(--unifil-gray);">
+                <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                <p style="margin-top:6px;"><strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════ SLIDE 2 — O QUE SÃO ════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🤔 O que são Laços Aninhados?</h2>
+            <p>Um laço completamente dentro do corpo de outro laço</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">
+                Para cada iteração do laço <strong>externo</strong>,
+                o laço <strong>interno</strong> executa do início ao fim!
+            </div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div class="content-box">
+                    <h3>📐 Estrutura geral</h3>
+                    <div class="code-block" style="font-size:0.88rem;"><span class="comment">// Laço EXTERNO — controla linhas</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> N <span class="keyword">faca</span>
+
+    <span class="comment">// Laço INTERNO — controla colunas</span>
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> M <span class="keyword">faca</span>
+        <span class="function">escreva</span>(i, <span class="string">"x"</span>, j)
+    <span class="keyword">fimpara</span>
+
+    <span class="function">escreval</span>(<span class="string">""</span>)  <span class="comment">← quebra de linha</span>
+<span class="keyword">fimpara</span>
+
+<span class="comment">// Total de execuções do corpo interno:</span>
+<span class="comment">// N × M vezes!</span></div>
+                </div>
+
+                <div class="content-box">
+                    <h3>🌍 Analogia: Calendário</h3>
+                    <p style="margin-bottom:12px;">Imagine imprimir um calendário anual:</p>
+                    <ul>
+                        <li><strong>Laço externo</strong> → percorre os 12 meses</li>
+                        <li><strong>Laço interno</strong> → percorre os dias de cada mês</li>
+                        <li>Para cada mês, todos os dias são percorridos</li>
+                        <li>Total: ~365 iterações do corpo interno</li>
+                    </ul>
+                    <div class="code-block" style="margin-top:14px; font-size:0.82rem;"><span class="keyword">para</span> mes <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">12</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> dia <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> dias_no_mes <span class="keyword">faca</span>
+    <span class="function">escreva</span>(dia, <span class="string">"/"</span>, mes)
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span></div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top:10px;">
+                <h3>⚡ Regra fundamental dos laços aninhados</h3>
+                <ul>
+                    <li>🔴 <strong>Externo</strong> — variável <code>i</code> — controla a dimensão "lenta" (linhas, meses, turmas)</li>
+                    <li>🟢 <strong>Interno</strong> — variável <code>j</code> — controla a dimensão "rápida" (colunas, dias, alunos)</li>
+                    <li>📊 <strong>Total de iterações</strong> do corpo interno = N_ext × N_int</li>
+                    <li>⚠️ Use variáveis <strong>diferentes</strong> para cada laço (<code>i</code> e <code>j</code>, nunca a mesma!)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════ SLIDE 3 — TRACE MANUAL ══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🔍 Trace Manual — Laços Aninhados</h2>
+            <p>Acompanhe exatamente quando cada laço executa</p>
+        </div>
+        <div class="slide-body">
+            <div class="analogy-box" style="margin-top:10px;">
+                <h3>📋 Código analisado</h3>
+                <p><code>para i &lt;- 1 ate 3 faca &nbsp; para j &lt;- 1 ate 3 faca &nbsp; escreva(i, "x", j, " ") &nbsp; fimpara &nbsp; escreval("") &nbsp; fimpara</code></p>
+            </div>
+
+            <table class="trace-table" style="margin-top:15px;">
+                <thead>
+                    <tr><th>i (externo)</th><th>j (interno)</th><th>Saída do corpo</th><th>Após j terminar</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="outer">i = 1</td><td class="inner">j = 1</td><td class="output">1x1</td><td rowspan="3">quebra de linha<br>↓ i avança para 2</td></tr>
+                    <tr><td class="outer">i = 1</td><td class="inner">j = 2</td><td class="output">1x2</td></tr>
+                    <tr><td class="outer">i = 1</td><td class="inner">j = 3</td><td class="output">1x3</td></tr>
+                    <tr><td class="outer">i = 2</td><td class="inner">j = 1</td><td class="output">2x1</td><td rowspan="3">quebra de linha<br>↓ i avança para 3</td></tr>
+                    <tr><td class="outer">i = 2</td><td class="inner">j = 2</td><td class="output">2x2</td></tr>
+                    <tr><td class="outer">i = 2</td><td class="inner">j = 3</td><td class="output">2x3</td></tr>
+                    <tr><td class="outer">i = 3</td><td class="inner">j = 1</td><td class="output">3x1</td><td rowspan="3">quebra de linha<br>↓ i = 4 → encerra</td></tr>
+                    <tr><td class="outer">i = 3</td><td class="inner">j = 2</td><td class="output">3x2</td></tr>
+                    <tr><td class="outer">i = 3</td><td class="inner">j = 3</td><td class="output">3x3</td></tr>
+                </tbody>
+            </table>
+
+            <div class="two-column" style="margin-top:15px;">
+                <div class="success-box">
+                    <h3>✅ Saída esperada</h3>
+                    <div class="code-block" style="font-size:0.9rem; margin:0;">1x1  1x2  1x3
+2x1  2x2  2x3
+3x1  3x2  3x3</div>
+                    <p style="margin-top:10px;">3 × 3 = <strong>9 execuções</strong> do corpo interno.</p>
+                </div>
+                <div class="content-box">
+                    <h3>📊 Contando iterações</h3>
+                    <ul>
+                        <li>Externo executa <strong>3 vezes</strong> (i = 1, 2, 3)</li>
+                        <li>Interno executa <strong>3 vezes por iteração</strong> do externo</li>
+                        <li>Corpo interno: <strong>3 × 3 = 9 vezes</strong></li>
+                        <li>Para N=5, M=4: <strong>5 × 4 = 20 vezes</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════ SLIDE 4 — TABUADA 2D ════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 1 — Tabuada Completa (1 a 10)</h2>
+            <p>Laço aninhado clássico: linha × coluna = produto</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema</h4>
+                <p>Exibir a tabuada de multiplicação completa de 1 a 10 em formato de tabela (10 × 10 = 100 produtos).</p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"TabuadaCompleta"</span>
+<span class="keyword">var</span> i, j: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="comment">// Cabeçalho</span>
+  <span class="function">escreva</span>(<span class="string">"    "</span>)
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(j:<span class="number">4</span>)
+  <span class="keyword">fimpara</span>
+  <span class="function">escreval</span>(<span class="string">""</span>)
+  <span class="function">escreval</span>(<span class="string">"    ──────────────────────"</span>)
+
+  <span class="comment">// Corpo da tabela</span>
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(i:<span class="number">2</span>, <span class="string">" |"</span>)
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+      <span class="function">escreva</span>((i<span class="operator">*</span>j):<span class="number">4</span>)
+    <span class="keyword">fimpara</span>
+    <span class="function">escreval</span>(<span class="string">""</span>)
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="function">printf</span>(<span class="string">"    "</span>);
+  <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">1</span>; j<span class="operator">&lt;=</span><span class="number">10</span>; j<span class="operator">++</span>)
+    <span class="function">printf</span>(<span class="string">"%4d"</span>, j);
+  <span class="function">printf</span>(<span class="string">"\n    ──────────────────────\n"</span>);
+
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span><span class="number">10</span>; i<span class="operator">++</span>) {
+    <span class="function">printf</span>(<span class="string">"%2d |"</span>, i);
+    <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">1</span>; j<span class="operator">&lt;=</span><span class="number">10</span>; j<span class="operator">++</span>)
+      <span class="function">printf</span>(<span class="string">"%4d"</span>, i<span class="operator">*</span>j);
+    <span class="function">printf</span>(<span class="string">"\n"</span>);
+  }
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="ascii-output" style="margin-top:15px; font-size:0.78rem;">
+       1   2   3   4   5
+    ─────────────────────
+ 1 |   1   2   3   4   5
+ 2 |   2   4   6   8  10
+ 3 |   3   6   9  12  15
+ 4 |   4   8  12  16  20
+ 5 |   5  10  15  20  25
+    <span style="color:#5c6370;">... até 10x10</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 5 — TRIÂNGULOS ═════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 2 — Padrões de Triângulos</h2>
+            <p>Quando o limite do laço interno <strong>depende</strong> do externo</p>
+        </div>
+        <div class="slide-body">
+            <div class="analogy-box" style="margin-top:10px;">
+                <h3>🔑 O segredo dos padrões: limite interno variável</h3>
+                <p>
+                    Quando o laço interno vai de <code>1 até i</code> (em vez de um valor fixo),
+                    cada linha tem um número <em>diferente</em> de elementos — criando triângulos e rampas.
+                </p>
+            </div>
+
+            <div class="three-column" style="margin-top:15px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🔺 Triângulo crescente</h4>
+                    <div class="code-block" style="font-size:0.82rem;"><span class="comment">// j vai de 1 até i</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> i <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"* "</span>)
+  <span class="keyword">fimpara</span>
+  <span class="function">escreval</span>(<span class="string">""</span>)
+<span class="keyword">fimpara</span></div>
+                    <div class="ascii-output" style="font-size:0.9rem; margin-top:10px;">*
+* *
+* * *
+* * * *
+* * * * *</div>
+                </div>
+
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🔻 Triângulo decrescente</h4>
+                    <div class="code-block" style="font-size:0.82rem;"><span class="comment">// j vai de i até N</span>
+N <span class="operator">&lt;-</span> <span class="number">5</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> N <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> i <span class="keyword">ate</span> N <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"* "</span>)
+  <span class="keyword">fimpara</span>
+  <span class="function">escreval</span>(<span class="string">""</span>)
+<span class="keyword">fimpara</span></div>
+                    <div class="ascii-output" style="font-size:0.9rem; margin-top:10px;">* * * * *
+* * * *
+* * *
+* *
+*</div>
+                </div>
+
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🔢 Triângulo numérico</h4>
+                    <div class="code-block" style="font-size:0.82rem;"><span class="comment">// j imprime seu próprio valor</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> i <span class="keyword">faca</span>
+    <span class="function">escreva</span>(j, <span class="string">" "</span>)
+  <span class="keyword">fimpara</span>
+  <span class="function">escreval</span>(<span class="string">""</span>)
+<span class="keyword">fimpara</span></div>
+                    <div class="ascii-output" style="font-size:0.9rem; margin-top:10px;">1
+1 2
+1 2 3
+1 2 3 4
+1 2 3 4 5</div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top:15px;">
+                <h3>📐 Fórmula do número de iterações em triângulos</h3>
+                <p>
+                    Quando o interno vai de <code>1 até i</code>: total = 1 + 2 + 3 + … + N = <strong>N(N+1)/2</strong><br>
+                    Para N=5: 1+2+3+4+5 = <strong>15 iterações</strong> (metade de um quadrado 5×5)
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 6 — PADRÕES AVANÇADOS ══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 3 — Padrões Avançados com Espaços</h2>
+            <p>Três laços por linha: espaços + estrelas + (espelhos)</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Pirâmide centralizada</h4>
+                <p>Para centralizar o triângulo, cada linha precisa de <strong>espaços antes</strong> dos asteriscos. Usamos um laço para espaços e outro para asteriscos.</p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol — Pirâmide centralizada</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Piramide"</span>
+<span class="keyword">var</span> n, i, j: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Altura: "</span>) <span class="function">leia</span>(n)
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> n <span class="keyword">faca</span>
+
+    <span class="comment">// Laço 1: espaços à esquerda</span>
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> n<span class="operator">-</span>i <span class="keyword">faca</span>
+      <span class="function">escreva</span>(<span class="string">" "</span>)
+    <span class="keyword">fimpara</span>
+
+    <span class="comment">// Laço 2: asteriscos (2i - 1)</span>
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> (<span class="number">2</span><span class="operator">*</span>i<span class="operator">-</span><span class="number">1</span>) <span class="keyword">faca</span>
+      <span class="function">escreva</span>(<span class="string">"*"</span>)
+    <span class="keyword">fimpara</span>
+
+    <span class="function">escreval</span>(<span class="string">""</span>)
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="ascii-output" style="margin-top:0;">    *
+   ***
+  *****
+ *******
+*********</div>
+
+                    <div class="example-card" style="margin-top:15px;">
+                        <h4>🔵 C — mesma lógica</h4>
+                        <div class="code-block"><span class="keyword">int</span> n;
+<span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;n);
+
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span>n; i<span class="operator">++</span>) {
+  <span class="comment">// espaços</span>
+  <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">1</span>; j<span class="operator">&lt;=</span>n-i; j<span class="operator">++</span>)
+    <span class="function">printf</span>(<span class="string">" "</span>);
+  <span class="comment">// asteriscos</span>
+  <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">1</span>; j<span class="operator">&lt;=</span><span class="number">2</span><span class="operator">*</span>i-<span class="number">1</span>; j<span class="operator">++</span>)
+    <span class="function">printf</span>(<span class="string">"*"</span>);
+  <span class="function">printf</span>(<span class="string">"\n"</span>);
+}</div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>🧮 Fórmula linha i</h3>
+                        <p>
+                            Espaços = <strong>N − i</strong><br>
+                            Asteriscos = <strong>2i − 1</strong><br>
+                            Soma: (N−i) + (2i−1) = N + i − 1 (aumenta com i ✓)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 7 — TABUADAS PERSONALIZADAS -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 4 — Tabuadas de N a M</h2>
+            <p>Laços aninhados com limites definidos pelo usuário</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema</h4>
+                <p>Leia dois números A e B. Exiba todas as tabuadas de A até B, uma por linha.</p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"TabuadasAteB"</span>
+<span class="keyword">var</span> a, b, i, j: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Tabuada de A: "</span>) <span class="function">leia</span>(a)
+  <span class="function">escreva</span>(<span class="string">"     até B: "</span>)  <span class="function">leia</span>(b)
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> a <span class="keyword">ate</span> b <span class="keyword">faca</span>
+    <span class="function">escreval</span>(<span class="string">"── Tabuada de "</span> <span class="operator">+</span> i <span class="operator">+</span> <span class="string">" ──"</span>)
+
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+      <span class="function">escreva</span>(i, <span class="string">" x "</span>, j, <span class="string">" = "</span>, i<span class="operator">*</span>j)
+    <span class="keyword">fimpara</span>
+    <span class="function">escreval</span>(<span class="string">""</span>)
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">int</span> a, b;
+  <span class="function">printf</span>(<span class="string">"De A: "</span>); <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;a);
+  <span class="function">printf</span>(<span class="string">"Até B: "</span>); <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;b);
+
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=a; i<span class="operator">&lt;=</span>b; i<span class="operator">++</span>) {
+    <span class="function">printf</span>(<span class="string">"\n── Tabuada de %d ──\n"</span>, i);
+    <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">1</span>; j<span class="operator">&lt;=</span><span class="number">10</span>; j<span class="operator">++</span>)
+      <span class="function">printf</span>(<span class="string">"%d x %d = %d\n"</span>,
+             i, j, i<span class="operator">*</span>j);
+  }
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="ascii-output" style="margin-top:15px; font-size:0.85rem;">── Tabuada de 3 ──
+3 x 1 = 3
+3 x 2 = 6
+3 x 3 = 9
+...
+── Tabuada de 4 ──
+4 x 1 = 4
+4 x 2 = 8
+...</div>
+                </div>
+            </div>
+
+            <div class="success-box" style="margin-top:10px;">
+                <h3>✅ Por que aninhado aqui?</h3>
+                <p>
+                    Temos <strong>dois "eixos" de variação independentes</strong>:
+                    qual tabuada exibir (externo: i de a até b) e
+                    qual multiplicador usar (interno: j de 1 a 10).
+                    Qualquer problema com duas dimensões independentes pede laços aninhados.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 8 — NOTAS POR TURMA ════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 5 — Notas de Múltiplas Turmas</h2>
+            <p>Laço externo = turmas | Laço interno = alunos de cada turma</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema <span class="level-badge level-medium">Intermediário</span></h4>
+                <p>
+                    Leia o número de turmas (T) e de alunos por turma (A).
+                    Para cada turma, leia as notas e calcule a média. Ao final, exiba qual turma teve a maior média.
+                </p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"MediaTurmas"</span>
+<span class="keyword">var</span>
+  T, A, t, a       : <span class="keyword">inteiro</span>
+  nota, soma, media: <span class="keyword">real</span>
+  melhor_turma     : <span class="keyword">inteiro</span>
+  melhor_media     : <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Turmas: "</span>)  <span class="function">leia</span>(T)
+  <span class="function">escreva</span>(<span class="string">"Alunos: "</span>)  <span class="function">leia</span>(A)
+
+  melhor_media <span class="operator">&lt;-</span> <span class="number">0</span>
+
+  <span class="keyword">para</span> t <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> T <span class="keyword">faca</span>    <span class="comment">← externo: turmas</span>
+    soma <span class="operator">&lt;-</span> <span class="number">0</span>
+    <span class="function">escreval</span>(<span class="string">"─ Turma "</span> <span class="operator">+</span> t <span class="operator">+</span> <span class="string">" ─"</span>)
+
+    <span class="keyword">para</span> a <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> A <span class="keyword">faca</span>  <span class="comment">← interno: alunos</span>
+      <span class="function">escreva</span>(<span class="string">"  Nota aluno "</span>, a, <span class="string">": "</span>)
+      <span class="function">leia</span>(nota)
+      soma <span class="operator">&lt;-</span> soma <span class="operator">+</span> nota
+    <span class="keyword">fimpara</span>
+
+    media <span class="operator">&lt;-</span> soma <span class="operator">/</span> A
+    <span class="function">escreva</span>(<span class="string">"  Média turma "</span>, t, <span class="string">": "</span>, media:<span class="number">5</span>:<span class="number">2</span>)
+
+    <span class="keyword">se</span> (media <span class="operator">&gt;</span> melhor_media) <span class="keyword">entao</span>
+      melhor_media <span class="operator">&lt;-</span> media
+      melhor_turma <span class="operator">&lt;-</span> t
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="function">escreva</span>(<span class="string">"🏆 Melhor turma: "</span>, melhor_turma)
+  <span class="function">escreva</span>(<span class="string">"   Média: "</span>, melhor_media:<span class="number">5</span>:<span class="number">2</span>)
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="analogy-box" style="margin-top:0;">
+                        <h3>🔍 Trace para T=2, A=3</h3>
+                        <p>
+                            <strong>t=1:</strong> soma=0 → lê 7,8,6 → soma=21 → média=7.0<br>
+                            <strong>t=2:</strong> soma=0 → lê 9,8,9 → soma=26 → média=8.7<br>
+                            8.7 > 7.0 → melhor_turma = 2<br>
+                            <strong>🏆 Melhor turma: 2 (média 8.7)</strong>
+                        </p>
+                    </div>
+
+                    <div class="warning-box" style="margin-top:15px;">
+                        <h3>⚠️ Atenção: reiniciar o acumulador!</h3>
+                        <p>
+                            A variável <code>soma</code> deve ser reiniciada com <code>soma &lt;- 0</code>
+                            <strong>dentro</strong> do laço externo, antes do laço interno começar.
+                            Caso contrário, as somas de todas as turmas se acumulam juntas!
+                        </p>
+                    </div>
+
+                    <div class="success-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>✅ Padrão "limpar antes de cada grupo"</h3>
+                        <p>Sempre que o laço externo representa um <em>grupo</em> e o interno os <em>itens do grupo</em>, redefina os acumuladores internos no início de cada iteração externa.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════ SLIDE 9 — ERROS COMUNS ════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🚨 Erros Comuns em Laços Aninhados</h2>
+            <p>Armadilhas frequentes — aprenda a identificá-las!</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-column" style="margin-top:10px;">
+                <div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 1: Mesma variável nos dois laços</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// ERRADO: i usado nos dois!</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>  <span class="comment">← sobrescreve i!</span>
+    <span class="function">escreva</span>(i)
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span>
+
+<span class="comment">// CORRETO: variáveis diferentes</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>  <span class="comment">← j diferente!</span>
+    <span class="function">escreva</span>(i, j)
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span></div>
+                    </div>
+
+                    <div class="warning-box">
+                        <h3>❌ Erro 2: Esquecer de reiniciar acumulador</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// ERRADO: soma acumula tudo</span>
+soma <span class="operator">&lt;-</span> <span class="number">0</span>   <span class="comment">← inicializa fora do externo</span>
+<span class="keyword">para</span> t <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> T <span class="keyword">faca</span>
+  <span class="keyword">para</span> a <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> A <span class="keyword">faca</span>
+    soma <span class="operator">&lt;-</span> soma <span class="operator">+</span> nota  <span class="comment">← mistura turmas!</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span>
+
+<span class="comment">// CORRETO: reiniciar dentro do externo</span>
+<span class="keyword">para</span> t <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> T <span class="keyword">faca</span>
+  soma <span class="operator">&lt;-</span> <span class="number">0</span>   <span class="comment">← AQUI: uma soma por turma</span>
+  <span class="keyword">para</span> a <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> A <span class="keyword">faca</span>
+    soma <span class="operator">&lt;-</span> soma <span class="operator">+</span> nota
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 3: Quebra de linha no lugar errado</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// ERRADO: \n dentro do interno</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+    <span class="function">escreval</span>(j)  <span class="comment">← pula linha por coluna!</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span>
+
+<span class="comment">// CORRETO: \n depois do interno</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(j, <span class="string">" "</span>)   <span class="comment">← sem pular linha</span>
+  <span class="keyword">fimpara</span>
+  <span class="function">escreval</span>(<span class="string">""</span>)        <span class="comment">← pula linha aqui</span>
+<span class="keyword">fimpara</span></div>
+                    </div>
+
+                    <div class="warning-box">
+                        <h3>❌ Erro 4: Performance — N³ sem necessidade</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// CUIDADO: 3 laços aninhados</span>
+<span class="comment">// N=100 → 100³ = 1.000.000 iterações!</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> N <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> N <span class="keyword">faca</span>
+    <span class="keyword">para</span> k <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> N <span class="keyword">faca</span>
+      <span class="comment">// ops...</span>
+    <span class="keyword">fimpara</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span>
+<span class="comment">// Sempre verifique se há solução</span>
+<span class="comment">// com menos laços antes de aninhar!</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box" style="margin-top:10px;">
+                <h3>✅ Checklist de laços aninhados</h3>
+                <p>
+                    ☑ Variáveis diferentes (<code>i</code> e <code>j</code>) &nbsp;|&nbsp;
+                    ☑ Acumuladores reiniciados no laço correto &nbsp;|&nbsp;
+                    ☑ Quebra de linha fora do laço interno &nbsp;|&nbsp;
+                    ☑ Trace manual com pelo menos 2 × 2 iterações
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════ SLIDE 10 — MINI-PROJETO MATRIZ ════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🏗️ Mini-Projeto — Relatório de Vendas por Região</h2>
+            <p>Laços aninhados com acumuladores por linha e coluna</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Especificação <span class="level-badge level-hard">Avançado</span></h4>
+                <p>
+                    Uma empresa tem 3 filiais (linhas) e 4 trimestres (colunas).
+                    Leia as vendas de cada filial em cada trimestre.
+                    Calcule e exiba: total por filial, total por trimestre e grande total.
+                </p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"VendasRegiao"</span>
+<span class="keyword">var</span>
+  f, t           : <span class="keyword">inteiro</span>
+  venda, total_f : <span class="keyword">real</span>
+  total_t        : <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">4</span>] <span class="keyword">de</span> <span class="keyword">real</span>
+  grand_total    : <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+  grand_total <span class="operator">&lt;-</span> <span class="number">0</span>
+  <span class="keyword">para</span> t <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">4</span> <span class="keyword">faca</span>
+    total_t[t] <span class="operator">&lt;-</span> <span class="number">0</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="keyword">para</span> f <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>    <span class="comment">← filiais</span>
+    total_f <span class="operator">&lt;-</span> <span class="number">0</span>
+    <span class="function">escreval</span>(<span class="string">"─ Filial "</span> <span class="operator">+</span> f <span class="operator">+</span> <span class="string">" ─"</span>)
+
+    <span class="keyword">para</span> t <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">4</span> <span class="keyword">faca</span>  <span class="comment">← trimestres</span>
+      <span class="function">escreva</span>(<span class="string">"  T"</span>, t, <span class="string">": R$ "</span>)
+      <span class="function">leia</span>(venda)
+      total_f    <span class="operator">&lt;-</span> total_f <span class="operator">+</span> venda
+      total_t[t] <span class="operator">&lt;-</span> total_t[t] <span class="operator">+</span> venda
+      grand_total <span class="operator">&lt;-</span> grand_total <span class="operator">+</span> venda
+    <span class="keyword">fimpara</span>
+
+    <span class="function">escreva</span>(<span class="string">"  Total filial: R$ "</span>, total_f:<span class="number">10</span>:<span class="number">2</span>)
+  <span class="keyword">fimpara</span>
+
+  <span class="function">escreval</span>(<span class="string">"── Totais por trimestre ──"</span>)
+  <span class="keyword">para</span> t <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">4</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"T"</span>, t, <span class="string">": R$ "</span>, total_t[t]:<span class="number">10</span>:<span class="number">2</span>)
+  <span class="keyword">fimpara</span>
+  <span class="function">escreva</span>(<span class="string">"GRAND TOTAL: R$ "</span>, grand_total:<span class="number">12</span>:<span class="number">2</span>)
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="ascii-output" style="margin-top:0; font-size:0.85rem;">─ Filial 1 ─
+  T1: R$ 12000
+  T2: R$ 15000
+  T3: R$ 11000
+  T4: R$ 18000
+  Total filial: R$  56000.00
+─ Filial 2 ─
+  T1: R$ 20000
+  T2: R$ 22000
+  ...
+── Totais por trimestre ──
+T1: R$  42000.00
+T2: R$  55000.00
+T3: R$  48000.00
+T4: R$  61000.00
+GRAND TOTAL: R$  206000.00</div>
+
+                    <div class="success-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>✅ Três tipos de acumulador</h3>
+                        <ul>
+                            <li><strong>total_f</strong> — reiniciado a cada filial (dentro do externo)</li>
+                            <li><strong>total_t[]</strong> — acumula ao longo de todas as filiais</li>
+                            <li><strong>grand_total</strong> — nunca é reiniciado (total geral)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════ SLIDE 11 — EXERCÍCIOS PROPOSTOS ═══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>📝 Exercícios Propostos</h2>
+            <p>Pratique laços aninhados com padrões e tabelas!</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">Para cada exercício: faça o trace com N=3 antes de programar! 🖊️</div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div>
+                    <div class="exercise-box">
+                        <h4>📌 Exercício A — Quadrado Oco <span class="level-badge level-medium">Intermediário</span></h4>
+                        <p>Leia N e exiba um quadrado N×N com asteriscos somente na borda (interior vazio). Use <code>if</code> dentro do laço aninhado para decidir se imprime <code>*</code> ou espaço.</p>
+                        <ul><li>Para N=4 → borda com * e interior com espaços</li></ul>
+                    </div>
+
+                    <div class="exercise-box">
+                        <h4>📌 Exercício B — Diamante <span class="level-badge level-hard">Avançado</span></h4>
+                        <p>Leia N (ímpar) e exiba um diamante de asteriscos: pirâmide crescente de 1 a N linhas, depois decrescente de N-1 a 1. Combine dois blocos de laços aninhados.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="exercise-box">
+                        <h4>📌 Exercício C — Matriz de Multiplicação <span class="level-badge level-medium">Intermediário</span></h4>
+                        <p>Leia N e M. Construa e exiba uma matriz N×M onde cada elemento é o produto de sua linha pelo número da coluna. Exiba formatado com espaçamento fixo.</p>
+                    </div>
+
+                    <div class="exercise-box">
+                        <h4>📌 Exercício D — Médias por Departamento <span class="level-badge level-hard">Avançado</span></h4>
+                        <p>Uma empresa tem D departamentos, cada um com F funcionários. Leia os salários de todos. Calcule a média salarial de cada departamento e identifique o departamento com maior média.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top:15px;">
+                <h3>🎯 Entrega</h3>
+                <p>
+                    Resolva ao menos <strong>2 exercícios</strong> no Portugol Web Studio e envie via Google Classroom.
+                    Na próxima aula: <strong>break e continue</strong> — controlando o fluxo dentro dos laços!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ SLIDE 12 — RESUMO ═════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🎯 Resumo e Próximos Passos</h2>
+            <p>Laços aninhados — dominados!</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">
+                Laços aninhados são a base para tabelas, matrizes e qualquer problema bidimensional! 🏆
+            </div>
+
+            <div class="two-column" style="margin-top:25px;">
+                <div class="content-box">
+                    <h3>✅ Conceitos aprendidos</h3>
+                    <ul>
+                        <li>Laço externo = dimensão "lenta" (linhas, grupos)</li>
+                        <li>Laço interno = dimensão "rápida" (colunas, itens)</li>
+                        <li>Total de iterações = N_ext × N_int</li>
+                        <li>Limite interno pode depender da variável externa</li>
+                    </ul>
+                </div>
+
+                <div class="content-box">
+                    <h3>✅ Exemplos resolvidos</h3>
+                    <ul>
+                        <li>Tabuada 10×10 formatada</li>
+                        <li>Triângulos crescente, decrescente e numérico</li>
+                        <li>Pirâmide centralizada com espaços</li>
+                        <li>Notas de múltiplas turmas com maior média</li>
+                        <li>Relatório de vendas por filial e trimestre</li>
+                    </ul>
+                </div>
+
+                <div class="content-box">
+                    <h3>✅ Erros a evitar</h3>
+                    <ul>
+                        <li>Mesma variável nos dois laços</li>
+                        <li>Acumulador não reiniciado no externo</li>
+                        <li>Quebra de linha no lugar errado</li>
+                        <li>Laços triplos sem necessidade (N³ iterações!)</li>
+                    </ul>
+                </div>
+
+                <div class="content-box">
+                    <h3>🔥 Próximas Aulas</h3>
+                    <ul>
+                        <li><strong>Aula 14:</strong> break e continue</li>
+                        <li><strong>Aula 15:</strong> Vetores (arrays)</li>
+                        <li><strong>Aula 16:</strong> Matrizes</li>
+                        <li><strong>Aula 17:</strong> Subprogramas / Funções</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top:20px;">
+                <h3>📚 Para a Próxima Aula</h3>
+                <ul>
+                    <li style="padding:8px 0;"><strong>1️⃣ Entregar:</strong> 2 exercícios propostos no Google Classroom</li>
+                    <li style="padding:8px 0;"><strong>2️⃣ Desafio:</strong> Implemente o quadrado oco — use <code>se (j==1 ou j==N ou i==1 ou i==N)</code></li>
+                    <li style="padding:8px 0;"><strong>3️⃣ Pensar:</strong> Como parar um laço no meio da execução sem esperar a condição normal? (prévia do break)</li>
+                </ul>
+            </div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div class="content-box">
+                    <h3>💬 Dúvidas?</h3>
+                    <p style="margin-bottom:10px;"><strong>E-mail:</strong> tiago.galvao@unifil.br</p>
+                    <p style="margin-bottom:10px;"><strong>Atendimento:</strong> Terças 18h–19h</p>
+                    <p><strong>Google Classroom:</strong> Fórum disponível</p>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center;">
+                    <div style="text-align:center;color:var(--unifil-gray);">
+                        <p style="font-size:1.3rem;font-weight:600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size:1.1rem;margin-top:8px;">Nos vemos na próxima aula!</p>
+                        <p style="font-size:0.9rem;margin-top:16px;font-style:italic;">
+                            "for(i){ for(j){ aprender++ } } — duplamente eficiente! 🔄"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NAVEGAÇÃO -->
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 12</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+</div>
+
+</div><!-- /presentation -->
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box,.example-card,.highlight-box,.big-idea,.stat-card,' +
+            '.analogy-box,.comparison-table,.warning-box,.success-box,' +
+            '.exercise-box,.trace-table,.ascii-output'
+        );
+        animated.forEach((el, i) => {
+            el.style.animation = 'none'; el.style.opacity = '0';
+            setTimeout(() => { el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.07}s forwards`; }, 10);
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend',   e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

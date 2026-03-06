@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 07 – Estruturas de Decisão | Lógica de Programação</title>
+    <style>
+        /* ══════════════════════════════════════════════
+           RESET & BASE
+        ══════════════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --unifil:    #FF8C00;
+            --unifil-dk: #CC6F00;
+            --unifil-lt: #FFB347;
+            --dark:      #1a1a2e;
+            --darker:    #0f0f1a;
+            --card:      #16213e;
+            --card2:     #0d1b35;
+            --text:      #e0e0e0;
+            --muted:     #9aa0b4;
+            --green:     #4caf50;
+            --blue:      #4facfe;
+            --pink:      #f093fb;
+            --purple:    #764ba2;
+            --red:       #ff6b6b;
+            --yellow:    #fee140;
+            --cyan:      #00f2fe;
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: var(--darker);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--text);
+        }
+
+        /* ══════════════════════════════════════════════
+           PROGRESS BAR
+        ══════════════════════════════════════════════ */
+        #progress-bar {
+            position: fixed; top: 0; left: 0;
+            height: 4px; width: 0%;
+            background: linear-gradient(90deg, var(--unifil), var(--unifil-lt));
+            z-index: 100;
+            transition: width 0.4s ease;
+        }
+
+        /* ══════════════════════════════════════════════
+           HEADER
+        ══════════════════════════════════════════════ */
+        #header {
+            position: fixed; top: 4px; left: 0; right: 0;
+            height: 56px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            background: rgba(15,15,26,.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,140,0,.18);
+            z-index: 90;
+        }
+        .hdr-logo {
+            font-size: .82rem; font-weight: 700; letter-spacing: .06em;
+            color: var(--unifil); text-transform: uppercase;
+        }
+        .hdr-title {
+            font-size: .88rem; color: var(--muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 55%;
+        }
+        .hdr-counter {
+            font-size: .82rem; color: var(--muted); white-space: nowrap;
+        }
+        .hdr-counter span { color: var(--unifil); font-weight: 700; }
+
+        /* ══════════════════════════════════════════════
+           SLIDE WRAPPER
+        ══════════════════════════════════════════════ */
+        #slides-wrap {
+            position: fixed; top: 60px; left: 0; right: 0; bottom: 64px;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            padding: 28px 40px 18px;
+            opacity: 0; transform: translateX(60px);
+            transition: opacity .45s ease, transform .45s ease;
+            pointer-events: none;
+            overflow-y: auto;
+        }
+        .slide.active {
+            opacity: 1; transform: translateX(0);
+            pointer-events: all;
+        }
+        .slide.exit {
+            opacity: 0; transform: translateX(-60px);
+        }
+
+        /* ══════════════════════════════════════════════
+           SLIDE HEADER
+        ══════════════════════════════════════════════ */
+        .slide-header {
+            margin-bottom: 22px;
+            border-left: 5px solid var(--unifil);
+            padding-left: 18px;
+        }
+        .slide-header h2 {
+            font-size: 1.85rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--unifil-lt), var(--unifil));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .slide-header p {
+            font-size: 1rem; color: var(--muted); margin-top: 4px;
+        }
+
+        /* ══════════════════════════════════════════════
+           COVER SLIDE
+        ══════════════════════════════════════════════ */
+        .cover {
+            align-items: center; justify-content: center; text-align: center;
+            background: radial-gradient(ellipse at 30% 40%, rgba(255,140,0,.13) 0%, transparent 65%),
+                        radial-gradient(ellipse at 75% 70%, rgba(76,175,254,.08) 0%, transparent 55%);
+        }
+        .cover-badge {
+            display: inline-block;
+            padding: 6px 20px;
+            border: 1px solid var(--unifil);
+            border-radius: 40px;
+            font-size: .8rem; font-weight: 700; letter-spacing: .12em;
+            color: var(--unifil); text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .cover h1 {
+            font-size: 3.4rem; font-weight: 900; line-height: 1.1;
+            background: linear-gradient(135deg, #fff 30%, var(--unifil-lt));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 14px;
+        }
+        .cover h1 span { color: var(--unifil); -webkit-text-fill-color: var(--unifil); }
+        .cover p.subtitle {
+            font-size: 1.15rem; color: var(--muted); max-width: 560px; line-height: 1.6;
+            margin: 0 auto 30px;
+        }
+        .cover-pills {
+            display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 34px;
+        }
+        .pill {
+            padding: 6px 18px;
+            background: rgba(255,140,0,.12);
+            border: 1px solid rgba(255,140,0,.35);
+            border-radius: 30px; font-size: .82rem; color: var(--unifil-lt);
+        }
+        .cover-langs {
+            display: flex; gap: 24px; justify-content: center;
+        }
+        .lang-badge {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 22px;
+            border-radius: 10px; font-size: .88rem; font-weight: 600;
+        }
+        .lang-badge.portugol { background: rgba(76,175,254,.12); border: 1px solid rgba(76,175,254,.3); color: var(--blue); }
+        .lang-badge.c        { background: rgba(118,75,162,.12); border: 1px solid rgba(118,75,162,.35); color: #b39ddb; }
+        .lang-badge.java     { background: rgba(255,140,0,.12);  border: 1px solid rgba(255,140,0,.35);  color: var(--unifil-lt); }
+
+        /* ══════════════════════════════════════════════
+           GENERIC LAYOUT HELPERS
+        ══════════════════════════════════════════════ */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+        /* ══════════════════════════════════════════════
+           CARDS
+        ══════════════════════════════════════════════ */
+        .card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 14px; padding: 20px;
+        }
+        .card h3 {
+            font-size: 1rem; font-weight: 700; margin-bottom: 10px;
+            color: var(--unifil-lt);
+        }
+        .card p, .card li { font-size: .9rem; color: var(--muted); line-height: 1.7; }
+        .card ul { padding-left: 18px; }
+
+        .card-green  { border-left: 4px solid var(--green); }
+        .card-blue   { border-left: 4px solid var(--blue); }
+        .card-orange { border-left: 4px solid var(--unifil); }
+        .card-pink   { border-left: 4px solid var(--pink); }
+        .card-red    { border-left: 4px solid var(--red); }
+        .card-yellow { border-left: 4px solid var(--yellow); }
+
+        /* ══════════════════════════════════════════════
+           BIG IDEA BOX
+        ══════════════════════════════════════════════ */
+        .big-idea {
+            background: linear-gradient(135deg, rgba(255,140,0,.14), rgba(255,140,0,.05));
+            border: 1px solid rgba(255,140,0,.35);
+            border-radius: 14px; padding: 20px 24px;
+            font-size: 1.08rem; line-height: 1.65; color: #f0c080;
+            margin-bottom: 20px;
+        }
+        .big-idea strong { color: var(--unifil-lt); }
+
+        /* ══════════════════════════════════════════════
+           HIGHLIGHT / WARNING BOXES
+        ══════════════════════════════════════════════ */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(76,175,254,.12), rgba(76,175,254,.04));
+            border: 1px solid rgba(76,175,254,.3);
+            border-radius: 12px; padding: 18px 22px;
+        }
+        .highlight-box h3 { color: var(--blue); font-size: .95rem; margin-bottom: 8px; }
+        .highlight-box p, .highlight-box li { font-size: .88rem; color: var(--muted); line-height: 1.65; }
+        .highlight-box ul { padding-left: 18px; }
+
+        .warning-box {
+            background: rgba(255,107,107,.1);
+            border: 1px solid rgba(255,107,107,.35);
+            border-radius: 12px; padding: 16px 20px;
+        }
+        .warning-box h3 { color: var(--red); font-size: .92rem; margin-bottom: 6px; }
+        .warning-box p, .warning-box li { font-size: .85rem; color: #ffaaaa; line-height: 1.6; }
+        .warning-box ul { padding-left: 16px; }
+
+        .success-box {
+            background: rgba(76,175,80,.1);
+            border: 1px solid rgba(76,175,80,.35);
+            border-radius: 12px; padding: 16px 20px;
+        }
+        .success-box h3 { color: var(--green); font-size: .92rem; margin-bottom: 6px; }
+        .success-box p, .success-box li { font-size: .88rem; color: #a5d6a7; line-height: 1.65; }
+        .success-box ul { padding-left: 16px; }
+
+        /* ══════════════════════════════════════════════
+           CODE BLOCKS
+        ══════════════════════════════════════════════ */
+        .code-block {
+            background: #0a0e1a;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 10px; padding: 16px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: .82rem; line-height: 1.75;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .kw  { color: #c792ea; font-weight: 700; }   /* keyword */
+        .fn  { color: #82aaff; }                       /* function */
+        .str { color: #c3e88d; }                       /* string */
+        .num { color: #f78c6c; }                       /* number */
+        .cmt { color: #546e7a; font-style: italic; }   /* comment */
+        .op  { color: var(--unifil-lt); }              /* operator */
+
+        .lang-tab {
+            display: inline-block; font-size: .72rem; font-weight: 700;
+            letter-spacing: .08em; text-transform: uppercase;
+            padding: 3px 12px; border-radius: 6px 6px 0 0;
+            margin-bottom: -1px;
+        }
+        .tab-portugol { background: rgba(76,175,254,.18); color: var(--blue); border: 1px solid rgba(76,175,254,.25); }
+        .tab-c        { background: rgba(118,75,162,.2);  color: #b39ddb;     border: 1px solid rgba(118,75,162,.3); }
+        .tab-java     { background: rgba(255,140,0,.15);  color: var(--unifil-lt); border: 1px solid rgba(255,140,0,.3); }
+
+        /* ══════════════════════════════════════════════
+           FLOWCHART / DIAGRAM
+        ══════════════════════════════════════════════ */
+        .flow-wrap {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 0;
+        }
+        .flow-box {
+            padding: 10px 28px;
+            border-radius: 8px;
+            font-size: .85rem; font-weight: 600; text-align: center;
+            min-width: 180px;
+        }
+        .flow-oval    { border-radius: 40px; background: rgba(255,140,0,.2); border: 2px solid var(--unifil); color: var(--unifil-lt); }
+        .flow-diamond {
+            width: 160px; height: 60px;
+            background: rgba(76,175,254,.15);
+            border: 2px solid var(--blue); color: #a0d4ff;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem;
+        }
+        .flow-rect { background: rgba(76,175,80,.15); border: 2px solid var(--green); color: #a5d6a7; }
+        .flow-rect-alt { background: rgba(255,107,107,.15); border: 2px solid var(--red); color: #ffaaaa; }
+        .flow-arrow {
+            width: 2px; height: 22px;
+            background: var(--muted);
+            position: relative;
+        }
+        .flow-arrow::after {
+            content: '▼'; position: absolute; bottom: -14px; left: 50%;
+            transform: translateX(-50%);
+            color: var(--muted); font-size: .7rem;
+        }
+        .flow-branch {
+            display: flex; align-items: flex-start; gap: 40px;
+            margin: 0;
+        }
+        .flow-branch-line {
+            display: flex; flex-direction: column; align-items: center; gap: 0;
+        }
+        .flow-label {
+            font-size: .7rem; color: var(--muted); margin: 4px 0;
+        }
+
+        /* ══════════════════════════════════════════════
+           TABLE
+        ══════════════════════════════════════════════ */
+        table {
+            width: 100%; border-collapse: collapse;
+            font-size: .85rem;
+        }
+        th {
+            background: rgba(255,140,0,.2);
+            color: var(--unifil-lt); font-weight: 700;
+            padding: 10px 14px; text-align: left;
+            border-bottom: 2px solid rgba(255,140,0,.3);
+        }
+        td {
+            padding: 9px 14px; color: var(--muted);
+            border-bottom: 1px solid rgba(255,255,255,.05);
+        }
+        tr:hover td { background: rgba(255,255,255,.03); }
+
+        /* ══════════════════════════════════════════════
+           STEP LIST
+        ══════════════════════════════════════════════ */
+        .step-list { display: flex; flex-direction: column; gap: 12px; }
+        .step-item {
+            display: flex; gap: 14px; align-items: flex-start;
+        }
+        .step-num {
+            min-width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: var(--unifil); color: #000;
+            font-weight: 800; font-size: .85rem;
+            flex-shrink: 0;
+        }
+        .step-text { font-size: .9rem; color: var(--muted); line-height: 1.6; }
+        .step-text strong { color: var(--text); }
+
+        /* ══════════════════════════════════════════════
+           SUMMARY GRID (last slide)
+        ══════════════════════════════════════════════ */
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .summary-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 14px; padding: 18px;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: transform .2s;
+        }
+        .summary-card:hover { transform: translateY(-3px); }
+        .summary-card .icon { font-size: 1.8rem; }
+        .summary-card h4 { font-size: .92rem; font-weight: 700; color: var(--text); }
+        .summary-card p  { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+
+        /* ══════════════════════════════════════════════
+           NAVIGATION
+        ══════════════════════════════════════════════ */
+        #nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 64px;
+            display: flex; align-items: center; justify-content: center; gap: 20px;
+            background: rgba(15,15,26,.92);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,140,0,.12);
+        }
+        .nav-btn {
+            padding: 10px 30px;
+            border-radius: 8px; border: none; cursor: pointer;
+            font-size: .88rem; font-weight: 700; letter-spacing: .04em;
+            transition: all .2s;
+        }
+        .nav-btn.prev {
+            background: rgba(255,255,255,.07);
+            color: var(--muted);
+        }
+        .nav-btn.prev:hover { background: rgba(255,255,255,.12); color: var(--text); }
+        .nav-btn.next {
+            background: var(--unifil);
+            color: #000;
+        }
+        .nav-btn.next:hover { background: var(--unifil-lt); }
+        .nav-dots {
+            display: flex; gap: 8px; align-items: center;
+        }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,.15); cursor: pointer;
+            transition: all .2s;
+        }
+        .dot.active { background: var(--unifil); transform: scale(1.3); }
+
+        /* ══════════════════════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════════════════════ */
+        @media (max-width: 780px) {
+            .slide { padding: 18px 20px 14px; }
+            .slide-header h2 { font-size: 1.35rem; }
+            .two-col, .three-col, .summary-grid { grid-template-columns: 1fr; }
+            .cover h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PROGRESS -->
+<div id="progress-bar"></div>
+
+<!-- HEADER -->
+<header id="header">
+    <div class="hdr-logo">UniFil · Lógica de Programação</div>
+    <div class="hdr-title">Aula 07 — Estruturas de Decisão</div>
+    <div class="hdr-counter">Slide <span id="cur">1</span> / <span id="tot"></span></div>
+</header>
+
+<!-- SLIDES -->
+<div id="slides-wrap">
+
+    <!-- ═══════════════════════════  SLIDE 1 : CAPA  ═══════════════════════════ -->
+    <div class="slide cover active">
+        <div class="cover-badge">Aula 07</div>
+        <h1>Estruturas de<br><span>Decisão</span></h1>
+        <p class="subtitle">
+            Aprenda a criar programas que tomam decisões inteligentes com
+            <strong>if/else</strong>, <strong>if-else if</strong> e <strong>switch/case</strong>
+        </p>
+        <div class="cover-pills">
+            <div class="pill">🔀 Decisão Simples</div>
+            <div class="pill">🔀 Decisão Composta</div>
+            <div class="pill">🔀 Aninhamento</div>
+            <div class="pill">🔀 Switch / Case</div>
+        </div>
+        <div class="cover-langs">
+            <div class="lang-badge portugol">🟦 Portugol</div>
+            <div class="lang-badge c">🟣 Linguagem C</div>
+            <div class="lang-badge java">🟠 Java</div>
+        </div>
+        <p style="margin-top:32px;color:var(--muted);font-size:.8rem;">
+            Prof. Tiago Dutra Galvão &nbsp;·&nbsp; Centro Universitário Filadélfia – UniFil
+        </p>
+    </div>
+
+    <!-- ═══════════════  SLIDE 2 : O QUE SÃO ESTRUTURAS DE DECISÃO  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>🤔 Por que tomar decisões?</h2>
+            <p>Programas reais precisam reagir a diferentes situações</p>
+        </div>
+
+        <div class="big-idea">
+            Na vida real, <strong>tomamos decisões o tempo todo</strong>: "Se chover, levo guarda-chuva; caso contrário, não levo." Programas precisam da mesma capacidade.
+        </div>
+
+        <div class="two-col">
+            <div class="card card-blue">
+                <h3>🌍 Exemplos do Cotidiano</h3>
+                <ul>
+                    <li>Se nota ≥ 6 → aprovado</li>
+                    <li>Se saldo > 0 → saque liberado</li>
+                    <li>Se usuário = admin → exibe painel</li>
+                    <li>Se produto em estoque → permite compra</li>
+                </ul>
+            </div>
+            <div class="card card-orange">
+                <h3>💻 Em Programação</h3>
+                <ul>
+                    <li>Verificar validade de dados</li>
+                    <li>Controlar acesso ao sistema</li>
+                    <li>Calcular descontos por faixa</li>
+                    <li>Exibir mensagens personalizadas</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <div class="highlight-box">
+                <h3>📌 Definição Formal</h3>
+                <p>
+                    <strong>Estruturas de Decisão</strong> (ou Estruturas de Seleção) permitem que o programa <strong>execute ou ignore</strong> um bloco de instruções dependendo do resultado de uma <strong>expressão lógica (condição)</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 3 : SE SIMPLES (IF)  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>🔹 Decisão Simples — SE (if)</h2>
+            <p>Executa um bloco apenas quando a condição é verdadeira</p>
+        </div>
+
+        <div class="two-col" style="align-items:start;">
+
+            <!-- FLUXOGRAMA -->
+            <div>
+                <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;text-align:center;">Fluxograma</p>
+                <div class="flow-wrap" style="align-items:center;">
+                    <div class="flow-box flow-oval">INÍCIO</div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-box flow-diamond">condição?</div>
+                    <div class="flow-branch" style="margin-top:10px;">
+                        <div class="flow-branch-line">
+                            <div class="flow-label" style="color:var(--green);">VERDADEIRO ✔</div>
+                            <div class="flow-arrow"></div>
+                            <div class="flow-box flow-rect" style="min-width:120px;">Bloco SE</div>
+                            <div class="flow-arrow" style="height:30px;"></div>
+                        </div>
+                        <div class="flow-branch-line" style="margin-top:36px;">
+                            <div class="flow-label" style="color:var(--red);">FALSO ✖</div>
+                        </div>
+                    </div>
+                    <div class="flow-box flow-oval" style="margin-top:10px;">FIM</div>
+                </div>
+            </div>
+
+            <!-- SINTAXE NAS 3 LINGUAGENS -->
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div>
+                    <span class="lang-tab tab-portugol">Portugol</span>
+                    <div class="code-block"><span class="kw">se</span> (condição) <span class="kw">entao</span>
+    instrução_1
+    instrução_2
+<span class="kw">fimse</span></div>
+                </div>
+                <div>
+                    <span class="lang-tab tab-c">C</span>
+                    <div class="code-block"><span class="kw">if</span> (condição) {
+    instrução_1;
+    instrução_2;
+}</div>
+                </div>
+                <div>
+                    <span class="lang-tab tab-java">Java</span>
+                    <div class="code-block"><span class="kw">if</span> (condição) {
+    instrução_1;
+    instrução_2;
+}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="highlight-box" style="margin-top:18px;">
+            <h3>💡 Regra de Ouro</h3>
+            <p>Se a condição for <strong>verdadeira</strong>, o bloco é executado. Se for <strong>falsa</strong>, o bloco é <em>simplesmente ignorado</em> e o programa continua normalmente após o <code>fimse / }</code>.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 4 : EXEMPLO SE SIMPLES  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>💻 Exemplo — Decisão Simples</h2>
+            <p>Verificar se um aluno foi aprovado (nota ≥ 6)</p>
+        </div>
+
+        <div class="three-col">
+            <div>
+                <span class="lang-tab tab-portugol">Portugol</span>
+                <div class="code-block"><span class="kw">algoritmo</span> <span class="str">"Aprovacao"</span>
+<span class="kw">var</span>
+  nota: <span class="kw">real</span>
+<span class="kw">inicio</span>
+  <span class="fn">escreva</span>(<span class="str">"Digite a nota: "</span>)
+  <span class="fn">leia</span>(nota)
+
+  <span class="kw">se</span> (nota <span class="op">>=</span> <span class="num">6.0</span>) <span class="kw">entao</span>
+    <span class="fn">escreva</span>(<span class="str">"Aprovado!"</span>)
+  <span class="kw">fimse</span>
+
+  <span class="fn">escreva</span>(<span class="str">"Fim."</span>)
+<span class="kw">fimalgoritmo</span></div>
+            </div>
+            <div>
+                <span class="lang-tab tab-c">C</span>
+                <div class="code-block"><span class="kw">#include</span> &lt;stdio.h&gt;
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+  <span class="kw">float</span> nota;
+
+  <span class="fn">printf</span>(<span class="str">"Digite a nota: "</span>);
+  <span class="fn">scanf</span>(<span class="str">"%f"</span>, &amp;nota);
+
+  <span class="kw">if</span> (nota <span class="op">>=</span> <span class="num">6.0</span>) {
+    <span class="fn">printf</span>(<span class="str">"Aprovado!\n"</span>);
+  }
+
+  <span class="fn">printf</span>(<span class="str">"Fim.\n"</span>);
+  <span class="kw">return</span> <span class="num">0</span>;
+}</div>
+            </div>
+            <div>
+                <span class="lang-tab tab-java">Java</span>
+                <div class="code-block"><span class="kw">import</span> java.util.Scanner;
+
+<span class="kw">public class</span> Aprovacao {
+  <span class="kw">public static void</span> <span class="fn">main</span>
+      (String[] args) {
+    Scanner sc <span class="op">=</span>
+      <span class="kw">new</span> Scanner(System.in);
+
+    System.out.<span class="fn">print</span>(
+      <span class="str">"Digite a nota: "</span>);
+    <span class="kw">double</span> nota <span class="op">=</span> sc.<span class="fn">nextDouble</span>();
+
+    <span class="kw">if</span> (nota <span class="op">>=</span> <span class="num">6.0</span>) {
+      System.out.<span class="fn">println</span>(
+        <span class="str">"Aprovado!"</span>);
+    }
+
+    System.out.<span class="fn">println</span>(<span class="str">"Fim."</span>);
+  }
+}</div>
+            </div>
+        </div>
+
+        <div style="margin-top:16px;" class="two-col">
+            <div class="success-box">
+                <h3>✅ Entrada: nota = 8.0</h3>
+                <p>Condição <code>8.0 >= 6.0</code> → <strong>VERDADEIRO</strong><br>Saída: <em>"Aprovado!" &nbsp; "Fim."</em></p>
+            </div>
+            <div class="warning-box">
+                <h3>⚠️ Entrada: nota = 4.5</h3>
+                <p>Condição <code>4.5 >= 6.0</code> → <strong>FALSO</strong><br>Saída: apenas <em>"Fim."</em></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 5 : SE-SENAO (IF-ELSE)  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>🔸 Decisão Composta — SE / SENÃO (if / else)</h2>
+            <p>Sempre executa um dos dois blocos — nunca os dois, nunca nenhum</p>
+        </div>
+
+        <div class="two-col" style="align-items:start;">
+
+            <div>
+                <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;text-align:center;">Fluxograma</p>
+                <div class="flow-wrap" style="align-items:center;">
+                    <div class="flow-box flow-oval">INÍCIO</div>
+                    <div class="flow-arrow"></div>
+                    <div class="flow-box flow-diamond">condição?</div>
+                    <div style="display:flex;gap:60px;margin-top:8px;">
+                        <div class="flow-branch-line">
+                            <div class="flow-label" style="color:var(--green);">✔ VERDADEIRO</div>
+                            <div class="flow-arrow"></div>
+                            <div class="flow-box flow-rect" style="min-width:110px;">Bloco SE</div>
+                            <div class="flow-arrow" style="height:28px;"></div>
+                        </div>
+                        <div class="flow-branch-line">
+                            <div class="flow-label" style="color:var(--red);">✖ FALSO</div>
+                            <div class="flow-arrow"></div>
+                            <div class="flow-box flow-rect-alt" style="min-width:110px;">Bloco SENÃO</div>
+                            <div class="flow-arrow" style="height:28px;"></div>
+                        </div>
+                    </div>
+                    <div class="flow-box flow-oval" style="margin-top:6px;">FIM</div>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div>
+                    <span class="lang-tab tab-portugol">Portugol</span>
+                    <div class="code-block"><span class="kw">se</span> (condição) <span class="kw">entao</span>
+    bloco_verdadeiro
+<span class="kw">senao</span>
+    bloco_falso
+<span class="kw">fimse</span></div>
+                </div>
+                <div>
+                    <span class="lang-tab tab-c">C</span>
+                    <div class="code-block"><span class="kw">if</span> (condição) {
+    bloco_verdadeiro;
+} <span class="kw">else</span> {
+    bloco_falso;
+}</div>
+                </div>
+                <div>
+                    <span class="lang-tab tab-java">Java</span>
+                    <div class="code-block"><span class="kw">if</span> (condição) {
+    bloco_verdadeiro;
+} <span class="kw">else</span> {
+    bloco_falso;
+}</div>
+                </div>
+                <div class="highlight-box">
+                    <h3>⚡ Diferença-chave</h3>
+                    <p>Na <strong>decisão composta</strong> o programa <em>sempre</em> executa um dos dois caminhos — não existe a possibilidade de "não executar nada".</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 6 : EXEMPLO SE-SENAO  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>💻 Exemplo — Decisão Composta</h2>
+            <p>Aprovado ou Reprovado com mensagem de incentivo</p>
+        </div>
+
+        <div class="three-col">
+            <div>
+                <span class="lang-tab tab-portugol">Portugol</span>
+                <div class="code-block"><span class="kw">algoritmo</span> <span class="str">"AprovaRep"</span>
+<span class="kw">var</span>
+  nota: <span class="kw">real</span>
+<span class="kw">inicio</span>
+  <span class="fn">escreva</span>(<span class="str">"Nota: "</span>)
+  <span class="fn">leia</span>(nota)
+
+  <span class="kw">se</span> (nota <span class="op">>=</span> <span class="num">6.0</span>) <span class="kw">entao</span>
+    <span class="fn">escreva</span>(<span class="str">"APROVADO ✔"</span>)
+    <span class="fn">escreva</span>(<span class="str">"Parabéns!"</span>)
+  <span class="kw">senao</span>
+    <span class="fn">escreva</span>(<span class="str">"REPROVADO ✖"</span>)
+    <span class="fn">escreva</span>(<span class="str">"Estude mais!"</span>)
+  <span class="kw">fimse</span>
+<span class="kw">fimalgoritmo</span></div>
+            </div>
+            <div>
+                <span class="lang-tab tab-c">C</span>
+                <div class="code-block"><span class="kw">#include</span> &lt;stdio.h&gt;
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+  <span class="kw">float</span> nota;
+
+  <span class="fn">printf</span>(<span class="str">"Nota: "</span>);
+  <span class="fn">scanf</span>(<span class="str">"%f"</span>, &amp;nota);
+
+  <span class="kw">if</span> (nota <span class="op">>=</span> <span class="num">6.0f</span>) {
+    <span class="fn">printf</span>(<span class="str">"APROVADO\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"Parabéns!\n"</span>);
+  } <span class="kw">else</span> {
+    <span class="fn">printf</span>(<span class="str">"REPROVADO\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"Estude mais!\n"</span>);
+  }
+  <span class="kw">return</span> <span class="num">0</span>;
+}</div>
+            </div>
+            <div>
+                <span class="lang-tab tab-java">Java</span>
+                <div class="code-block"><span class="kw">import</span> java.util.Scanner;
+
+<span class="kw">public class</span> AprovaRep {
+ <span class="kw">public static void</span> <span class="fn">main</span>
+     (String[] args) {
+  Scanner sc <span class="op">=</span>
+    <span class="kw">new</span> Scanner(System.in);
+
+  System.out.<span class="fn">print</span>(<span class="str">"Nota: "</span>);
+  <span class="kw">double</span> nota<span class="op">=</span>sc.<span class="fn">nextDouble</span>();
+
+  <span class="kw">if</span> (nota <span class="op">>=</span> <span class="num">6.0</span>) {
+    System.out.<span class="fn">println</span>(
+      <span class="str">"APROVADO ✔"</span>);
+    System.out.<span class="fn">println</span>(
+      <span class="str">"Parabéns!"</span>);
+  } <span class="kw">else</span> {
+    System.out.<span class="fn">println</span>(
+      <span class="str">"REPROVADO ✖"</span>);
+    System.out.<span class="fn">println</span>(
+      <span class="str">"Estude mais!"</span>);
+  }
+ }
+}</div>
+            </div>
+        </div>
+
+        <div class="big-idea" style="margin-top:16px;">
+            💡 <strong>Trace mental:</strong> Nota 7.5 → <code>7.5 ≥ 6.0 = true</code> → executa bloco SE (APROVADO / Parabéns). &nbsp;|&nbsp; Nota 3.0 → <code>3.0 ≥ 6.0 = false</code> → executa SENÃO (REPROVADO / Estude mais).
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 7 : SE ANINHADO / ENCADEADO  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>🔗 SE Encadeado — if / else if / else</h2>
+            <p>Múltiplas condições testadas em sequência</p>
+        </div>
+
+        <div class="big-idea">
+            Quando existem <strong>mais de dois caminhos possíveis</strong>, encadeamos vários <code>senao se</code> / <code>else if</code>. Apenas o primeiro bloco cuja condição for <strong>verdadeira</strong> é executado.
+        </div>
+
+        <div class="two-col" style="gap:18px;margin-top:14px;">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div>
+                    <span class="lang-tab tab-portugol">Portugol</span>
+                    <div class="code-block"><span class="kw">se</span> (nota <span class="op">>=</span> <span class="num">9.0</span>) <span class="kw">entao</span>
+  <span class="fn">escreva</span>(<span class="str">"Conceito A"</span>)
+<span class="kw">senao</span>
+  <span class="kw">se</span> (nota <span class="op">>=</span> <span class="num">7.0</span>) <span class="kw">entao</span>
+    <span class="fn">escreva</span>(<span class="str">"Conceito B"</span>)
+  <span class="kw">senao</span>
+    <span class="kw">se</span> (nota <span class="op">>=</span> <span class="num">5.0</span>) <span class="kw">entao</span>
+      <span class="fn">escreva</span>(<span class="str">"Conceito C"</span>)
+    <span class="kw">senao</span>
+      <span class="fn">escreva</span>(<span class="str">"Conceito D"</span>)
+    <span class="kw">fimse</span>
+  <span class="kw">fimse</span>
+<span class="kw">fimse</span></div>
+                </div>
+                <div>
+                    <span class="lang-tab tab-c">C / Java</span>
+                    <div class="code-block"><span class="kw">if</span> (nota <span class="op">>=</span> <span class="num">9.0</span>) {
+  <span class="fn">printf</span>(<span class="str">"Conceito A\n"</span>);
+} <span class="kw">else if</span> (nota <span class="op">>=</span> <span class="num">7.0</span>) {
+  <span class="fn">printf</span>(<span class="str">"Conceito B\n"</span>);
+} <span class="kw">else if</span> (nota <span class="op">>=</span> <span class="num">5.0</span>) {
+  <span class="fn">printf</span>(<span class="str">"Conceito C\n"</span>);
+} <span class="kw">else</span> {
+  <span class="fn">printf</span>(<span class="str">"Conceito D\n"</span>);
+}</div>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <table>
+                    <thead>
+                        <tr><th>Nota</th><th>Condição Verdadeira</th><th>Saída</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>9.5</td><td>nota ≥ 9.0 ✔</td><td>Conceito A</td></tr>
+                        <tr><td>8.0</td><td>nota ≥ 7.0 ✔</td><td>Conceito B</td></tr>
+                        <tr><td>6.0</td><td>nota ≥ 5.0 ✔</td><td>Conceito C</td></tr>
+                        <tr><td>3.0</td><td>nenhuma ✖</td><td>Conceito D</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <h3>⚠️ Atenção: Ordem Importa!</h3>
+                    <ul>
+                        <li>Condições são testadas <strong>de cima para baixo</strong>.</li>
+                        <li>Assim que uma for verdadeira, as restantes <strong>não são testadas</strong>.</li>
+                        <li>Sempre comece pelas condições <strong>mais restritivas</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 8 : SWITCH-CASE  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>🎛️ Escolha-Caso — switch / case</h2>
+            <p>Ideal para múltiplas opções baseadas em um valor exato</p>
+        </div>
+
+        <div class="two-col" style="align-items:start;">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div>
+                    <span class="lang-tab tab-portugol">Portugol</span>
+                    <div class="code-block"><span class="kw">escolha</span> (variável)
+  <span class="kw">caso</span> <span class="num">1</span>
+    <span class="fn">escreva</span>(<span class="str">"Segunda-feira"</span>)
+  <span class="kw">caso</span> <span class="num">2</span>
+    <span class="fn">escreva</span>(<span class="str">"Terça-feira"</span>)
+  <span class="kw">caso</span> <span class="num">3</span>
+    <span class="fn">escreva</span>(<span class="str">"Quarta-feira"</span>)
+  <span class="kw">outrocaso</span>
+    <span class="fn">escreva</span>(<span class="str">"Dia inválido"</span>)
+<span class="kw">fimescolha</span></div>
+                </div>
+                <div>
+                    <span class="lang-tab tab-c">C</span>
+                    <div class="code-block"><span class="kw">switch</span> (variavel) {
+  <span class="kw">case</span> <span class="num">1</span>:
+    <span class="fn">printf</span>(<span class="str">"Segunda-feira\n"</span>);
+    <span class="kw">break</span>;
+  <span class="kw">case</span> <span class="num">2</span>:
+    <span class="fn">printf</span>(<span class="str">"Terça-feira\n"</span>);
+    <span class="kw">break</span>;
+  <span class="kw">case</span> <span class="num">3</span>:
+    <span class="fn">printf</span>(<span class="str">"Quarta-feira\n"</span>);
+    <span class="kw">break</span>;
+  <span class="kw">default</span>:
+    <span class="fn">printf</span>(<span class="str">"Dia inválido\n"</span>);
+}</div>
+                </div>
+                <div>
+                    <span class="lang-tab tab-java">Java</span>
+                    <div class="code-block"><span class="kw">switch</span> (variavel) {
+  <span class="kw">case</span> <span class="num">1</span>:
+    System.out.<span class="fn">println</span>(
+      <span class="str">"Segunda-feira"</span>);
+    <span class="kw">break</span>;
+  <span class="kw">case</span> <span class="num">2</span>:
+    System.out.<span class="fn">println</span>(
+      <span class="str">"Terça-feira"</span>);
+    <span class="kw">break</span>;
+  <span class="kw">default</span>:
+    System.out.<span class="fn">println</span>(
+      <span class="str">"Dia inválido"</span>);
+}</div>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="card card-green">
+                    <h3>✅ Quando usar switch?</h3>
+                    <ul>
+                        <li>Comparação com <strong>valores exatos</strong> (inteiros, chars)</li>
+                        <li>Muitos casos com o mesmo tipo</li>
+                        <li>Menus de opções numeradas</li>
+                        <li>Código mais legível que muitos <code>else if</code></li>
+                    </ul>
+                </div>
+                <div class="warning-box">
+                    <h3>⚠️ O <code>break</code> é obrigatório (C/Java)!</h3>
+                    <p>Sem <code>break</code>, o switch executa os casos seguintes também — comportamento chamado de <strong>fall-through</strong>. No Portugol isso não acontece.</p>
+                </div>
+                <div class="card card-pink">
+                    <h3>🚫 Switch NÃO suporta</h3>
+                    <ul>
+                        <li>Comparações com <code>&gt;</code>, <code>&lt;</code>, <code>≥</code>, <code>≤</code></li>
+                        <li>Expressões lógicas complexas</li>
+                        <li>Valores de ponto flutuante (em C/Java)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 9 : EXEMPLO COMPLETO — CALCULADORA COM MENU  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>🧮 Exemplo Completo — Calculadora com Menu</h2>
+            <p>Combinando switch, if-else e leitura de dados</p>
+        </div>
+
+        <div class="two-col" style="gap:18px;">
+            <div>
+                <span class="lang-tab tab-portugol">Portugol</span>
+                <div class="code-block"><span class="kw">algoritmo</span> <span class="str">"Calculadora"</span>
+<span class="kw">var</span>
+  a, b: <span class="kw">real</span>
+  op: <span class="kw">inteiro</span>
+<span class="kw">inicio</span>
+  <span class="fn">escreva</span>(<span class="str">"1-Soma 2-Sub 3-Mult 4-Div: "</span>)
+  <span class="fn">leia</span>(op)
+  <span class="fn">escreva</span>(<span class="str">"A: "</span>) <span class="fn">leia</span>(a)
+  <span class="fn">escreva</span>(<span class="str">"B: "</span>) <span class="fn">leia</span>(b)
+
+  <span class="kw">escolha</span> (op)
+    <span class="kw">caso</span> <span class="num">1</span>: <span class="fn">escreva</span>(<span class="str">"= "</span>, a<span class="op">+</span>b)
+    <span class="kw">caso</span> <span class="num">2</span>: <span class="fn">escreva</span>(<span class="str">"= "</span>, a<span class="op">-</span>b)
+    <span class="kw">caso</span> <span class="num">3</span>: <span class="fn">escreva</span>(<span class="str">"= "</span>, a<span class="op">*</span>b)
+    <span class="kw">caso</span> <span class="num">4</span>:
+      <span class="kw">se</span> (b <span class="op">&lt;&gt;</span> <span class="num">0</span>) <span class="kw">entao</span>
+        <span class="fn">escreva</span>(<span class="str">"= "</span>, a<span class="op">/</span>b)
+      <span class="kw">senao</span>
+        <span class="fn">escreva</span>(<span class="str">"Div/0!"</span>)
+      <span class="kw">fimse</span>
+    <span class="kw">outrocaso</span>
+      <span class="fn">escreva</span>(<span class="str">"Opção inválida"</span>)
+  <span class="kw">fimescolha</span>
+<span class="kw">fimalgoritmo</span></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div>
+                    <span class="lang-tab tab-c">C</span>
+                    <div class="code-block"><span class="kw">#include</span> &lt;stdio.h&gt;
+<span class="kw">int</span> <span class="fn">main</span>() {
+  <span class="kw">float</span> a, b; <span class="kw">int</span> op;
+  <span class="fn">printf</span>(<span class="str">"1-+ 2-- 3-* 4-/: "</span>);
+  <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;op);
+  <span class="fn">printf</span>(<span class="str">"A: "</span>); <span class="fn">scanf</span>(<span class="str">"%f"</span>,&amp;a);
+  <span class="fn">printf</span>(<span class="str">"B: "</span>); <span class="fn">scanf</span>(<span class="str">"%f"</span>,&amp;b);
+  <span class="kw">switch</span>(op) {
+    <span class="kw">case</span> <span class="num">1</span>: <span class="fn">printf</span>(<span class="str">"%.2f\n"</span>,a+b);<span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">2</span>: <span class="fn">printf</span>(<span class="str">"%.2f\n"</span>,a-b);<span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">3</span>: <span class="fn">printf</span>(<span class="str">"%.2f\n"</span>,a*b);<span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">4</span>:
+      <span class="kw">if</span>(b != <span class="num">0</span>) <span class="fn">printf</span>(<span class="str">"%.2f\n"</span>,a/b);
+      <span class="kw">else</span>       <span class="fn">printf</span>(<span class="str">"Div/0!\n"</span>);
+      <span class="kw">break</span>;
+    <span class="kw">default</span>: <span class="fn">printf</span>(<span class="str">"Inválido\n"</span>);
+  }
+  <span class="kw">return</span> <span class="num">0</span>;
+}</div>
+                </div>
+
+                <div class="highlight-box">
+                    <h3>🔍 Conceitos Combinados</h3>
+                    <ul>
+                        <li><code>switch</code> controla o menu de operações</li>
+                        <li><code>if/else</code> protege a divisão por zero</li>
+                        <li>Estruturas de decisão <strong>aninhadas</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 10 : SE vs SWITCH — QUANDO USAR?  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>⚖️ if-else vs switch — Quando usar cada um?</h2>
+            <p>Comparação prática para escolher a estrutura certa</p>
+        </div>
+
+        <table style="margin-bottom:20px;">
+            <thead>
+                <tr>
+                    <th>Critério</th>
+                    <th>if / else if / else</th>
+                    <th>switch / case</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tipo de condição</td>
+                    <td>✅ Qualquer expressão lógica</td>
+                    <td>⚠️ Apenas igualdade exata</td>
+                </tr>
+                <tr>
+                    <td>Tipos de dados</td>
+                    <td>✅ Todos os tipos</td>
+                    <td>⚠️ int, char (não float/double)</td>
+                </tr>
+                <tr>
+                    <td>Comparações (&gt;, &lt;, ≥, ≤)</td>
+                    <td>✅ Sim</td>
+                    <td>❌ Não</td>
+                </tr>
+                <tr>
+                    <td>Múltiplas opções fixas</td>
+                    <td>⚠️ Funciona, mas fica verboso</td>
+                    <td>✅ Ideal — código mais limpo</td>
+                </tr>
+                <tr>
+                    <td>Legibilidade com &gt;5 opções</td>
+                    <td>⚠️ Pode ficar confuso</td>
+                    <td>✅ Muito mais claro</td>
+                </tr>
+                <tr>
+                    <td>Faixas de valores</td>
+                    <td>✅ Perfeito (nota ≥ 7.0)</td>
+                    <td>❌ Não suportado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="two-col">
+            <div class="success-box">
+                <h3>✅ Use if-else quando...</h3>
+                <ul>
+                    <li>Condição envolve intervalos (<code>nota &gt;= 7.0</code>)</li>
+                    <li>Comparação com tipos reais (float/double)</li>
+                    <li>Lógica complexa com <code>&&</code> e <code>||</code></li>
+                    <li>Poucas alternativas (2 a 3 caminhos)</li>
+                </ul>
+            </div>
+            <div class="highlight-box">
+                <h3>✅ Use switch quando...</h3>
+                <ul>
+                    <li>Menu de opções com inteiros ou chars</li>
+                    <li>Muitos casos com valores fixos exatos</li>
+                    <li>Código de dia da semana, mês, opção de menu</li>
+                    <li>Legibilidade é prioridade</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 11 : ERROS COMUNS  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>🚨 Erros Comuns — Aprenda com os Erros!</h2>
+            <p>Os principais equívocos ao usar estruturas de decisão</p>
+        </div>
+
+        <div class="two-col" style="gap:18px;">
+            <div style="display:flex;flex-direction:column;gap:14px;">
+
+                <div class="warning-box">
+                    <h3>❌ Erro 1: = em vez de ==</h3>
+                    <div class="code-block" style="margin-top:8px;background:#1a0a0a;font-size:.78rem;"><span class="cmt">// ERRADO (atribuição, não comparação)</span>
+<span class="kw">if</span> (nota <span class="op">=</span> <span class="num">7.0</span>) ...
+
+<span class="cmt">// CERTO (comparação de igualdade)</span>
+<span class="kw">if</span> (nota <span class="op">==</span> <span class="num">7.0</span>) ...</div>
+                </div>
+
+                <div class="warning-box">
+                    <h3>❌ Erro 2: Ponto e vírgula após if</h3>
+                    <div class="code-block" style="margin-top:8px;background:#1a0a0a;font-size:.78rem;"><span class="cmt">// ERRADO: if sem efeito!</span>
+<span class="kw">if</span> (nota <span class="op">&gt;=</span> <span class="num">6.0</span>); <span class="cmt">← ; aqui termina o if</span>
+  <span class="fn">printf</span>(<span class="str">"Aprovado\n"</span>); <span class="cmt">← sempre executa</span>
+
+<span class="cmt">// CERTO</span>
+<span class="kw">if</span> (nota <span class="op">&gt;=</span> <span class="num">6.0</span>) {
+  <span class="fn">printf</span>(<span class="str">"Aprovado\n"</span>);
+}</div>
+                </div>
+
+                <div class="warning-box">
+                    <h3>❌ Erro 3: break ausente no switch</h3>
+                    <div class="code-block" style="margin-top:8px;background:#1a0a0a;font-size:.78rem;"><span class="kw">switch</span>(op) {
+  <span class="kw">case</span> <span class="num">1</span>: <span class="fn">printf</span>(<span class="str">"Um\n"</span>); <span class="cmt">← sem break!</span>
+  <span class="kw">case</span> <span class="num">2</span>: <span class="fn">printf</span>(<span class="str">"Dois\n"</span>); <span class="cmt">← também executa!</span>
+  <span class="kw">default</span>: <span class="fn">printf</span>(<span class="str">"Def\n"</span>); <span class="cmt">← e este também!</span>
+}</div>
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="warning-box">
+                    <h3>❌ Erro 4: Condições na ordem errada</h3>
+                    <div class="code-block" style="margin-top:8px;background:#1a0a0a;font-size:.78rem;"><span class="cmt">// ERRADO: nota 9.5 vai cair em B!</span>
+<span class="kw">if</span> (nota <span class="op">&gt;=</span> <span class="num">5.0</span>) <span class="fn">printf</span>(<span class="str">"C"</span>);
+<span class="kw">else if</span> (nota <span class="op">&gt;=</span> <span class="num">7.0</span>) <span class="fn">printf</span>(<span class="str">"B"</span>);
+<span class="kw">else if</span> (nota <span class="op">&gt;=</span> <span class="num">9.0</span>) <span class="fn">printf</span>(<span class="str">"A"</span>);
+
+<span class="cmt">// CERTO: mais restritivo primeiro!</span>
+<span class="kw">if</span> (nota <span class="op">&gt;=</span> <span class="num">9.0</span>) <span class="fn">printf</span>(<span class="str">"A"</span>);
+<span class="kw">else if</span> (nota <span class="op">&gt;=</span> <span class="num">7.0</span>) <span class="fn">printf</span>(<span class="str">"B"</span>);
+<span class="kw">else if</span> (nota <span class="op">&gt;=</span> <span class="num">5.0</span>) <span class="fn">printf</span>(<span class="str">"C"</span>);</div>
+                </div>
+
+                <div class="warning-box">
+                    <h3>❌ Erro 5: Comparar float com ==</h3>
+                    <div class="code-block" style="margin-top:8px;background:#1a0a0a;font-size:.78rem;"><span class="cmt">// PERIGOSO — imprecisão de ponto flutuante</span>
+<span class="kw">if</span> (preco <span class="op">==</span> <span class="num">0.1</span> <span class="op">+</span> <span class="num">0.2</span>) ... <span class="cmt">← pode falhar!</span>
+
+<span class="cmt">// CORRETO — usar diferença pequena (epsilon)</span>
+<span class="kw">if</span> (fabs(preco <span class="op">-</span> <span class="num">0.3</span>) <span class="op">&lt;</span> <span class="num">0.0001</span>) ...</div>
+                </div>
+
+                <div class="success-box">
+                    <h3>✅ Dica de Ouro</h3>
+                    <p>Sempre <strong>trace manualmente</strong> seus algoritmos com valores de teste antes de programar. Isso evita a maioria dos erros lógicos!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════  SLIDE 12 : RESUMO  ═══════════════ -->
+    <div class="slide">
+        <div class="slide-header">
+            <h2>📋 Resumo da Aula 07</h2>
+            <p>Tudo que você aprendeu hoje sobre Estruturas de Decisão</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="icon">🔹</div>
+                <h4>SE Simples (if)</h4>
+                <p>Executa um bloco <em>somente se</em> a condição for verdadeira. Se falsa, o bloco é ignorado.</p>
+            </div>
+            <div class="summary-card">
+                <div class="icon">🔸</div>
+                <h4>SE / SENÃO (if-else)</h4>
+                <p>Sempre executa um dos dois blocos. Nunca ignora os dois e nunca executa os dois.</p>
+            </div>
+            <div class="summary-card">
+                <div class="icon">🔗</div>
+                <h4>SE Encadeado (else if)</h4>
+                <p>Múltiplas condições em sequência. Apenas o primeiro bloco verdadeiro é executado.</p>
+            </div>
+            <div class="summary-card">
+                <div class="icon">🎛️</div>
+                <h4>ESCOLHA-CASO (switch)</h4>
+                <p>Ideal para menus e comparações de igualdade com inteiros ou chars. Requer <code>break</code> em C/Java.</p>
+            </div>
+            <div class="summary-card">
+                <div class="icon">⚖️</div>
+                <h4>if vs switch</h4>
+                <p>Use <strong>if</strong> para intervalos e lógica complexa. Use <strong>switch</strong> para valores exatos e menus.</p>
+            </div>
+            <div class="summary-card">
+                <div class="icon">🚨</div>
+                <h4>Erros Comuns</h4>
+                <p><code>=</code> vs <code>==</code>, ponto-vírgula após <code>if</code>, <code>break</code> ausente, ordem das condições.</p>
+            </div>
+        </div>
+
+        <div class="big-idea" style="margin-top:22px;">
+            🎯 <strong>Próxima Aula — Aula 08:</strong> Estruturas de Decisão na Prática — exercícios resolvidos com menu interativo, validação de dados e sistemas de classificação completos nas 3 linguagens.
+        </div>
+
+        <p style="text-align:center;margin-top:16px;font-size:.82rem;color:var(--muted);">
+            Prof. Tiago Dutra Galvão &nbsp;·&nbsp; UniFil — Centro Universitário Filadélfia &nbsp;·&nbsp; Lógica de Programação e Algoritmos
+        </p>
+    </div>
+
+</div><!-- /slides-wrap -->
+
+<!-- NAVIGATION -->
+<nav id="nav">
+    <button class="nav-btn prev" onclick="changeSlide(-1)">← Anterior</button>
+    <div class="nav-dots" id="dots"></div>
+    <button class="nav-btn next" onclick="changeSlide(1)">Próximo →</button>
+</nav>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const dotsWrap = document.getElementById('dots');
+    const curEl   = document.getElementById('cur');
+    const totEl   = document.getElementById('tot');
+    const bar     = document.getElementById('progress-bar');
+    let cur = 0;
+
+    totEl.textContent = slides.length;
+
+    // Build dots
+    slides.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.onclick = () => goTo(i);
+        dotsWrap.appendChild(d);
+    });
+
+    function goTo(n) {
+        if (n < 0 || n >= slides.length) return;
+        slides[cur].classList.remove('active');
+        slides[cur].classList.add('exit');
+        setTimeout(() => slides[cur < slides.length ? cur : 0].classList.remove('exit'), 450);
+        cur = n;
+        slides[cur].classList.add('active');
+
+        // Update dots
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+
+        // Update header counter & progress
+        curEl.textContent = cur + 1;
+        bar.style.width = ((cur + 1) / slides.length * 100) + '%';
+
+        // Remove exit from old
+        setTimeout(() => {
+            slides.forEach((s, i) => { if (i !== cur) { s.classList.remove('active'); s.classList.remove('exit'); } });
+        }, 460);
+    }
+
+    function changeSlide(dir) { goTo(cur + dir); }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') changeSlide(1);
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    changeSlide(-1);
+    });
+
+    // Touch / swipe
+    let tx = 0;
+    document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+    document.addEventListener('touchend',   e => {
+        const dx = e.changedTouches[0].clientX - tx;
+        if (Math.abs(dx) > 50) changeSlide(dx < 0 ? 1 : -1);
+    });
+
+    // Init progress bar
+    bar.style.width = (1 / slides.length * 100) + '%';
+</script>
+</body>
+</html>

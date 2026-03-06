@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 14 - break e continue | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white;
+            position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p  { font-size: 1.1rem; opacity: 0.95; }
+
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        .two-column   { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+
+        .content-box {
+            background: var(--unifil-light); padding: 30px;
+            border-radius: 15px; border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.4rem; }
+        .content-box p  { font-size: 1.05rem; line-height: 1.7; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li { padding: 8px 0 8px 30px; position: relative; font-size: 1.05rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .highlight-box p  { font-size: 1.1rem; line-height: 1.7; }
+        .highlight-box ul { list-style: none; padding: 0; }
+        .highlight-box li { padding: 8px 0; font-size: 1.05rem; line-height: 1.6; }
+
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem; overflow-x: auto;
+            margin: 15px 0; line-height: 1.65; white-space: pre;
+        }
+        .code-block .keyword  { color: #c678dd; font-weight: 600; }
+        .code-block .function { color: #61afef; }
+        .code-block .string   { color: #98c379; }
+        .code-block .comment  { color: #5c6370; font-style: italic; }
+        .code-block .number   { color: #d19a66; }
+        .code-block .operator { color: #FF8C00; font-weight: 600; }
+        .code-block .break-kw { color: #e06c75; font-weight: 700; }
+        .code-block .cont-kw  { color: #56b6c2; font-weight: 700; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white; padding: 35px 40px; border-radius: 20px;
+            font-size: 1.6rem; font-weight: 600; text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(74,144,226,0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd; border: 3px solid #ffc107;
+            border-radius: 15px; padding: 30px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .analogy-box h3 { color: #856404; margin-bottom: 15px; font-size: 1.4rem; }
+        .analogy-box p  { font-size: 1.05rem; line-height: 1.7; color: #533f03; margin-top: 8px; }
+
+        .warning-box {
+            background: #ffebee; border: 3px solid #f44336;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .warning-box h3 { color: #c62828; margin-bottom: 15px; font-size: 1.3rem; }
+        .warning-box p  { font-size: 1.05rem; line-height: 1.6; color: #b71c1c; }
+        .warning-box ul { list-style: none; padding: 0; }
+        .warning-box li { padding: 6px 0; font-size: 1rem; color: #b71c1c; }
+
+        .success-box {
+            background: #e8f5e9; border: 3px solid #4caf50;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .success-box h3 { color: #2e7d32; margin-bottom: 15px; font-size: 1.3rem; }
+        .success-box p  { font-size: 1.05rem; line-height: 1.7; color: #1b5e20; }
+        .success-box ul { list-style: none; padding: 0; }
+        .success-box li { padding: 5px 0; font-size: 1rem; color: #1b5e20; }
+
+        .stat-card {
+            text-align: center; padding: 25px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 3rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 10px; }
+        .stat-card .label  { font-size: 1.05rem; color: var(--unifil-gray); font-weight: 500; }
+
+        .comparison-table {
+            width: 100%; margin: 20px 0; border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            background: white; border-radius: 10px; overflow: hidden;
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 16px 20px; text-align: left; font-size: 1.05rem;
+        }
+        .comparison-table td { padding: 13px 20px; border-bottom: 1px solid var(--unifil-light); font-size: 1rem; line-height: 1.6; }
+        .comparison-table tr:hover td { background: var(--unifil-light); }
+
+        .exercise-box {
+            background: #f0f4ff; border: 2px solid #3f51b5;
+            border-radius: 15px; padding: 25px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .exercise-box h4 { color: #283593; margin-bottom: 12px; font-size: 1.2rem; }
+        .exercise-box p  { font-size: 1.05rem; line-height: 1.7; color: #1a237e; }
+        .exercise-box ul { list-style: none; padding: 0; margin-top: 8px; }
+        .exercise-box li { padding: 5px 0; font-size: 1rem; color: #1a237e; }
+        .exercise-box li::before { content: '📌 '; }
+
+        .trace-table {
+            width: 100%; border-collapse: collapse; margin: 15px 0;
+            border-radius: 10px; overflow: hidden;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .trace-table th { background: #4A90E2; color: white; padding: 12px 16px; text-align: center; font-size: 0.95rem; }
+        .trace-table td { padding: 10px 16px; border: 1px solid #ddd; text-align: center; font-family: 'Courier New', monospace; font-size: 0.92rem; }
+        .trace-table .break-row { background: #ffcdd2; font-weight: 700; color: #c62828; }
+        .trace-table .cont-row  { background: #e1f5fe; font-weight: 700; color: #0277bd; }
+        .trace-table .normal    { background: #f1f8e9; }
+
+        /* ── KEYWORD PILL ── */
+        .kw-break    { display:inline-block; background:#fce4ec; color:#b71c1c; border:2px solid #f44336; padding:4px 14px; border-radius:20px; font-family:'Courier New',monospace; font-weight:700; font-size:1.1rem; }
+        .kw-continue { display:inline-block; background:#e1f5fe; color:#01579b; border:2px solid #0288d1; padding:4px 14px; border-radius:20px; font-family:'Courier New',monospace; font-weight:700; font-size:1.1rem; }
+
+        /* ── ASCII OUTPUT ── */
+        .ascii-output {
+            background: #1e1e2e; color: #98c379;
+            font-family: 'Courier New', monospace; font-size: 0.9rem;
+            padding: 18px 24px; border-radius: 10px; line-height: 1.8;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+
+        /* ── LEVEL BADGE ── */
+        .level-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-bottom:10px; }
+        .level-easy   { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .level-medium { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .level-hard   { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(255,255,255,0.95); padding: 15px 30px;
+            border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 80px; text-align: center; font-size: 1.1rem; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.2); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); transition: width 0.3s ease; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        code { font-family:'Courier New',monospace; background:#f0f0f0; padding:2px 6px; border-radius:4px; font-size:0.93em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="presentation">
+
+<!-- ══════════════════════════════════════════════ SLIDE 1 — TÍTULO -->
+<div class="slide active">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h1>Lógica de Programação e Algoritmos</h1>
+            <p>Aula 14 — Controle de Fluxo: break e continue</p>
+        </div>
+        <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+            <div style="font-size:5rem;margin-bottom:20px;">⛔ ⏭️</div>
+            <h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:20px;">
+                Controlando o Fluxo Dentro dos Laços
+            </h2>
+            <p style="font-size:1.3rem;color:var(--unifil-gray);max-width:800px;margin-bottom:35px;">
+                Aprenda a <strong>interromper</strong> um laço antes do fim com <span class="kw-break">break</span>
+                e a <strong>pular uma iteração</strong> com <span class="kw-continue">continue</span> —
+                tornando seus programas mais eficientes e expressivos.
+            </p>
+            <div class="three-column" style="width:100%;max-width:1000px;margin-top:10px;">
+                <div class="stat-card">
+                    <div class="number" style="font-size:2rem;">break</div>
+                    <div class="label">Encerra o laço imediatamente</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" style="font-size:1.8rem;">continue</div>
+                    <div class="label">Pula para a próxima iteração</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">2</div>
+                    <div class="label">Comandos de controle</div>
+                </div>
+            </div>
+            <div style="margin-top:40px;font-size:1.1rem;color:var(--unifil-gray);">
+                <p><strong>Professor:</strong> Tiago Dutra Galvão</p>
+                <p style="margin-top:6px;"><strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═════════════════════════════════════ SLIDE 2 — MOTIVAÇÃO ════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🤔 Por que precisamos de break e continue?</h2>
+            <p>Situações em que a condição normal do laço não é suficiente</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">
+                Às vezes queremos parar o laço <strong>no meio</strong>
+                ou <strong>pular</strong> alguns valores — sem alterar a condição principal.
+            </div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div class="content-box">
+                    <h3>⛔ Quando usar break?</h3>
+                    <ul>
+                        <li>Encontrou o que procurava — parar a busca</li>
+                        <li>Ocorreu um erro — abortar o processamento</li>
+                        <li>Usuário pediu para cancelar</li>
+                        <li>Primeiro número inválido em uma sequência</li>
+                    </ul>
+                    <div class="code-block" style="margin-top:14px; font-size:0.82rem;"><span class="comment">// Buscar o 1º número par</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">100</span> <span class="keyword">faca</span>
+  <span class="keyword">se</span> (i <span class="operator">%</span> <span class="number">2</span> <span class="operator">==</span> <span class="number">0</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"Achei: "</span>, i)
+    <span class="break-kw">interrompa</span>   <span class="comment">← sai imediatamente</span>
+  <span class="keyword">fimse</span>
+<span class="keyword">fimpara</span></div>
+                </div>
+
+                <div class="content-box">
+                    <h3>⏭️ Quando usar continue?</h3>
+                    <ul>
+                        <li>Ignorar valores que não atendem a critério</li>
+                        <li>Pular linhas em branco ou dados inválidos</li>
+                        <li>Processar só múltiplos ou ímpares</li>
+                        <li>Filtrar itens de uma lista</li>
+                    </ul>
+                    <div class="code-block" style="margin-top:14px; font-size:0.82rem;"><span class="comment">// Imprimir só os ímpares</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+  <span class="keyword">se</span> (i <span class="operator">%</span> <span class="number">2</span> <span class="operator">==</span> <span class="number">0</span>) <span class="keyword">entao</span>
+    <span class="cont-kw">continue</span>      <span class="comment">← pula os pares</span>
+  <span class="keyword">fimse</span>
+  <span class="function">escreva</span>(i)     <span class="comment">← só chega aqui se ímpar</span>
+<span class="keyword">fimpara</span></div>
+                </div>
+            </div>
+
+            <div class="analogy-box" style="margin-top:10px;">
+                <h3>🎭 Analogia: Revisão de Currículos</h3>
+                <p>
+                    Um RH revisa uma pilha de currículos.<br>
+                    <strong>break</strong> = encontrou o candidato perfeito → para de ler os outros.<br>
+                    <strong>continue</strong> = candidato sem experiência → descarta e passa para o próximo sem análise detalhada.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════ SLIDE 3 — BREAK ═══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>⛔ O Comando BREAK</h2>
+            <p>Interrompe o laço imediatamente e salta para a instrução seguinte</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-column" style="margin-top:10px;">
+                <div>
+                    <div class="content-box" style="margin-top:0;">
+                        <h3>📐 Como funciona</h3>
+                        <p>Quando o <code>break</code> é executado, o laço <strong>encerra imediatamente</strong>, independente da condição, e o programa continua na primeira instrução após o <code>fimpara</code> / <code>}</code>.</p>
+                        <div class="code-block" style="margin-top:12px; font-size:0.85rem;"><span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+  <span class="keyword">se</span> (i <span class="operator">==</span> <span class="number">5</span>) <span class="keyword">entao</span>
+    <span class="break-kw">interrompa</span>   <span class="comment">← C/Java: break</span>
+  <span class="keyword">fimse</span>
+  <span class="function">escreva</span>(i, <span class="string">" "</span>)
+<span class="keyword">fimpara</span>
+<span class="function">escreva</span>(<span class="string">"Fim"</span>)
+
+<span class="comment">// Saída: 1 2 3 4 Fim</span>
+<span class="comment">// (i=5 dispara break antes de escrever)</span></div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:15px;">
+                        <h4>🔵 C / 🟠 Java — mesma sintaxe</h4>
+                        <div class="code-block" style="font-size:0.85rem;"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span><span class="number">10</span>; i<span class="operator">++</span>) {
+  <span class="keyword">if</span>(i == <span class="number">5</span>) <span class="break-kw">break</span>;  <span class="comment">← encerra</span>
+  <span class="function">printf</span>(<span class="string">"%d "</span>, i);
+}
+<span class="function">printf</span>(<span class="string">"Fim\n"</span>);
+<span class="comment">// Saída: 1 2 3 4 Fim</span></div>
+                    </div>
+                </div>
+
+                <div>
+                    <table class="trace-table">
+                        <thead>
+                            <tr><th>i</th><th>i == 5?</th><th>Ação</th><th>Saída</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="normal"><td>1</td><td>NÃO</td><td>escreve</td><td>1</td></tr>
+                            <tr class="normal"><td>2</td><td>NÃO</td><td>escreve</td><td>2</td></tr>
+                            <tr class="normal"><td>3</td><td>NÃO</td><td>escreve</td><td>3</td></tr>
+                            <tr class="normal"><td>4</td><td>NÃO</td><td>escreve</td><td>4</td></tr>
+                            <tr class="break-row"><td>5</td><td>SIM</td><td>⛔ BREAK</td><td>—</td></tr>
+                            <tr><td colspan="4" style="text-align:center;background:#fafafa;color:#666;">laço encerrado — continua em "escreva Fim"</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="warning-box" style="margin-top:15px;">
+                        <h3>⚠️ break em laços aninhados</h3>
+                        <p>
+                            O <code>break</code> encerra <strong>apenas o laço mais interno</strong>
+                            onde está inserido — não encerra todos os laços!
+                        </p>
+                        <div class="code-block" style="margin-top:8px; font-size:0.82rem;"><span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+    <span class="keyword">se</span> j<span class="operator">==</span><span class="number">2</span> <span class="keyword">entao</span> <span class="break-kw">interrompa</span> <span class="keyword">fimse</span>
+    <span class="function">escreva</span>(i,j)    <span class="comment">← encerra só o interno</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span>
+<span class="comment">// Saída: 11  21  31</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════ SLIDE 4 — CONTINUE ════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>⏭️ O Comando CONTINUE</h2>
+            <p>Pula o restante da iteração atual e vai para a próxima</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-column" style="margin-top:10px;">
+                <div>
+                    <div class="content-box" style="margin-top:0;">
+                        <h3>📐 Como funciona</h3>
+                        <p>Quando o <code>continue</code> é executado, o restante do corpo do laço é <strong>ignorado</strong> e o controle vai diretamente para o teste da condição (ou incremento no <code>for</code>).</p>
+                        <div class="code-block" style="margin-top:12px; font-size:0.85rem;"><span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+  <span class="keyword">se</span> (i <span class="operator">%</span> <span class="number">2</span> <span class="operator">==</span> <span class="number">0</span>) <span class="keyword">entao</span>
+    <span class="cont-kw">continue</span>   <span class="comment">← pula pares</span>
+  <span class="keyword">fimse</span>
+  <span class="function">escreva</span>(i, <span class="string">" "</span>)
+<span class="keyword">fimpara</span>
+<span class="comment">// Saída: 1 3 5 7 9</span></div>
+                    </div>
+
+                    <div class="example-card" style="margin-top:15px;">
+                        <h4>🔵 C / 🟠 Java</h4>
+                        <div class="code-block" style="font-size:0.85rem;"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span><span class="number">10</span>; i<span class="operator">++</span>) {
+  <span class="keyword">if</span>(i % <span class="number">2</span> == <span class="number">0</span>) <span class="cont-kw">continue</span>; <span class="comment">← pula</span>
+  <span class="function">printf</span>(<span class="string">"%d "</span>, i);
+}
+<span class="comment">// Saída: 1 3 5 7 9</span></div>
+                    </div>
+                </div>
+
+                <div>
+                    <table class="trace-table">
+                        <thead>
+                            <tr><th>i</th><th>i%2==0?</th><th>Ação</th><th>Saída</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="normal"><td>1</td><td>NÃO</td><td>escreve</td><td>1</td></tr>
+                            <tr class="cont-row"><td>2</td><td>SIM</td><td>⏭️ CONTINUE</td><td>—</td></tr>
+                            <tr class="normal"><td>3</td><td>NÃO</td><td>escreve</td><td>3</td></tr>
+                            <tr class="cont-row"><td>4</td><td>SIM</td><td>⏭️ CONTINUE</td><td>—</td></tr>
+                            <tr class="normal"><td>5</td><td>NÃO</td><td>escreve</td><td>5</td></tr>
+                            <tr class="cont-row"><td>6</td><td>SIM</td><td>⏭️ CONTINUE</td><td>—</td></tr>
+                            <tr class="normal"><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="success-box" style="margin-top:15px;">
+                        <h3>✅ Diferença crucial: continue vs break</h3>
+                        <ul>
+                            <li><strong>break</strong> = encerra o laço inteiro</li>
+                            <li><strong>continue</strong> = pula só a iteração atual; o laço continua</li>
+                            <li><strong>break</strong>: saída total &nbsp;|&nbsp; <strong>continue</strong>: filtro</li>
+                        </ul>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>🎵 Analogia: Playlist</h3>
+                        <p>
+                            <strong>break</strong> = parar a música e fechar o app.<br>
+                            <strong>continue</strong> = pular a música atual e ir para a próxima.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5 — EXEMPLO 1 ══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 1 — Busca Linear com break</h2>
+            <p>Encontrar o primeiro elemento que satisfaz uma condição</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema</h4>
+                <p>Leia 10 números. Encontre e exiba o <strong>primeiro número divisível por 7</strong>. Ao encontrá-lo, pare a busca imediatamente.</p>
+            </div>
+
+            <div class="three-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"BuscaDiv7"</span>
+<span class="keyword">var</span>
+  n, i   : <span class="keyword">inteiro</span>
+  achado : <span class="keyword">logico</span>
+<span class="keyword">inicio</span>
+  achado <span class="operator">&lt;-</span> falso
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"Número "</span>, i, <span class="string">": "</span>)
+    <span class="function">leia</span>(n)
+
+    <span class="keyword">se</span> (n <span class="operator">%</span> <span class="number">7</span> <span class="operator">==</span> <span class="number">0</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"✅ Achei: "</span>, n,
+              <span class="string">" (na pos. "</span>, i, <span class="string">")"</span>)
+      achado <span class="operator">&lt;-</span> verdadeiro
+      <span class="break-kw">interrompa</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="keyword">se</span> (nao achado) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"❌ Nenhum div. por 7"</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🔵 C</h4>
+                    <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">int</span> n, pos = <span class="number">-1</span>;
+
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span><span class="number">10</span>; i<span class="operator">++</span>) {
+    <span class="function">printf</span>(<span class="string">"Número %d: "</span>, i);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;n);
+
+    <span class="keyword">if</span>(n % <span class="number">7</span> == <span class="number">0</span>) {
+      <span class="function">printf</span>(<span class="string">"Achei: %d"</span>
+             <span class="string">" (pos %d)\n"</span>, n, i);
+      pos = i;
+      <span class="break-kw">break</span>;
+    }
+  }
+
+  <span class="keyword">if</span>(pos == <span class="number">-1</span>)
+    <span class="function">printf</span>(<span class="string">"Nenhum div. 7\n"</span>);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                </div>
+
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟠 Java</h4>
+                    <div class="code-block"><span class="keyword">import</span> java.util.Scanner;
+<span class="keyword">public class</span> BuscaDiv7 {
+ <span class="keyword">public static void</span>
+   <span class="function">main</span>(String[] args) {
+  Scanner sc =
+    <span class="keyword">new</span> Scanner(System.in);
+  <span class="keyword">int</span> pos = <span class="number">-1</span>;
+
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span><span class="number">10</span>; i<span class="operator">++</span>){
+    System.out.<span class="function">print</span>(
+      <span class="string">"Número " + i + ": "</span>);
+    <span class="keyword">int</span> n = sc.<span class="function">nextInt</span>();
+
+    <span class="keyword">if</span>(n % <span class="number">7</span> == <span class="number">0</span>){
+      System.out.<span class="function">println</span>(
+        <span class="string">"Achei: " + n</span>);
+      pos = i;
+      <span class="break-kw">break</span>;
+    }
+  }
+  <span class="keyword">if</span>(pos==<span class="number">-1</span>)
+    System.out.<span class="function">println</span>(
+      <span class="string">"Nenhum."</span>);
+ }
+}</div>
+                </div>
+            </div>
+
+            <div class="success-box" style="margin-top:10px;">
+                <h3>✅ Por que break aqui economiza processamento?</h3>
+                <p>Se o primeiro número já for divisível por 7, o laço encerra na primeira iteração — sem verificar os outros 9. Em listas enormes, isso faz enorme diferença de desempenho.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 6 — EXEMPLO 2 ══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 2 — Filtro com continue</h2>
+            <p>Processar somente os valores que atendem a um critério</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema</h4>
+                <p>Leia 10 números. Some e conte apenas os positivos, ignorando zeros e negativos com <code>continue</code>.</p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"SomaPositivos"</span>
+<span class="keyword">var</span>
+  n, i, qtd: <span class="keyword">inteiro</span>
+  soma     : <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+  soma <span class="operator">&lt;-</span> <span class="number">0</span>
+  qtd  <span class="operator">&lt;-</span> <span class="number">0</span>
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"Número "</span>, i, <span class="string">": "</span>)
+    <span class="function">leia</span>(n)
+
+    <span class="keyword">se</span> (n <span class="operator">&lt;=</span> <span class="number">0</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">"⏭️ Ignorado"</span>)
+      <span class="cont-kw">continue</span>    <span class="comment">← pula não-positivos</span>
+    <span class="keyword">fimse</span>
+
+    soma <span class="operator">&lt;-</span> soma <span class="operator">+</span> n
+    qtd  <span class="operator">&lt;-</span> qtd <span class="operator">+</span> <span class="number">1</span>
+    <span class="function">escreva</span>(<span class="string">"  ✅ Somado: "</span>, n)
+  <span class="keyword">fimpara</span>
+
+  <span class="function">escreva</span>(<span class="string">"Positivos: "</span>, qtd)
+  <span class="function">escreva</span>(<span class="string">"Soma     : "</span>, soma)
+  <span class="keyword">se</span> (qtd <span class="operator">&gt;</span> <span class="number">0</span>) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"Média    : "</span>, soma<span class="operator">/</span>qtd:<span class="number">6</span>:<span class="number">2</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🔵 C</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">int</span>   n, qtd = <span class="number">0</span>;
+  <span class="keyword">float</span> soma = <span class="number">0</span>;
+
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span><span class="number">10</span>; i<span class="operator">++</span>) {
+    <span class="function">printf</span>(<span class="string">"Número %d: "</span>, i);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;n);
+
+    <span class="keyword">if</span>(n <span class="operator">&lt;=</span> <span class="number">0</span>) {
+      <span class="function">printf</span>(<span class="string">"Ignorado\n"</span>);
+      <span class="cont-kw">continue</span>;
+    }
+
+    soma <span class="operator">+=</span> n; qtd<span class="operator">++</span>;
+    <span class="function">printf</span>(<span class="string">"  Somado: %d\n"</span>, n);
+  }
+
+  <span class="function">printf</span>(<span class="string">"Positivos: %d\n"</span>, qtd);
+  <span class="function">printf</span>(<span class="string">"Soma: %.1f\n"</span>, soma);
+  <span class="keyword">if</span>(qtd<span class="operator">&gt;</span><span class="number">0</span>)
+    <span class="function">printf</span>(<span class="string">"Media: %.2f\n"</span>,
+           soma<span class="operator">/</span>qtd);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+
+                    <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>💡 continue vs if sem continue</h3>
+                        <p>
+                            O mesmo resultado pode ser obtido com <code>se (n &gt; 0) entao... fimse</code>,
+                            mas o <code>continue</code> é mais expressivo quando há muito código depois:
+                            deixa claro que o caso negativo é uma <em>exceção</em> a ser descartada logo no início.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7 — EXEMPLO 3 ══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 3 — break em Validação de Senha</h2>
+            <p>Combinando break com contador de tentativas em while</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema</h4>
+                <p>Sistema de login: 3 tentativas. Se acertar a senha em qualquer momento, use <code>break</code> para sair imediatamente. Diferencie "saiu por acerto" de "saiu por limite".</p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"Login"</span>
+<span class="keyword">var</span>
+  senha  : <span class="keyword">caractere</span>
+  tent   : <span class="keyword">inteiro</span>
+  acertou: <span class="keyword">logico</span>
+<span class="keyword">inicio</span>
+  acertou <span class="operator">&lt;-</span> falso
+
+  <span class="keyword">para</span> tent <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">3</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"Tent. "</span>, tent, <span class="string">"/3: "</span>)
+    <span class="function">leia</span>(senha)
+
+    <span class="keyword">se</span> (senha <span class="operator">==</span> <span class="string">"1234"</span>) <span class="keyword">entao</span>
+      acertou <span class="operator">&lt;-</span> verdadeiro
+      <span class="break-kw">interrompa</span>    <span class="comment">← sai ao acertar</span>
+    <span class="keyword">senao</span>
+      <span class="function">escreva</span>(<span class="string">"❌ Errou!"</span>)
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="comment">// Verifica como saiu do laço</span>
+  <span class="keyword">se</span> (acertou) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"✅ Acesso liberado!"</span>)
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"🔒 Conta bloqueada!"</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="success-box" style="margin-top:0;">
+                        <h3>✅ O padrão "flag + break"</h3>
+                        <p>
+                            Use uma variável booleana (<code>acertou</code>) para registrar
+                            <em>por que</em> o laço terminou — condição normal ou break.
+                            Após o laço, verifique a flag para tomar a decisão correta.
+                        </p>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top:15px;">
+                        <thead>
+                            <tr><th>Entrada</th><th>Resultado</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>"0000", "1234"</td><td>✅ Acesso liberado na 2ª tent.</td></tr>
+                            <tr><td>"1234"</td><td>✅ Acesso liberado na 1ª tent.</td></tr>
+                            <tr><td>"abc", "xyz", "999"</td><td>🔒 Conta bloqueada (3 erros)</td></tr>
+                        </tbody>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>🎯 Quando usar flag + break</h3>
+                        <ul>
+                            <li>Precisa saber <em>como</em> o laço terminou</li>
+                            <li>Condição de saída é mista (acerto OU limite)</li>
+                            <li>Código após o laço depende do motivo da saída</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8 — EXEMPLO 4 ══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo 4 — continue com Laços Aninhados</h2>
+            <p>Filtrar apenas os múltiplos de 3 na tabuada</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema</h4>
+                <p>Exibir a tabuada de 1 a 5, mas mostrando <strong>apenas os produtos divisíveis por 3</strong>. Use <code>continue</code> para pular os demais.</p>
+            </div>
+
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"TabuadaMult3"</span>
+<span class="keyword">var</span> i, j, prod: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="function">escreva</span>(<span class="string">"Produtos divisíveis por 3:"</span>)
+  <span class="function">escreval</span>(<span class="string">"─────────────────────────"</span>)
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">10</span> <span class="keyword">faca</span>
+      prod <span class="operator">&lt;-</span> i <span class="operator">*</span> j
+
+      <span class="comment">// Pular se não é mult. de 3</span>
+      <span class="keyword">se</span> (prod <span class="operator">%</span> <span class="number">3</span> <span class="operator">&lt;&gt;</span> <span class="number">0</span>) <span class="keyword">entao</span>
+        <span class="cont-kw">continue</span>
+      <span class="keyword">fimse</span>
+
+      <span class="function">escreva</span>(i, <span class="string">" x "</span>, j,
+              <span class="string">" = "</span>, prod)
+    <span class="keyword">fimpara</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="ascii-output" style="margin-top:0; font-size:0.85rem;">Produtos divisíveis por 3:
+─────────────────────────
+1 x 3 = 3
+1 x 6 = 6
+1 x 9 = 9
+2 x 3 = 6
+2 x 6 = 12
+2 x 9 = 18
+3 x 1 = 3
+3 x 2 = 6
+3 x 3 = 9
+3 x 4 = 12
+3 x 5 = 15
+...
+<span style="color:#5c6370;">// 5×7 = 35 → não mult.3 → pula
+// 5×9 = 45 → mult.3 → exibe</span></div>
+
+                    <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>🔍 continue em laço aninhado</h3>
+                        <p>
+                            Dentro do laço <strong>interno</strong> (<code>j</code>),
+                            o <code>continue</code> pula apenas a iteração atual do interno
+                            — voltando ao teste de <code>j</code>.
+                            O laço externo (<code>i</code>) <strong>não é afetado</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════ SLIDE 9 — BREAK vs CONTINUE ═════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>⚖️ break vs continue — Comparação Definitiva</h2>
+            <p>Quando usar cada um e os cuidados necessários</p>
+        </div>
+        <div class="slide-body">
+            <table class="comparison-table" style="margin-top:15px;">
+                <thead>
+                    <tr><th>Critério</th><th>⛔ break</th><th>⏭️ continue</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>O que faz</strong></td><td>Encerra o laço imediatamente</td><td>Pula para a próxima iteração</td></tr>
+                    <tr><td><strong>O laço continua?</strong></td><td>Não — encerrado</td><td>Sim — próxima iteração</td></tr>
+                    <tr><td><strong>Código após o laço</strong></td><td>Executado logo em seguida</td><td>Executado só quando o laço acabar</td></tr>
+                    <tr><td><strong>Em laços aninhados</strong></td><td>Encerra somente o laço mais interno</td><td>Pula só no laço mais interno</td></tr>
+                    <tr><td><strong>Caso clássico</strong></td><td>Busca (achou → para)</td><td>Filtro (não atende → pula)</td></tr>
+                    <tr><td><strong>Efeito no for</strong></td><td>Sai sem incrementar i</td><td>Executa o incremento normalmente</td></tr>
+                </tbody>
+            </table>
+
+            <div class="two-column" style="margin-top:15px;">
+                <div class="warning-box" style="margin-bottom:0;">
+                    <h3>⚠️ Não abuse do break e continue</h3>
+                    <ul>
+                        <li>Usar em excesso dificulta a leitura do código</li>
+                        <li>Muitos <code>break</code>s em um laço = sinal de lógica confusa</li>
+                        <li>Prefira condições claras na assinatura do laço quando possível</li>
+                        <li>Nunca substitua toda a lógica de condição por <code>break</code></li>
+                    </ul>
+                </div>
+
+                <div class="content-box" style="margin-bottom:0;">
+                    <h3>✅ Uso adequado</h3>
+                    <ul>
+                        <li><strong>break</strong>: 1 ponto de saída antecipada bem identificado</li>
+                        <li><strong>continue</strong>: filtragem inicial de casos excepcionais</li>
+                        <li>Sempre documente com comentário o porquê do break/continue</li>
+                        <li>Verifique se a flag booleana é necessária após o laço</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="analogy-box" style="margin-top:15px;">
+                <h3>🛒 Analogia: Fila do Caixa</h3>
+                <p>
+                    <strong>break</strong> = fechar o caixa no meio da fila — todos os clientes restantes ficam sem atendimento.<br>
+                    <strong>continue</strong> = pular o cliente que chegou sem produto — atende o próximo mas a fila continua.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═════════════════════ SLIDE 10 — ERROS COMUNS ════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🚨 Erros Comuns com break e continue</h2>
+            <p>Armadilhas frequentes — especialmente em laços aninhados</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-column" style="margin-top:10px;">
+                <div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 1: break fora de laço ou switch</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// ERRADO: break fora de laço</span>
+<span class="keyword">se</span> (x <span class="operator">&gt;</span> <span class="number">0</span>) <span class="keyword">entao</span>
+  <span class="break-kw">interrompa</span>  <span class="comment">← erro de compilação!</span>
+<span class="keyword">fimse</span>
+<span class="comment">// break/continue só funcionam</span>
+<span class="comment">// DENTRO de um laço (for/while/do)</span></div>
+                    </div>
+
+                    <div class="warning-box">
+                        <h3>❌ Erro 2: Achar que break encerra todos os laços</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// Tentativa de sair do externo</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="keyword">se</span> (i<span class="operator">*</span>j<span class="operator">==</span><span class="number">6</span>) <span class="keyword">entao</span>
+      <span class="break-kw">interrompa</span>  <span class="comment">← sai só do interno!</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+  <span class="comment">← externo ainda continua!</span>
+<span class="keyword">fimpara</span>
+
+<span class="comment">// SOLUÇÃO: flag booleana</span>
+<span class="keyword">var</span> parar: <span class="keyword">logico</span>
+parar <span class="operator">&lt;-</span> falso
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+  <span class="keyword">se</span> (parar) <span class="keyword">entao</span> <span class="break-kw">interrompa</span> <span class="keyword">fimse</span>
+  <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="keyword">se</span> (i<span class="operator">*</span>j<span class="operator">==</span><span class="number">6</span>) <span class="keyword">entao</span>
+      parar <span class="operator">&lt;-</span> verdadeiro
+      <span class="break-kw">interrompa</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimpara</span></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 3: continue no for — incremento ainda executa</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// No FOR, continue vai para o incremento</span>
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i<span class="operator">&lt;=</span><span class="number">5</span>; i<span class="operator">++</span>) {
+  <span class="keyword">if</span>(i==<span class="number">3</span>) <span class="cont-kw">continue</span>;
+  <span class="function">printf</span>(<span class="string">"%d "</span>, i);
+}
+<span class="comment">// Saída: 1 2 4 5 (o i++ SEMPRE executa)</span>
+<span class="comment">// Sem loop infinito — OK!</span>
+
+<span class="comment">// No WHILE, cuidado: o incremento</span>
+<span class="comment">// pode não executar!</span>
+<span class="keyword">int</span> i=<span class="number">1</span>;
+<span class="keyword">while</span>(i<span class="operator">&lt;=</span><span class="number">5</span>){
+  <span class="keyword">if</span>(i==<span class="number">3</span>) <span class="cont-kw">continue</span>; <span class="comment">← loop infinito!</span>
+  <span class="function">printf</span>(<span class="string">"%d "</span>, i);
+  i<span class="operator">++</span>;
+}
+<span class="comment">// CORRETO para while:</span>
+<span class="keyword">while</span>(i<span class="operator">&lt;=</span><span class="number">5</span>){
+  <span class="keyword">if</span>(i==<span class="number">3</span>){ i<span class="operator">++</span>; <span class="cont-kw">continue</span>; } <span class="comment">← incrementa antes!</span>
+  <span class="function">printf</span>(<span class="string">"%d "</span>, i);
+  i<span class="operator">++</span>;
+}</div>
+                    </div>
+
+                    <div class="success-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>✅ Regra de ouro para continue em while</h3>
+                        <p>
+                            Sempre <strong>incremente a variável de controle antes</strong> do <code>continue</code>
+                            em um <code>while</code>, ou você cria um loop infinito!
+                            No <code>for</code> isso não é problema — o incremento da assinatura sempre executa.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════ SLIDE 11 — EXERCÍCIOS ═════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>📝 Exercícios Propostos</h2>
+            <p>Pratique o uso de break e continue em diferentes contextos!</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">Para cada exercício: identifique se usaria break, continue ou ambos! 🎯</div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div>
+                    <div class="exercise-box">
+                        <h4>📌 A — Busca de Número <span class="level-badge level-easy">Básico</span></h4>
+                        <p>Leia 10 números e um valor-alvo. Percorra os 10 números e, ao encontrar o alvo, exiba sua posição e pare com <code>break</code>. Se não encontrar, exiba "Não encontrado".</p>
+                    </div>
+
+                    <div class="exercise-box">
+                        <h4>📌 B — Soma sem Negativos <span class="level-badge level-easy">Básico</span></h4>
+                        <p>Leia números até o usuário digitar 0 (sentinela). Use <code>continue</code> para ignorar os negativos. Exiba a soma e quantidade de números positivos processados.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="exercise-box">
+                        <h4>📌 C — Primeiro Primo Maior que N <span class="level-badge level-medium">Intermediário</span></h4>
+                        <p>Leia N. Percorra os números a partir de N+1 e, ao encontrar o primeiro número primo, exiba-o e pare com <code>break</code>. Use laço aninhado para verificar primalidade.</p>
+                    </div>
+
+                    <div class="exercise-box">
+                        <h4>📌 D — Relatório Filtrado <span class="level-badge level-medium">Intermediário</span></h4>
+                        <p>Leia 15 notas (0–10). Use <code>continue</code> para ignorar notas inválidas (fora do intervalo). Calcule a média apenas das notas válidas. Exiba quantas foram ignoradas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top:15px;">
+                <h3>🎯 Entrega</h3>
+                <p>
+                    Resolva ao menos <strong>2 exercícios</strong> no Portugol Web Studio e envie via Google Classroom.
+                    Na próxima aula: <strong>Vetores (Arrays)</strong> — armazenar vários valores em uma única variável!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════ SLIDE 12 — RESUMO ═══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🎯 Resumo e Próximos Passos</h2>
+            <p>break e continue — controle total sobre seus laços!</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">
+                Com break e continue você controla o fluxo com precisão cirúrgica — sem gambiarras! ⚡
+            </div>
+
+            <div class="two-column" style="margin-top:25px;">
+                <div class="content-box">
+                    <h3>✅ break — encerrar o laço</h3>
+                    <ul>
+                        <li>Sai imediatamente do laço mais interno</li>
+                        <li>Código após o laço executa normalmente</li>
+                        <li>Padrão: <strong>flag booleana</strong> para saber o motivo da saída</li>
+                        <li>Uso: busca, limite de tentativas, erro</li>
+                    </ul>
+                </div>
+
+                <div class="content-box">
+                    <h3>✅ continue — pular iteração</h3>
+                    <ul>
+                        <li>Pula o restante da iteração atual</li>
+                        <li>O laço continua normalmente</li>
+                        <li>No <strong>while</strong>: incrementar antes do continue!</li>
+                        <li>Uso: filtro, dados inválidos, exceções</li>
+                    </ul>
+                </div>
+
+                <div class="content-box">
+                    <h3>✅ Exemplos resolvidos</h3>
+                    <ul>
+                        <li>Busca linear — 1º div. por 7 com break</li>
+                        <li>Soma de positivos — filtro com continue</li>
+                        <li>Login — flag + break em tentativas</li>
+                        <li>Tabuada filtrada — continue em aninhado</li>
+                    </ul>
+                </div>
+
+                <div class="content-box">
+                    <h3>🔥 Próximas Aulas</h3>
+                    <ul>
+                        <li><strong>Aula 15:</strong> Vetores (Arrays)</li>
+                        <li><strong>Aula 16:</strong> Matrizes</li>
+                        <li><strong>Aula 17:</strong> Subprogramas e Funções</li>
+                        <li><strong>Aula 18:</strong> Recursividade</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top:20px;">
+                <h3>📚 Para a Próxima Aula</h3>
+                <ul>
+                    <li style="padding:8px 0;"><strong>1️⃣ Entregar:</strong> 2 exercícios propostos no Google Classroom</li>
+                    <li style="padding:8px 0;"><strong>2️⃣ Revisar:</strong> Reescreva o exercício de primos da Aula 12 usando <code>break</code> ao encontrar o primeiro divisor — torna o código muito mais eficiente!</li>
+                    <li style="padding:8px 0;"><strong>3️⃣ Pensar:</strong> Se você tivesse 100 notas para guardar, criaria 100 variáveis? (prévia dos vetores)</li>
+                </ul>
+            </div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div class="content-box">
+                    <h3>💬 Dúvidas?</h3>
+                    <p style="margin-bottom:10px;"><strong>E-mail:</strong> tiago.galvao@unifil.br</p>
+                    <p style="margin-bottom:10px;"><strong>Atendimento:</strong> Terças 18h–19h</p>
+                    <p><strong>Google Classroom:</strong> Fórum disponível</p>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center;">
+                    <div style="text-align:center;color:var(--unifil-gray);">
+                        <p style="font-size:1.3rem;font-weight:600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size:1.1rem;margin-top:8px;">Nos vemos na próxima aula!</p>
+                        <p style="font-size:0.9rem;margin-top:16px;font-style:italic;">
+                            "break para quando chega lá. continue segue em frente. Igual a vida! 🚀"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NAVEGAÇÃO -->
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 12</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box,.example-card,.highlight-box,.big-idea,.stat-card,' +
+            '.analogy-box,.comparison-table,.warning-box,.success-box,' +
+            '.exercise-box,.trace-table,.ascii-output'
+        );
+        animated.forEach((el, i) => {
+            el.style.animation = 'none'; el.style.opacity = '0';
+            setTimeout(() => { el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.07}s forwards`; }, 10);
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend',   e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

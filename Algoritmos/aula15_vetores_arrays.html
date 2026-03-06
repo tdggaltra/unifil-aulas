@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 15 - Vetores (Arrays) | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden; color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px;
+            height: 90%; margin: auto; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white; position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p  { font-size: 1.1rem; opacity: 0.95; }
+
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+
+        .two-column   { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+
+        .content-box {
+            background: var(--unifil-light); padding: 30px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.4rem; }
+        .content-box p  { font-size: 1.05rem; line-height: 1.7; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li { padding: 8px 0 8px 30px; position: relative; font-size: 1.05rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .highlight-box p  { font-size: 1.1rem; line-height: 1.7; }
+        .highlight-box ul { list-style: none; padding: 0; }
+        .highlight-box li { padding: 8px 0; font-size: 1.05rem; line-height: 1.6; }
+
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace;
+            font-size: 0.88rem; overflow-x: auto; margin: 15px 0; line-height: 1.65; white-space: pre;
+        }
+        .code-block .keyword  { color: #c678dd; font-weight: 600; }
+        .code-block .function { color: #61afef; }
+        .code-block .string   { color: #98c379; }
+        .code-block .comment  { color: #5c6370; font-style: italic; }
+        .code-block .number   { color: #d19a66; }
+        .code-block .operator { color: #FF8C00; font-weight: 600; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white; padding: 35px 40px; border-radius: 20px;
+            font-size: 1.6rem; font-weight: 600; text-align: center; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(74,144,226,0.3);
+        }
+
+        .analogy-box {
+            background: #fff3cd; border: 3px solid #ffc107;
+            border-radius: 15px; padding: 30px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .analogy-box h3 { color: #856404; margin-bottom: 15px; font-size: 1.4rem; }
+        .analogy-box p  { font-size: 1.05rem; line-height: 1.7; color: #533f03; margin-top: 8px; }
+
+        .warning-box {
+            background: #ffebee; border: 3px solid #f44336;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .warning-box h3 { color: #c62828; margin-bottom: 15px; font-size: 1.3rem; }
+        .warning-box p  { font-size: 1.05rem; line-height: 1.6; color: #b71c1c; }
+        .warning-box ul { list-style: none; padding: 0; }
+        .warning-box li { padding: 6px 0; font-size: 1rem; color: #b71c1c; }
+
+        .success-box {
+            background: #e8f5e9; border: 3px solid #4caf50;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .success-box h3 { color: #2e7d32; margin-bottom: 15px; font-size: 1.3rem; }
+        .success-box p  { font-size: 1.05rem; line-height: 1.7; color: #1b5e20; }
+        .success-box ul { list-style: none; padding: 0; }
+        .success-box li { padding: 5px 0; font-size: 1rem; color: #1b5e20; }
+
+        .stat-card {
+            text-align: center; padding: 25px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 3rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 10px; }
+        .stat-card .label  { font-size: 1.05rem; color: var(--unifil-gray); font-weight: 500; }
+
+        .comparison-table {
+            width: 100%; margin: 20px 0; border-collapse: collapse;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            background: white; border-radius: 10px; overflow: hidden;
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 16px 20px; text-align: left; font-size: 1.05rem;
+        }
+        .comparison-table td { padding: 13px 20px; border-bottom: 1px solid var(--unifil-light); font-size: 1rem; line-height: 1.6; }
+        .comparison-table tr:hover td { background: var(--unifil-light); }
+
+        .exercise-box {
+            background: #f0f4ff; border: 2px solid #3f51b5;
+            border-radius: 15px; padding: 25px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .exercise-box h4 { color: #283593; margin-bottom: 12px; font-size: 1.2rem; }
+        .exercise-box p  { font-size: 1.05rem; line-height: 1.7; color: #1a237e; }
+        .exercise-box ul { list-style: none; padding: 0; margin-top: 8px; }
+        .exercise-box li { padding: 5px 0; font-size: 1rem; color: #1a237e; }
+        .exercise-box li::before { content: '📌 '; }
+
+        /* ══ ARRAY VISUAL ══ */
+        .array-visual {
+            display: flex; align-items: stretch; gap: 0;
+            margin: 20px 0; font-family: 'Courier New', monospace;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .array-cell {
+            display: flex; flex-direction: column; align-items: center;
+            border: 2px solid var(--unifil-orange); min-width: 70px;
+        }
+        .array-cell:first-child { border-radius: 10px 0 0 10px; }
+        .array-cell:last-child  { border-radius: 0 10px 10px 0; }
+        .array-cell + .array-cell { border-left: none; }
+        .array-cell .cell-val {
+            padding: 14px 10px; font-size: 1.2rem; font-weight: 700;
+            color: var(--unifil-dark); background: #fff9f0; width: 100%; text-align: center;
+        }
+        .array-cell .cell-idx {
+            padding: 5px 10px; font-size: 0.78rem; font-weight: 600;
+            color: white; background: var(--unifil-orange); width: 100%; text-align: center;
+        }
+        .array-label {
+            writing-mode: horizontal-tb; font-size: 1rem; font-weight: 700;
+            color: var(--unifil-orange); margin-right: 14px; align-self: center;
+        }
+
+        /* ══ LEVEL BADGE ══ */
+        .level-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-bottom:10px; }
+        .level-easy   { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .level-medium { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .level-hard   { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(255,255,255,0.95); padding: 15px 30px;
+            border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 80px; text-align: center; font-size: 1.1rem; }
+
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.2); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); transition: width 0.3s ease; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        code { font-family:'Courier New',monospace; background:#f0f0f0; padding:2px 6px; border-radius:4px; font-size:0.93em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="presentation">
+
+<!-- ════════════════════════════════════════════ SLIDE 1 — TÍTULO -->
+<div class="slide active">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h1>Lógica de Programação e Algoritmos</h1>
+            <p>Aula 15 — Vetores (Arrays)</p>
+        </div>
+        <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+            <div style="font-size:5.5rem;margin-bottom:20px;">📦</div>
+            <h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:20px;">
+                Vários Valores em Uma Única Variável!
+            </h2>
+            <p style="font-size:1.3rem;color:var(--unifil-gray);max-width:800px;margin-bottom:35px;">
+                Aprenda a usar <strong>vetores</strong> para armazenar,
+                percorrer, buscar e ordenar coleções de dados —
+                a estrutura de dados mais fundamental da programação.
+            </p>
+            <div class="array-visual" style="justify-content:center;">
+                <span class="array-label">notas</span>
+                <div class="array-cell"><div class="cell-val">7.5</div><div class="cell-idx">[0]</div></div>
+                <div class="array-cell"><div class="cell-val">8.0</div><div class="cell-idx">[1]</div></div>
+                <div class="array-cell"><div class="cell-val">6.5</div><div class="cell-idx">[2]</div></div>
+                <div class="array-cell"><div class="cell-val">9.0</div><div class="cell-idx">[3]</div></div>
+                <div class="array-cell"><div class="cell-val">5.5</div><div class="cell-idx">[4]</div></div>
+            </div>
+            <div class="three-column" style="width:100%;max-width:1000px;margin-top:20px;">
+                <div class="stat-card"><div class="number">N</div><div class="label">Elementos em uma variável</div></div>
+                <div class="stat-card"><div class="number">O(1)</div><div class="label">Acesso por índice</div></div>
+                <div class="stat-card"><div class="number">for</div><div class="label">Percorre com laço</div></div>
+            </div>
+            <div style="margin-top:40px;font-size:1.1rem;color:var(--unifil-gray);">
+                <p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>UniFil</strong> — Lógica de Programação</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════ SLIDE 2 — MOTIVAÇÃO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🤔 Por que precisamos de vetores?</h2>
+            <p>O problema de guardar muitos valores com variáveis simples</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">
+                Guardar 100 notas em 100 variáveis é inviável.
+                Um vetor armazena todas em <strong>uma única estrutura</strong>!
+            </div>
+            <div class="two-column" style="margin-top:20px;">
+                <div class="content-box">
+                    <h3>❌ Sem vetor — inviável</h3>
+                    <div class="code-block" style="font-size:0.82rem;"><span class="comment">// 10 alunos = 10 variáveis</span>
+<span class="keyword">var</span>
+  nota1, nota2, nota3 : <span class="keyword">real</span>
+  nota4, nota5, nota6 : <span class="keyword">real</span>
+  nota7, nota8, nota9 : <span class="keyword">real</span>
+  nota10              : <span class="keyword">real</span>
+
+<span class="comment">// 100 alunos = 100 linhas!</span>
+<span class="comment">// Impossível percorrer com for.</span>
+<span class="comment">// Impossível generalizar para N.</span></div>
+                </div>
+                <div class="content-box">
+                    <h3>✅ Com vetor — elegante</h3>
+                    <div class="code-block" style="font-size:0.82rem;"><span class="comment">// 100 notas em 1 variável!</span>
+<span class="keyword">var</span>
+  notas: <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">100</span>] <span class="keyword">de</span> <span class="keyword">real</span>
+
+<span class="comment">// Percorrer com for — simples:</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">100</span> <span class="keyword">faca</span>
+  <span class="function">leia</span>(notas[i])
+<span class="keyword">fimpara</span>
+
+<span class="comment">// Fácil de mudar para 1000!</span></div>
+                </div>
+            </div>
+            <div class="analogy-box">
+                <h3>🗃️ Analogia: Gavetas Numeradas</h3>
+                <p>
+                    Um vetor é como um <strong>armário com gavetas numeradas</strong>.
+                    Cada gaveta guarda um valor. O número da gaveta é o <strong>índice</strong>.
+                    Você acessa qualquer gaveta instantaneamente pelo seu número —
+                    sem precisar abrir todas as anteriores.
+                </p>
+            </div>
+            <div class="two-column" style="margin-top:10px;">
+                <div class="content-box">
+                    <h3>🌍 Vetores no cotidiano</h3>
+                    <ul>
+                        <li>Placar de um jogo com N jogadores</li>
+                        <li>Lista de contatos do celular</li>
+                        <li>Histórico de transações bancárias</li>
+                        <li>Pixels de uma linha de imagem</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3>📐 Características</h3>
+                    <ul>
+                        <li>Mesmo tipo para todos os elementos</li>
+                        <li>Tamanho fixo definido na declaração</li>
+                        <li>Acesso por índice em tempo constante</li>
+                        <li>Percorrido naturalmente com <code>for</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════ SLIDE 3 — DECLARAÇÃO ════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>📐 Declaração e Acesso</h2>
+            <p>Como criar e usar vetores nas três linguagens</p>
+        </div>
+        <div class="slide-body">
+            <!-- VISUAL DO ARRAY -->
+            <div class="array-visual" style="margin-top:15px;">
+                <span class="array-label">idades</span>
+                <div class="array-cell"><div class="cell-val">25</div><div class="cell-idx">Portug [1]</div></div>
+                <div class="array-cell"><div class="cell-val">32</div><div class="cell-idx">Portug [2]</div></div>
+                <div class="array-cell"><div class="cell-val">19</div><div class="cell-idx">Portug [3]</div></div>
+                <div class="array-cell"><div class="cell-val">47</div><div class="cell-idx">Portug [4]</div></div>
+                <div class="array-cell"><div class="cell-val">28</div><div class="cell-idx">Portug [5]</div></div>
+            </div>
+            <div class="array-visual">
+                <span class="array-label">idades</span>
+                <div class="array-cell"><div class="cell-val">25</div><div class="cell-idx">C/Java [0]</div></div>
+                <div class="array-cell"><div class="cell-val">32</div><div class="cell-idx">C/Java [1]</div></div>
+                <div class="array-cell"><div class="cell-val">19</div><div class="cell-idx">C/Java [2]</div></div>
+                <div class="array-cell"><div class="cell-val">47</div><div class="cell-idx">C/Java [3]</div></div>
+                <div class="array-cell"><div class="cell-val">28</div><div class="cell-idx">C/Java [4]</div></div>
+            </div>
+
+            <div class="three-column" style="margin-top:15px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol</h4>
+                    <div class="code-block"><span class="comment">// Declaração</span>
+<span class="keyword">var</span>
+  idades: <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">5</span>]
+          <span class="keyword">de</span> <span class="keyword">inteiro</span>
+
+<span class="comment">// Atribuição</span>
+idades[<span class="number">1</span>] <span class="operator">&lt;-</span> <span class="number">25</span>
+idades[<span class="number">2</span>] <span class="operator">&lt;-</span> <span class="number">32</span>
+
+<span class="comment">// Leitura com for</span>
+<span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+  <span class="function">leia</span>(idades[i])
+<span class="keyword">fimpara</span>
+
+<span class="comment">// Índices: 1 até 5</span></div>
+                </div>
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🔵 C</h4>
+                    <div class="code-block"><span class="comment">// Declaração</span>
+<span class="keyword">int</span> idades[<span class="number">5</span>];
+
+<span class="comment">// Atribuição</span>
+idades[<span class="number">0</span>] = <span class="number">25</span>;
+idades[<span class="number">1</span>] = <span class="number">32</span>;
+
+<span class="comment">// Leitura com for</span>
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span><span class="number">5</span>; i<span class="operator">++</span>)
+  <span class="function">scanf</span>(<span class="string">"%d"</span>,
+        &amp;idades[i]);
+
+<span class="comment">// Índices: 0 até 4</span>
+<span class="comment">// CUIDADO: idades[5] = erro!</span></div>
+                </div>
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟠 Java</h4>
+                    <div class="code-block"><span class="comment">// Declaração</span>
+<span class="keyword">int</span>[] idades =
+  <span class="keyword">new int</span>[<span class="number">5</span>];
+
+<span class="comment">// Atribuição</span>
+idades[<span class="number">0</span>] = <span class="number">25</span>;
+idades[<span class="number">1</span>] = <span class="number">32</span>;
+
+<span class="comment">// Leitura com for</span>
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span><span class="number">5</span>; i<span class="operator">++</span>)
+  idades[i] =
+    sc.<span class="function">nextInt</span>();
+
+<span class="comment">// Índices: 0 até 4</span>
+<span class="comment">// idades.length == 5</span></div>
+                </div>
+            </div>
+
+            <div class="warning-box" style="margin-top:10px;">
+                <h3>⚠️ Atenção: índice 0 vs índice 1</h3>
+                <p>
+                    <strong>Portugol</strong>: índices começam em <code>1</code> (você define o intervalo: <code>[1..N]</code>).<br>
+                    <strong>C e Java</strong>: índices começam em <code>0</code> e vão até <code>N-1</code>.
+                    Acessar <code>vetor[N]</code> em C/Java causa erro de memória (<em>segfault</em> ou <em>ArrayIndexOutOfBoundsException</em>)!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════ SLIDE 4 — OPERAÇÕES BÁSICAS ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>⚙️ Operações Básicas com Vetores</h2>
+            <p>Leitura, escrita, soma, média, maior e menor</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Leitura + Impressão + Estatísticas (Portugol)</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"VetorBasico"</span>
+<span class="keyword">var</span>
+  v   : <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">5</span>] <span class="keyword">de</span> <span class="keyword">real</span>
+  i   : <span class="keyword">inteiro</span>
+  soma, maior, menor: <span class="keyword">real</span>
+<span class="keyword">inicio</span>
+  <span class="comment">// === LEITURA ===</span>
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"v["</span>, i, <span class="string">"]: "</span>)
+    <span class="function">leia</span>(v[i])
+  <span class="keyword">fimpara</span>
+
+  <span class="comment">// === ESTATÍSTICAS ===</span>
+  soma  <span class="operator">&lt;-</span> <span class="number">0</span>
+  maior <span class="operator">&lt;-</span> v[<span class="number">1</span>]
+  menor <span class="operator">&lt;-</span> v[<span class="number">1</span>]
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    soma <span class="operator">&lt;-</span> soma <span class="operator">+</span> v[i]
+    <span class="keyword">se</span> v[i] <span class="operator">&gt;</span> maior <span class="keyword">entao</span> maior <span class="operator">&lt;-</span> v[i] <span class="keyword">fimse</span>
+    <span class="keyword">se</span> v[i] <span class="operator">&lt;</span> menor <span class="keyword">entao</span> menor <span class="operator">&lt;-</span> v[i] <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="comment">// === EXIBIÇÃO ===</span>
+  <span class="function">escreva</span>(<span class="string">"Vetor: ["</span>)
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(v[i])
+    <span class="keyword">se</span> i <span class="operator">&lt;</span> <span class="number">5</span> <span class="keyword">entao</span> <span class="function">escreva</span>(<span class="string">", "</span>) <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+  <span class="function">escreva</span>(<span class="string">"]"</span>)
+
+  <span class="function">escreva</span>(<span class="string">"Soma  : "</span>, soma)
+  <span class="function">escreva</span>(<span class="string">"Média : "</span>, soma<span class="operator">/</span><span class="number">5</span>:<span class="number">5</span>:<span class="number">2</span>)
+  <span class="function">escreva</span>(<span class="string">"Maior : "</span>, maior)
+  <span class="function">escreva</span>(<span class="string">"Menor : "</span>, menor)
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+
+                <div>
+                    <div class="analogy-box" style="margin-top:0;">
+                        <h3>🔍 Trace com v = [7.5, 8.0, 6.5, 9.0, 5.5]</h3>
+                        <div class="array-visual" style="margin:10px 0;">
+                            <div class="array-cell"><div class="cell-val">7.5</div><div class="cell-idx">[1]</div></div>
+                            <div class="array-cell"><div class="cell-val">8.0</div><div class="cell-idx">[2]</div></div>
+                            <div class="array-cell"><div class="cell-val">6.5</div><div class="cell-idx">[3]</div></div>
+                            <div class="array-cell"><div class="cell-val">9.0</div><div class="cell-idx">[4]</div></div>
+                            <div class="array-cell"><div class="cell-val">5.5</div><div class="cell-idx">[5]</div></div>
+                        </div>
+                        <p>
+                            soma = 7.5+8.0+6.5+9.0+5.5 = <strong>36.5</strong><br>
+                            média = 36.5/5 = <strong>7.3</strong><br>
+                            maior = <strong>9.0</strong> &nbsp;|&nbsp; menor = <strong>5.5</strong>
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>⚡ Vantagem do vetor sobre variáveis simples</h3>
+                        <ul>
+                            <li>Mesma fórmula funciona para N=5 ou N=1000</li>
+                            <li>Possível guardar os dados e processar depois</li>
+                            <li>Pode acessar qualquer posição novamente: <code>v[3]</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════ SLIDE 5 — BUSCA LINEAR ════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🔍 Busca Linear em Vetores</h2>
+            <p>Procurar um elemento percorrendo o vetor posição a posição</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema</h4>
+                <p>Dado um vetor de N notas, verificar se uma nota específica existe. Se sim, exibir sua posição. Se não, informar que não foi encontrada.</p>
+            </div>
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol — Busca Linear</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"BuscaLinear"</span>
+<span class="keyword">var</span>
+  v      : <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">8</span>] <span class="keyword">de</span> <span class="keyword">real</span>
+  alvo   : <span class="keyword">real</span>
+  i, pos : <span class="keyword">inteiro</span>
+  achado : <span class="keyword">logico</span>
+<span class="keyword">inicio</span>
+  <span class="comment">// Carga do vetor</span>
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">8</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"v["</span>,i,<span class="string">"]: "</span>) <span class="function">leia</span>(v[i])
+  <span class="keyword">fimpara</span>
+
+  <span class="function">escreva</span>(<span class="string">"Buscar: "</span>) <span class="function">leia</span>(alvo)
+
+  <span class="comment">// Busca linear</span>
+  achado <span class="operator">&lt;-</span> falso
+  pos    <span class="operator">&lt;-</span> <span class="number">-1</span>
+
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">8</span> <span class="keyword">faca</span>
+    <span class="keyword">se</span> (v[i] <span class="operator">==</span> alvo) <span class="keyword">entao</span>
+      achado <span class="operator">&lt;-</span> verdadeiro
+      pos    <span class="operator">&lt;-</span> i
+      <span class="keyword">interrompa</span>    <span class="comment">← break!</span>
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="keyword">se</span> (achado) <span class="keyword">entao</span>
+    <span class="function">escreva</span>(<span class="string">"✅ Encontrado na pos. "</span>, pos)
+  <span class="keyword">senao</span>
+    <span class="function">escreva</span>(<span class="string">"❌ Não encontrado"</span>)
+  <span class="keyword">fimse</span>
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+                <div>
+                    <div class="content-box" style="margin-top:0;">
+                        <h3>📊 Complexidade da Busca Linear</h3>
+                        <ul>
+                            <li><strong>Melhor caso:</strong> elemento na posição 1 → 1 comparação</li>
+                            <li><strong>Pior caso:</strong> elemento no fim ou ausente → N comparações</li>
+                            <li><strong>Caso médio:</strong> N/2 comparações</li>
+                            <li>Notação: <strong>O(N)</strong> — linear no tamanho do vetor</li>
+                        </ul>
+                    </div>
+                    <div class="analogy-box" style="margin-top:15px;">
+                        <h3>🔍 Visualizando a busca por 6.5</h3>
+                        <div class="array-visual" style="margin:10px 0;flex-wrap:wrap;gap:4px;">
+                            <div class="array-cell" style="opacity:0.4;"><div class="cell-val">7.5</div><div class="cell-idx">[1] ✗</div></div>
+                            <div class="array-cell" style="opacity:0.4;"><div class="cell-val">8.0</div><div class="cell-idx">[2] ✗</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;color:#2e7d32;">6.5</div><div class="cell-idx" style="background:#4caf50;">[3] ✓</div></div>
+                            <div class="array-cell" style="opacity:0.25;"><div class="cell-val">9.0</div><div class="cell-idx">[4]</div></div>
+                            <div class="array-cell" style="opacity:0.25;"><div class="cell-val">5.5</div><div class="cell-idx">[5]</div></div>
+                        </div>
+                        <p>Achou na posição 3 — parou com break, não verificou [4] e [5].</p>
+                    </div>
+                    <div class="success-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>✅ Busca linear em C</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin:8px 0 0 0;"><span class="keyword">int</span> pos = <span class="number">-1</span>;
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>n; i<span class="operator">++</span>)
+  <span class="keyword">if</span>(v[i]==alvo){ pos=i; <span class="keyword">break</span>; }
+<span class="keyword">if</span>(pos<span class="operator">==</span><span class="number">-1</span>) <span class="function">printf</span>(<span class="string">"Nao achou\n"</span>);
+<span class="keyword">else</span>         <span class="function">printf</span>(<span class="string">"Pos: %d\n"</span>, pos);</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 6 — ORDENAÇÃO ══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🔀 Ordenação — Bubble Sort</h2>
+            <p>Ordenar um vetor comparando pares adjacentes e trocando</p>
+        </div>
+        <div class="slide-body">
+            <div class="analogy-box" style="margin-top:10px;">
+                <h3>🫧 Por que "Bubble" (bolha)?</h3>
+                <p>Os maiores valores "sobem" para o final a cada passada — como bolhas subindo em água.
+                É o algoritmo mais simples de entender, ideal para aprendizado.</p>
+            </div>
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🟢 Portugol — Bubble Sort</h4>
+                    <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"BubbleSort"</span>
+<span class="keyword">var</span>
+  v  : <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">5</span>] <span class="keyword">de</span> <span class="keyword">inteiro</span>
+  i, j, temp: <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="comment">// Carga</span>
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="function">leia</span>(v[i])
+  <span class="keyword">fimpara</span>
+
+  <span class="comment">// Ordenação — 2 fors aninhados</span>
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">4</span> <span class="keyword">faca</span>      <span class="comment">← passadas</span>
+    <span class="keyword">para</span> j <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span><span class="operator">-</span>i <span class="keyword">faca</span>  <span class="comment">← comparações</span>
+      <span class="keyword">se</span> (v[j] <span class="operator">&gt;</span> v[j<span class="operator">+</span><span class="number">1</span>]) <span class="keyword">entao</span>
+        temp     <span class="operator">&lt;-</span> v[j]
+        v[j]     <span class="operator">&lt;-</span> v[j<span class="operator">+</span><span class="number">1</span>]
+        v[j<span class="operator">+</span><span class="number">1</span>] <span class="operator">&lt;-</span> temp
+      <span class="keyword">fimse</span>
+    <span class="keyword">fimpara</span>
+  <span class="keyword">fimpara</span>
+
+  <span class="comment">// Exibir ordenado</span>
+  <span class="function">escreva</span>(<span class="string">"Ordenado: ["</span>)
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(v[i])
+    <span class="keyword">se</span> i<span class="operator">&lt;</span><span class="number">5</span> <span class="keyword">entao</span> <span class="function">escreva</span>(<span class="string">", "</span>) <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+  <span class="function">escreva</span>(<span class="string">"]"</span>)
+<span class="keyword">fimalgoritmo</span></div>
+                </div>
+                <div>
+                    <div class="content-box" style="margin-top:0;">
+                        <h3>🔢 Trace: [5, 3, 8, 1, 4]</h3>
+                        <p style="font-size:0.95rem;margin-bottom:8px;"><strong>Passada 1 (i=1):</strong></p>
+                        <div class="array-visual" style="margin:4px 0;">
+                            <div class="array-cell"><div class="cell-val">3</div><div class="cell-idx">[1]</div></div>
+                            <div class="array-cell"><div class="cell-val">5</div><div class="cell-idx">[2]</div></div>
+                            <div class="array-cell"><div class="cell-val">1</div><div class="cell-idx">[3]</div></div>
+                            <div class="array-cell"><div class="cell-val">4</div><div class="cell-idx">[4]</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">8</div><div class="cell-idx" style="background:#4caf50;">[5]✓</div></div>
+                        </div>
+                        <p style="font-size:0.9rem;color:#666;">8 "subiu" para o fim ✓</p>
+                        <p style="font-size:0.95rem;margin:8px 0;"><strong>Passada 2 (i=2):</strong></p>
+                        <div class="array-visual" style="margin:4px 0;">
+                            <div class="array-cell"><div class="cell-val">3</div><div class="cell-idx">[1]</div></div>
+                            <div class="array-cell"><div class="cell-val">1</div><div class="cell-idx">[2]</div></div>
+                            <div class="array-cell"><div class="cell-val">4</div><div class="cell-idx">[3]</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">5</div><div class="cell-idx" style="background:#4caf50;">[4]✓</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">8</div><div class="cell-idx" style="background:#4caf50;">[5]✓</div></div>
+                        </div>
+                        <p style="font-size:0.95rem;margin:8px 0;"><strong>Final:</strong></p>
+                        <div class="array-visual" style="margin:4px 0;">
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">1</div><div class="cell-idx" style="background:#4caf50;">[1]</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">3</div><div class="cell-idx" style="background:#4caf50;">[2]</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">4</div><div class="cell-idx" style="background:#4caf50;">[3]</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">5</div><div class="cell-idx" style="background:#4caf50;">[4]</div></div>
+                            <div class="array-cell" style="border-color:#4caf50;"><div class="cell-val" style="background:#e8f5e9;">8</div><div class="cell-idx" style="background:#4caf50;">[5]</div></div>
+                        </div>
+                    </div>
+                    <div class="highlight-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>🔑 Chave da troca</h3>
+                        <p><code>temp = v[j]; v[j] = v[j+1]; v[j+1] = temp;</code><br>
+                        Sempre use uma variável temporária <code>temp</code> — sem ela você perde um dos valores!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═════════════════════════════ SLIDE 7 — EXEMPLO COMPLETO ═════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Exemplo Completo — Sistema de Notas</h2>
+            <p>Leitura, estatísticas, busca e ordenação em um único programa</p>
+        </div>
+        <div class="slide-body">
+            <div class="exercise-box" style="margin-top:10px;">
+                <h4>📌 Problema <span class="level-badge level-medium">Intermediário</span></h4>
+                <p>Leia as notas de 6 alunos. Calcule média, maior e menor. Exiba aprovados (≥ 5). Ordene as notas em ordem crescente e exiba.</p>
+            </div>
+            <div class="two-column" style="margin-top:10px;">
+                <div class="example-card" style="margin-top:0;">
+                    <h4>🔵 C — Sistema de Notas Completo</h4>
+                    <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#define</span> N <span class="number">6</span>
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="keyword">float</span> v[N], temp, soma=<span class="number">0</span>;
+  <span class="keyword">float</span> maior, menor;
+  <span class="keyword">int</span>   aprov=<span class="number">0</span>;
+
+  <span class="comment">// === LEITURA ===</span>
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>N; i<span class="operator">++</span>) {
+    <span class="function">printf</span>(<span class="string">"Nota %d: "</span>, i+<span class="number">1</span>);
+    <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;v[i]);
+  }
+
+  <span class="comment">// === ESTATÍSTICAS ===</span>
+  maior = menor = v[<span class="number">0</span>];
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>N; i<span class="operator">++</span>) {
+    soma <span class="operator">+=</span> v[i];
+    <span class="keyword">if</span>(v[i]<span class="operator">&gt;</span>maior) maior=v[i];
+    <span class="keyword">if</span>(v[i]<span class="operator">&lt;</span>menor) menor=v[i];
+    <span class="keyword">if</span>(v[i]<span class="operator">&gt;=</span><span class="number">5.0f</span>) aprov<span class="operator">++</span>;
+  }
+  <span class="function">printf</span>(<span class="string">"Media: %.2f\n"</span>, soma/N);
+  <span class="function">printf</span>(<span class="string">"Maior: %.1f | Menor: %.1f\n"</span>,
+         maior, menor);
+  <span class="function">printf</span>(<span class="string">"Aprovados: %d/%d\n"</span>, aprov, N);
+
+  <span class="comment">// === ORDENAÇÃO (Bubble Sort) ===</span>
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>N-<span class="number">1</span>; i<span class="operator">++</span>)
+    <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>; j<span class="operator">&lt;</span>N-<span class="number">1</span>-i; j<span class="operator">++</span>)
+      <span class="keyword">if</span>(v[j]<span class="operator">&gt;</span>v[j+<span class="number">1</span>]){
+        temp=v[j];
+        v[j]=v[j+<span class="number">1</span>];
+        v[j+<span class="number">1</span>]=temp;
+      }
+
+  <span class="comment">// === EXIBIÇÃO ORDENADA ===</span>
+  <span class="function">printf</span>(<span class="string">"Ordenado: ["</span>);
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>N; i<span class="operator">++</span>)
+    <span class="function">printf</span>(<span class="string">"%.1f%s"</span>, v[i],
+           i<N-<span class="number">1</span>?<span class="string">", "</span>:<span class="string">"]"</span>);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                </div>
+                <div>
+                    <div class="analogy-box" style="margin-top:0;">
+                        <h3>🔍 Exemplo de execução</h3>
+                        <p><strong>Entradas:</strong> 7.5, 4.0, 9.0, 5.5, 6.0, 3.0</p>
+                        <div class="array-visual" style="margin:10px 0;flex-wrap:wrap;gap:3px;">
+                            <div class="array-cell"><div class="cell-val">7.5</div><div class="cell-idx">[0]</div></div>
+                            <div class="array-cell" style="border-color:#f44336;"><div class="cell-val" style="background:#ffebee;color:#c62828;">4.0</div><div class="cell-idx" style="background:#f44336;">[1]✗</div></div>
+                            <div class="array-cell"><div class="cell-val">9.0</div><div class="cell-idx">[2]</div></div>
+                            <div class="array-cell"><div class="cell-val">5.5</div><div class="cell-idx">[3]</div></div>
+                            <div class="array-cell"><div class="cell-val">6.0</div><div class="cell-idx">[4]</div></div>
+                            <div class="array-cell" style="border-color:#f44336;"><div class="cell-val" style="background:#ffebee;color:#c62828;">3.0</div><div class="cell-idx" style="background:#f44336;">[5]✗</div></div>
+                        </div>
+                        <p>
+                            Média: <strong>5.83</strong> &nbsp;|&nbsp; Maior: <strong>9.0</strong> &nbsp;|&nbsp; Menor: <strong>3.0</strong><br>
+                            Aprovados: <strong>4/6</strong> (marcados em verde)<br>
+                            Ordenado: [3.0, 4.0, 5.5, 6.0, 7.5, 9.0]
+                        </p>
+                    </div>
+                    <div class="success-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>✅ O poder do vetor</h3>
+                        <p>Guardamos os dados na memória, processamos estatísticas, depois ordenamos — tudo usando o <strong>mesmo vetor</strong>. Com variáveis simples, isso seria impossível.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════ SLIDE 8 — VETOR DE STRINGS ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Vetores de Texto (Strings)</h2>
+            <p>Armazenar nomes, palavras e frases em vetores</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-column" style="margin-top:10px;">
+                <div>
+                    <div class="content-box" style="margin-top:0;">
+                        <h3>📋 Vetor de nomes — Portugol</h3>
+                        <div class="code-block"><span class="keyword">algoritmo</span> <span class="string">"VetorNomes"</span>
+<span class="keyword">var</span>
+  nomes : <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">5</span>] <span class="keyword">de</span> <span class="keyword">caractere</span>
+  notas : <span class="keyword">vetor</span>[<span class="number">1</span>..<span class="number">5</span>] <span class="keyword">de</span> <span class="keyword">real</span>
+  i     : <span class="keyword">inteiro</span>
+<span class="keyword">inicio</span>
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(<span class="string">"Nome "</span>, i, <span class="string">": "</span>)
+    <span class="function">leia</span>(nomes[i])
+    <span class="function">escreva</span>(<span class="string">"Nota: "</span>)
+    <span class="function">leia</span>(notas[i])
+  <span class="keyword">fimpara</span>
+
+  <span class="function">escreval</span>(<span class="string">"=== BOLETIM ==="</span>)
+  <span class="keyword">para</span> i <span class="operator">&lt;-</span> <span class="number">1</span> <span class="keyword">ate</span> <span class="number">5</span> <span class="keyword">faca</span>
+    <span class="function">escreva</span>(nomes[i], <span class="string">": "</span>, notas[i])
+    <span class="keyword">se</span> (notas[i] <span class="operator">&gt;=</span> <span class="number">5.0</span>) <span class="keyword">entao</span>
+      <span class="function">escreva</span>(<span class="string">" ✅ APROVADO"</span>)
+    <span class="keyword">senao</span>
+      <span class="function">escreva</span>(<span class="string">" ❌ REPROVADO"</span>)
+    <span class="keyword">fimse</span>
+  <span class="keyword">fimpara</span>
+<span class="keyword">fimalgoritmo</span></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="example-card" style="margin-top:0;">
+                        <h4>🔵 C — Array de strings</h4>
+                        <div class="code-block"><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#define</span> N <span class="number">5</span>
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+  <span class="comment">// Array de strings: char[N][tamanho]</span>
+  <span class="keyword">char</span>  nomes[N][<span class="number">50</span>];
+  <span class="keyword">float</span> notas[N];
+
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>N; i<span class="operator">++</span>) {
+    <span class="function">printf</span>(<span class="string">"Nome %d: "</span>, i+<span class="number">1</span>);
+    <span class="function">scanf</span>(<span class="string">"%49s"</span>, nomes[i]);
+    <span class="function">printf</span>(<span class="string">"Nota  : "</span>);
+    <span class="function">scanf</span>(<span class="string">"%f"</span>, &amp;notas[i]);
+  }
+
+  <span class="function">printf</span>(<span class="string">"\n=== BOLETIM ===\n"</span>);
+  <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>N; i<span class="operator">++</span>)
+    <span class="function">printf</span>(<span class="string">"%-20s %.1f %s\n"</span>,
+           nomes[i], notas[i],
+           notas[i]<span class="operator">&gt;=</span><span class="number">5.0f</span>?
+           <span class="string">"APROVADO"</span>:
+           <span class="string">"REPROVADO"</span>);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}</div>
+                    </div>
+                    <div class="analogy-box" style="margin-top:15px; margin-bottom:0;">
+                        <h3>💡 Dois vetores paralelos</h3>
+                        <p>
+                            <code>nomes[i]</code> e <code>notas[i]</code> representam o mesmo aluno.
+                            Isso se chama <strong>vetores paralelos</strong> — uma técnica antes de existir orientação a objetos.
+                            O índice <code>i</code> é o elo que liga os dois vetores.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════ SLIDE 9 — ERROS COMUNS ════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🚨 Erros Comuns com Vetores</h2>
+            <p>Armadilhas que causam bugs difíceis de rastrear</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-column" style="margin-top:10px;">
+                <div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 1: Acesso fora dos limites (out of bounds)</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// Vetor de tamanho 5 em C</span>
+<span class="keyword">int</span> v[<span class="number">5</span>];  <span class="comment">← índices 0 a 4</span>
+
+v[<span class="number">5</span>] = <span class="number">10</span>;   <span class="comment">← ERRO! Índice 5 não existe!</span>
+v[-<span class="number">1</span>] = <span class="number">20</span>;  <span class="comment">← ERRO! Índice negativo!</span>
+
+<span class="comment">// Em Java: lança ArrayIndexOutOfBoundsException</span>
+<span class="comment">// Em C: corrompe memória silenciosamente!</span>
+
+<span class="comment">// CORRETO</span>
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span><span class="number">5</span>; i<span class="operator">++</span>) <span class="comment">← usa &lt; não &lt;=</span>
+  v[i] = i<span class="operator">*</span><span class="number">2</span>;</div>
+                    </div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 2: Não inicializar antes de somar</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// ERRADO: soma tem lixo na memória</span>
+<span class="keyword">int</span> soma;
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>n; i<span class="operator">++</span>)
+  soma <span class="operator">+=</span> v[i]; <span class="comment">← resultado imprevisível!</span>
+
+<span class="comment">// CORRETO</span>
+<span class="keyword">int</span> soma = <span class="number">0</span>;
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span>n; i<span class="operator">++</span>)
+  soma <span class="operator">+=</span> v[i];</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 3: Confundir tamanho e último índice</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// Vetor com 5 elementos em C</span>
+<span class="keyword">int</span> v[<span class="number">5</span>] = {<span class="number">10</span>,<span class="number">20</span>,<span class="number">30</span>,<span class="number">40</span>,<span class="number">50</span>};
+<span class="comment">// tamanho = 5</span>
+<span class="comment">// último índice = 4 (não 5!)</span>
+
+<span class="comment">// ERRADO: <= com tamanho</span>
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;=</span><span class="number">5</span>; i<span class="operator">++</span>) <span class="comment">← acessa v[5]!</span>
+
+<span class="comment">// CORRETO: &lt; com tamanho</span>
+<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>; i<span class="operator">&lt;</span><span class="number">5</span>; i<span class="operator">++</span>)  <span class="comment">← 0 a 4 ✓</span></div>
+                    </div>
+                    <div class="warning-box">
+                        <h3>❌ Erro 4: Troca sem temporário</h3>
+                        <div class="code-block" style="font-size:0.82rem; margin-top:8px;"><span class="comment">// ERRADO: perde o valor de v[j]</span>
+v[j]   = v[j<span class="operator">+</span><span class="number">1</span>]; <span class="comment">← v[j] perdido!</span>
+v[j<span class="operator">+</span><span class="number">1</span>] = v[j];   <span class="comment">← copia v[j+1] de novo!</span>
+
+<span class="comment">// CORRETO: usa temp</span>
+temp     = v[j];
+v[j]     = v[j<span class="operator">+</span><span class="number">1</span>];
+v[j<span class="operator">+</span><span class="number">1</span>] = temp;  <span class="comment">← ✓</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="success-box" style="margin-top:10px;">
+                <h3>✅ Checklist de vetores</h3>
+                <p>
+                    ☑ C/Java: índice vai de 0 a N-1 &nbsp;|&nbsp;
+                    ☑ Acumuladores inicializados com 0 &nbsp;|&nbsp;
+                    ☑ Condição do for: <code>i &lt; N</code> (não <code>i &lt;= N</code>) &nbsp;|&nbsp;
+                    ☑ Troca de elementos: sempre usar variável <code>temp</code>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════ SLIDE 10 — COMPARAÇÃO ═══════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>⚖️ Vetores nas 3 Linguagens — Comparação</h2>
+            <p>Sintaxe, índices e inicialização lado a lado</p>
+        </div>
+        <div class="slide-body">
+            <table class="comparison-table" style="margin-top:15px;">
+                <thead>
+                    <tr><th>Aspecto</th><th>🟢 Portugol</th><th>🔵 C</th><th>🟠 Java</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Declaração</strong></td>
+                        <td><code>v: vetor[1..N] de inteiro</code></td>
+                        <td><code>int v[N];</code></td>
+                        <td><code>int[] v = new int[N];</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Índice inicial</strong></td>
+                        <td>1 (configurável)</td>
+                        <td>0 (fixo)</td>
+                        <td>0 (fixo)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Último índice</strong></td>
+                        <td>N</td>
+                        <td>N - 1</td>
+                        <td>N - 1</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Acesso</strong></td>
+                        <td><code>v[i]</code></td>
+                        <td><code>v[i]</code></td>
+                        <td><code>v[i]</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tamanho em código</strong></td>
+                        <td>Definido no intervalo</td>
+                        <td>Constante ou <code>sizeof</code></td>
+                        <td><code>v.length</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inicialização direta</strong></td>
+                        <td>Não suportada</td>
+                        <td><code>int v[] = {1,2,3};</code></td>
+                        <td><code>int[] v = {1,2,3};</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Out of bounds</strong></td>
+                        <td>Erro de execução</td>
+                        <td>Corrupção silenciosa</td>
+                        <td>Exceção em tempo de execução</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="two-column" style="margin-top:15px;">
+                <div class="analogy-box" style="margin-bottom:0;">
+                    <h3>🎯 Dica de ouro: for com tamanho</h3>
+                    <p>
+                        <strong>C:</strong> <code>for(int i=0; i&lt;N; i++)</code> — sempre <code>&lt;</code><br>
+                        <strong>Java:</strong> <code>for(int i=0; i&lt;v.length; i++)</code><br>
+                        <strong>Portugol:</strong> <code>para i &lt;- 1 ate N faca</code>
+                    </p>
+                </div>
+                <div class="success-box" style="margin-bottom:0;">
+                    <h3>✅ Inicialização em C</h3>
+                    <div class="code-block" style="font-size:0.82rem; margin:8px 0 0 0;"><span class="keyword">int</span> primos[] = {<span class="number">2</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">7</span>,<span class="number">11</span>};
+<span class="comment">// tamanho calculado automaticamente</span>
+<span class="keyword">int</span> n = <span class="keyword">sizeof</span>(primos)/<span class="keyword">sizeof</span>(primos[<span class="number">0</span>]);
+<span class="comment">// n = 5</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════ SLIDE 11 — EXERCÍCIOS ═══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>📝 Exercícios Propostos</h2>
+            <p>Pratique vetores com operações progressivas!</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">Vetores + for = combinação perfeita. Pratique as 3 operações: leitura, processamento e exibição! 💪</div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div>
+                    <div class="exercise-box">
+                        <h4>📌 A — Invertendo um Vetor <span class="level-badge level-easy">Básico</span></h4>
+                        <p>Leia 6 números inteiros em um vetor. Exiba o vetor em ordem <strong>inversa</strong> (do último ao primeiro) sem criar um segundo vetor — apenas percorrendo o índice de trás para frente.</p>
+                    </div>
+                    <div class="exercise-box">
+                        <h4>📌 B — Dois Vetores Paralelos <span class="level-badge level-medium">Intermediário</span></h4>
+                        <p>Leia 5 nomes e 5 salários em vetores paralelos. Calcule o maior salário, exiba o nome do funcionário com maior salário e a média dos salários.</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="exercise-box">
+                        <h4>📌 C — Contagem de Ocorrências <span class="level-badge level-medium">Intermediário</span></h4>
+                        <p>Leia 10 números (1–5) representando avaliações. Use um vetor de contadores <code>cont[1..5]</code> para contar quantas vezes cada nota apareceu. Exiba o histograma.</p>
+                    </div>
+                    <div class="exercise-box">
+                        <h4>📌 D — Merge de Dois Vetores <span class="level-badge level-hard">Avançado</span></h4>
+                        <p>Leia dois vetores A[5] e B[5] já ordenados. Crie um terceiro vetor C[10] que contenha todos os elementos de A e B em ordem crescente (intercalados).</p>
+                    </div>
+                </div>
+            </div>
+            <div class="highlight-box" style="margin-top:15px;">
+                <h3>🎯 Entrega</h3>
+                <p>Resolva ao menos <strong>2 exercícios</strong> no Portugol Web Studio e envie via Google Classroom. Na próxima aula: <strong>Matrizes</strong> — vetores em duas dimensões!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════ SLIDE 12 — RESUMO ═══════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🎯 Resumo e Próximos Passos</h2>
+            <p>Vetores — a base de todas as estruturas de dados!</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea">Vetores transformam N variáveis em 1 — e laços tornam isso poderoso! 🏆</div>
+
+            <div class="two-column" style="margin-top:25px;">
+                <div class="content-box">
+                    <h3>✅ Conceitos aprendidos</h3>
+                    <ul>
+                        <li>Declaração de vetor com intervalo de índices</li>
+                        <li>Acesso por índice: <code>v[i]</code></li>
+                        <li>Leitura e impressão com <code>for</code></li>
+                        <li>Vetores paralelos para dados relacionados</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3>✅ Operações implementadas</h3>
+                    <ul>
+                        <li>Leitura de N elementos</li>
+                        <li>Soma, média, maior, menor</li>
+                        <li>Busca linear com break</li>
+                        <li>Ordenação Bubble Sort</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3>✅ Diferenças por linguagem</h3>
+                    <ul>
+                        <li><strong>Portugol:</strong> índice 1 a N</li>
+                        <li><strong>C / Java:</strong> índice 0 a N-1</li>
+                        <li>Java: <code>v.length</code> para tamanho</li>
+                        <li>C: cuidado — sem verificação automática!</li>
+                    </ul>
+                </div>
+                <div class="content-box">
+                    <h3>🔥 Próximas Aulas</h3>
+                    <ul>
+                        <li><strong>Aula 16:</strong> Matrizes (vetores 2D)</li>
+                        <li><strong>Aula 17:</strong> Subprogramas / Funções</li>
+                        <li><strong>Aula 18:</strong> Recursividade</li>
+                        <li><strong>Aula 19:</strong> Strings avançadas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top:20px;">
+                <h3>📚 Para a Próxima Aula</h3>
+                <ul>
+                    <li style="padding:8px 0;"><strong>1️⃣ Entregar:</strong> 2 exercícios propostos no Google Classroom</li>
+                    <li style="padding:8px 0;"><strong>2️⃣ Desafio:</strong> Implemente o Selection Sort — encontre o menor, coloque na posição 0, repita para as restantes</li>
+                    <li style="padding:8px 0;"><strong>3️⃣ Pensar:</strong> Se um vetor é uma linha de gavetas, o que seria uma tabela com linhas E colunas? (prévia das matrizes)</li>
+                </ul>
+            </div>
+
+            <div class="two-column" style="margin-top:20px;">
+                <div class="content-box">
+                    <h3>💬 Dúvidas?</h3>
+                    <p style="margin-bottom:10px;"><strong>E-mail:</strong> tiago.galvao@unifil.br</p>
+                    <p style="margin-bottom:10px;"><strong>Atendimento:</strong> Terças 18h–19h</p>
+                    <p><strong>Google Classroom:</strong> Fórum disponível</p>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center;">
+                    <div style="text-align:center;color:var(--unifil-gray);">
+                        <p style="font-size:1.3rem;font-weight:600;">Obrigado pela atenção! 🙏</p>
+                        <p style="font-size:1.1rem;margin-top:8px;">Nos vemos na próxima aula!</p>
+                        <p style="font-size:0.9rem;margin-top:16px;font-style:italic;">
+                            "vetor[0] = início; vetor[N-1] = excelência! 📦"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NAVEGAÇÃO -->
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 12</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box,.example-card,.highlight-box,.big-idea,.stat-card,' +
+            '.analogy-box,.comparison-table,.warning-box,.success-box,' +
+            '.exercise-box,.array-visual'
+        );
+        animated.forEach((el, i) => {
+            el.style.animation = 'none'; el.style.opacity = '0';
+            setTimeout(() => { el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.07}s forwards`; }, 10);
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend',   e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>
