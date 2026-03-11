@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 24 - Projeto Final | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5; --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B; --code-bg: #282c34; --code-text: #abb2bf;
+        }
+        body { font-family: 'Segoe UI', sans-serif;
+               background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+               overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width:100%; height:100%; position:absolute; top:0; left:0;
+                 display:none; opacity:0; transform:translateX(100%);
+                 transition:all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); }
+        .slide.active { display:flex; opacity:1; transform:translateX(0); }
+        .slide-content { background:white; width:90%; max-width:1200px; height:90%;
+                         margin:auto; border-radius:20px;
+                         box-shadow:0 20px 60px rgba(0,0,0,0.3);
+                         display:flex; flex-direction:column; overflow:hidden; }
+        .slide-header { background:linear-gradient(135deg,var(--unifil-orange) 0%,var(--unifil-accent) 100%);
+                        padding:28px 50px; color:white; position:relative; flex-shrink:0; }
+        .slide-header::after { content:''; position:absolute; bottom:-20px; left:0; right:0; height:40px;
+                                background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                                clip-path:polygon(0 0,100% 0,100% 100%,0 0); }
+        .slide-header h1 { font-size:2.4rem; margin-bottom:8px; font-weight:700; }
+        .slide-header h2 { font-size:1.75rem; margin-bottom:8px; font-weight:600; }
+        .slide-header p  { font-size:1.05rem; opacity:0.95; }
+        .slide-body { flex:1; padding:55px 50px 36px; overflow-y:auto; }
+        .slide-body::-webkit-scrollbar { width:8px; }
+        .slide-body::-webkit-scrollbar-thumb { background:var(--unifil-orange); border-radius:10px; }
+        .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin:20px 0; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; margin:20px 0; }
+        .box { background:var(--unifil-light); padding:22px; border-radius:15px;
+               border-left:5px solid var(--unifil-orange);
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .box h3 { color:var(--unifil-orange); margin-bottom:10px; font-size:1.2rem; }
+        .box p  { font-size:0.97rem; line-height:1.7; }
+        .box ul { list-style:none; }
+        .box li { padding:6px 0 6px 26px; position:relative; font-size:0.97rem; line-height:1.55; }
+        .box li::before { content:'→'; position:absolute; left:0; color:var(--unifil-orange); font-weight:bold; }
+        .hi { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+              color:white; padding:24px 30px; border-radius:15px; margin:20px 0;
+              animation:fadeInUp 0.6s ease-out 0.2s forwards; opacity:0; }
+        .hi h3 { margin-bottom:10px; font-size:1.35rem; }
+        .hi p  { font-size:1rem; line-height:1.7; }
+        .card { background:white; border:2px solid var(--unifil-orange); padding:20px;
+                border-radius:12px; margin:14px 0;
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .card h4 { color:var(--unifil-orange); margin-bottom:8px; font-size:1.15rem; }
+        .code { background:var(--code-bg); color:var(--code-text); padding:16px;
+                border-radius:10px; font-family:'Courier New',monospace;
+                font-size:0.82rem; margin:10px 0; line-height:1.65; white-space:pre;
+                overflow-x:auto; }
+        .kw  { color:#c678dd; font-weight:600; }
+        .fn  { color:#61afef; }
+        .str { color:#98c379; }
+        .cm  { color:#5c6370; font-style:italic; }
+        .nm  { color:#d19a66; }
+        .op  { color:#FF8C00; font-weight:600; }
+        .ret { color:#e06c75; font-weight:800; }
+        .tp  { color:#56b6c2; font-weight:700; }
+        .fd  { color:#e5c07b; font-weight:700; }
+        .big { background:linear-gradient(135deg,#4A90E2,#357ABD); color:white;
+               padding:26px 36px; border-radius:20px; font-size:1.45rem;
+               font-weight:600; text-align:center; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel { background:#fff3cd; border:3px solid #ffc107; border-radius:15px;
+               padding:22px; margin:18px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel h3 { color:#856404; margin-bottom:10px; font-size:1.2rem; }
+        .yel p  { font-size:0.97rem; line-height:1.7; color:#533f03; }
+        .yel ul { list-style:none; }
+        .yel li { padding:5px 0 5px 24px; position:relative; font-size:0.95rem; color:#533f03; }
+        .yel li::before { content:'⚠'; position:absolute; left:0; }
+        .red { background:#ffebee; border:3px solid #f44336; border-radius:15px;
+               padding:20px; margin:16px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .red h3 { color:#c62828; margin-bottom:10px; font-size:1.15rem; }
+        .red p  { font-size:0.95rem; line-height:1.6; color:#b71c1c; }
+        .grn { background:#e8f5e9; border:3px solid #4caf50; border-radius:15px;
+               padding:22px; margin:18px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .grn h3 { color:#2e7d32; margin-bottom:10px; font-size:1.2rem; }
+        .grn p  { font-size:0.97rem; line-height:1.7; color:#1b5e20; }
+        .grn ul { list-style:none; }
+        .grn li { padding:5px 0 5px 26px; position:relative; font-size:0.95rem; color:#1b5e20; }
+        .grn li::before { content:'✅'; position:absolute; left:0; font-size:0.8rem; }
+        .tbl { width:100%; border-collapse:collapse; margin:12px 0;
+               border-radius:10px; overflow:hidden;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tbl th { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                  color:white; padding:11px 16px; text-align:left; font-size:0.95rem; }
+        .tbl td { padding:9px 16px; border-bottom:1px solid var(--unifil-light); font-size:0.92rem; }
+        .tbl tr:hover td { background:var(--unifil-light); }
+
+        /* ── RUBRICA ── */
+        .rubric-row { display:flex; align-items:stretch; margin:6px 0; gap:0;
+                      border-radius:10px; overflow:hidden;
+                      animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .rr-label { min-width:220px; padding:12px 16px; font-weight:700;
+                    font-size:0.9rem; display:flex; align-items:center; }
+        .rr-pts   { min-width:64px; padding:12px 10px; font-size:1.1rem;
+                    font-weight:800; display:flex; align-items:center;
+                    justify-content:center; color:white; }
+        .rr-desc  { flex:1; padding:10px 16px; font-size:0.87rem; line-height:1.5;
+                    display:flex; align-items:center; }
+        .rr-a { background:#e8f5e9; color:#2e7d32; }  .rra { background:#388e3c; }  .rr-ad { background:#f1f8f2; color:#1b5e20; }
+        .rr-b { background:#e3f2fd; color:#1565c0; }  .rrb { background:#1976d2; }  .rr-bd { background:#f0f7ff; color:#0d47a1; }
+        .rr-c { background:#fff3e0; color:#e65100; }  .rrc { background:#f57c00; }  .rr-cd { background:#fffbf0; color:#bf360c; }
+        .rr-d { background:#f3e5f5; color:#6a1b9a; }  .rrd { background:#8e24aa; }  .rr-dd { background:#faf0ff; color:#4a148c; }
+        .rr-e { background:#fce4ec; color:#880e4f; }  .rre { background:#c2185b; }  .rr-ed { background:#fff5f8; color:#880e4f; }
+
+        /* ── TEMA CARD ── */
+        .tema-card { border-radius:14px; padding:18px 20px; margin:8px 0;
+                     animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tc-header { font-weight:800; font-size:1rem; margin-bottom:6px; }
+        .tc-body   { font-size:0.87rem; line-height:1.6; }
+        .tc-tags   { margin-top:8px; display:flex; flex-wrap:wrap; gap:5px; }
+        .tc-tag    { background:rgba(255,255,255,0.5); border-radius:20px;
+                     padding:2px 10px; font-size:0.75rem; font-weight:600; }
+
+        /* ── TIMELINE ENTREGA ── */
+        .etapa { display:flex; gap:16px; align-items:flex-start; margin:10px 0;
+                 animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .etapa-num { width:42px; min-width:42px; height:42px; border-radius:50%;
+                     background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                     color:white; font-weight:800; font-size:1rem;
+                     display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .etapa-body { flex:1; background:var(--unifil-light); border-radius:12px;
+                      padding:12px 18px; border-left:4px solid var(--unifil-orange); }
+        .etapa-title { font-weight:700; font-size:1rem; color:var(--unifil-dark); margin-bottom:4px; }
+        .etapa-desc  { font-size:0.88rem; color:var(--unifil-gray); line-height:1.5; }
+        .etapa-date  { font-size:0.82rem; font-weight:700; color:var(--unifil-orange); margin-top:4px; }
+
+        .lv { display:inline-block; padding:3px 10px; border-radius:20px;
+              font-size:0.78rem; font-weight:700; }
+        .lv-e { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .lv-m { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .lv-h { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+        .lv-x { background:#e1bee7; color:#6a1b9a; border:1px solid #9c27b0; }
+
+        .nav { position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+               display:flex; gap:20px; align-items:center;
+               background:rgba(255,255,255,0.95); padding:15px 30px;
+               border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:1000; }
+        .nb  { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+               color:white; border:none; padding:12px 24px; border-radius:25px;
+               cursor:pointer; font-size:1rem; font-weight:600; transition:all .3s; }
+        .nb:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,140,0,.4); }
+        .nb:disabled { opacity:.5; cursor:not-allowed; }
+        .sc { font-weight:600; color:var(--unifil-dark); min-width:80px; text-align:center; font-size:1.1rem; }
+        .pb { position:fixed; top:0; left:0; width:100%; height:5px;
+              background:rgba(255,255,255,0.2); z-index:1001; }
+        .pf { height:100%; background:linear-gradient(90deg,var(--unifil-orange),var(--unifil-accent));
+              transition:width .3s; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        code { font-family:'Courier New',monospace; background:#f0f0f0;
+               padding:2px 6px; border-radius:4px; font-size:.9em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="pf"></div></div>
+<div class="presentation">
+
+<!-- SLIDE 1 — CAPA -->
+<div class="slide active">
+<div class="slide-content">
+<div class="slide-header">
+<h1>Lógica de Programação e Algoritmos</h1>
+<p>Aula 24 — Projeto Final Integrador</p>
+</div>
+<div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<div style="font-size:4.5rem;margin-bottom:16px;">🏆</div>
+<h2 style="font-size:2.3rem;color:var(--unifil-orange);margin-bottom:14px;">Sistema de Gerenciamento com Persistência</h2>
+<p style="font-size:1.15rem;color:var(--unifil-gray);max-width:860px;margin-bottom:24px;">
+  O projeto final integra <strong>todos os conteúdos do semestre</strong>:
+  structs, vetores, funções, strings, ponteiros e arquivos.
+  Você vai construir um sistema real — com menu, cadastro,
+  busca, relatórios e dados que sobrevivem entre execuções.
+</p>
+
+<div class="three-col" style="width:100%;max-width:900px;margin-bottom:22px;">
+  <div style="background:#e8f5e9;border-radius:14px;padding:18px 12px;border:2px solid #4caf50;">
+    <div style="font-size:2rem;">📋</div>
+    <div style="font-weight:700;color:#2e7d32;margin-top:8px;font-size:0.95rem;">Individual</div>
+    <div style="font-size:0.83rem;color:#555;margin-top:4px;">Cada aluno entrega seu próprio sistema funcional</div>
+  </div>
+  <div style="background:#e3f2fd;border-radius:14px;padding:18px 12px;border:2px solid #1976d2;">
+    <div style="font-size:2rem;">💻</div>
+    <div style="font-weight:700;color:#1565c0;margin-top:8px;font-size:0.95rem;">Linguagem C</div>
+    <div style="font-size:0.83rem;color:#555;margin-top:4px;">Compilado com GCC, testado e funcionando</div>
+  </div>
+  <div style="background:#fff3e0;border-radius:14px;padding:18px 12px;border:2px solid #f57c00;">
+    <div style="font-size:2rem;">🎤</div>
+    <div style="font-weight:700;color:#e65100;margin-top:8px;font-size:0.95rem;">Apresentação</div>
+    <div style="font-size:0.83rem;color:#555;margin-top:4px;">Demo ao vivo + defesa oral do código entregue</div>
+  </div>
+</div>
+
+<div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;">
+  <div style="text-align:center;">
+    <div style="font-size:2.2rem;font-weight:800;color:var(--unifil-orange);">10,0</div>
+    <div style="font-size:0.88rem;color:var(--unifil-gray);">Pontuação máxima</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="font-size:2.2rem;font-weight:800;color:var(--unifil-orange);">≥ 500</div>
+    <div style="font-size:0.88rem;color:var(--unifil-gray);">Linhas de código esperadas</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="font-size:2.2rem;font-weight:800;color:var(--unifil-orange);">7 dias</div>
+    <div style="font-size:0.88rem;color:var(--unifil-gray);">Prazo para entrega no Classroom</div>
+  </div>
+</div>
+<div style="font-size:1rem;color:var(--unifil-gray);margin-top:10px;">
+  <strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2 — OBJETIVOS E VISÃO GERAL -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎯 Objetivos do Projeto Final</h2>
+<p>O que você vai demonstrar e por que este projeto importa para sua carreira</p>
+</div>
+<div class="slide-body">
+<div class="big">Este projeto é seu portfólio de entrada no mercado — um sistema real, seu, do zero! 💼</div>
+<div class="two-col" style="margin-top:18px;">
+<div class="box">
+<h3>🎓 Objetivos de aprendizagem</h3>
+<ul>
+<li>Modelar dados reais com <strong>structs</strong> e <strong>enums</strong> bem projetados</li>
+<li>Organizar o código em <strong>funções coesas</strong> (princípio DRY)</li>
+<li>Implementar <strong>persistência de dados</strong> com arquivos binários</li>
+<li>Realizar <strong>busca</strong> e <strong>ordenação</strong> em vetores de structs</li>
+<li>Gerar <strong>relatórios</strong> em arquivo texto e CSV</li>
+<li>Tratar entradas inválidas e <strong>erros de arquivo</strong> graciosamente</li>
+<li>Escrever código <strong>legível</strong>: nomes descritivos, comentários úteis</li>
+</ul>
+</div>
+<div>
+<div class="box">
+<h3>🗺️ Requisitos mínimos obrigatórios</h3>
+<ul>
+<li>Ao menos <strong>1 struct</strong> com mínimo de 5 campos de tipos variados</li>
+<li><strong>Vetor de structs</strong> com capacidade ≥ 50 registros</li>
+<li><strong>Menu do-while</strong> com mínimo 6 opções funcionais</li>
+<li><strong>CRUD completo:</strong> cadastrar, listar, buscar, editar, excluir</li>
+<li><strong>Persistência:</strong> carregar ao iniciar + salvar ao sair</li>
+<li><strong>Ordenação</strong> por ao menos um campo</li>
+<li><strong>Relatório</strong> exportado em arquivo texto ou CSV</li>
+<li>Código compila sem erros com <code>gcc -Wall</code></li>
+</ul>
+</div>
+<div class="grn" style="margin-top:14px; margin-bottom:0;">
+<h3>✅ Liberdade de tema</h3>
+<p>Você escolhe o domínio do sistema — biblioteca, farmácia, academia, estoque, clínica, escola, hotel, concessionária. O importante é que o tema seja <strong>relevante e motivador para você</strong>!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3 — TEMAS SUGERIDOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💡 Temas Sugeridos — Escolha o Seu!</h2>
+<p>Exemplos de domínios com boa riqueza de dados e operações — use sua criatividade</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="tema-card" style="background:#e8f5e9;border:2px solid #4caf50;">
+  <div class="tc-header" style="color:#2e7d32;">📚 Biblioteca Digital</div>
+  <div class="tc-body" style="color:#1b5e20;">Livros, autores, empréstimos, devoluções, multas por atraso. Busca por título, autor ou ISBN. Relatório de livros mais emprestados.</div>
+  <div class="tc-tags"><span class="tc-tag" style="background:#c8e6c9;color:#2e7d32;">structs aninhadas</span><span class="tc-tag" style="background:#c8e6c9;color:#2e7d32;">datas</span><span class="tc-tag" style="background:#c8e6c9;color:#2e7d32;">enum status</span></div>
+</div>
+<div class="tema-card" style="background:#e3f2fd;border:2px solid #1976d2;margin-top:10px;">
+  <div class="tc-header" style="color:#1565c0;">🏥 Clínica Médica</div>
+  <div class="tc-body" style="color:#0d47a1;">Pacientes, consultas, médicos, prontuários. Agendamento por data, histórico de atendimentos, alertas de retorno.</div>
+  <div class="tc-tags"><span class="tc-tag" style="background:#bbdefb;color:#1565c0;">múltiplas structs</span><span class="tc-tag" style="background:#bbdefb;color:#1565c0;">enum especialidade</span></div>
+</div>
+<div class="tema-card" style="background:#fff3e0;border:2px solid #f57c00;margin-top:10px;">
+  <div class="tc-header" style="color:#e65100;">🏋️ Academia de Ginástica</div>
+  <div class="tc-body" style="color:#bf360c;">Alunos, planos, pagamentos, instrutores, aulas. Controle de vencimento de mensalidade, alunos inadimplentes, frequência.</div>
+  <div class="tc-tags"><span class="tc-tag" style="background:#ffe0b2;color:#e65100;">cálculo de datas</span><span class="tc-tag" style="background:#ffe0b2;color:#e65100;">float financeiro</span></div>
+</div>
+<div class="tema-card" style="background:#f3e5f5;border:2px solid #8e24aa;margin-top:10px;">
+  <div class="tc-header" style="color:#6a1b9a;">🏨 Hotel / Pousada</div>
+  <div class="tc-body" style="color:#4a148c;">Quartos, reservas, hóspedes, diárias. Check-in/check-out, cálculo de valor total, quartos disponíveis por período.</div>
+  <div class="tc-tags"><span class="tc-tag" style="background:#e1bee7;color:#6a1b9a;">cálculo de valor</span><span class="tc-tag" style="background:#e1bee7;color:#6a1b9a;">enum status quarto</span></div>
+</div>
+</div>
+<div>
+<div class="tema-card" style="background:#fce4ec;border:2px solid #c2185b;">
+  <div class="tc-header" style="color:#880e4f;">🛒 Supermercado / Estoque</div>
+  <div class="tc-body" style="color:#880e4f;">Produtos, categorias, fornecedores, movimentações. Alerta de estoque mínimo, produtos vencendo, relatório de valor em estoque.</div>
+  <div class="tc-tags"><span class="tc-tag" style="background:#fce4ec;color:#880e4f;">log de movimentos</span><span class="tc-tag" style="background:#fce4ec;color:#880e4f;">enum categoria</span></div>
+</div>
+<div class="tema-card" style="background:#e0f7fa;border:2px solid #0097a7;margin-top:10px;">
+  <div class="tc-header" style="color:#006064;">🚗 Concessionária / Locadora</div>
+  <div class="tc-body" style="color:#006064;">Veículos, clientes, vendas/aluguéis, revisões. Busca por modelo/ano/preço, relatório de vendas do mês, histórico do veículo.</div>
+  <div class="tc-tags"><span class="tc-tag" style="background:#b2ebf2;color:#006064;">múltiplos filtros</span><span class="tc-tag" style="background:#b2ebf2;color:#006064;">histórico</span></div>
+</div>
+<div class="tema-card" style="background:#fff8e1;border:2px solid #ffa000;margin-top:10px;">
+  <div class="tc-header" style="color:#e65100;">🎮 Torneio / Campeonato</div>
+  <div class="tc-body" style="color:#bf360c;">Jogadores/times, partidas, pontuações, ranking. Tabela de classificação ordenada, estatísticas por jogador, histórico de confrontos.</div>
+  <div class="tc-tags"><span class="tc-tag" style="background:#fff3e0;color:#e65100;">ordenação complexa</span><span class="tc-tag" style="background:#fff3e0;color:#e65100;">estatísticas</span></div>
+</div>
+<div class="hi" style="margin-top:12px; margin-bottom:0; padding:16px 20px;">
+<h3>💡 Tema próprio?</h3>
+<p style="font-size:0.92rem;">Tem uma ideia diferente? Consulte o professor antes de começar. A única exigência é que o tema permita modelar uma struct rica e implementar todos os requisitos mínimos.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4 — ESPECIFICAÇÕES TÉCNICAS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>⚙️ Especificações Técnicas Obrigatórias</h2>
+<p>O que o código deve ter — checklist técnico que será verificado na avaliação</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Estrutura de dados mínima</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// Ao menos 1 typedef enum</span>
+<span class="kw">typedef enum</span> { ... } <span class="tp">TipoX</span>;
+
+<span class="cm">// Ao menos 1 typedef struct com ≥5 campos</span>
+<span class="kw">typedef struct</span> {
+  <span class="kw">char</span>   campo1[<span class="nm">N</span>];  <span class="cm">← string</span>
+  <span class="kw">int</span>    campo2;      <span class="cm">← inteiro</span>
+  <span class="kw">float</span>  campo3;      <span class="cm">← real</span>
+  <span class="tp">TipoX</span>  campo4;      <span class="cm">← enum</span>
+  <span class="cm">// ... mais campos</span>
+} <span class="tp">NomeTipo</span>;
+
+<span class="cm">// Vetor global + contador</span>
+<span class="kw">#define</span> MAX <span class="nm">100</span>
+<span class="tp">NomeTipo</span> dados[MAX];
+<span class="kw">int</span> total = <span class="nm">0</span>;</div>
+</div>
+<div class="card">
+<h4>🔵 Funções obrigatórias</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">void</span>  <span class="fn">carregar</span>();              <span class="cm">← fread binário</span>
+<span class="kw">void</span>  <span class="fn">salvar</span>();                <span class="cm">← fwrite binário</span>
+<span class="kw">void</span>  <span class="fn">cadastrar</span>();             <span class="cm">← adicionar registro</span>
+<span class="kw">void</span>  <span class="fn">listar</span>();                <span class="cm">← exibir todos</span>
+<span class="kw">int</span>   <span class="fn">buscar</span>(<span class="cm">/* campo chave */</span>);<span class="cm">← retorna índice ou -1</span>
+<span class="kw">void</span>  <span class="fn">editar</span>();                <span class="cm">← alterar registro</span>
+<span class="kw">void</span>  <span class="fn">excluir</span>();               <span class="cm">← remover registro</span>
+<span class="kw">void</span>  <span class="fn">ordenar</span>();               <span class="cm">← sort por campo</span>
+<span class="kw">void</span>  <span class="fn">exportarRelatorio</span>();     <span class="cm">← arquivo texto/csv</span>
+<span class="kw">void</span>  <span class="fn">exibirMenu</span>();            <span class="cm">← interface do usuário</span>
+<span class="kw">int</span>   <span class="fn">main</span>();                  <span class="cm">← orquestra tudo</span></div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Persistência obrigatória</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// Carregar ao iniciar (se arquivo existe)</span>
+<span class="kw">void</span> <span class="fn">carregar</span>() {
+  <span class="tp">FILE</span> *fp = <span class="fn">fopen</span>(<span class="str">"dados.dat"</span>, <span class="str">"rb"</span>);
+  <span class="kw">if</span>(!fp) { <span class="fn">printf</span>(<span class="str">"Novo cadastro.\n"</span>); <span class="ret">return</span>; }
+  <span class="fn">fread</span>(&amp;total, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="nm">1</span>, fp);
+  <span class="fn">fread</span>(dados, <span class="kw">sizeof</span>(<span class="tp">NomeTipo</span>), total, fp);
+  <span class="fn">fclose</span>(fp);
+}
+<span class="cm">// Salvar ao sair</span>
+<span class="kw">void</span> <span class="fn">salvar</span>() {
+  <span class="tp">FILE</span> *fp = <span class="fn">fopen</span>(<span class="str">"dados.dat"</span>, <span class="str">"wb"</span>);
+  <span class="kw">if</span>(!fp) { <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span>; }
+  <span class="fn">fwrite</span>(&amp;total, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="nm">1</span>, fp);
+  <span class="fn">fwrite</span>(dados, <span class="kw">sizeof</span>(<span class="tp">NomeTipo</span>), total, fp);
+  <span class="fn">fclose</span>(fp);
+}</div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ Arquivo de log opcional (+bonus)</h3>
+<p>Registrar operações em <code>log.txt</code> com timestamp usando <code>time.h</code> e modo <code>"a"</code> vale <strong>bônus</strong> na avaliação. Mostre que você foi além do mínimo!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5 — ARQUITETURA SUGERIDA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🏗️ Arquitetura Sugerida do Projeto</h2>
+<p>Organização em camadas: dados → lógica → interface → persistência</p>
+</div>
+<div class="slide-body">
+<div class="big" style="font-size:1.25rem;padding:18px 28px;margin-top:10px;">Separe responsabilidades: dados, lógica de negócio, interface e arquivo — cada função faz uma coisa! 🧩</div>
+
+<div class="two-col" style="margin-top:14px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 Estrutura de um arquivo .c bem organizado</h4>
+<div class="code" style="font-size:0.80rem;"><span class="cm">// ══════════════════════════════════
+// 1. INCLUDES E DEFINES
+// ══════════════════════════════════</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;time.h&gt;</span>
+<span class="kw">#define</span>  MAX       <span class="nm">100</span>
+<span class="kw">#define</span>  ARQUIVO   <span class="str">"dados.dat"</span>
+<span class="kw">#define</span>  LOG_FILE  <span class="str">"log.txt"</span>
+
+<span class="cm">// ══════════════════════════════════
+// 2. DEFINIÇÃO DE TIPOS (enum + struct)
+// ══════════════════════════════════</span>
+<span class="kw">typedef enum</span>   { ... } <span class="tp">MeuEnum</span>;
+<span class="kw">typedef struct</span> { ... } <span class="tp">MeuTipo</span>;
+
+<span class="cm">// ══════════════════════════════════
+// 3. VARIÁVEIS GLOBAIS
+// ══════════════════════════════════</span>
+<span class="tp">MeuTipo</span> dados[MAX];
+<span class="kw">int</span> total = <span class="nm">0</span>;
+
+<span class="cm">// ══════════════════════════════════
+// 4. PROTÓTIPOS (opcional)
+// ══════════════════════════════════</span>
+<span class="kw">void</span> <span class="fn">carregar</span>();  <span class="kw">void</span> <span class="fn">salvar</span>();
+<span class="kw">void</span> <span class="fn">cadastrar</span>(); <span class="kw">void</span> <span class="fn">listar</span>();
+<span class="kw">int</span>  <span class="fn">buscar</span>(<span class="kw">int</span>); <span class="kw">void</span> <span class="fn">editar</span>();
+<span class="kw">void</span> <span class="fn">excluir</span>();  <span class="kw">void</span> <span class="fn">ordenar</span>();
+<span class="kw">void</span> <span class="fn">exportar</span>();
+
+<span class="cm">// ══════════════════════════════════
+// 5. IMPLEMENTAÇÃO DAS FUNÇÕES
+// ══════════════════════════════════</span>
+<span class="cm">// (cada função documentada com comentário)</span>
+
+<span class="cm">// ══════════════════════════════════
+// 6. MAIN
+// ══════════════════════════════════</span>
+<span class="kw">int</span> <span class="fn">main</span>() { <span class="fn">carregar</span>(); <span class="cm">/*menu*/</span> <span class="fn">salvar</span>(); }</span></div>
+</div>
+<div>
+<div class="box" style="margin-top:0;">
+<h3>📐 Diagrama de chamadas</h3>
+<div style="background:#1e2129;border-radius:12px;padding:18px;font-family:'Courier New',monospace;font-size:0.82rem;line-height:2.2;color:#abb2bf;">
+<span style="color:#61afef;font-weight:700;">main()</span><br>
+&nbsp;&nbsp;├─ <span style="color:#c678dd;">carregar()</span> &nbsp;&nbsp;&nbsp;← fread<br>
+&nbsp;&nbsp;├─ <span style="color:#e5c07b;">exibirMenu()</span><br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└─ <span style="color:#61afef;">do-while switch</span><br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ <span style="color:#98c379;">cadastrar()</span><br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ <span style="color:#98c379;">listar()</span><br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ <span style="color:#98c379;">buscar(chave)</span><br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ <span style="color:#98c379;">editar()</span> ── buscar()<br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ <span style="color:#98c379;">excluir()</span> ─ buscar()<br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ <span style="color:#98c379;">ordenar()</span><br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ <span style="color:#98c379;">exportar()</span><br>
+&nbsp;&nbsp;└─ <span style="color:#c678dd;">salvar()</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← fwrite
+</div>
+</div>
+<div class="yel" style="margin-top:14px; margin-bottom:0;">
+<h3>💡 Dica de ouro: escreva uma função por vez</h3>
+<p>Implemente <strong>carregar → salvar → cadastrar → listar</strong> primeiro. Teste cada uma. Só depois adicione buscar, editar, excluir. Código que funciona parcialmente é melhor que código completo que não compila!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6 — EXEMPLO: SISTEMA DE BIBLIOTECA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo Guiado — Biblioteca Digital</h2>
+<p>Modelagem completa de um tema: struct, enum, busca, excluir e exportar</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 Tipos bem modelados</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">typedef enum</span> {
+  DISPONIVEL, EMPRESTADO, RESERVADO
+} <span class="tp">StatusLivro</span>;
+
+<span class="kw">typedef enum</span> {
+  FICCAO, CIENCIAS, HISTORIA,
+  TECNOLOGIA, AUTOAJUDA, OUTRO
+} <span class="tp">Categoria</span>;
+
+<span class="kw">typedef struct</span> {
+  <span class="kw">int</span>          <span class="fd">id</span>;
+  <span class="kw">char</span>         <span class="fd">titulo</span>[<span class="nm">80</span>];
+  <span class="kw">char</span>         <span class="fd">autor</span>[<span class="nm">60</span>];
+  <span class="kw">int</span>          <span class="fd">ano</span>;
+  <span class="kw">int</span>          <span class="fd">paginas</span>;
+  <span class="kw">char</span>         <span class="fd">isbn</span>[<span class="nm">20</span>];
+  <span class="tp">Categoria</span>    <span class="fd">categoria</span>;
+  <span class="tp">StatusLivro</span>  <span class="fd">status</span>;
+  <span class="kw">char</span>         <span class="fd">leitorAtual</span>[<span class="nm">60</span>];
+} <span class="tp">Livro</span>;
+
+<span class="kw">char</span>* <span class="fn">statusStr</span>(<span class="tp">StatusLivro</span> s) {
+  <span class="kw">switch</span>(s){
+    <span class="kw">case</span> DISPONIVEL: <span class="ret">return</span> <span class="str">"📗 Disponível"</span>;
+    <span class="kw">case</span> EMPRESTADO:  <span class="ret">return</span> <span class="str">"📕 Emprestado"</span>;
+    <span class="kw">case</span> RESERVADO:  <span class="ret">return</span> <span class="str">"📙 Reservado"</span>;
+    <span class="kw">default</span>: <span class="ret">return</span> <span class="str">"?"</span>;
+  }
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Excluir registro (compactar vetor)</h4>
+<div class="code" style="font-size:0.80rem;"><span class="cm">// Excluir por índice — compactar vetor</span>
+<span class="kw">void</span> <span class="fn">excluir</span>() {
+  <span class="kw">int</span> id;
+  <span class="fn">printf</span>(<span class="str">"ID do livro: "</span>);
+  <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;id);
+  <span class="kw">int</span> pos = <span class="fn">buscarPorId</span>(id);
+  <span class="kw">if</span>(pos == -<span class="nm">1</span>){<span class="fn">puts</span>(<span class="str">"Não encontrado."</span>);<span class="ret">return</span>;}
+
+  <span class="fn">printf</span>(<span class="str">"Excluir \"%s\"? (s/n) "</span>, dados[pos].<span class="fd">titulo</span>);
+  <span class="kw">char</span> conf; <span class="fn">scanf</span>(<span class="str">" %c"</span>, &amp;conf);
+  <span class="kw">if</span>(conf != <span class="str">'s'</span> &amp;&amp; conf != <span class="str">'S'</span>) <span class="ret">return</span>;
+
+  <span class="cm">// Compactar: mover todos uma posição</span>
+  <span class="kw">for</span>(<span class="kw">int</span> i=pos; i&lt;total-<span class="nm">1</span>; i<span class="op">++</span>)
+    dados[i] = dados[i+<span class="nm">1</span>];
+  total<span class="op">--</span>;
+  <span class="fn">printf</span>(<span class="str">"✅ Livro removido!\n"</span>);
+}
+
+<span class="cm">// Buscar por ID — retorna índice</span>
+<span class="kw">int</span> <span class="fn">buscarPorId</span>(<span class="kw">int</span> id) {
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;total; i<span class="op">++</span>)
+    <span class="kw">if</span>(dados[i].<span class="fd">id</span> == id) <span class="ret">return</span> i;
+  <span class="ret">return</span> -<span class="nm">1</span>;
+}</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7 — EXEMPLO: EDITAR E EXPORTAR -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Editar Registro e Exportar Relatório</h2>
+<p>As duas funções que mais diferenciam um projeto bom de um projeto excelente</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 Editar — alterar campo a campo</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">void</span> <span class="fn">editar</span>() {
+  <span class="kw">int</span> id;
+  <span class="fn">printf</span>(<span class="str">"ID do livro a editar: "</span>);
+  <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;id);
+  <span class="kw">int</span> pos = <span class="fn">buscarPorId</span>(id);
+  <span class="kw">if</span>(pos==-<span class="nm">1</span>){<span class="fn">puts</span>(<span class="str">"Não encontrado."</span>);<span class="ret">return</span>;}
+
+  <span class="tp">Livro</span> *l = &amp;dados[pos]; <span class="cm">← ponteiro direto!</span>
+  <span class="kw">int</span> op;
+  <span class="kw">do</span> {
+    <span class="fn">printf</span>(<span class="str">"\n=== Editando: %s ===\n"</span>, l-><span class="fd">titulo</span>);
+    <span class="fn">printf</span>(<span class="str">"1. Título  [%s]\n"</span>, l-><span class="fd">titulo</span>);
+    <span class="fn">printf</span>(<span class="str">"2. Autor   [%s]\n"</span>, l-><span class="fd">autor</span>);
+    <span class="fn">printf</span>(<span class="str">"3. Ano     [%d]\n"</span>, l-><span class="fd">ano</span>);
+    <span class="fn">printf</span>(<span class="str">"4. Status  [%s]\n"</span>, <span class="fn">statusStr</span>(l-><span class="fd">status</span>));
+    <span class="fn">printf</span>(<span class="str">"0. Concluir\nOpção: "</span>);
+    <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;op);
+    <span class="kw">switch</span>(op){
+      <span class="kw">case</span> <span class="nm">1</span>: <span class="fn">printf</span>(<span class="str">"Novo título: "</span>);
+               <span class="fn">scanf</span>(<span class="str">" %79[^\n]"</span>,l-><span class="fd">titulo</span>); <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">2</span>: <span class="fn">printf</span>(<span class="str">"Novo autor: "</span>);
+               <span class="fn">scanf</span>(<span class="str">" %59[^\n]"</span>,l-><span class="fd">autor</span>);  <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">3</span>: <span class="fn">printf</span>(<span class="str">"Novo ano: "</span>);
+               <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;l-><span class="fd">ano</span>);          <span class="kw">break</span>;
+    }
+  } <span class="kw">while</span>(op!=<span class="nm">0</span>);
+  <span class="fn">printf</span>(<span class="str">"✅ Registro atualizado!\n"</span>);
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Exportar relatório CSV completo</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">void</span> <span class="fn">exportarRelatorio</span>() {
+  <span class="tp">FILE</span> *fp = <span class="fn">fopen</span>(<span class="str">"relatorio.csv"</span>, <span class="str">"w"</span>);
+  <span class="kw">if</span>(!fp){ <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span>; }
+
+  <span class="cm">// Cabeçalho</span>
+  <span class="fn">fprintf</span>(fp, <span class="str">"ID,Titulo,Autor,Ano,Status\n"</span>);
+
+  <span class="kw">int</span> disp=<span class="nm">0</span>, emp=<span class="nm">0</span>;
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;total;i++){
+    <span class="fn">fprintf</span>(fp, <span class="str">"%d,\"%s\",\"%s\",%d,%s\n"</span>,
+      dados[i].<span class="fd">id</span>, dados[i].<span class="fd">titulo</span>,
+      dados[i].<span class="fd">autor</span>, dados[i].<span class="fd">ano</span>,
+      <span class="fn">statusStr</span>(dados[i].<span class="fd">status</span>));
+    <span class="kw">if</span>(dados[i].<span class="fd">status</span>==DISPONIVEL) disp<span class="op">++</span>;
+    <span class="kw">else</span> emp<span class="op">++</span>;
+  }
+  <span class="fn">fprintf</span>(fp,<span class="str">"\nTotal,%d,,,"</span> <span class="str">"\n"</span>,total);
+  <span class="fn">fprintf</span>(fp,<span class="str">"Disponíveis,%d,,,\n"</span>,disp);
+  <span class="fn">fprintf</span>(fp,<span class="str">"Emprestados,%d,,,\n"</span>,emp);
+  <span class="fn">fclose</span>(fp);
+  <span class="fn">printf</span>(<span class="str">"📊 relatorio.csv gerado!\n"</span>);
+}</div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ Editar via ponteiro</h3>
+<p><code>Livro *l = &dados[pos]</code> cria um ponteiro para o registro no vetor. Modificar <code>l->campo</code> altera diretamente o dado original — sem precisar copiar e reescrever!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8 — RUBRICA DE AVALIAÇÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📊 Rubrica de Avaliação — 10,0 pontos</h2>
+<p>Critérios claros e objetivos — saiba exatamente onde cada ponto está</p>
+</div>
+<div class="slide-body" style="padding-top:48px;">
+
+<div class="rubric-row"><div class="rr-label rr-a">🏗️ Modelagem de dados</div><div class="rr-pts rra">2,0</div><div class="rr-desc rr-ad">Struct com ≥5 campos variados (0,5), enum contextual (0,5), typedef limpo (0,5), campos string com tamanho correto (0,5)</div></div>
+<div class="rubric-row"><div class="rr-label rr-b">⚙️ Funções e modularização</div><div class="rr-pts rrb">2,0</div><div class="rr-desc rr-bd">CRUD completo: cadastrar (0,4), listar (0,4), buscar (0,4), editar (0,4), excluir (0,4) — cada uma funcionando corretamente</div></div>
+<div class="rubric-row"><div class="rr-label rr-c">💾 Persistência</div><div class="rr-pts rrc">2,0</div><div class="rr-desc rr-cd">carregar() ao iniciar (0,5), salvar() ao sair (0,5), funciona em 2ª execução com dados da 1ª (0,5), fopen verificado ≠ NULL (0,5)</div></div>
+<div class="rubric-row"><div class="rr-label rr-d">📋 Relatório exportado</div><div class="rr-pts rrd">1,5</div><div class="rr-desc rr-dd">Arquivo texto ou CSV gerado (0,5), cabeçalho e dados formatados (0,5), totalizadores/estatísticas ao final (0,5)</div></div>
+<div class="rubric-row"><div class="rr-label rr-e">🎤 Apresentação oral</div><div class="rr-pts rre">1,5</div><div class="rr-desc rr-ed">Demo ao vivo funciona (0,5), explica as structs usadas (0,5), responde perguntas do professor sobre o código (0,5)</div></div>
+<div class="rubric-row" style="margin-top:6px;"><div class="rr-label" style="background:#e0f2f1;color:#004d40;min-width:220px;padding:10px 16px;font-weight:700;border-radius:10px 0 0 10px;">🌟 Bônus (até +1,0)</div><div class="rr-pts" style="background:#00897b;color:white;min-width:64px;padding:10px;text-align:center;font-weight:800;">+1,0</div><div class="rr-desc" style="background:#e0f7fa;color:#006064;padding:10px 16px;border-radius:0 10px 10px 0;">Log com timestamp (+0,3) · Busca binária em vetor ordenado (+0,3) · 2ª struct aninhada (+0,2) · Interface colorida com cores ANSI (+0,2)</div></div>
+
+<div class="two-col" style="margin-top:16px;">
+<div class="yel" style="margin-top:0;">
+<h3>⚠️ Penalizações</h3>
+<ul>
+<li>Não compila: −3,0 pontos automáticos</li>
+<li>Plágio: nota zero para todos os envolvidos</li>
+<li>Entrega fora do prazo: −0,5 por dia</li>
+<li>Código sem comentários: −0,5</li>
+</ul>
+</div>
+<div class="grn" style="margin-top:0;">
+<h3>✅ Como garantir a nota máxima</h3>
+<ul>
+<li>Compile com <code>gcc -Wall -o projeto main.c</code></li>
+<li>Teste fechar e reabrir: dados persistem?</li>
+<li>Verifique os 12 itens do checklist (Aula 23)</li>
+<li>Treine a apresentação ao vivo antes</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9 — CRONOGRAMA E ENTREGAS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📅 Cronograma e Entregas</h2>
+<p>Planeje seu desenvolvimento — não deixe para a última hora!</p>
+</div>
+<div class="slide-body">
+<div class="big" style="font-size:1.3rem;padding:18px 28px;margin-top:10px;">Programe-se: 1 hora por dia rende mais que 10 horas na véspera! ⏰</div>
+
+<div style="margin-top:18px;">
+<div class="etapa">
+  <div class="etapa-num">1</div>
+  <div class="etapa-body">
+    <div class="etapa-title">📐 Planejar e modelar — Dia 1</div>
+    <div class="etapa-desc">Escolha o tema. Desenhe a struct no papel com todos os campos. Defina os enums. Crie o esqueleto do arquivo .c com os includes, defines e protótipos. Compile o arquivo vazio.</div>
+    <div class="etapa-date">Meta: struct declarada e arquivo compilando</div>
+  </div>
+</div>
+<div class="etapa">
+  <div class="etapa-num">2</div>
+  <div class="etapa-body">
+    <div class="etapa-title">🗄️ Persistência primeiro — Dias 2–3</div>
+    <div class="etapa-desc">Implemente <code>cadastrar()</code>, <code>listar()</code>, <code>salvar()</code> e <code>carregar()</code>. Teste: feche o programa e reabra — os dados devem aparecer. Esta é a base de tudo.</div>
+    <div class="etapa-date">Meta: dados persistindo entre execuções</div>
+  </div>
+</div>
+<div class="etapa">
+  <div class="etapa-num">3</div>
+  <div class="etapa-body">
+    <div class="etapa-title">🔍 CRUD completo — Dias 4–5</div>
+    <div class="etapa-desc">Adicione <code>buscar()</code>, <code>editar()</code> e <code>excluir()</code>. A exclusão deve compactar o vetor. A edição deve usar ponteiro direto para o registro. Teste cada operação.</div>
+    <div class="etapa-date">Meta: todas as 7 funções funcionando</div>
+  </div>
+</div>
+<div class="etapa">
+  <div class="etapa-num">4</div>
+  <div class="etapa-body">
+    <div class="etapa-title">📊 Ordenação e relatório — Dia 6</div>
+    <div class="etapa-desc">Implemente <code>ordenar()</code> com Bubble Sort ou <code>qsort</code>. Crie <code>exportarRelatorio()</code> gerando CSV com cabeçalho e totais. Verifique se o arquivo abre no Excel.</div>
+    <div class="etapa-date">Meta: relatório.csv gerado corretamente</div>
+  </div>
+</div>
+<div class="etapa">
+  <div class="etapa-num">5</div>
+  <div class="etapa-body">
+    <div class="etapa-title">🎤 Polimento e ensaio — Dia 7</div>
+    <div class="etapa-desc">Revise os nomes das variáveis, adicione comentários, compile com <code>-Wall</code> e corrija todos os warnings. Treine a apresentação em voz alta. Entregue no Google Classroom antes do prazo.</div>
+    <div class="etapa-date">⚠️ Entrega: até 23h59 do 7º dia via Classroom</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 10 — COMO SERÁ A APRESENTAÇÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎤 Como Será a Apresentação</h2>
+<p>Demo ao vivo, defesa oral e perguntas — prepare-se com antecedência</p>
+</div>
+<div class="slide-body">
+<div class="big" style="font-size:1.3rem;padding:18px 28px;margin-top:10px;">Você tem 8 minutos: 5 para demo + 3 para perguntas. Treine até saber de cor! 🎯</div>
+<div class="two-col" style="margin-top:16px;">
+<div>
+<div class="box">
+<h3>🖥️ Roteiro da demo (5 min)</h3>
+<ul>
+<li><strong>1. Iniciar o programa</strong> — mostrar que dados são carregados automaticamente</li>
+<li><strong>2. Cadastrar</strong> — adicionar 2 registros ao vivo</li>
+<li><strong>3. Listar</strong> — mostrar os registros cadastrados</li>
+<li><strong>4. Buscar</strong> — encontrar um registro pelo campo chave</li>
+<li><strong>5. Editar</strong> — alterar um campo de um registro existente</li>
+<li><strong>6. Ordenar e listar</strong> — mostrar a ordenação funcionando</li>
+<li><strong>7. Exportar relatório</strong> — abrir o CSV gerado</li>
+<li><strong>8. Sair e reiniciar</strong> — provar que os dados persistiram</li>
+</ul>
+</div>
+</div>
+<div>
+<div class="box">
+<h3>❓ Perguntas que o professor fará (3 min)</h3>
+<ul>
+<li>"Por que você usou <code>fwrite</code> e não <code>fprintf</code> para salvar?"</li>
+<li>"O que acontece se o arquivo não existir ao abrir?"</li>
+<li>"Explique como a função <code>excluir()</code> compacta o vetor."</li>
+<li>"Qual a diferença entre passar a struct por valor e por ponteiro?"</li>
+<li>"Por que usou <code>strcmp</code> em vez de <code>==</code> para comparar strings?"</li>
+<li>"Se aumentasse o MAX de 100 para 1000, o que mudaria?"</li>
+<li>"Explique o uso de enum no seu projeto."</li>
+</ul>
+</div>
+<div class="yel" style="margin-top:14px; margin-bottom:0;">
+<h3>⚠️ O que NÃO fazer na apresentação</h3>
+<ul>
+<li>Ler o código linha por linha sem explicar</li>
+<li>Dizer "esse código eu peguei de um exemplo"</li>
+<li>Não saber o que uma linha específica faz</li>
+<li>Testar pela primeira vez ao vivo (treine antes!)</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 11 — DICAS FINAIS DE DESENVOLVIMENTO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💡 Dicas Finais de Desenvolvimento</h2>
+<p>Boas práticas que separam um código bom de um código excelente</p>
+</div>
+<div class="slide-body">
+<div class="three-col" style="margin-top:14px;">
+<div class="grn">
+<h3>✅ Compile frequentemente</h3>
+<ul>
+<li>Compile após cada função nova</li>
+<li>Use <code>gcc -Wall -o prog main.c</code></li>
+<li>Corrija warnings — são bugs esperando</li>
+<li>Compile antes de dormir, nunca só na entrega</li>
+</ul>
+</div>
+<div class="grn">
+<h3>✅ Nomes que comunicam</h3>
+<ul>
+<li><code>buscarPorMatricula()</code> não <code>f2()</code></li>
+<li><code>totalCadastrados</code> não <code>n</code></li>
+<li><code>CAPACIDADE_MAX</code> não <code>100</code> hardcoded</li>
+<li>Comentário explica o <em>porquê</em>, não o quê</li>
+</ul>
+</div>
+<div class="grn">
+<h3>✅ Testar casos limite</h3>
+<ul>
+<li>O que acontece com 0 registros?</li>
+<li>Buscar algo que não existe?</li>
+<li>Cadastrar quando o vetor está cheio?</li>
+<li>Fechar e reabrir 3 vezes seguidas?</li>
+</ul>
+</div>
+</div>
+<div class="two-col" style="margin-top:8px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 Padrão de main() limpo</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">int</span> <span class="fn">main</span>() {
+  <span class="fn">carregar</span>();         <span class="cm">← sempre primeiro</span>
+  <span class="fn">printf</span>(<span class="str">"Sistema iniciado. %d registro(s).\n"</span>, total);
+
+  <span class="kw">int</span> opcao;
+  <span class="kw">do</span> {
+    <span class="fn">exibirMenu</span>();
+    <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;opcao);
+    <span class="kw">switch</span>(opcao) {
+      <span class="kw">case</span> <span class="nm">1</span>: <span class="fn">cadastrar</span>();        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">2</span>: <span class="fn">listar</span>();           <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">3</span>: <span class="fn">buscarInterativo</span>(); <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">4</span>: <span class="fn">editar</span>();           <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">5</span>: <span class="fn">excluir</span>();          <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">6</span>: <span class="fn">ordenarExibir</span>();    <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">7</span>: <span class="fn">exportarRelatorio</span>();<span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">0</span>: <span class="fn">puts</span>(<span class="str">"Até logo!"</span>);   <span class="kw">break</span>;
+      <span class="kw">default</span>:<span class="fn">puts</span>(<span class="str">"Opção inválida."</span>);
+    }
+  } <span class="kw">while</span>(opcao != <span class="nm">0</span>);
+
+  <span class="fn">salvar</span>();           <span class="cm">← sempre último</span>
+  <span class="ret">return</span> <span class="nm">0</span>;
+}</div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>⚠️ Erros que travam na última hora</h3>
+<ul>
+<li>Usar <code>gets()</code> em vez de <code>fgets()</code> — inseguro, não compila em alguns compiladores</li>
+<li>Esquecer <code>fclose()</code> — dados somem silenciosamente</li>
+<li>Comparar strings com <code>==</code> — bug difícil de detectar</li>
+<li>Esquecer <code>break</code> no switch — fall-through inesperado</li>
+<li>Abrir arquivo com <code>"w"</code> no lugar de <code>"a"</code> — apaga o histórico</li>
+</ul>
+</div>
+<div class="hi" style="margin-top:14px; margin-bottom:0; padding:14px 18px;">
+<h3>🆘 Problemas? Use o fórum!</h3>
+<p style="font-size:0.92rem;">Poste sua dúvida com o código no Google Classroom. Ajudar um colega também consolida seu aprendizado — mas não faça o código por ele!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12 — ENCERRAMENTO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎓 É Hora de Construir — Boa Sorte!</h2>
+<p>Tudo que você precisa está nas 23 aulas que você já estudou</p>
+</div>
+<div class="slide-body">
+<div class="big">Você já sabe fazer tudo que o projeto exige. Agora é só conectar as peças! 🧩</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-top:18px;">
+  <div style="text-align:center;padding:16px 10px;background:var(--unifil-light);border-radius:14px;border-top:4px solid #e53935;animation:fadeInUp 0.5s ease-out forwards;opacity:0;">
+    <div style="font-size:2rem;">📐</div>
+    <div style="font-weight:700;color:#c62828;margin-top:8px;font-size:0.9rem;">Dia 1</div>
+    <div style="font-size:0.8rem;color:#666;margin-top:4px;">Struct + enums + esqueleto</div>
+  </div>
+  <div style="text-align:center;padding:16px 10px;background:var(--unifil-light);border-radius:14px;border-top:4px solid #1976d2;animation:fadeInUp 0.5s ease-out 0.1s forwards;opacity:0;">
+    <div style="font-size:2rem;">💾</div>
+    <div style="font-weight:700;color:#1565c0;margin-top:8px;font-size:0.9rem;">Dias 2–3</div>
+    <div style="font-size:0.8rem;color:#666;margin-top:4px;">Cadastrar + salvar + carregar</div>
+  </div>
+  <div style="text-align:center;padding:16px 10px;background:var(--unifil-light);border-radius:14px;border-top:4px solid #388e3c;animation:fadeInUp 0.5s ease-out 0.2s forwards;opacity:0;">
+    <div style="font-size:2rem;">🔧</div>
+    <div style="font-weight:700;color:#2e7d32;margin-top:8px;font-size:0.9rem;">Dias 4–5</div>
+    <div style="font-size:0.8rem;color:#666;margin-top:4px;">Buscar + editar + excluir</div>
+  </div>
+  <div style="text-align:center;padding:16px 10px;background:var(--unifil-light);border-radius:14px;border-top:4px solid #8e24aa;animation:fadeInUp 0.5s ease-out 0.3s forwards;opacity:0;">
+    <div style="font-size:2rem;">🏆</div>
+    <div style="font-weight:700;color:#6a1b9a;margin-top:8px;font-size:0.9rem;">Dias 6–7</div>
+    <div style="font-size:0.8rem;color:#666;margin-top:4px;">Relatório + ensaio + entrega</div>
+  </div>
+</div>
+
+<div class="two-col" style="margin-top:18px;">
+<div class="box">
+<h3>📦 O que entregar no Classroom</h3>
+<ul>
+<li><code>main.c</code> — código-fonte completo e comentado</li>
+<li><code>README.txt</code> — como compilar e executar</li>
+<li>Captura de tela do programa rodando</li>
+<li>Arquivo <code>relatorio.csv</code> gerado pelo sistema</li>
+</ul>
+</div>
+<div class="box">
+<h3>💬 Contato e suporte</h3>
+<ul>
+<li><strong>E-mail:</strong> tiago.galvao@unifil.br</li>
+<li><strong>Atendimento:</strong> Terças 18h–19h (presencial ou Classroom)</li>
+<li><strong>Fórum:</strong> Google Classroom — dúvidas públicas beneficiam a todos</li>
+<li><strong>Prazo final:</strong> 7 dias a partir de hoje, 23h59</li>
+</ul>
+</div>
+</div>
+
+<div class="hi" style="margin-top:16px;">
+<h3 style="font-size:1.2rem;">🚀 Uma última palavra</h3>
+<p style="font-style:italic;">
+"Em um semestre você aprendeu a pensar como um programador: <strong>decompor</strong> problemas,
+<strong>estruturar</strong> dados, <strong>modularizar</strong> soluções e <strong>persistir</strong> resultados.
+Isso vai com você para toda a carreira — independente da linguagem.
+Agora vá construir algo que você tem orgulho de mostrar. 🎓"
+</p>
+<p style="margin-top:10px;font-size:0.92rem;"><strong>Prof. Tiago Dutra Galvão</strong> — Lógica de Programação e Algoritmos — UniFil</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav">
+<button class="nb" id="pb" onclick="ch(-1)" disabled>← Anterior</button>
+<span class="sc" id="sc">1 / 12</span>
+<button class="nb" id="nb" onclick="ch(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+let cur=0;
+const sl=document.querySelectorAll('.slide'), tot=sl.length;
+function show(n){
+  sl.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; sl[cur].classList.add('active');
+  document.getElementById('sc').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===tot-1;
+  document.getElementById('pf').style.width=((cur+1)/tot*100)+'%';
+  sl[cur].querySelectorAll('.box,.card,.hi,.big,.yel,.red,.grn,.tbl,.rubric-row,.tema-card,.etapa')
+    .forEach((el,i)=>{el.style.animation='none';el.style.opacity='0';
+      setTimeout(()=>{el.style.animation=`fadeInUp .5s ease-out ${i*.06}s forwards`;},10);});
+}
+function ch(d){const n=cur+d;if(n>=0&&n<tot)show(n);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')ch(-1);if(e.key==='ArrowRight')ch(1);});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)ch(d>0?1:-1);});
+show(0);
+</script>
+</body>
+</html>

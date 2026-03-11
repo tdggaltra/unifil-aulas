@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 22 - Arquivos | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5; --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B; --code-bg: #282c34; --code-text: #abb2bf;
+        }
+        body { font-family: 'Segoe UI', sans-serif;
+               background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+               overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width:100%; height:100%; position:absolute; top:0; left:0;
+                 display:none; opacity:0; transform:translateX(100%);
+                 transition:all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); }
+        .slide.active { display:flex; opacity:1; transform:translateX(0); }
+        .slide-content { background:white; width:90%; max-width:1200px; height:90%;
+                         margin:auto; border-radius:20px;
+                         box-shadow:0 20px 60px rgba(0,0,0,0.3);
+                         display:flex; flex-direction:column; overflow:hidden; }
+        .slide-header { background:linear-gradient(135deg,var(--unifil-orange) 0%,var(--unifil-accent) 100%);
+                        padding:30px 50px; color:white; position:relative; flex-shrink:0; }
+        .slide-header::after { content:''; position:absolute; bottom:-20px; left:0; right:0; height:40px;
+                                background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                                clip-path:polygon(0 0,100% 0,100% 100%,0 0); }
+        .slide-header h1 { font-size:2.5rem; margin-bottom:10px; font-weight:700; }
+        .slide-header h2 { font-size:1.8rem; margin-bottom:10px; font-weight:600; }
+        .slide-header p  { font-size:1.1rem; opacity:0.95; }
+        .slide-body { flex:1; padding:60px 50px 40px; overflow-y:auto; }
+        .slide-body::-webkit-scrollbar { width:8px; }
+        .slide-body::-webkit-scrollbar-thumb { background:var(--unifil-orange); border-radius:10px; }
+        .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:35px; margin:25px 0; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:25px; margin:25px 0; }
+        .box { background:var(--unifil-light); padding:25px; border-radius:15px;
+               border-left:5px solid var(--unifil-orange);
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .box h3 { color:var(--unifil-orange); margin-bottom:12px; font-size:1.3rem; }
+        .box p  { font-size:1rem; line-height:1.7; }
+        .box ul { list-style:none; }
+        .box li { padding:7px 0 7px 28px; position:relative; font-size:1rem; line-height:1.6; }
+        .box li::before { content:'→'; position:absolute; left:0; color:var(--unifil-orange); font-weight:bold; }
+        .hi { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+              color:white; padding:28px; border-radius:15px; margin:25px 0;
+              animation:fadeInUp 0.6s ease-out 0.2s forwards; opacity:0; }
+        .hi h3 { margin-bottom:12px; font-size:1.4rem; }
+        .hi p  { font-size:1.05rem; line-height:1.7; }
+        .card { background:white; border:2px solid var(--unifil-orange); padding:22px;
+                border-radius:12px; margin:16px 0;
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .card h4 { color:var(--unifil-orange); margin-bottom:10px; font-size:1.2rem; }
+        .code { background:var(--code-bg); color:var(--code-text); padding:18px;
+                border-radius:10px; font-family:'Courier New',monospace;
+                font-size:0.85rem; margin:12px 0; line-height:1.65; white-space:pre;
+                overflow-x:auto; }
+        .kw  { color:#c678dd; font-weight:600; }
+        .fn  { color:#61afef; }
+        .str { color:#98c379; }
+        .cm  { color:#5c6370; font-style:italic; }
+        .nm  { color:#d19a66; }
+        .op  { color:#FF8C00; font-weight:600; }
+        .ret { color:#e06c75; font-weight:800; }
+        .tp  { color:#56b6c2; font-weight:700; }
+        .fd  { color:#e5c07b; font-weight:700; }
+        .ptr { color:#c678dd; font-weight:700; }
+        .big { background:linear-gradient(135deg,#4A90E2,#357ABD); color:white;
+               padding:30px 40px; border-radius:20px; font-size:1.5rem;
+               font-weight:600; text-align:center; margin:25px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel { background:#fff3cd; border:3px solid #ffc107; border-radius:15px;
+               padding:25px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel h3 { color:#856404; margin-bottom:12px; font-size:1.3rem; }
+        .yel p  { font-size:1rem; line-height:1.7; color:#533f03; }
+        .red { background:#ffebee; border:3px solid #f44336; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .red h3 { color:#c62828; margin-bottom:12px; font-size:1.2rem; }
+        .red p  { font-size:0.98rem; line-height:1.6; color:#b71c1c; }
+        .grn { background:#e8f5e9; border:3px solid #4caf50; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .grn h3 { color:#2e7d32; margin-bottom:12px; font-size:1.2rem; }
+        .grn p  { font-size:1rem; line-height:1.7; color:#1b5e20; }
+        .grn ul { list-style:none; }
+        .grn li { padding:5px 0; font-size:0.98rem; color:#1b5e20; }
+        .stat { text-align:center; padding:22px; background:white;
+                border-radius:15px; border:3px solid var(--unifil-orange);
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .stat .n { font-size:2.8rem; font-weight:700; color:var(--unifil-orange); margin-bottom:8px; }
+        .stat .l { font-size:1rem; color:var(--unifil-gray); font-weight:500; }
+        .ex { background:#f0f4ff; border:2px solid #3f51b5; border-radius:15px;
+              padding:22px; margin:18px 0;
+              animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .ex h4 { color:#283593; margin-bottom:10px; font-size:1.15rem; }
+        .ex p  { font-size:1rem; line-height:1.7; color:#1a237e; }
+        .tbl { width:100%; border-collapse:collapse; margin:15px 0;
+               border-radius:10px; overflow:hidden;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tbl th { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                  color:white; padding:13px 18px; text-align:left; font-size:0.98rem; }
+        .tbl td { padding:11px 18px; border-bottom:1px solid var(--unifil-light); font-size:0.95rem; }
+        .tbl tr:hover td { background:var(--unifil-light); }
+
+        /* ── FILE FLOW DIAGRAM ── */
+        .file-flow {
+            display:flex; align-items:center; justify-content:center;
+            gap:12px; margin:20px 0; flex-wrap:wrap;
+            animation:fadeInUp 0.6s ease-out forwards; opacity:0;
+        }
+        .ff-box {
+            padding:14px 20px; border-radius:10px; font-family:'Courier New',monospace;
+            font-size:0.9rem; font-weight:700; text-align:center; min-width:110px;
+        }
+        .ff-prog { background:rgba(86,182,194,0.2);  border:2px solid #56b6c2; color:#56b6c2; }
+        .ff-fp   { background:rgba(197,134,192,0.2); border:2px solid #c678dd; color:#c678dd; }
+        .ff-disk { background:rgba(229,192,123,0.2); border:2px solid #e5c07b; color:#e5c07b; }
+        .ff-arr  { font-size:1.4rem; color:var(--unifil-orange); }
+
+        /* ── ARQUIVO TEXTO VISUAL ── */
+        .file-vis {
+            background:#1e2129; border-radius:12px; padding:16px 20px;
+            font-family:'Courier New',monospace; font-size:0.84rem;
+            margin:14px 0; animation:fadeInUp 0.6s ease-out forwards; opacity:0;
+        }
+        .file-line { color:#98c379; padding:3px 0; }
+        .file-title { color:#5c6370; font-size:0.75rem; margin-bottom:8px; }
+
+        .lv { display:inline-block; padding:3px 10px; border-radius:20px;
+              font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+        .lv-e { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .lv-m { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .lv-h { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+        .lv-x { background:#e1bee7; color:#6a1b9a; border:1px solid #9c27b0; }
+
+        .nav { position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+               display:flex; gap:20px; align-items:center;
+               background:rgba(255,255,255,0.95); padding:15px 30px;
+               border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:1000; }
+        .nb  { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+               color:white; border:none; padding:12px 24px; border-radius:25px;
+               cursor:pointer; font-size:1rem; font-weight:600; transition:all .3s; }
+        .nb:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,140,0,.4); }
+        .nb:disabled { opacity:.5; cursor:not-allowed; }
+        .sc { font-weight:600; color:var(--unifil-dark); min-width:80px; text-align:center; font-size:1.1rem; }
+        .pb { position:fixed; top:0; left:0; width:100%; height:5px;
+              background:rgba(255,255,255,0.2); z-index:1001; }
+        .pf { height:100%; background:linear-gradient(90deg,var(--unifil-orange),var(--unifil-accent));
+              transition:width .3s; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        code { font-family:'Courier New',monospace; background:#f0f0f0;
+               padding:2px 6px; border-radius:4px; font-size:.92em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="pf"></div></div>
+<div class="presentation">
+
+<!-- SLIDE 1 — TÍTULO -->
+<div class="slide active">
+<div class="slide-content">
+<div class="slide-header">
+<h1>Lógica de Programação e Algoritmos</h1>
+<p>Aula 22 — Arquivos (Persistência de Dados)</p>
+</div>
+<div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<div style="font-size:5rem;margin-bottom:20px;">💾</div>
+<h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:16px;">Dados que Sobrevivem ao Programa!</h2>
+<p style="font-size:1.2rem;color:var(--unifil-gray);max-width:820px;margin-bottom:28px;">
+  Variáveis vivem apenas enquanto o programa roda — ao fechar, tudo se perde.
+  <strong>Arquivos</strong> permitem <em>persistir</em> dados no disco: salvar um cadastro,
+  carregar configurações, gerar relatórios. É a diferença entre um programa de
+  brinquedo e um sistema real!
+</p>
+
+<div class="file-flow" style="margin-bottom:24px;">
+  <div class="ff-box ff-prog">Programa<br><small>variáveis</small></div>
+  <span class="ff-arr">⇄</span>
+  <div class="ff-box ff-fp">FILE *fp<br><small>ponteiro</small></div>
+  <span class="ff-arr">⇄</span>
+  <div class="ff-box ff-disk">💿 Disco<br><small>alunos.txt</small></div>
+</div>
+
+<div class="three-col" style="width:100%;max-width:1000px;">
+  <div class="stat"><div class="n">fopen</div><div class="l">abre a conexão com o arquivo</div></div>
+  <div class="stat"><div class="n">fprintf<br>fscanf</div><div class="l">escreve e lê dados formatados</div></div>
+  <div class="stat"><div class="n">fclose</div><div class="l">fecha e garante gravação</div></div>
+</div>
+<div style="margin-top:25px;font-size:1.05rem;color:var(--unifil-gray);">
+  <strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2 — CONCEITO E MODOS DE ABERTURA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🔑 fopen — Abrindo Arquivos</h2>
+<p>O primeiro passo: escolher o arquivo e o modo de acesso correto</p>
+</div>
+<div class="slide-body">
+<div class="big">fopen retorna um ponteiro FILE*. Se retornar NULL, o arquivo não pôde ser aberto! 📂</div>
+
+<table class="tbl" style="margin-top:15px;">
+<thead><tr><th>Modo</th><th>Significado</th><th>Arquivo existe?</th><th>Arquivo não existe?</th></tr></thead>
+<tbody>
+<tr><td><code>"r"</code></td><td>Leitura (read)</td><td>Abre para ler</td><td>Retorna NULL ❌</td></tr>
+<tr><td><code>"w"</code></td><td>Escrita (write)</td><td>⚠️ Apaga o conteúdo!</td><td>Cria novo arquivo</td></tr>
+<tr><td><code>"a"</code></td><td>Apêndice (append)</td><td>Adiciona ao final</td><td>Cria novo arquivo</td></tr>
+<tr><td><code>"r+"</code></td><td>Leitura e escrita</td><td>Abre sem apagar</td><td>Retorna NULL ❌</td></tr>
+<tr><td><code>"w+"</code></td><td>Escrita e leitura</td><td>⚠️ Apaga o conteúdo!</td><td>Cria novo arquivo</td></tr>
+<tr><td><code>"rb"</code> / <code>"wb"</code></td><td>Binário leitura/escrita</td><td>Como r/w mas binário</td><td>Idem</td></tr>
+</tbody>
+</table>
+
+<div class="two-col" style="margin-top:14px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — padrão correto de abertura</h4>
+<div class="code" style="font-size:0.84rem;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="cm">// Sempre verificar retorno de fopen!</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"alunos.txt"</span>, <span class="str">"w"</span>);
+
+<span class="kw">if</span>(<span class="ptr">fp</span> == NULL) {
+  <span class="fn">printf</span>(<span class="str">"Erro ao abrir arquivo!\n"</span>);
+  <span class="ret">return</span> <span class="nm">1</span>;  <span class="cm">← encerrar com erro</span>
+}
+
+<span class="cm">// ... usar o arquivo ...</span>
+
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);  <span class="cm">← SEMPRE fechar ao final!</span>
+<span class="cm">// fclose garante que o buffer seja</span>
+<span class="cm">// gravado no disco (flush)</span></div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>⚠️ Modo "w" apaga tudo!</h3>
+<p>Usar <code>"w"</code> em um arquivo existente <strong>apaga todo o conteúdo anterior</strong> instantaneamente, sem aviso. Para adicionar dados sem destruir o que existe, use <code>"a"</code> (append). Para ler e escrever sem apagar, use <code>"r+"</code>.</p>
+</div>
+<div class="grn" style="margin-top:14px; margin-bottom:0;">
+<h3>✅ O ciclo completo</h3>
+<p style="font-family:'Courier New',monospace; font-size:0.95rem; line-height:2.2;">
+  1️⃣ <code>fopen()</code> — abre/cria<br>
+  2️⃣ <code>fprintf()</code> / <code>fscanf()</code> — opera<br>
+  3️⃣ <code>fclose()</code> — fecha e grava
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3 — ESCRITA E LEITURA DE TEXTO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>✍️ Arquivos de Texto — Escrita e Leitura</h2>
+<p>fprintf e fscanf funcionam exatamente como printf e scanf — só mudam o destino</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — escrever no arquivo</h4>
+<div class="code" style="font-size:0.83rem;"><span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"notas.txt"</span>, <span class="str">"w"</span>);
+<span class="kw">if</span>(!<span class="ptr">fp</span>) { <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+
+<span class="cm">// fprintf = printf, mas para FILE*</span>
+<span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Maria,20230042,8.75\n"</span>);
+<span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"João,20230043,7.50\n"</span>);
+<span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Ana,20230044,9.20\n"</span>);
+
+<span class="cm">// fputs — grava string simples</span>
+<span class="fn">fputs</span>(<span class="str">"# Fim do arquivo\n"</span>, <span class="ptr">fp</span>);
+
+<span class="cm">// fputc — grava um caractere</span>
+<span class="fn">fputc</span>(<span class="str">'!'</span>, <span class="ptr">fp</span>);
+
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);
+<span class="fn">printf</span>(<span class="str">"Arquivo gravado!\n"</span>);</div>
+</div>
+<div class="file-vis" style="margin-top:4px;">
+  <div class="file-title">📄 notas.txt — resultado no disco</div>
+  <div class="file-line">Maria,20230042,8.75</div>
+  <div class="file-line">João,20230043,7.50</div>
+  <div class="file-line">Ana,20230044,9.20</div>
+  <div class="file-line"># Fim do arquivo</div>
+  <div class="file-line">!</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — ler do arquivo</h4>
+<div class="code" style="font-size:0.83rem;"><span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"notas.txt"</span>, <span class="str">"r"</span>);
+<span class="kw">if</span>(!<span class="ptr">fp</span>) { <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+
+<span class="cm">// Modo 1: fscanf — lê formatado</span>
+<span class="kw">char</span> nome[<span class="nm">50</span>];
+<span class="kw">int</span>  mat;
+<span class="kw">float</span> media;
+<span class="kw">while</span>(<span class="fn">fscanf</span>(<span class="ptr">fp</span>, <span class="str">"%49[^,],%d,%f\n"</span>,
+              nome, &amp;mat, &amp;media) == <span class="nm">3</span>) {
+  <span class="fn">printf</span>(<span class="str">"%-15s %d %.2f\n"</span>,nome,mat,media);
+}
+<span class="fn">rewind</span>(<span class="ptr">fp</span>);   <span class="cm">← volta ao início!</span>
+
+<span class="cm">// Modo 2: fgets — lê linha por linha</span>
+<span class="kw">char</span> linha[<span class="nm">100</span>];
+<span class="kw">while</span>(<span class="fn">fgets</span>(linha, <span class="nm">100</span>, <span class="ptr">fp</span>) != NULL) {
+  <span class="cm">// linha inclui '\n' no final</span>
+  <span class="fn">printf</span>(<span class="str">"%s"</span>, linha);
+}
+
+<span class="cm">// feof — chegou ao fim?</span>
+<span class="kw">if</span>(<span class="fn">feof</span>(<span class="ptr">fp</span>)) <span class="fn">printf</span>(<span class="str">"Fim do arquivo.\n"</span>);
+
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4 — ARQUIVOS BINÁRIOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💿 Arquivos Binários — fwrite e fread</h2>
+<p>Gravar structs inteiras em binário — mais rápido, compacto e exato</p>
+</div>
+<div class="slide-body">
+<div class="big">Texto: legível por humanos. Binário: legível por máquinas — structs inteiras de uma vez! ⚡</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — gravar structs com fwrite</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">typedef struct</span> {
+  <span class="kw">char</span>  <span class="fd">nome</span>[<span class="nm">50</span>];
+  <span class="kw">int</span>   <span class="fd">matricula</span>;
+  <span class="kw">float</span> <span class="fd">media</span>;
+} <span class="tp">Aluno</span>;
+
+<span class="tp">Aluno</span> turma[] = {
+  {<span class="str">"Maria"</span>, <span class="nm">2023001</span>, <span class="nm">8.75f</span>},
+  {<span class="str">"João"</span>,  <span class="nm">2023002</span>, <span class="nm">7.50f</span>},
+  {<span class="str">"Ana"</span>,   <span class="nm">2023003</span>, <span class="nm">9.20f</span>}
+};
+<span class="kw">int</span> n = <span class="nm">3</span>;
+
+<span class="cm">// Gravar em binário — modo "wb"</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"turma.dat"</span>, <span class="str">"wb"</span>);
+<span class="kw">if</span>(!<span class="ptr">fp</span>){ <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+
+<span class="cm">// Grava n (quantidade) primeiro</span>
+<span class="fn">fwrite</span>(&amp;n, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);
+
+<span class="cm">// Grava o vetor inteiro de uma vez!</span>
+<span class="fn">fwrite</span>(turma, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), n, <span class="ptr">fp</span>);
+
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);
+<span class="fn">printf</span>(<span class="str">"Gravados %d alunos.\n"</span>, n);</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — ler structs com fread</h4>
+<div class="code" style="font-size:0.83rem;"><span class="tp">Aluno</span> turma2[<span class="nm">100</span>];
+<span class="kw">int</span> n2 = <span class="nm">0</span>;
+
+<span class="cm">// Abrir em modo "rb"</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"turma.dat"</span>, <span class="str">"rb"</span>);
+<span class="kw">if</span>(!<span class="ptr">fp</span>){ <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+
+<span class="cm">// Ler quantidade primeiro</span>
+<span class="fn">fread</span>(&amp;n2, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);
+
+<span class="cm">// Ler o vetor inteiro</span>
+<span class="fn">fread</span>(turma2, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), n2, <span class="ptr">fp</span>);
+
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);
+
+<span class="cm">// Usar os dados carregados:</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;n2;i<span class="op">++</span>)
+  <span class="fn">printf</span>(<span class="str">"%-15s %.2f\n"</span>,
+    turma2[i].<span class="fd">nome</span>, turma2[i].<span class="fd">media</span>);</div>
+</div>
+<div class="box" style="margin-top:14px;">
+<h3>📊 Texto vs. Binário</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.86rem;margin-top:8px;">
+<tr style="background:var(--unifil-orange);color:white;">
+  <th style="padding:7px 10px;"></th>
+  <th style="padding:7px 10px;">Texto</th>
+  <th style="padding:7px 10px;">Binário</th>
+</tr>
+<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-weight:700;">Legibilidade</td><td>Humano lê ✅</td><td>Só máquina</td></tr>
+<tr><td style="padding:6px 10px;font-weight:700;">Velocidade</td><td>Mais lento</td><td>Mais rápido ✅</td></tr>
+<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-weight:700;">Tamanho</td><td>Maior</td><td>Menor ✅</td></tr>
+<tr><td style="padding:6px 10px;font-weight:700;">Portabilidade</td><td>Melhor ✅</td><td>Depende do SO</td></tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5 — EXEMPLO 1: CADASTRO PERSISTENTE -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 1 — Cadastro de Alunos Persistente</h2>
+<p>Carregar ao iniciar, salvar ao sair — dados que sobrevivem entre execuções</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>Sistema de cadastro que carrega alunos de <code>alunos.dat</code> ao iniciar (se existir), permite operações via menu e salva automaticamente ao sair. Arquivo binário com structs.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — carregar e salvar</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">#define</span> ARQUIVO <span class="str">"alunos.dat"</span>
+<span class="kw">#define</span> MAX     <span class="nm">100</span>
+
+<span class="tp">Aluno</span> turma[MAX];
+<span class="kw">int</span> n = <span class="nm">0</span>;
+
+<span class="cm">// Carregar do disco (ao iniciar)</span>
+<span class="kw">void</span> <span class="fn">carregar</span>() {
+  <span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(ARQUIVO, <span class="str">"rb"</span>);
+  <span class="kw">if</span>(!<span class="ptr">fp</span>) {
+    <span class="fn">printf</span>(<span class="str">"Novo cadastro iniciado.\n"</span>);
+    <span class="ret">return</span>;  <span class="cm">← arquivo ainda não existe</span>
+  }
+  <span class="fn">fread</span>(&amp;n, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);
+  <span class="fn">fread</span>(turma, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), n, <span class="ptr">fp</span>);
+  <span class="fn">fclose</span>(<span class="ptr">fp</span>);
+  <span class="fn">printf</span>(<span class="str">"%d aluno(s) carregado(s).\n"</span>, n);
+}
+
+<span class="cm">// Salvar no disco (ao sair)</span>
+<span class="kw">void</span> <span class="fn">salvar</span>() {
+  <span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(ARQUIVO, <span class="str">"wb"</span>);
+  <span class="kw">if</span>(!<span class="ptr">fp</span>){ <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span>; }
+  <span class="fn">fwrite</span>(&amp;n, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);
+  <span class="fn">fwrite</span>(turma, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), n, <span class="ptr">fp</span>);
+  <span class="fn">fclose</span>(<span class="ptr">fp</span>);
+  <span class="fn">printf</span>(<span class="str">"%d aluno(s) salvos.\n"</span>, n);
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — main com menu</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">int</span> <span class="fn">main</span>() {
+  <span class="fn">carregar</span>();  <span class="cm">← carrega ao iniciar</span>
+
+  <span class="kw">int</span> op;
+  <span class="kw">do</span> {
+    <span class="fn">printf</span>(<span class="str">"\n=== MENU ===\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"1. Cadastrar aluno\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"2. Listar alunos\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"3. Buscar por nome\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"4. Gerar relatório\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"0. Sair e salvar\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"Opção: "</span>);
+    <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;op);
+
+    <span class="kw">switch</span>(op) {
+      <span class="kw">case</span> <span class="nm">1</span>: <span class="fn">cadastrar</span>(); <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">2</span>: <span class="fn">listar</span>();    <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">3</span>: <span class="fn">buscar</span>();    <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nm">4</span>: <span class="fn">relatorio</span>();<span class="kw">break</span>;
+    }
+  } <span class="kw">while</span>(op != <span class="nm">0</span>);
+
+  <span class="fn">salvar</span>();   <span class="cm">← salva ao sair</span>
+  <span class="ret">return</span> <span class="nm">0</span>;
+}</div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ Persistência transparente</h3>
+<p>O usuário não percebe a leitura/escrita — o sistema simplesmente <strong>"lembra"</strong> os dados entre execuções. Este é o padrão fundamental de todos os sistemas com banco de dados: carregar ao iniciar, trabalhar em memória, persistir ao sair.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6 — POSICIONAMENTO COM FSEEK -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📍 Navegação — fseek, ftell e rewind</h2>
+<p>Mover o cursor do arquivo para ler ou atualizar registros específicos</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — fseek, ftell, rewind</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// fseek(fp, offset, origem)</span>
+<span class="cm">// origens: SEEK_SET=início, SEEK_CUR=atual, SEEK_END=fim</span>
+
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"turma.dat"</span>, <span class="str">"rb"</span>);
+
+<span class="cm">// Ir para o início</span>
+<span class="fn">fseek</span>(<span class="ptr">fp</span>, <span class="nm">0</span>, SEEK_SET);
+<span class="cm">// equivale a: rewind(fp)</span>
+
+<span class="cm">// Saber o tamanho do arquivo</span>
+<span class="fn">fseek</span>(<span class="ptr">fp</span>, <span class="nm">0</span>, SEEK_END);
+<span class="kw">long</span> tam = <span class="fn">ftell</span>(<span class="ptr">fp</span>);
+<span class="fn">printf</span>(<span class="str">"Tamanho: %ld bytes\n"</span>, tam);
+
+<span class="cm">// Calcular número de registros</span>
+<span class="kw">int</span> n_reg = (tam - <span class="kw">sizeof</span>(<span class="kw">int</span>)) / <span class="kw">sizeof</span>(<span class="tp">Aluno</span>);
+<span class="fn">printf</span>(<span class="str">"Registros: %d\n"</span>, n_reg);
+
+<span class="cm">// Saltar para o 3º registro (índice 2)</span>
+<span class="kw">long</span> pos = <span class="kw">sizeof</span>(<span class="kw">int</span>) + <span class="nm">2</span> * <span class="kw">sizeof</span>(<span class="tp">Aluno</span>);
+<span class="fn">fseek</span>(<span class="ptr">fp</span>, pos, SEEK_SET);
+<span class="tp">Aluno</span> a;
+<span class="fn">fread</span>(&amp;a, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);
+<span class="fn">printf</span>(<span class="str">"3º aluno: %s\n"</span>, a.<span class="fd">nome</span>);
+
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — atualizar registro no lugar</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// Abrir para leitura E escrita: "r+b"</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"turma.dat"</span>, <span class="str">"r+b"</span>);
+
+<span class="cm">// Buscar aluno por matrícula</span>
+<span class="fn">fseek</span>(<span class="ptr">fp</span>, <span class="kw">sizeof</span>(<span class="kw">int</span>), SEEK_SET); <span class="cm">← pula n</span>
+<span class="tp">Aluno</span> a;
+<span class="kw">int</span> i = <span class="nm">0</span>;
+<span class="kw">while</span>(<span class="fn">fread</span>(&amp;a, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), <span class="nm">1</span>, <span class="ptr">fp</span>)) {
+  <span class="kw">if</span>(a.<span class="fd">matricula</span> == <span class="nm">2023002</span>) {
+    <span class="cm">// Voltar e sobrescrever o registro!</span>
+    <span class="kw">long</span> pos = <span class="kw">sizeof</span>(<span class="kw">int</span>) + i*<span class="kw">sizeof</span>(<span class="tp">Aluno</span>);
+    <span class="fn">fseek</span>(<span class="ptr">fp</span>, pos, SEEK_SET);
+    a.<span class="fd">media</span> = <span class="nm">8.0f</span>;  <span class="cm">← nova nota</span>
+    <span class="fn">fwrite</span>(&amp;a, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);
+    <span class="fn">printf</span>(<span class="str">"Atualizado!\n"</span>);
+    <span class="kw">break</span>;
+  }
+  i<span class="op">++</span>;
+}
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);</div>
+</div>
+<div class="yel" style="margin-top:12px; margin-bottom:0;">
+<h3>📍 Cursor do arquivo</h3>
+<p>O arquivo tem um <strong>cursor</strong> (posição atual). Cada <code>fread</code>/<code>fwrite</code> avança o cursor automaticamente. <code>fseek</code> move para qualquer posição. <code>ftell</code> retorna a posição atual. <code>rewind</code> volta ao início.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7 — EXEMPLO 2: RELATÓRIO CSV -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 2 — Exportar Relatório CSV</h2>
+<p>Gerar um arquivo aberto no Excel — saída profissional para o cliente</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>Exportar o cadastro de alunos para um arquivo CSV (<code>relatorio.csv</code>) com cabeçalho, uma linha por aluno, situação calculada e linha de totais ao final. Abrir no Excel diretamente.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — gerar CSV completo</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">void</span> <span class="fn">exportarCSV</span>(<span class="tp">Aluno</span> t[], <span class="kw">int</span> n) {
+  <span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"relatorio.csv"</span>, <span class="str">"w"</span>);
+  <span class="kw">if</span>(!<span class="ptr">fp</span>){ <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span>; }
+
+  <span class="cm">// Cabeçalho</span>
+  <span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Nome,Matricula,Media,Situacao\n"</span>);
+
+  <span class="kw">int</span>   aprovados=<span class="nm">0</span>, reprovados=<span class="nm">0</span>;
+  <span class="kw">float</span> somaMedias=<span class="nm">0</span>;
+
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>) {
+    <span class="kw">char</span> *sit = (t[i].<span class="fd">media</span>&gt;=<span class="nm">6.0f</span>)
+                 ? <span class="str">"Aprovado"</span> : <span class="str">"Reprovado"</span>;
+    <span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"%s,%d,%.2f,%s\n"</span>,
+      t[i].<span class="fd">nome</span>, t[i].<span class="fd">matricula</span>,
+      t[i].<span class="fd">media</span>, sit);
+
+    somaMedias += t[i].<span class="fd">media</span>;
+    <span class="kw">if</span>(t[i].<span class="fd">media</span>&gt;=<span class="nm">6</span>) aprovados<span class="op">++</span>;
+    <span class="kw">else</span> reprovados<span class="op">++</span>;
+  }
+
+  <span class="cm">// Linha em branco + totais</span>
+  <span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"\n"</span>);
+  <span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"TOTAL,%d,%.2f,\n"</span>,
+    n, somaMedias/n);
+  <span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Aprovados:,%d,,\n"</span>, aprovados);
+  <span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Reprovados:,%d,,\n"</span>,reprovados);
+
+  <span class="fn">fclose</span>(<span class="ptr">fp</span>);
+  <span class="fn">printf</span>(<span class="str">"📊 relatorio.csv gerado!\n"</span>);
+}</div>
+</div>
+<div>
+<div class="file-vis" style="margin-top:0;">
+  <div class="file-title">📄 relatorio.csv — abre no Excel!</div>
+  <div class="file-line">Nome,Matricula,Media,Situacao</div>
+  <div class="file-line">Maria,2023001,8.75,Aprovado</div>
+  <div class="file-line">João,2023002,7.50,Aprovado</div>
+  <div class="file-line">Ana,2023003,9.20,Aprovado</div>
+  <div class="file-line">Pedro,2023004,4.50,Reprovado</div>
+  <div class="file-line">&nbsp;</div>
+  <div class="file-line">TOTAL,4,7.49,</div>
+  <div class="file-line">Aprovados:,3,,</div>
+  <div class="file-line">Reprovados:,1,,</div>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ CSV — o formato universal</h3>
+<p><strong>CSV</strong> (Comma-Separated Values) é texto simples que qualquer planilha entende. Basta usar vírgula como separador. Se um campo contiver vírgula, envolva em aspas: <code>"Silva, João"</code>. É o formato mais usado para troca de dados entre sistemas!</p>
+</div>
+<div class="yel" style="margin-top:14px; margin-bottom:0;">
+<h3>⚠️ Ponto e vírgula no Brasil</h3>
+<p>O Excel brasileiro usa <strong>ponto e vírgula</strong> (<code>;</code>) como separador, pois a vírgula é usada como decimal. Troque o separador ou salve como <code>.csv</code> com <code>sep=;</code> na primeira linha.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8 — EXEMPLO 3: LOG DE OPERAÇÕES -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 3 — Log de Operações com Timestamp</h2>
+<p>Modo append — registrar cada ação sem apagar o histórico anterior</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>Toda operação do sistema (cadastro, busca, alteração, exclusão) é registrada com data/hora em <code>log.txt</code> usando modo <code>"a"</code> — o histórico nunca é perdido.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — sistema de log com timestamp</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">#include</span> <span class="str">&lt;time.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="cm">// Escrever no log (mode "a" = append)</span>
+<span class="kw">void</span> <span class="fn">log</span>(<span class="kw">const char</span> *operacao,
+          <span class="kw">const char</span> *detalhe) {
+  <span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"log.txt"</span>, <span class="str">"a"</span>);
+  <span class="kw">if</span>(!<span class="ptr">fp</span>) <span class="ret">return</span>;
+
+  <span class="cm">// Obter data/hora atual</span>
+  <span class="kw">time_t</span> now = <span class="fn">time</span>(NULL);
+  <span class="kw">struct tm</span> *t = <span class="fn">localtime</span>(&amp;now);
+
+  <span class="fn">fprintf</span>(<span class="ptr">fp</span>,
+    <span class="str">"[%04d-%02d-%02d %02d:%02d:%02d] "</span>
+    <span class="str">"%s: %s\n"</span>,
+    t-&gt;tm_year+<span class="nm">1900</span>, t-&gt;tm_mon+<span class="nm">1</span>,
+    t-&gt;tm_mday,
+    t-&gt;tm_hour, t-&gt;tm_min, t-&gt;tm_sec,
+    operacao, detalhe);
+
+  <span class="fn">fclose</span>(<span class="ptr">fp</span>);
+}
+
+<span class="cm">// Uso no sistema:</span>
+<span class="fn">log</span>(<span class="str">"CADASTRO"</span>, <span class="str">"Maria - mat. 2023001"</span>);
+<span class="fn">log</span>(<span class="str">"BUSCA"</span>,    <span class="str">"Consulta: João"</span>);
+<span class="fn">log</span>(<span class="str">"ALTERACAO"</span>,<span class="str">"Mat.2023002 nota→8.0"</span>);
+<span class="fn">log</span>(<span class="str">"EXCLUSAO"</span>, <span class="str">"Mat.2023004 removido"</span>);</div>
+</div>
+<div>
+<div class="file-vis" style="margin-top:0;">
+  <div class="file-title">📄 log.txt — histórico acumulado</div>
+  <div class="file-line">[2026-03-07 14:23:01] CADASTRO: Maria - mat. 2023001</div>
+  <div class="file-line">[2026-03-07 14:23:45] BUSCA: Consulta: João</div>
+  <div class="file-line">[2026-03-07 14:24:12] ALTERACAO: Mat.2023002 nota→8.0</div>
+  <div class="file-line">[2026-03-07 14:25:03] EXCLUSAO: Mat.2023004 removido</div>
+  <div class="file-line">[2026-03-08 09:10:22] CADASTRO: Pedro - mat. 2023005</div>
+</div>
+<div class="yel" style="margin-top:14px;">
+<h3>⚠️ Por que modo "a" e não "w"?</h3>
+<p>Com <code>"w"</code> cada vez que o programa abre o log, <strong>apaga tudo</strong>. Com <code>"a"</code> (append) cada execução <strong>adiciona ao final</strong> — o histórico cresce indefinidamente. Esta é a lógica de todo sistema de auditoria real.</p>
+</div>
+<div class="grn" style="margin-top:14px; margin-bottom:0;">
+<h3>✅ Padrões de log profissional</h3>
+<p>Sistemas reais registram <strong>quem</strong> fez, <strong>o quê</strong>, <strong>quando</strong> e <strong>resultado</strong>. O formato <code>[DATA_HORA] NIVEL: mensagem</code> é padrão em sistemas bancários, e-commerce e médicos — rastreabilidade obrigatória por lei.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9 — ARQUIVOS COM STRUCTS E TEXTO MISTO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📋 Leitura de Arquivo de Configuração</h2>
+<p>Ler e processar arquivos de texto com formato definido — chave=valor</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Cenário real <span class="lv lv-h">Avançado</span></h4>
+<p>Todo software profissional lê um arquivo de configuração ao iniciar. Implemente leitura de <code>config.ini</code> no formato <code>chave=valor</code>, ignorando comentários (<code>#</code>) e linhas em branco.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="file-vis" style="margin-top:0;">
+  <div class="file-title">📄 config.ini</div>
+  <div class="file-line"># Sistema de Cadastro v1.0</div>
+  <div class="file-line"># Arquivo de configuração</div>
+  <div class="file-line">&nbsp;</div>
+  <div class="file-line">max_alunos=100</div>
+  <div class="file-line">arquivo_dados=turma.dat</div>
+  <div class="file-line">backup=sim</div>
+  <div class="file-line">log_ativo=sim</div>
+  <div class="file-line">prefixo_log=cadastro</div>
+</div>
+<div class="card" style="margin-top:14px;">
+<h4>🔵 C — struct de configuração</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">typedef struct</span> {
+  <span class="kw">int</span>  <span class="fd">max_alunos</span>;
+  <span class="kw">char</span> <span class="fd">arq_dados</span>[<span class="nm">60</span>];
+  <span class="kw">int</span>  <span class="fd">backup</span>;
+  <span class="kw">int</span>  <span class="fd">log_ativo</span>;
+  <span class="kw">char</span> <span class="fd">prefixo</span>[<span class="nm">30</span>];
+} <span class="tp">Config</span>;</div>
+</div>
+</div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — ler arquivo de configuração</h4>
+<div class="code" style="font-size:0.80rem;"><span class="tp">Config</span> <span class="fn">lerConfig</span>(<span class="kw">const char</span> *arquivo) {
+  <span class="tp">Config</span> cfg = {<span class="nm">50</span>,<span class="str">"dados.dat"</span>,<span class="nm">0</span>,<span class="nm">0</span>,<span class="str">"log"</span>};
+  <span class="cm">// Valores padrão acima</span>
+
+  <span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(arquivo, <span class="str">"r"</span>);
+  <span class="kw">if</span>(!<span class="ptr">fp</span>) <span class="ret">return</span> cfg; <span class="cm">← padrão se não existe</span>
+
+  <span class="kw">char</span> linha[<span class="nm">100</span>], chave[<span class="nm">40</span>], valor[<span class="nm">60</span>];
+
+  <span class="kw">while</span>(<span class="fn">fgets</span>(linha, <span class="kw">sizeof</span>(linha), <span class="ptr">fp</span>)) {
+    <span class="cm">// Ignorar comentários e linhas em branco</span>
+    <span class="kw">if</span>(linha[<span class="nm">0</span>]=='#' || linha[<span class="nm">0</span>]=='\n') <span class="kw">continue</span>;
+
+    <span class="cm">// Separar chave=valor</span>
+    <span class="kw">if</span>(<span class="fn">sscanf</span>(linha, <span class="str">"%39[^=]=%59[^\n]"</span>,
+               chave, valor) == <span class="nm">2</span>) {
+      <span class="kw">if</span>(<span class="fn">strcmp</span>(chave,<span class="str">"max_alunos"</span>)==<span class="nm">0</span>)
+        cfg.<span class="fd">max_alunos</span> = <span class="fn">atoi</span>(valor);
+      <span class="kw">else if</span>(<span class="fn">strcmp</span>(chave,<span class="str">"arquivo_dados"</span>)==<span class="nm">0</span>)
+        <span class="fn">strcpy</span>(cfg.<span class="fd">arq_dados</span>, valor);
+      <span class="kw">else if</span>(<span class="fn">strcmp</span>(chave,<span class="str">"backup"</span>)==<span class="nm">0</span>)
+        cfg.<span class="fd">backup</span>=(<span class="fn">strcmp</span>(valor,<span class="str">"sim"</span>)==<span class="nm">0</span>);
+      <span class="kw">else if</span>(<span class="fn">strcmp</span>(chave,<span class="str">"log_ativo"</span>)==<span class="nm">0</span>)
+        cfg.<span class="fd">log_ativo</span>=(<span class="fn">strcmp</span>(valor,<span class="str">"sim"</span>)==<span class="nm">0</span>);
+    }
+  }
+  <span class="fn">fclose</span>(<span class="ptr">fp</span>);
+  <span class="ret">return</span> cfg;
+}</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 10 — ERROS COMUNS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🚨 Erros Comuns com Arquivos</h2>
+<p>Os descuidos que custam dados — aprenda a evitá-los!</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="red">
+<h3>❌ Erro 1: Não verificar fopen</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: usar fp sem verificar</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"dados.txt"</span>, <span class="str">"r"</span>);
+<span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Olá"</span>); <span class="cm">← CRASH se fp==NULL!</span>
+
+<span class="cm">// CORRETO: sempre verificar</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"dados.txt"</span>, <span class="str">"r"</span>);
+<span class="kw">if</span>(<span class="ptr">fp</span> == NULL) {
+  <span class="fn">perror</span>(<span class="str">"dados.txt"</span>); <span class="cm">← mostra motivo</span>
+  <span class="ret">return</span> <span class="nm">1</span>;
+}</div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 2: Não fechar o arquivo</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: sem fclose — dados podem</span>
+<span class="cm">// ficar no buffer e NÃO ir ao disco!</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"saida.txt"</span>, <span class="str">"w"</span>);
+<span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Dados importantes"</span>);
+<span class="cm">// fim da função sem fclose ← ❌</span>
+
+<span class="cm">// CORRETO: sempre fechar</span>
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);  <span class="cm">← força flush para o disco ✅</span>
+<span class="cm">// ou: fflush(fp) para gravar sem fechar</span></div>
+</div>
+</div>
+<div>
+<div class="red">
+<h3>❌ Erro 3: Modo errado — "w" apaga tudo!</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: "w" em arquivo existente</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"log.txt"</span>, <span class="str">"w"</span>);
+<span class="cm">// ← APAGA TODO O HISTÓRICO! ❌</span>
+
+<span class="cm">// CORRETO para adicionar:</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"log.txt"</span>, <span class="str">"a"</span>);
+<span class="cm">// ← mantém o conteúdo existente ✅</span></div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 4: Misturar binário e texto</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: gravar struct em modo texto</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"dados.dat"</span>, <span class="str">"w"</span>);<span class="cm">← texto!</span>
+<span class="fn">fwrite</span>(&amp;aluno, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);
+<span class="cm">// No Windows '\n' vira '\r\n' → corrompe!</span>
+
+<span class="cm">// CORRETO: binário para structs</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"dados.dat"</span>, <span class="str">"wb"</span>);<span class="cm">← ✅</span>
+<span class="fn">fwrite</span>(&amp;aluno, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), <span class="nm">1</span>, <span class="ptr">fp</span>);</div>
+</div>
+</div>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ Checklist de arquivos</h3>
+<p>☑ Verificar retorno do <code>fopen</code> (<code>!= NULL</code>)? &nbsp;|&nbsp; ☑ Usar <code>fclose</code> ao terminar? &nbsp;|&nbsp; ☑ Modo correto (<code>"r"</code> lê, <code>"w"</code> apaga+cria, <code>"a"</code> adiciona)? &nbsp;|&nbsp; ☑ Binário usa <code>"rb"</code>/<code>"wb"</code>? &nbsp;|&nbsp; ☑ <code>fread</code> verifica quantidade retornada?</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 11 — EXERCÍCIOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📝 Exercícios Propostos</h2>
+<p>Persistência é o que transforma um programa em um sistema — pratique!</p>
+</div>
+<div class="slide-body">
+<div class="big">Dados sem persistência se perdem. Programe hoje, e o arquivo ainda estará lá amanhã! 💾</div>
+<div class="two-col" style="margin-top:18px;">
+<div>
+<div class="ex">
+<h4>📌 Exercício A — Agenda Persistente <span class="lv lv-e">Básico</span></h4>
+<p>Crie uma agenda de contatos (nome, telefone, email) que salva em <code>agenda.dat</code> (binário) ao sair e carrega ao iniciar. Menu: adicionar, listar, buscar por nome, sair. Ao fechar e reabrir o programa, os contatos devem permanecer.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício B — Gerador de Boletim <span class="lv lv-m">Intermediário</span></h4>
+<p>Leia um arquivo <code>notas.csv</code> com linhas no formato <code>nome,nota1,nota2,nota3,nota4</code>. Calcule a média e situação de cada aluno. Gere um arquivo <code>boletim.txt</code> formatado como relatório de texto e um <code>resultado.csv</code> com os dados processados.</p>
+</div>
+</div>
+<div>
+<div class="ex">
+<h4>📌 Exercício C — Backup Automático <span class="lv lv-m">Intermediário</span></h4>
+<p>Estenda o sistema de cadastro da Aula para criar um backup automático: ao salvar, copiar o arquivo atual para <code>backup_AAAAMMDD.dat</code> com a data de hoje no nome (use <code>time.h</code> e <code>sprintf</code> para formar o nome). Implemente também uma função para listar e restaurar backups.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício D — Mini Banco de Dados <span class="lv lv-x">Desafio</span></h4>
+<p>Crie um sistema com dois arquivos: <code>produtos.dat</code> (cadastro) e <code>movimentos.txt</code> (log de todas as operações). Implemente: cadastrar produto, registrar venda (desconta estoque), registrar compra (adiciona estoque), gerar relatório CSV e exibir histórico de movimentos filtrado por produto.</p>
+</div>
+</div>
+</div>
+<div class="hi" style="margin-top:15px;">
+<h3>🎯 Entrega</h3>
+<p>Resolva ao menos <strong>2 exercícios</strong> em C e envie via Google Classroom. Na próxima aula: <strong>Revisão Geral e Projeto Final</strong> — tudo que aprendemos em um sistema completo!</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12 — RESUMO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎯 Resumo e Próximos Passos</h2>
+<p>Arquivos — a ponte entre a memória volátil e a permanência no disco!</p>
+</div>
+<div class="slide-body">
+<div class="big">fopen → operar (fprintf/fscanf/fwrite/fread) → fclose. Sempre verificar NULL! 💾</div>
+<div class="two-col" style="margin-top:20px;">
+<div class="box">
+<h3>✅ Conceitos aprendidos</h3>
+<ul>
+<li>Arquivo de texto: <code>fprintf</code>, <code>fscanf</code>, <code>fgets</code>, <code>fputs</code></li>
+<li>Arquivo binário: <code>fwrite</code>, <code>fread</code> — structs inteiras</li>
+<li>Modos: <code>"r"</code> lê, <code>"w"</code> cria/apaga, <code>"a"</code> adiciona</li>
+<li>Navegação: <code>fseek</code>, <code>ftell</code>, <code>rewind</code></li>
+<li><code>perror</code> mostra a causa do erro</li>
+</ul>
+</div>
+<div class="box">
+<h3>✅ Exemplos resolvidos</h3>
+<ul>
+<li>Cadastro persistente — carregar ao iniciar, salvar ao sair</li>
+<li>Exportação CSV — relatório aberto no Excel</li>
+<li>Log com timestamp — modo append, histórico acumulado</li>
+<li>Arquivo de configuração — parse de chave=valor</li>
+</ul>
+</div>
+<div class="box">
+<h3>⚠️ Erros a evitar</h3>
+<ul>
+<li>Não verificar <code>fopen != NULL</code></li>
+<li>Esquecer o <code>fclose</code> — dados ficam no buffer!</li>
+<li><code>"w"</code> apaga o arquivo existente sem aviso</li>
+<li>Misturar modo texto e binário com structs</li>
+</ul>
+</div>
+<div class="box">
+<h3>🔥 Próximas Aulas</h3>
+<ul>
+<li><strong>Aula 23:</strong> Revisão geral do curso</li>
+<li><strong>Aula 24:</strong> Projeto final — entrega</li>
+<li><strong>Aula 25:</strong> Apresentação dos projetos</li>
+<li>🎓 Conclusão do semestre!</li>
+</ul>
+</div>
+</div>
+<div class="hi" style="margin-top:18px;">
+<h3>🎓 Você chegou ao fim do conteúdo teórico!</h3>
+<p>
+Em 22 aulas você evoluiu de <strong>"O que é um algoritmo?"</strong> até
+<strong>sistemas com structs, ponteiros e persistência em arquivos</strong>.
+Nas próximas aulas: revisar, integrar tudo em um projeto real e apresentar!
+</p>
+</div>
+<div class="two-col" style="margin-top:16px;">
+<div class="box">
+<h3>💬 Dúvidas?</h3>
+<p><strong>E-mail:</strong> tiago.galvao@unifil.br<br>
+<strong>Atendimento:</strong> Terças 18h–19h<br>
+<strong>Google Classroom:</strong> Fórum disponível</p>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+<div style="text-align:center;color:var(--unifil-gray);">
+<p style="font-size:1.3rem;font-weight:600;">Parabéns pela jornada! 🏆</p>
+<p style="font-size:0.9rem;margin-top:12px;font-style:italic;">
+"Um programa sem arquivo é uma conversa esquecida. Com arquivo, é uma história que perdura. 💾"
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav">
+<button class="nb" id="pb" onclick="ch(-1)" disabled>← Anterior</button>
+<span class="sc" id="sc">1 / 12</span>
+<button class="nb" id="nb" onclick="ch(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+let cur=0;
+const sl=document.querySelectorAll('.slide'), tot=sl.length;
+function show(n){
+  sl.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; sl[cur].classList.add('active');
+  document.getElementById('sc').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===tot-1;
+  document.getElementById('pf').style.width=((cur+1)/tot*100)+'%';
+  sl[cur].querySelectorAll('.box,.card,.hi,.big,.stat,.yel,.red,.grn,.ex,.tbl,.file-flow,.file-vis')
+    .forEach((el,i)=>{el.style.animation='none';el.style.opacity='0';
+      setTimeout(()=>{el.style.animation=`fadeInUp .5s ease-out ${i*.07}s forwards`;},10);});
+}
+function ch(d){const n=cur+d;if(n>=0&&n<tot)show(n);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')ch(-1);if(e.key==='ArrowRight')ch(1);});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)ch(d>0?1:-1);});
+show(0);
+</script>
+</body>
+</html>

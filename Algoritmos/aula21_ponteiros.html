@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 21 - Ponteiros | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5; --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B; --code-bg: #282c34; --code-text: #abb2bf;
+        }
+        body { font-family: 'Segoe UI', sans-serif;
+               background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+               overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width:100%; height:100%; position:absolute; top:0; left:0;
+                 display:none; opacity:0; transform:translateX(100%);
+                 transition:all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); }
+        .slide.active { display:flex; opacity:1; transform:translateX(0); }
+        .slide-content { background:white; width:90%; max-width:1200px; height:90%;
+                         margin:auto; border-radius:20px;
+                         box-shadow:0 20px 60px rgba(0,0,0,0.3);
+                         display:flex; flex-direction:column; overflow:hidden; }
+        .slide-header { background:linear-gradient(135deg,var(--unifil-orange) 0%,var(--unifil-accent) 100%);
+                        padding:30px 50px; color:white; position:relative; flex-shrink:0; }
+        .slide-header::after { content:''; position:absolute; bottom:-20px; left:0; right:0; height:40px;
+                                background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                                clip-path:polygon(0 0,100% 0,100% 100%,0 0); }
+        .slide-header h1 { font-size:2.5rem; margin-bottom:10px; font-weight:700; }
+        .slide-header h2 { font-size:1.8rem; margin-bottom:10px; font-weight:600; }
+        .slide-header p  { font-size:1.1rem; opacity:0.95; }
+        .slide-body { flex:1; padding:60px 50px 40px; overflow-y:auto; }
+        .slide-body::-webkit-scrollbar { width:8px; }
+        .slide-body::-webkit-scrollbar-thumb { background:var(--unifil-orange); border-radius:10px; }
+        .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:35px; margin:25px 0; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:25px; margin:25px 0; }
+        .box { background:var(--unifil-light); padding:25px; border-radius:15px;
+               border-left:5px solid var(--unifil-orange);
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .box h3 { color:var(--unifil-orange); margin-bottom:12px; font-size:1.3rem; }
+        .box p  { font-size:1rem; line-height:1.7; }
+        .box ul { list-style:none; }
+        .box li { padding:7px 0 7px 28px; position:relative; font-size:1rem; line-height:1.6; }
+        .box li::before { content:'→'; position:absolute; left:0; color:var(--unifil-orange); font-weight:bold; }
+        .hi { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+              color:white; padding:28px; border-radius:15px; margin:25px 0;
+              animation:fadeInUp 0.6s ease-out 0.2s forwards; opacity:0; }
+        .hi h3 { margin-bottom:12px; font-size:1.4rem; }
+        .hi p  { font-size:1.05rem; line-height:1.7; }
+        .card { background:white; border:2px solid var(--unifil-orange); padding:22px;
+                border-radius:12px; margin:16px 0;
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .card h4 { color:var(--unifil-orange); margin-bottom:10px; font-size:1.2rem; }
+        .code { background:var(--code-bg); color:var(--code-text); padding:18px;
+                border-radius:10px; font-family:'Courier New',monospace;
+                font-size:0.85rem; margin:12px 0; line-height:1.65; white-space:pre;
+                overflow-x:auto; }
+        .kw  { color:#c678dd; font-weight:600; }
+        .fn  { color:#61afef; }
+        .str { color:#98c379; }
+        .cm  { color:#5c6370; font-style:italic; }
+        .nm  { color:#d19a66; }
+        .op  { color:#FF8C00; font-weight:600; }
+        .ret { color:#e06c75; font-weight:800; }
+        .addr{ color:#56b6c2; font-weight:700; }   /* endereço / & */
+        .deref{color:#e5c07b; font-weight:700; }   /* desref / * */
+        .ptr { color:#c678dd; font-weight:700; }   /* ponteiro var */
+        .big { background:linear-gradient(135deg,#4A90E2,#357ABD); color:white;
+               padding:30px 40px; border-radius:20px; font-size:1.5rem;
+               font-weight:600; text-align:center; margin:25px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel { background:#fff3cd; border:3px solid #ffc107; border-radius:15px;
+               padding:25px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel h3 { color:#856404; margin-bottom:12px; font-size:1.3rem; }
+        .yel p  { font-size:1rem; line-height:1.7; color:#533f03; }
+        .red { background:#ffebee; border:3px solid #f44336; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .red h3 { color:#c62828; margin-bottom:12px; font-size:1.2rem; }
+        .red p  { font-size:0.98rem; line-height:1.6; color:#b71c1c; }
+        .grn { background:#e8f5e9; border:3px solid #4caf50; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .grn h3 { color:#2e7d32; margin-bottom:12px; font-size:1.2rem; }
+        .grn p  { font-size:1rem; line-height:1.7; color:#1b5e20; }
+        .grn ul { list-style:none; }
+        .grn li { padding:5px 0; font-size:0.98rem; color:#1b5e20; }
+        .stat { text-align:center; padding:22px; background:white;
+                border-radius:15px; border:3px solid var(--unifil-orange);
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .stat .n { font-size:2.8rem; font-weight:700; color:var(--unifil-orange); margin-bottom:8px; }
+        .stat .l { font-size:1rem; color:var(--unifil-gray); font-weight:500; }
+        .ex { background:#f0f4ff; border:2px solid #3f51b5; border-radius:15px;
+              padding:22px; margin:18px 0;
+              animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .ex h4 { color:#283593; margin-bottom:10px; font-size:1.15rem; }
+        .ex p  { font-size:1rem; line-height:1.7; color:#1a237e; }
+        .tbl { width:100%; border-collapse:collapse; margin:15px 0;
+               border-radius:10px; overflow:hidden;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tbl th { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                  color:white; padding:13px 18px; text-align:left; font-size:0.98rem; }
+        .tbl td { padding:11px 18px; border-bottom:1px solid var(--unifil-light); font-size:0.95rem; }
+        .tbl tr:hover td { background:var(--unifil-light); }
+
+        /* ── MEMORY DIAGRAM ── */
+        .mem-diagram {
+            background:#1e2129; border-radius:14px; padding:20px 24px;
+            margin:18px 0; animation:fadeInUp 0.6s ease-out forwards; opacity:0;
+            font-family:'Courier New',monospace; font-size:0.86rem;
+        }
+        .mem-row { display:flex; align-items:center; margin:5px 0; gap:10px; }
+        .mem-addr { color:#5c6370; min-width:80px; font-size:0.78rem; }
+        .mem-box  { min-width:110px; padding:8px 12px; border-radius:6px;
+                    text-align:center; font-weight:700; font-size:0.88rem; }
+        .mb-var   { background:rgba(86,182,194,0.2);  border:2px solid #56b6c2; color:#56b6c2; }
+        .mb-ptr   { background:rgba(197,134,192,0.2); border:2px solid #c678dd; color:#c678dd; }
+        .mb-val   { background:rgba(229,192,123,0.2); border:2px solid #e5c07b; color:#e5c07b; }
+        .mb-null  { background:rgba(224,108,117,0.2); border:2px solid #e06c75; color:#e06c75; }
+        .mem-label{ color:#abb2bf; font-size:0.82rem; }
+        .mem-arrow{ color:var(--unifil-orange); font-size:1.1rem; }
+
+        .lv { display:inline-block; padding:3px 10px; border-radius:20px;
+              font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+        .lv-e { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .lv-m { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .lv-h { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+        .lv-x { background:#e1bee7; color:#6a1b9a; border:1px solid #9c27b0; }
+
+        .nav { position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+               display:flex; gap:20px; align-items:center;
+               background:rgba(255,255,255,0.95); padding:15px 30px;
+               border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:1000; }
+        .nb  { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+               color:white; border:none; padding:12px 24px; border-radius:25px;
+               cursor:pointer; font-size:1rem; font-weight:600; transition:all .3s; }
+        .nb:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,140,0,.4); }
+        .nb:disabled { opacity:.5; cursor:not-allowed; }
+        .sc { font-weight:600; color:var(--unifil-dark); min-width:80px; text-align:center; font-size:1.1rem; }
+        .pb { position:fixed; top:0; left:0; width:100%; height:5px;
+              background:rgba(255,255,255,0.2); z-index:1001; }
+        .pf { height:100%; background:linear-gradient(90deg,var(--unifil-orange),var(--unifil-accent));
+              transition:width .3s; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        code { font-family:'Courier New',monospace; background:#f0f0f0;
+               padding:2px 6px; border-radius:4px; font-size:.92em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="pf"></div></div>
+<div class="presentation">
+
+<!-- SLIDE 1 — TÍTULO -->
+<div class="slide active">
+<div class="slide-content">
+<div class="slide-header">
+<h1>Lógica de Programação e Algoritmos</h1>
+<p>Aula 21 — Ponteiros</p>
+</div>
+<div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<div style="font-size:5rem;margin-bottom:20px;">📍</div>
+<h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:16px;">O Endereço É o Poder!</h2>
+<p style="font-size:1.2rem;color:var(--unifil-gray);max-width:820px;margin-bottom:28px;">
+  Um <strong>ponteiro</strong> é uma variável que armazena o <em>endereço de memória</em>
+  de outra variável. Em vez de guardar um valor diretamente, ele aponta
+  para onde esse valor está — permitindo modificar qualquer dado,
+  navegar por estruturas e gerenciar memória dinamicamente.
+</p>
+
+<!-- Diagrama de memória -->
+<div class="mem-diagram" style="width:100%;max-width:680px;margin-bottom:24px;text-align:left;">
+  <div class="mem-row">
+    <span class="mem-addr">0x1000</span>
+    <div class="mem-box mb-var">42</div>
+    <span class="mem-label">← int x = 42</span>
+  </div>
+  <div class="mem-row">
+    <span class="mem-addr">0x1004</span>
+    <div class="mem-box mb-ptr">0x1000</div>
+    <span class="mem-label">← int *p = &amp;x</span>
+    <span class="mem-arrow">↗ aponta para x!</span>
+  </div>
+  <div class="mem-row" style="margin-top:8px;">
+    <span class="mem-addr"></span>
+    <div style="font-size:0.82rem;color:#abb2bf;">
+      <code style="color:#56b6c2;">x</code> = 42 &nbsp;|&nbsp;
+      <code style="color:#c678dd;">p</code> = 0x1000 &nbsp;|&nbsp;
+      <code style="color:#e5c07b;">*p</code> = 42 (desreferenciar) &nbsp;|&nbsp;
+      <code style="color:#56b6c2;">&amp;x</code> = 0x1000 (endereço)
+    </div>
+  </div>
+</div>
+
+<div class="three-col" style="width:100%;max-width:1000px;">
+  <div class="stat"><div class="n">&amp;</div><div class="l">operador endereço — "onde está"</div></div>
+  <div class="stat"><div class="n">*</div><div class="l">operador desreferência — "o que está lá"</div></div>
+  <div class="stat"><div class="n">NULL</div><div class="l">ponteiro que não aponta para nada</div></div>
+</div>
+<div style="margin-top:25px;font-size:1.05rem;color:var(--unifil-gray);">
+  <strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2 — CONCEITO FUNDAMENTAL -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🏗️ O Que É um Ponteiro?</h2>
+<p>Variáveis têm endereço na memória — ponteiros armazenam esse endereço</p>
+</div>
+<div class="slide-body">
+<div class="big">Todo dado na memória tem um endereço. Ponteiro é uma variável que armazena esse endereço! 🗺️</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — declarar, inicializar e usar</h4>
+<div class="code" style="font-size:0.84rem;"><span class="cm">// Declaração: tipo *nome</span>
+<span class="kw">int</span>   x = <span class="nm">42</span>;
+<span class="kw">int</span>  *<span class="ptr">p</span>;             <span class="cm">← ponteiro para int</span>
+
+<span class="cm">// & = operador endereço</span>
+<span class="ptr">p</span> = <span class="addr">&amp;x</span>;             <span class="cm">← p guarda o endereço de x</span>
+
+<span class="cm">// * = operador desreferência</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, *<span class="ptr">p</span>);  <span class="cm">← lê o valor em p → 42</span>
+*<span class="ptr">p</span> = <span class="nm">99</span>;            <span class="cm">← escreve em x via p!</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, x);   <span class="cm">← x agora vale 99!</span>
+
+<span class="cm">// Imprimir o próprio endereço</span>
+<span class="fn">printf</span>(<span class="str">"%p\n"</span>, <span class="ptr">p</span>);   <span class="cm">← ex: 0x7ffd1234</span>
+<span class="fn">printf</span>(<span class="str">"%p\n"</span>, <span class="addr">&amp;x</span>);  <span class="cm">← mesmo valor!</span>
+
+<span class="cm">// Tamanho do ponteiro (sempre 8 bytes em 64-bit)</span>
+<span class="fn">printf</span>(<span class="str">"%zu\n"</span>, <span class="kw">sizeof</span>(<span class="ptr">p</span>));  <span class="cm">← 8</span></div>
+</div>
+</div>
+<div>
+<div class="mem-diagram" style="margin-top:0;">
+  <p style="color:#abb2bf;font-size:0.82rem;margin-bottom:12px;font-weight:700;">MEMÓRIA — antes e depois de *p = 99</p>
+  <p style="color:#5c6370;font-size:0.75rem;margin-bottom:6px;">ANTES:</p>
+  <div class="mem-row">
+    <span class="mem-addr">0x1000</span>
+    <div class="mem-box mb-var">42</div>
+    <span class="mem-label">x</span>
+  </div>
+  <div class="mem-row">
+    <span class="mem-addr">0x1008</span>
+    <div class="mem-box mb-ptr">0x1000</div>
+    <span class="mem-label">p → aponta para x</span>
+  </div>
+  <p style="color:#5c6370;font-size:0.75rem;margin:10px 0 6px;">DEPOIS de <code style="color:#e5c07b;">*p = 99</code>:</p>
+  <div class="mem-row">
+    <span class="mem-addr">0x1000</span>
+    <div class="mem-box mb-val">99</div>
+    <span class="mem-label">x ← modificado!</span>
+  </div>
+  <div class="mem-row">
+    <span class="mem-addr">0x1008</span>
+    <div class="mem-box mb-ptr">0x1000</div>
+    <span class="mem-label">p → ainda aponta para x</span>
+  </div>
+</div>
+<div class="yel" style="margin-top:14px; margin-bottom:0;">
+<h3>🏠 Analogia: Endereço de Casa</h3>
+<p>A variável é a <strong>casa</strong>. O endereço <code>&amp;x</code> é o <strong>número da rua</strong>. O ponteiro <code>p</code> é um <strong>papel onde você anota o endereço</strong>. Desreferenciar <code>*p</code> é <strong>ir até a casa</strong> e ver o que tem lá dentro.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3 — ARITMÉTICA DE PONTEIROS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>➕ Aritmética de Ponteiros</h2>
+<p>Incrementar um ponteiro avança pelo tamanho do tipo — a base dos vetores!</p>
+</div>
+<div class="slide-body">
+<div class="big">p + 1 não soma 1 ao endereço — soma sizeof(tipo)! Avança para o próximo elemento. 🎯</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — aritmética com int*</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">int</span> v[] = {<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>};
+<span class="kw">int</span> *<span class="ptr">p</span> = v;   <span class="cm">← p aponta para v[0]</span>
+
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, *<span class="ptr">p</span>);      <span class="cm">← 10  (v[0])</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, *(<span class="ptr">p</span>+<span class="nm">1</span>));   <span class="cm">← 20  (v[1])</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, *(<span class="ptr">p</span>+<span class="nm">4</span>));   <span class="cm">← 50  (v[4])</span>
+
+<span class="ptr">p</span><span class="op">++</span>;  <span class="cm">← avança 4 bytes (sizeof int)</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, *<span class="ptr">p</span>);      <span class="cm">← 20  (v[1])</span>
+
+<span class="cm">// Percorrer com ponteiro:</span>
+<span class="kw">int</span> *<span class="ptr">q</span> = v;
+<span class="kw">while</span>(<span class="ptr">q</span> &lt; v + <span class="nm">5</span>) {      <span class="cm">← q &lt; endereço após o array</span>
+  <span class="fn">printf</span>(<span class="str">"%d "</span>, *<span class="ptr">q</span>);
+  <span class="ptr">q</span><span class="op">++</span>;
+}
+<span class="cm">// 10 20 30 40 50</span>
+
+<span class="cm">// v[i] é IGUAL a *(v+i)</span>
+<span class="cm">// v[2] == *(v+2) == 30 ✅</span></div>
+</div>
+</div>
+<div>
+<div class="mem-diagram" style="margin-top:0;">
+  <p style="color:#abb2bf;font-size:0.82rem;margin-bottom:12px;font-weight:700;">int v[5] = {10,20,30,40,50} na memória</p>
+  <div class="mem-row">
+    <span class="mem-addr">0x2000</span>
+    <div class="mem-box mb-val">10</div>
+    <span class="mem-label">v[0] = *(v+0)</span>
+    <span class="mem-arrow">← p aponta aqui</span>
+  </div>
+  <div class="mem-row">
+    <span class="mem-addr">0x2004</span>
+    <div class="mem-box mb-val">20</div>
+    <span class="mem-label">v[1] = *(v+1)</span>
+    <span class="mem-arrow">← p+1</span>
+  </div>
+  <div class="mem-row">
+    <span class="mem-addr">0x2008</span>
+    <div class="mem-box mb-val">30</div>
+    <span class="mem-label">v[2] = *(v+2)</span>
+    <span class="mem-arrow">← p+2</span>
+  </div>
+  <div class="mem-row">
+    <span class="mem-addr">0x200C</span>
+    <div class="mem-box mb-val">40</div>
+    <span class="mem-label">v[3] = *(v+3)</span>
+    <span class="mem-arrow">← p+3</span>
+  </div>
+  <div class="mem-row">
+    <span class="mem-addr">0x2010</span>
+    <div class="mem-box mb-val">50</div>
+    <span class="mem-label">v[4] = *(v+4)</span>
+    <span class="mem-arrow">← p+4</span>
+  </div>
+</div>
+<div class="grn" style="margin-top:14px; margin-bottom:0;">
+<h3>✅ Nome do array = ponteiro para [0]</h3>
+<p>Em C, o nome <code>v</code> é um ponteiro constante para o primeiro elemento. <code>v[i]</code> e <code>*(v+i)</code> são exatamente equivalentes. Por isso vetores são sempre passados por referência para funções!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4 — PONTEIROS E FUNÇÕES -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>⚙️ Ponteiros em Funções</h2>
+<p>Passar endereços permite modificar variáveis fora da função — passagem por referência real</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — funções clássicas com ponteiros</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// Trocar dois valores (swap)</span>
+<span class="kw">void</span> <span class="fn">trocar</span>(<span class="kw">int</span> *<span class="ptr">a</span>, <span class="kw">int</span> *<span class="ptr">b</span>) {
+  <span class="kw">int</span> tmp = *<span class="ptr">a</span>;
+  *<span class="ptr">a</span> = *<span class="ptr">b</span>;
+  *<span class="ptr">b</span> = tmp;
+}
+<span class="kw">int</span> x=<span class="nm">5</span>, y=<span class="nm">9</span>;
+<span class="fn">trocar</span>(<span class="addr">&amp;x</span>, <span class="addr">&amp;y</span>);
+<span class="fn">printf</span>(<span class="str">"%d %d\n"</span>, x, y);  <span class="cm">← 9 5 ✅</span>
+
+<span class="cm">// Retornar dois valores via ponteiros</span>
+<span class="kw">void</span> <span class="fn">minMax</span>(<span class="kw">int</span> v[], <span class="kw">int</span> n,
+             <span class="kw">int</span> *<span class="ptr">min</span>, <span class="kw">int</span> *<span class="ptr">max</span>) {
+  *<span class="ptr">min</span> = *<span class="ptr">max</span> = v[<span class="nm">0</span>];
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">1</span>; i&lt;n; i<span class="op">++</span>) {
+    <span class="kw">if</span>(v[i] &lt; *<span class="ptr">min</span>) *<span class="ptr">min</span> = v[i];
+    <span class="kw">if</span>(v[i] &gt; *<span class="ptr">max</span>) *<span class="ptr">max</span> = v[i];
+  }
+}
+<span class="kw">int</span> mn, mx;
+<span class="fn">minMax</span>(v, <span class="nm">5</span>, <span class="addr">&amp;mn</span>, <span class="addr">&amp;mx</span>);
+<span class="fn">printf</span>(<span class="str">"Min=%d Max=%d\n"</span>, mn, mx);</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — scanf usa ponteiros!</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// scanf sempre recebe ponteiros</span>
+<span class="kw">int</span> n;
+<span class="fn">scanf</span>(<span class="str">"%d"</span>, <span class="addr">&amp;n</span>);  <span class="cm">← &n = ponteiro para n</span>
+
+<span class="cm">// Por dentro do scanf:</span>
+<span class="kw">void</span> <span class="fn">lerInteiro</span>(<span class="kw">int</span> *<span class="ptr">destino</span>) {
+  <span class="cm">// lê do teclado e armazena</span>
+  <span class="cm">// em *destino (na variável original)</span>
+}
+
+<span class="cm">// Função que "retorna" dois resultados</span>
+<span class="kw">void</span> <span class="fn">dividir</span>(<span class="kw">int</span> a, <span class="kw">int</span> b,
+              <span class="kw">int</span> *<span class="ptr">quoc</span>, <span class="kw">int</span> *<span class="ptr">resto</span>) {
+  *<span class="ptr">quoc</span>  = a / b;
+  *<span class="ptr">resto</span> = a % b;
+}
+
+<span class="kw">int</span> q, r;
+<span class="fn">dividir</span>(<span class="nm">17</span>, <span class="nm">5</span>, <span class="addr">&amp;q</span>, <span class="addr">&amp;r</span>);
+<span class="fn">printf</span>(<span class="str">"17÷5 = %d resto %d\n"</span>,q,r);
+<span class="cm">// 17÷5 = 3 resto 2</span></div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ Por que usar ponteiros em funções?</h3>
+<ul>
+<li>Modificar a variável original (swap, scanf)</li>
+<li>"Retornar" mais de um valor</li>
+<li>Evitar cópia de estruturas grandes (eficiência)</li>
+<li>Trabalhar com arrays (sempre por referência)</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5 — PONTEIRO NULL E BOAS PRÁTICAS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🛡️ Ponteiro NULL e Boas Práticas</h2>
+<p>NULL significa "não aponta para nada" — sempre verifique antes de desreferenciar!</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — NULL na prática</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// NULL = ponteiro inválido / "vazio"</span>
+<span class="kw">int</span> *<span class="ptr">p</span> = NULL;   <span class="cm">← inicialize com NULL!</span>
+
+<span class="cm">// Sempre verifique antes de usar!</span>
+<span class="kw">if</span>(<span class="ptr">p</span> != NULL) {
+  <span class="fn">printf</span>(<span class="str">"%d\n"</span>, *<span class="ptr">p</span>);  <span class="cm">← seguro!</span>
+} <span class="kw">else</span> {
+  <span class="fn">printf</span>(<span class="str">"Ponteiro inválido!\n"</span>);
+}
+
+<span class="cm">// Padrão de busca com NULL</span>
+<span class="kw">int</span>* <span class="fn">buscar</span>(<span class="kw">int</span> v[], <span class="kw">int</span> n, <span class="kw">int</span> alvo) {
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)
+    <span class="kw">if</span>(v[i] == alvo) <span class="ret">return</span> &amp;v[i];
+  <span class="ret">return</span> NULL;  <span class="cm">← não encontrou</span>
+}
+
+<span class="kw">int</span> *<span class="ptr">res</span> = <span class="fn">buscar</span>(v, <span class="nm">5</span>, <span class="nm">30</span>);
+<span class="kw">if</span>(<span class="ptr">res</span> != NULL)
+  <span class="fn">printf</span>(<span class="str">"Achei: %d\n"</span>, *<span class="ptr">res</span>);
+<span class="kw">else</span>
+  <span class="fn">printf</span>(<span class="str">"Não encontrado.\n"</span>);</div>
+</div>
+</div>
+<div>
+<div class="red" style="margin-top:0;">
+<h3>⚠️ Ponteiro selvagem (dangling/wild pointer)</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO 1: sem inicializar (lixo!)</span>
+<span class="kw">int</span> *<span class="ptr">p</span>;        <span class="cm">← contém endereço aleatório!</span>
+*<span class="ptr">p</span> = <span class="nm">42</span>;      <span class="cm">← CRASH ou corrupção! ❌</span>
+
+<span class="cm">// ERRADO 2: desreferenciar NULL</span>
+<span class="kw">int</span> *<span class="ptr">p</span> = NULL;
+*<span class="ptr">p</span> = <span class="nm">42</span>;      <span class="cm">← Segmentation Fault! ❌</span>
+
+<span class="cm">// CORRETO: sempre inicializar</span>
+<span class="kw">int</span> x = <span class="nm">0</span>;
+<span class="kw">int</span> *<span class="ptr">p</span> = &amp;x;   <span class="cm">← aponta para variável ✅</span>
+<span class="cm">// ou</span>
+<span class="kw">int</span> *<span class="ptr">p</span> = NULL; <span class="cm">← inicializa como inválido ✅</span>
+<span class="cm">// e verifique antes de usar!</span></div>
+</div>
+<div class="box" style="margin-top:14px;">
+<h3>📋 Resumo dos operadores</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.88rem;margin-top:8px;">
+<tr style="background:var(--unifil-orange);color:white;">
+  <th style="padding:7px 10px;">Operador</th><th style="padding:7px 10px;">Nome</th><th style="padding:7px 10px;">Significa</th>
+</tr>
+<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-family:'Courier New',monospace;">&amp;x</td><td>Endereço</td><td>"onde está x?"</td></tr>
+<tr><td style="padding:6px 10px;font-family:'Courier New',monospace;">*p</td><td>Desreferência</td><td>"o que está em p?"</td></tr>
+<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-family:'Courier New',monospace;">int *p</td><td>Declaração</td><td>"p é ponteiro para int"</td></tr>
+<tr><td style="padding:6px 10px;font-family:'Courier New',monospace;">p++</td><td>Aritmética</td><td>"avança sizeof(int) bytes"</td></tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6 — ALOCAÇÃO DINÂMICA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🧠 Alocação Dinâmica de Memória</h2>
+<p>malloc e free — alocar memória em tempo de execução conforme necessário</p>
+</div>
+<div class="slide-body">
+<div class="big">malloc aloca na heap. free libera. Sem free = vazamento de memória. Sempre em par! 🔒</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — malloc, calloc, realloc, free</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="cm">// MALLOC — aloca sem inicializar</span>
+<span class="kw">int</span> *<span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(<span class="nm">10</span> * <span class="kw">sizeof</span>(<span class="kw">int</span>));
+<span class="kw">if</span>(<span class="ptr">v</span> == NULL) {
+  <span class="fn">printf</span>(<span class="str">"Sem memória!\n"</span>); <span class="ret">return</span> <span class="nm">1</span>;
+}
+<span class="ptr">v</span>[<span class="nm">0</span>] = <span class="nm">42</span>;   <span class="ptr">v</span>[<span class="nm">9</span>] = <span class="nm">99</span>;  <span class="cm">← usa como array!</span>
+<span class="fn">free</span>(<span class="ptr">v</span>);     <span class="cm">← obrigatório! libera memória</span>
+<span class="ptr">v</span> = NULL;    <span class="cm">← boa prática após free</span>
+
+<span class="cm">// CALLOC — aloca e inicializa com zero</span>
+<span class="kw">int</span> *<span class="ptr">u</span> = (<span class="kw">int</span>*)<span class="fn">calloc</span>(<span class="nm">10</span>, <span class="kw">sizeof</span>(<span class="kw">int</span>));
+<span class="cm">// u[0]..u[9] = 0 garantido</span>
+
+<span class="cm">// REALLOC — redimensiona</span>
+<span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">realloc</span>(<span class="ptr">v</span>, <span class="nm">20</span> * <span class="kw">sizeof</span>(<span class="kw">int</span>));
+<span class="cm">// agora v tem espaço para 20 ints</span>
+<span class="cm">// dados anteriores preservados!</span></div>
+</div>
+</div>
+<div>
+<div class="mem-diagram" style="margin-top:0;">
+  <p style="color:#abb2bf;font-size:0.82rem;margin-bottom:10px;font-weight:700;">Stack vs. Heap</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="background:rgba(86,182,194,0.1);border:1px solid #56b6c2;border-radius:8px;padding:10px;">
+      <p style="color:#56b6c2;font-weight:700;font-size:0.82rem;margin-bottom:6px;">📚 STACK (pilha)</p>
+      <p style="color:#abb2bf;font-size:0.78rem;line-height:1.6;">Variáveis locais<br>Parâmetros<br>Automático<br>Tamanho fixo<br>Liberação automática</p>
+    </div>
+    <div style="background:rgba(197,134,192,0.1);border:1px solid #c678dd;border-radius:8px;padding:10px;">
+      <p style="color:#c678dd;font-weight:700;font-size:0.82rem;margin-bottom:6px;">🗂️ HEAP (monte)</p>
+      <p style="color:#abb2bf;font-size:0.78rem;line-height:1.6;">malloc/calloc<br>Dinâmico<br>Tamanho variável<br>Persiste além da função<br>free() obrigatório</p>
+    </div>
+  </div>
+</div>
+<div class="card" style="margin-top:14px;">
+<h4>🔵 C — vetor de tamanho dinâmico</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">int</span> n;
+<span class="fn">printf</span>(<span class="str">"Quantos elementos? "</span>);
+<span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+
+<span class="cm">// Tamanho decidido em tempo de execução!</span>
+<span class="kw">int</span> *<span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(n * <span class="kw">sizeof</span>(<span class="kw">int</span>));
+<span class="kw">if</span>(!<span class="ptr">v</span>) { <span class="fn">printf</span>(<span class="str">"Erro!\n"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;n;i++) <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;<span class="ptr">v</span>[i]);
+<span class="cm">// processar v[0]..v[n-1]</span>
+<span class="fn">free</span>(<span class="ptr">v</span>); <span class="ptr">v</span>=NULL;</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7 — EXEMPLO 1: LISTA DINÂMICA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 1 — Vetor Dinâmico com Realloc</h2>
+<p>Crescer o vetor conforme necessário — padrão usado em listas profissionais</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>Criar um vetor que cresce automaticamente: começa com capacidade 4, dobra quando cheio. O usuário digita números (0 para parar) e o vetor acomoda todos sem limite fixo.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — vetor com crescimento dinâmico</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">int</span> *<span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(<span class="nm">4</span> * <span class="kw">sizeof</span>(<span class="kw">int</span>));
+<span class="kw">int</span> cap = <span class="nm">4</span>;   <span class="cm">← capacidade atual</span>
+<span class="kw">int</span> n   = <span class="nm">0</span>;   <span class="cm">← quantidade usada</span>
+
+<span class="kw">int</span> num;
+<span class="fn">printf</span>(<span class="str">"Digite (0 para parar):\n"</span>);
+
+<span class="kw">while</span>(<span class="nm">1</span>) {
+  <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;num);
+  <span class="kw">if</span>(num == <span class="nm">0</span>) <span class="kw">break</span>;
+
+  <span class="cm">// Vetor cheio? Dobrar capacidade!</span>
+  <span class="kw">if</span>(n == cap) {
+    cap *= <span class="nm">2</span>;
+    <span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">realloc</span>(<span class="ptr">v</span>, cap*<span class="kw">sizeof</span>(<span class="kw">int</span>));
+    <span class="kw">if</span>(!<span class="ptr">v</span>) { <span class="fn">printf</span>(<span class="str">"Erro!\n"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+    <span class="fn">printf</span>(<span class="str">"[expandiu para %d]\n"</span>, cap);
+  }
+
+  <span class="ptr">v</span>[n<span class="op">++</span>] = num;
+}
+
+<span class="fn">printf</span>(<span class="str">"Guardei %d números:\n"</span>, n);
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)
+  <span class="fn">printf</span>(<span class="str">"%d "</span>, <span class="ptr">v</span>[i]);
+
+<span class="fn">free</span>(<span class="ptr">v</span>); <span class="ptr">v</span>=NULL;</div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>📈 Trace de capacidade</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.88rem;margin-top:8px;">
+<tr style="background:var(--unifil-orange);color:white;">
+  <th style="padding:7px 10px;">Elemento</th>
+  <th style="padding:7px 10px;text-align:center;">n</th>
+  <th style="padding:7px 10px;text-align:center;">cap</th>
+  <th style="padding:7px 10px;">Ação</th>
+</tr>
+<tr style="background:#f9f9f9;"><td style="padding:6px 10px;">1º, 2º, 3º, 4º</td><td style="text-align:center;">1..4</td><td style="text-align:center;">4</td><td>insere normalmente</td></tr>
+<tr><td style="padding:6px 10px;">5º elemento</td><td style="text-align:center;">4</td><td style="text-align:center;color:#2e7d32;font-weight:700;">4→8</td><td>realloc dobra!</td></tr>
+<tr style="background:#f9f9f9;"><td style="padding:6px 10px;">9º elemento</td><td style="text-align:center;">8</td><td style="text-align:center;color:#2e7d32;font-weight:700;">8→16</td><td>realloc dobra!</td></tr>
+</table>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ Por que dobrar a capacidade?</h3>
+<p>Dobrar a cada expansão garante complexidade amortizada O(1) por inserção. Se expandisse +1 a cada vez, seriam N reallocações para N elementos — O(N²). Dobrar reduz para O(log N) reallocações. É o mesmo princípio do <code>ArrayList</code> do Java!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8 — PONTEIRO PARA FUNÇÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎭 Ponteiro para Função</h2>
+<p>Funções também têm endereço — ponteiros para função permitem comportamento dinâmico</p>
+</div>
+<div class="slide-body">
+<div class="big">Um ponteiro para função armazena o endereço de uma função — chame-a de forma dinâmica! 🎯</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — declarar e usar ponteiro para função</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// Tipo: int (*nome)(int, int)</span>
+<span class="kw">int</span> <span class="fn">somar</span>   (<span class="kw">int</span> a, <span class="kw">int</span> b){ <span class="ret">return</span> a+b; }
+<span class="kw">int</span> <span class="fn">subtrair</span>(<span class="kw">int</span> a, <span class="kw">int</span> b){ <span class="ret">return</span> a-b; }
+<span class="kw">int</span> <span class="fn">multiplicar</span>(<span class="kw">int</span> a, <span class="kw">int</span> b){ <span class="ret">return</span> a*b; }
+
+<span class="cm">// Ponteiro para função: int (*fp)(int,int)</span>
+<span class="kw">int</span> (*<span class="ptr">fp</span>)(<span class="kw">int</span>, <span class="kw">int</span>);
+
+<span class="ptr">fp</span> = <span class="fn">somar</span>;
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="ptr">fp</span>(<span class="nm">3</span>,<span class="nm">4</span>));    <span class="cm">← 7</span>
+
+<span class="ptr">fp</span> = <span class="fn">subtrair</span>;
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="ptr">fp</span>(<span class="nm">10</span>,<span class="nm">3</span>));  <span class="cm">← 7</span>
+
+<span class="cm">// Vetor de ponteiros para função</span>
+<span class="kw">int</span> (*<span class="ptr">ops</span>[<span class="nm">3</span>])(<span class="kw">int</span>,<span class="kw">int</span>) = {
+  <span class="fn">somar</span>, <span class="fn">subtrair</span>, <span class="fn">multiplicar</span>
+};
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">3</span>; i<span class="op">++</span>)
+  <span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="ptr">ops</span>[i](<span class="nm">6</span>, <span class="nm">2</span>));
+<span class="cm">// 8, 4, 12</span></div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — qsort usa ponteiro para função!</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// qsort recebe função de comparação</span>
+<span class="kw">int</span> <span class="fn">cmpCrescente</span>(<span class="kw">const void</span> *a,
+                   <span class="kw">const void</span> *b) {
+  <span class="ret">return</span> *((<span class="kw">int</span>*)a) - *((<span class="kw">int</span>*)b);
+}
+<span class="kw">int</span> <span class="fn">cmpDecrescente</span>(<span class="kw">const void</span> *a,
+                    <span class="kw">const void</span> *b) {
+  <span class="ret">return</span> *((<span class="kw">int</span>*)b) - *((<span class="kw">int</span>*)a);
+}
+
+<span class="kw">int</span> v[] = {<span class="nm">5</span>,<span class="nm">2</span>,<span class="nm">8</span>,<span class="nm">1</span>,<span class="nm">9</span>};
+
+<span class="cm">// Ordena crescente:</span>
+<span class="fn">qsort</span>(v, <span class="nm">5</span>, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="fn">cmpCrescente</span>);
+<span class="cm">// {1, 2, 5, 8, 9}</span>
+
+<span class="cm">// Ordena decrescente (mesma função, </span>
+<span class="cm">// comparador diferente!):</span>
+<span class="fn">qsort</span>(v, <span class="nm">5</span>, <span class="kw">sizeof</span>(<span class="kw">int</span>), <span class="fn">cmpDecrescente</span>);
+<span class="cm">// {9, 8, 5, 2, 1}</span></div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ Flexibilidade com ponteiros de função</h3>
+<p>Ponteiros para função permitem <strong>comportamento parametrizável</strong>: a mesma rotina de ordenação serve para crescente, decrescente, por nome, por data — só muda a função de comparação passada. É a base das <em>callbacks</em> e do padrão Strategy.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9 — EXEMPLO 2: LISTA ENCADEADA SIMPLES -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 2 — Lista Encadeada Simples</h2>
+<p>Cada nó aponta para o próximo — estrutura dinâmica que cresce sem limite</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-h">Avançado</span></h4>
+<p>Implementar uma lista encadeada de inteiros com funções: inserir no início, inserir no fim, remover e exibir.</p>
+</div>
+<div class="two-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — definição e inserção</h4>
+<div class="code" style="font-size:0.80rem;"><span class="cm">// Cada nó: dado + ponteiro para próximo</span>
+<span class="kw">typedef struct</span> No {
+  <span class="kw">int</span>        <span class="fd">valor</span>;
+  <span class="kw">struct</span> No *<span class="fd">prox</span>;   <span class="cm">← aponta para o próximo!</span>
+} <span class="tp">No</span>;
+
+<span class="cm">// Inserir no início — O(1)</span>
+<span class="tp">No</span>* <span class="fn">inserirInicio</span>(<span class="tp">No</span> *<span class="ptr">lista</span>, <span class="kw">int</span> val) {
+  <span class="tp">No</span> *novo = (<span class="tp">No</span>*)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="tp">No</span>));
+  novo-><span class="fd">valor</span> = val;
+  novo-><span class="fd">prox</span>  = <span class="ptr">lista</span>;  <span class="cm">← novo aponta p/ antiga cabeça</span>
+  <span class="ret">return</span> novo;         <span class="cm">← nova cabeça</span>
+}
+
+<span class="cm">// Inserir no fim — O(n)</span>
+<span class="tp">No</span>* <span class="fn">inserirFim</span>(<span class="tp">No</span> *<span class="ptr">lista</span>, <span class="kw">int</span> val) {
+  <span class="tp">No</span> *novo = (<span class="tp">No</span>*)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="tp">No</span>));
+  novo-><span class="fd">valor</span> = val; novo-><span class="fd">prox</span> = NULL;
+  <span class="kw">if</span>(!<span class="ptr">lista</span>) <span class="ret">return</span> novo;   <span class="cm">← lista vazia</span>
+  <span class="tp">No</span> *<span class="ptr">cur</span> = <span class="ptr">lista</span>;
+  <span class="kw">while</span>(<span class="ptr">cur</span>-><span class="fd">prox</span>) <span class="ptr">cur</span>=<span class="ptr">cur</span>-><span class="fd">prox</span>;
+  <span class="ptr">cur</span>-><span class="fd">prox</span> = novo;
+  <span class="ret">return</span> <span class="ptr">lista</span>;
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — exibir, remover e liberar</h4>
+<div class="code" style="font-size:0.80rem;"><span class="cm">// Exibir a lista</span>
+<span class="kw">void</span> <span class="fn">exibir</span>(<span class="tp">No</span> *<span class="ptr">lista</span>) {
+  <span class="tp">No</span> *<span class="ptr">cur</span> = <span class="ptr">lista</span>;
+  <span class="kw">while</span>(<span class="ptr">cur</span>) {
+    <span class="fn">printf</span>(<span class="str">"%d → "</span>, <span class="ptr">cur</span>-><span class="fd">valor</span>);
+    <span class="ptr">cur</span> = <span class="ptr">cur</span>-><span class="fd">prox</span>;
+  }
+  <span class="fn">printf</span>(<span class="str">"NULL\n"</span>);
+}
+
+<span class="cm">// Liberar toda a lista</span>
+<span class="kw">void</span> <span class="fn">liberar</span>(<span class="tp">No</span> **<span class="ptr">lista</span>) {
+  <span class="tp">No</span> *<span class="ptr">cur</span> = *<span class="ptr">lista</span>;
+  <span class="kw">while</span>(<span class="ptr">cur</span>) {
+    <span class="tp">No</span> *<span class="ptr">prox</span> = <span class="ptr">cur</span>-><span class="fd">prox</span>;
+    <span class="fn">free</span>(<span class="ptr">cur</span>);
+    <span class="ptr">cur</span> = <span class="ptr">prox</span>;
+  }
+  *<span class="ptr">lista</span> = NULL;
+}
+
+<span class="cm">// Uso completo:</span>
+<span class="tp">No</span> *<span class="ptr">L</span> = NULL;
+<span class="ptr">L</span> = <span class="fn">inserirFim</span>(<span class="ptr">L</span>, <span class="nm">10</span>);
+<span class="ptr">L</span> = <span class="fn">inserirFim</span>(<span class="ptr">L</span>, <span class="nm">20</span>);
+<span class="ptr">L</span> = <span class="fn">inserirFim</span>(<span class="ptr">L</span>, <span class="nm">30</span>);
+<span class="fn">exibir</span>(<span class="ptr">L</span>); <span class="cm">← 10 → 20 → 30 → NULL</span>
+<span class="fn">liberar</span>(&amp;<span class="ptr">L</span>);</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 10 — ERROS COMUNS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🚨 Erros Comuns com Ponteiros</h2>
+<p>Os bugs mais perigosos em C — aprenda a evitá-los!</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="red">
+<h3>❌ Erro 1: Ponteiro não inicializado</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: lixo na memória</span>
+<span class="kw">int</span> *<span class="ptr">p</span>;           <span class="cm">← endereço aleatório!</span>
+*<span class="ptr">p</span> = <span class="nm">42</span>;         <span class="cm">← CRASH ou pior! ❌</span>
+
+<span class="cm">// CORRETO: sempre inicializar</span>
+<span class="kw">int</span> x = <span class="nm">0</span>;
+<span class="kw">int</span> *<span class="ptr">p</span> = &amp;x;      <span class="cm">← aponta para x ✅</span>
+<span class="cm">// ou</span>
+<span class="kw">int</span> *<span class="ptr">p</span> = NULL;    <span class="cm">← explicitamente vazio ✅</span></div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 2: Uso após free (use-after-free)</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: usar após liberar</span>
+<span class="kw">int</span> *<span class="ptr">p</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="kw">int</span>));
+*<span class="ptr">p</span> = <span class="nm">42</span>;
+<span class="fn">free</span>(<span class="ptr">p</span>);
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, *<span class="ptr">p</span>); <span class="cm">← comportamento indefinido! ❌</span>
+
+<span class="cm">// CORRETO: anular após free</span>
+<span class="fn">free</span>(<span class="ptr">p</span>);
+<span class="ptr">p</span> = NULL;            <span class="cm">← seguro ✅</span>
+<span class="kw">if</span>(<span class="ptr">p</span>) *<span class="ptr">p</span> = <span class="nm">1</span>;       <span class="cm">← não executa</span></div>
+</div>
+</div>
+<div>
+<div class="red">
+<h3>❌ Erro 3: Memory leak (esquecer o free)</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: malloc sem free</span>
+<span class="kw">void</span> <span class="fn">processarDados</span>() {
+  <span class="kw">int</span> *<span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(<span class="nm">1000</span>*<span class="kw">sizeof</span>(<span class="kw">int</span>));
+  <span class="cm">// usa v...</span>
+  <span class="ret">return</span>; <span class="cm">← v NÃO é liberado! Leak! ❌</span>
+}
+<span class="cm">// Chamada 1000x → 4MB perdidos!</span>
+
+<span class="cm">// CORRETO: free antes de retornar</span>
+<span class="kw">void</span> <span class="fn">processarDados</span>() {
+  <span class="kw">int</span> *<span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(<span class="nm">1000</span>*<span class="kw">sizeof</span>(<span class="kw">int</span>));
+  <span class="cm">// usa v...</span>
+  <span class="fn">free</span>(<span class="ptr">v</span>); <span class="ptr">v</span>=NULL; <span class="ret">return</span>; <span class="cm">← ✅</span>
+}</div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 4: Retornar ponteiro para variável local</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: local morre quando função retorna!</span>
+<span class="kw">int</span>* <span class="fn">criar</span>() {
+  <span class="kw">int</span> x = <span class="nm">42</span>;
+  <span class="ret">return</span> &amp;x;  <span class="cm">← x some da stack! ❌</span>
+}
+
+<span class="cm">// CORRETO: alocar na heap</span>
+<span class="kw">int</span>* <span class="fn">criar</span>() {
+  <span class="kw">int</span> *<span class="ptr">p</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="kw">int</span>));
+  *<span class="ptr">p</span> = <span class="nm">42</span>;
+  <span class="ret">return</span> <span class="ptr">p</span>;  <span class="cm">← heap persiste! ✅</span>
+}</div>
+</div>
+</div>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ Regras de ouro dos ponteiros</h3>
+<p>☑ Sempre inicializar (<code>&amp;var</code> ou <code>NULL</code>) &nbsp;|&nbsp; ☑ Verificar <code>!= NULL</code> antes de desreferenciar &nbsp;|&nbsp; ☑ Todo <code>malloc</code> tem um <code>free</code> correspondente &nbsp;|&nbsp; ☑ Após <code>free</code>, atribuir <code>NULL</code> &nbsp;|&nbsp; ☑ Nunca retornar endereço de variável local</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 11 — EXERCÍCIOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📝 Exercícios Propostos</h2>
+<p>Ponteiros são a chave do C — pratique com cuidado e verifique sempre!</p>
+</div>
+<div class="slide-body">
+<div class="big">Para cada exercício: desenhe a memória no papel antes de codificar! 📍</div>
+<div class="two-col" style="margin-top:18px;">
+<div>
+<div class="ex">
+<h4>📌 Exercício A — Troca e Divisão <span class="lv lv-e">Básico</span></h4>
+<p>Implemente: (1) <code>trocar(int *a, int *b)</code> que troca dois inteiros. (2) <code>dividir(int a, int b, int *quoc, int *resto)</code> que retorna quociente e resto via ponteiros. Teste com vários valores.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício B — Vetor Dinâmico de Notas <span class="lv lv-m">Intermediário</span></h4>
+<p>Peça ao usuário a quantidade de alunos (decidida em tempo de execução). Aloque com <code>malloc</code> um vetor de <code>float</code>. Leia as notas, calcule média, maior e menor. Libere com <code>free</code> ao final.</p>
+</div>
+</div>
+<div>
+<div class="ex">
+<h4>📌 Exercício C — Ordenar com qsort <span class="lv lv-m">Intermediário</span></h4>
+<p>Use <code>qsort</code> para ordenar um vetor de structs <code>Produto</code> (da Aula 20) de três formas diferentes, cada uma com sua função de comparação: por preço crescente, por nome alfabético e por estoque decrescente.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício D — Pilha com Lista Encadeada <span class="lv lv-x">Desafio</span></h4>
+<p>Implemente uma pilha (stack) usando lista encadeada com ponteiros. Operações: <code>push(valor)</code>, <code>pop()</code>, <code>peek()</code> (ver topo sem remover), <code>isEmpty()</code>. Teste com expressão matemática: verifique se parênteses estão balanceados.</p>
+</div>
+</div>
+</div>
+<div class="hi" style="margin-top:15px;">
+<h3>🎯 Entrega</h3>
+<p>Resolva ao menos <strong>2 exercícios</strong> em C e envie via Google Classroom. Na próxima aula: <strong>Arquivos</strong> — salvar e carregar dados do disco com <code>fopen</code>, <code>fprintf</code> e <code>fread</code>!</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12 — RESUMO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎯 Resumo e Próximos Passos</h2>
+<p>Ponteiros — o coração do C e a porta para estruturas de dados avançadas!</p>
+</div>
+<div class="slide-body">
+<div class="big">Ponteiro = endereço. &amp; pega o endereço. * acessa o conteúdo. NULL = vazio. free = obrigatório! 📍</div>
+<div class="two-col" style="margin-top:20px;">
+<div class="box">
+<h3>✅ Conceitos aprendidos</h3>
+<ul>
+<li><code>&amp;x</code> — endereço de x na memória</li>
+<li><code>*p</code> — valor no endereço guardado em p</li>
+<li>Aritmética: <code>p+1</code> avança <code>sizeof(tipo)</code> bytes</li>
+<li><code>malloc</code>/<code>free</code> — alocar e liberar na heap</li>
+<li>Ponteiro para função — comportamento parametrizável</li>
+</ul>
+</div>
+<div class="box">
+<h3>✅ Exemplos resolvidos</h3>
+<ul>
+<li>Swap e retorno múltiplo via ponteiros</li>
+<li>Vetor dinâmico que dobra de capacidade</li>
+<li>qsort com diferentes funções de comparação</li>
+<li>Lista encadeada — nós alocados com malloc</li>
+</ul>
+</div>
+<div class="box">
+<h3>⚠️ Erros a evitar</h3>
+<ul>
+<li>Ponteiro sem inicialização → crash</li>
+<li>Desreferenciar NULL → Segmentation Fault</li>
+<li>malloc sem free → memory leak</li>
+<li>Retornar endereço de variável local</li>
+</ul>
+</div>
+<div class="box">
+<h3>🔥 Próximas Aulas</h3>
+<ul>
+<li><strong>Aula 22:</strong> Arquivos (fopen, fprintf, fscanf)</li>
+<li><strong>Aula 23:</strong> Revisão geral e projeto final</li>
+<li><strong>Aula 24:</strong> Apresentação dos projetos</li>
+</ul>
+</div>
+</div>
+<div class="hi" style="margin-top:18px;">
+<h3>📚 Para a Próxima Aula</h3>
+<p>
+1️⃣ <strong>Entregar:</strong> 2 exercícios no Google Classroom &nbsp;|&nbsp;
+2️⃣ <strong>Explorar:</strong> Compile com <code>-fsanitize=address</code> e veja o que acontece com ponteiros inválidos &nbsp;|&nbsp;
+3️⃣ <strong>Pensar:</strong> Como um programa guarda dados entre execuções? Se variáveis somem quando o programa fecha... (prévia de arquivos!)
+</p>
+</div>
+<div class="two-col" style="margin-top:16px;">
+<div class="box">
+<h3>💬 Dúvidas?</h3>
+<p><strong>E-mail:</strong> tiago.galvao@unifil.br<br>
+<strong>Atendimento:</strong> Terças 18h–19h<br>
+<strong>Google Classroom:</strong> Fórum disponível</p>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+<div style="text-align:center;color:var(--unifil-gray);">
+<p style="font-size:1.3rem;font-weight:600;">Ótima aula! 🙏</p>
+<p style="font-size:0.9rem;margin-top:12px;font-style:italic;">
+"Com grandes ponteiros vêm grandes responsabilidades — e <code>free()</code> é sempre obrigatório! 📍"
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav">
+<button class="nb" id="pb" onclick="ch(-1)" disabled>← Anterior</button>
+<span class="sc" id="sc">1 / 12</span>
+<button class="nb" id="nb" onclick="ch(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+let cur=0;
+const sl=document.querySelectorAll('.slide'), tot=sl.length;
+function show(n){
+  sl.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; sl[cur].classList.add('active');
+  document.getElementById('sc').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===tot-1;
+  document.getElementById('pf').style.width=((cur+1)/tot*100)+'%';
+  sl[cur].querySelectorAll('.box,.card,.hi,.big,.stat,.yel,.red,.grn,.ex,.tbl,.mem-diagram')
+    .forEach((el,i)=>{el.style.animation='none';el.style.opacity='0';
+      setTimeout(()=>{el.style.animation=`fadeInUp .5s ease-out ${i*.07}s forwards`;},10);});
+}
+function ch(d){const n=cur+d;if(n>=0&&n<tot)show(n);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')ch(-1);if(e.key==='ArrowRight')ch(1);});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)ch(d>0?1:-1);});
+show(0);
+</script>
+</body>
+</html>

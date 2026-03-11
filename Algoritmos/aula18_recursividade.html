@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 18 - Recursividade | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5; --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B; --code-bg: #282c34; --code-text: #abb2bf;
+        }
+        body { font-family: 'Segoe UI', sans-serif;
+               background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+               overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width:100%; height:100%; position:absolute; top:0; left:0;
+                 display:none; opacity:0; transform:translateX(100%);
+                 transition:all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); }
+        .slide.active { display:flex; opacity:1; transform:translateX(0); }
+        .slide-content { background:white; width:90%; max-width:1200px; height:90%;
+                         margin:auto; border-radius:20px;
+                         box-shadow:0 20px 60px rgba(0,0,0,0.3);
+                         display:flex; flex-direction:column; overflow:hidden; }
+        .slide-header { background:linear-gradient(135deg,var(--unifil-orange) 0%,var(--unifil-accent) 100%);
+                        padding:30px 50px; color:white; position:relative; flex-shrink:0; }
+        .slide-header::after { content:''; position:absolute; bottom:-20px; left:0; right:0; height:40px;
+                                background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                                clip-path:polygon(0 0,100% 0,100% 100%,0 0); }
+        .slide-header h1 { font-size:2.5rem; margin-bottom:10px; font-weight:700; }
+        .slide-header h2 { font-size:1.8rem; margin-bottom:10px; font-weight:600; }
+        .slide-header p  { font-size:1.1rem; opacity:0.95; }
+        .slide-body { flex:1; padding:60px 50px 40px; overflow-y:auto; }
+        .slide-body::-webkit-scrollbar { width:8px; }
+        .slide-body::-webkit-scrollbar-thumb { background:var(--unifil-orange); border-radius:10px; }
+        .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:35px; margin:25px 0; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:25px; margin:25px 0; }
+        .box { background:var(--unifil-light); padding:25px; border-radius:15px;
+               border-left:5px solid var(--unifil-orange);
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .box h3 { color:var(--unifil-orange); margin-bottom:12px; font-size:1.3rem; }
+        .box p  { font-size:1rem; line-height:1.7; }
+        .box ul { list-style:none; }
+        .box li { padding:7px 0 7px 28px; position:relative; font-size:1rem; line-height:1.6; }
+        .box li::before { content:'→'; position:absolute; left:0; color:var(--unifil-orange); font-weight:bold; }
+        .hi { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+              color:white; padding:28px; border-radius:15px; margin:25px 0;
+              animation:fadeInUp 0.6s ease-out 0.2s forwards; opacity:0; }
+        .hi h3 { margin-bottom:12px; font-size:1.4rem; }
+        .hi p  { font-size:1.05rem; line-height:1.7; }
+        .hi ul { list-style:none; }
+        .hi li { padding:7px 0; font-size:1rem; }
+        .card { background:white; border:2px solid var(--unifil-orange); padding:22px;
+                border-radius:12px; margin:16px 0;
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .card h4 { color:var(--unifil-orange); margin-bottom:10px; font-size:1.2rem; }
+        .code { background:var(--code-bg); color:var(--code-text); padding:18px;
+                border-radius:10px; font-family:'Courier New',monospace;
+                font-size:0.85rem; margin:12px 0; line-height:1.65; white-space:pre;
+                overflow-x:auto; }
+        .kw  { color:#c678dd; font-weight:600; }
+        .fn  { color:#61afef; }
+        .str { color:#98c379; }
+        .cm  { color:#5c6370; font-style:italic; }
+        .nm  { color:#d19a66; }
+        .op  { color:#FF8C00; font-weight:600; }
+        .ret { color:#e06c75; font-weight:800; }
+        .bc  { color:#56b6c2; font-weight:700; }   /* base case */
+        .rc  { color:#98c379; font-weight:700; }   /* recursive call */
+        .big { background:linear-gradient(135deg,#4A90E2,#357ABD); color:white;
+               padding:30px 40px; border-radius:20px; font-size:1.5rem;
+               font-weight:600; text-align:center; margin:25px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel { background:#fff3cd; border:3px solid #ffc107; border-radius:15px;
+               padding:25px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel h3 { color:#856404; margin-bottom:12px; font-size:1.3rem; }
+        .yel p  { font-size:1rem; line-height:1.7; color:#533f03; }
+        .red { background:#ffebee; border:3px solid #f44336; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .red h3 { color:#c62828; margin-bottom:12px; font-size:1.2rem; }
+        .red p  { font-size:0.98rem; line-height:1.6; color:#b71c1c; }
+        .grn { background:#e8f5e9; border:3px solid #4caf50; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .grn h3 { color:#2e7d32; margin-bottom:12px; font-size:1.2rem; }
+        .grn p  { font-size:1rem; line-height:1.7; color:#1b5e20; }
+        .grn ul { list-style:none; }
+        .grn li { padding:5px 0; font-size:0.98rem; color:#1b5e20; }
+        .stat { text-align:center; padding:22px; background:white;
+                border-radius:15px; border:3px solid var(--unifil-orange);
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .stat .n { font-size:2.8rem; font-weight:700; color:var(--unifil-orange); margin-bottom:8px; }
+        .stat .l { font-size:1rem; color:var(--unifil-gray); font-weight:500; }
+        .ex { background:#f0f4ff; border:2px solid #3f51b5; border-radius:15px;
+              padding:22px; margin:18px 0;
+              animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .ex h4 { color:#283593; margin-bottom:10px; font-size:1.15rem; }
+        .ex p  { font-size:1rem; line-height:1.7; color:#1a237e; }
+        .ex ul { list-style:none; margin-top:8px; }
+        .ex li { padding:4px 0; font-size:0.96rem; color:#1a237e; }
+        .ex li::before { content:'📌 '; }
+        .tbl { width:100%; border-collapse:collapse; margin:15px 0;
+               border-radius:10px; overflow:hidden;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tbl th { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                  color:white; padding:13px 18px; text-align:left; font-size:0.98rem; }
+        .tbl td { padding:11px 18px; border-bottom:1px solid var(--unifil-light); font-size:0.95rem; }
+        .tbl tr:hover td { background:var(--unifil-light); }
+
+        /* ── CALL STACK VISUAL ── */
+        .stack-wrap { margin:18px 0; animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .sf {
+            border-radius:10px; padding:11px 18px; margin:4px 0;
+            font-family:'Courier New',monospace; font-size:0.86rem;
+            display:flex; align-items:center; justify-content:space-between;
+            border: 2px solid transparent;
+        }
+        .sf-0 { background:#fff3e0; border-color:var(--unifil-orange); }
+        .sf-1 { background:#e3f2fd; border-color:#1565C0; margin-left:22px; }
+        .sf-2 { background:#f3e5f5; border-color:#6a1b9a; margin-left:44px; }
+        .sf-3 { background:#e8f5e9; border-color:#2e7d32; margin-left:66px; }
+        .sf-4 { background:#fce4ec; border-color:#c62828; margin-left:88px; }
+        .sf-badge { font-size:0.72rem; font-weight:700; padding:2px 8px;
+                    border-radius:10px; white-space:nowrap; }
+        .badge-call { background:#e3f2fd; color:#1565C0; }
+        .badge-ret  { background:#e8f5e9; color:#2e7d32; }
+        .badge-bc   { background:#fce4ec; color:#c62828; }
+
+        /* ── FRACTAL MIRROR ── */
+        .fractal-box {
+            background: linear-gradient(135deg,#1e2129,#2d3142);
+            border-radius:16px; padding:24px; text-align:center;
+            animation:fadeInUp 0.6s ease-out forwards; opacity:0;
+            font-family:'Courier New',monospace; font-size:0.9rem;
+        }
+        .fractal-level {
+            display:inline-block; border-radius:8px; padding:8px 18px;
+            margin:5px; font-weight:700; white-space:nowrap;
+        }
+        .fl-0 { background:rgba(255,140,0,0.3); color:#FF8C00; font-size:1rem; }
+        .fl-1 { background:rgba(86,182,194,0.25); color:#56b6c2; font-size:0.95rem; }
+        .fl-2 { background:rgba(152,195,121,0.2); color:#98c379; font-size:0.88rem; }
+        .fl-3 { background:rgba(197,134,192,0.2); color:#c678dd; font-size:0.82rem; }
+        .fl-bc{ background:rgba(224,108,117,0.3); color:#e06c75; font-size:0.78rem; font-style:italic; }
+
+        .lv { display:inline-block; padding:3px 10px; border-radius:20px;
+              font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+        .lv-e { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .lv-m { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .lv-h { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+        .lv-x { background:#e1bee7; color:#6a1b9a; border:1px solid #9c27b0; }
+
+        .nav { position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+               display:flex; gap:20px; align-items:center;
+               background:rgba(255,255,255,0.95); padding:15px 30px;
+               border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:1000; }
+        .nb  { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+               color:white; border:none; padding:12px 24px; border-radius:25px;
+               cursor:pointer; font-size:1rem; font-weight:600; transition:all .3s; }
+        .nb:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,140,0,.4); }
+        .nb:disabled { opacity:.5; cursor:not-allowed; }
+        .sc { font-weight:600; color:var(--unifil-dark); min-width:80px; text-align:center; font-size:1.1rem; }
+        .pb { position:fixed; top:0; left:0; width:100%; height:5px;
+              background:rgba(255,255,255,0.2); z-index:1001; }
+        .pf { height:100%; background:linear-gradient(90deg,var(--unifil-orange),var(--unifil-accent));
+              transition:width .3s; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        code { font-family:'Courier New',monospace; background:#f0f0f0;
+               padding:2px 6px; border-radius:4px; font-size:.92em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="pf"></div></div>
+<div class="presentation">
+
+<!-- SLIDE 1 — TÍTULO -->
+<div class="slide active">
+<div class="slide-content">
+<div class="slide-header">
+<h1>Lógica de Programação e Algoritmos</h1>
+<p>Aula 18 — Recursividade</p>
+</div>
+<div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<div style="font-size:5rem;margin-bottom:20px;">🪞</div>
+<h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:16px;">Uma Função que Chama a Si Mesma!</h2>
+<p style="font-size:1.2rem;color:var(--unifil-gray);max-width:820px;margin-bottom:28px;">
+  <strong>Recursividade</strong> é a técnica de resolver um problema
+  dividindo-o em versões menores de si mesmo — até chegar a um caso
+  tão simples que pode ser resolvido diretamente.
+  Elegante, poderosa e… perigosa se mal usada!
+</p>
+<div class="fractal-box" style="width:100%;max-width:800px;margin-bottom:28px;">
+  <div><span class="fractal-level fl-0">fatorial(5) = 5 × fatorial(4)</span></div>
+  <div><span class="fractal-level fl-1">fatorial(4) = 4 × fatorial(3)</span></div>
+  <div><span class="fractal-level fl-2">fatorial(3) = 3 × fatorial(2)</span></div>
+  <div><span class="fractal-level fl-3">fatorial(2) = 2 × fatorial(1)</span></div>
+  <div><span class="fractal-level fl-bc">fatorial(1) = 1 ← CASO BASE 🛑</span></div>
+</div>
+<div class="three-col" style="width:100%;max-width:1000px;">
+  <div class="stat"><div class="n">2</div><div class="l">ingredientes: caso base + chamada recursiva</div></div>
+  <div class="stat"><div class="n">🛑</div><div class="l">sem caso base = loop infinito</div></div>
+  <div class="stat"><div class="n">↔️</div><div class="l">todo recursivo tem equivalente iterativo</div></div>
+</div>
+<div style="margin-top:25px;font-size:1.05rem;color:var(--unifil-gray);">
+  <strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2 — CONCEITO FUNDAMENTAL -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🧠 O Conceito Fundamental</h2>
+<p>Dois ingredientes obrigatórios — sem um deles, o programa quebra</p>
+</div>
+<div class="slide-body">
+<div class="big">Recursão = Caso Base (para quando parar) + Chamada Recursiva (problema menor) 🎯</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — estrutura mínima de uma função recursiva</h4>
+<div class="code"><span class="kw">tipo</span> <span class="fn">funcaoRecursiva</span>(<span class="kw">tipo</span> <span class="nm">n</span>) {
+
+  <span class="cm">// ① CASO BASE — condição de parada</span>
+  <span class="kw">if</span>(<span class="bc">caso_simples</span>) {
+    <span class="ret">return</span> <span class="bc">valor_direto</span>;   <span class="cm">← para aqui!</span>
+  }
+
+  <span class="cm">// ② CHAMADA RECURSIVA — problema menor</span>
+  <span class="rc">return</span> <span class="fn">funcaoRecursiva</span>(<span class="rc">n_menor</span>);
+  <span class="cm">//                       ↑ sempre avança</span>
+  <span class="cm">//                         em direção ao caso base</span>
+}</div>
+</div>
+
+<div class="yel" style="margin-top:12px;">
+<h3>🪞 Analogia: Espelho em frente ao espelho</h3>
+<p>Coloque dois espelhos frente a frente: você vê reflexos dentro de reflexos, cada vez menores — mas eventualmente desaparecem. O <strong>caso base</strong> é o momento em que os reflexos somem. Sem esse limite, seria infinito.</p>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — fatorial recursivo</h4>
+<div class="code"><span class="kw">int</span> <span class="fn">fatorial</span>(<span class="kw">int</span> <span class="nm">n</span>) {
+
+  <span class="cm">// ① Caso base</span>
+  <span class="kw">if</span>(<span class="nm">n</span> <span class="op">&lt;=</span> <span class="nm">1</span>) <span class="ret">return</span> <span class="bc">1</span>;
+
+  <span class="cm">// ② Chamada recursiva</span>
+  <span class="ret">return</span> <span class="nm">n</span> <span class="op">*</span> <span class="fn">fatorial</span>(<span class="rc">n - 1</span>);
+  <span class="cm">//              ↑ n decresce → caso base</span>
+}
+
+<span class="cm">// Chamada:</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="fn">fatorial</span>(<span class="nm">5</span>)); <span class="cm">// 120</span>
+<span class="fn">printf</span>(<span class="str">"%d\n"</span>, <span class="fn">fatorial</span>(<span class="nm">0</span>)); <span class="cm">// 1</span></div>
+</div>
+<div class="box" style="margin-top:12px;">
+<h3>📐 As duas regras de ouro</h3>
+<ul>
+<li><strong>Caso base:</strong> condição que encerra a recursão — retorna diretamente sem nova chamada</li>
+<li><strong>Progresso:</strong> cada chamada recursiva deixa o problema <em>menor</em> — se aproxima do caso base</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3 — TRACE: FATORIAL(4) -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🔍 Trace Detalhado — fatorial(4)</h2>
+<p>Acompanhe cada chamada na pilha — descida e subida</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:15px;">
+<div>
+<p style="font-weight:700;font-size:1.05rem;margin-bottom:10px;color:var(--unifil-orange);">📥 Descida — chamadas empilhadas</p>
+<div class="stack-wrap">
+  <div class="sf sf-0"><span><strong>fatorial(4)</strong> → 4 × fatorial(3)</span><span class="sf-badge badge-call">chama ↓</span></div>
+  <div class="sf sf-1"><span><strong>fatorial(3)</strong> → 3 × fatorial(2)</span><span class="sf-badge badge-call">chama ↓</span></div>
+  <div class="sf sf-2"><span><strong>fatorial(2)</strong> → 2 × fatorial(1)</span><span class="sf-badge badge-call">chama ↓</span></div>
+  <div class="sf sf-3"><span><strong>fatorial(1)</strong> → n≤1, retorna 1</span><span class="sf-badge badge-bc">BASE 🛑</span></div>
+</div>
+</div>
+<div>
+<p style="font-weight:700;font-size:1.05rem;margin-bottom:10px;color:#2e7d32;">📤 Subida — retornos desempilhados</p>
+<div class="stack-wrap">
+  <div class="sf sf-3"><span><strong>fatorial(1)</strong> = <strong>1</strong></span><span class="sf-badge badge-ret">retorna 1 ↑</span></div>
+  <div class="sf sf-2"><span><strong>fatorial(2)</strong> = 2 × 1 = <strong>2</strong></span><span class="sf-badge badge-ret">retorna 2 ↑</span></div>
+  <div class="sf sf-1"><span><strong>fatorial(3)</strong> = 3 × 2 = <strong>6</strong></span><span class="sf-badge badge-ret">retorna 6 ↑</span></div>
+  <div class="sf sf-0"><span><strong>fatorial(4)</strong> = 4 × 6 = <strong>24</strong></span><span class="sf-badge badge-ret">retorna 24 ✅</span></div>
+</div>
+</div>
+</div>
+
+<div class="hi" style="margin-top:15px;">
+<h3>⚡ O processo em duas fases</h3>
+<p>
+  <strong>1ª fase — Descida:</strong> cada chamada empilha um frame e faz nova chamada com n-1. Nenhum cálculo acontece ainda — só chamadas.<br>
+  <strong>2ª fase — Subida:</strong> ao atingir o caso base (n=1), os frames começam a desempilhar de baixo para cima, cada um calculando e retornando seu resultado ao nível anterior.
+</p>
+</div>
+
+<div class="two-col" style="margin-top:10px;">
+<div class="box">
+<h3>📊 Custo em memória</h3>
+<p>Cada chamada usa um frame na pilha. Para <code>fatorial(n)</code>, há <strong>n frames simultâneos</strong> na pilha durante a descida. Para n=10.000, isso pode causar <strong>stack overflow</strong>!</p>
+</div>
+<div class="grn">
+<h3>✅ Equação de recorrência</h3>
+<p style="font-family:'Courier New',monospace; font-size:0.95rem; line-height:2.0;">
+  f(0) = 1<br>
+  f(1) = 1<br>
+  f(n) = n × f(n−1),  n &gt; 1
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4 — FIBONACCI -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 1 — Sequência de Fibonacci</h2>
+<p>Dois casos base, duas chamadas recursivas — e um problema de desempenho importante</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Definição: F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2)</h4>
+<p>Sequência: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89…</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — Fibonacci recursivo simples</h4>
+<div class="code"><span class="kw">int</span> <span class="fn">fib</span>(<span class="kw">int</span> <span class="nm">n</span>) {
+  <span class="cm">// Dois casos base!</span>
+  <span class="kw">if</span>(<span class="nm">n</span> == <span class="nm">0</span>) <span class="ret">return</span> <span class="bc">0</span>;
+  <span class="kw">if</span>(<span class="nm">n</span> == <span class="nm">1</span>) <span class="ret">return</span> <span class="bc">1</span>;
+
+  <span class="cm">// Duas chamadas recursivas!</span>
+  <span class="ret">return</span> <span class="fn">fib</span>(<span class="rc">n-1</span>) <span class="op">+</span> <span class="fn">fib</span>(<span class="rc">n-2</span>);
+}
+
+<span class="cm">// Imprimir os primeiros 10:</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">10</span>; i<span class="op">++</span>)
+  <span class="fn">printf</span>(<span class="str">"F(%d)=%d\n"</span>, i, <span class="fn">fib</span>(i));</div>
+</div>
+
+<div class="red" style="margin-top:12px;">
+<h3>⚠️ Fibonacci recursivo é lento!</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// fib(5) faz 15 chamadas!</span>
+<span class="cm">// fib(10) faz 177 chamadas!</span>
+<span class="cm">// fib(30) faz 2.7 MILHÕES!</span>
+<span class="cm">// fib(50) faz trilhões → inutilizável</span>
+
+<span class="cm">// Motivo: recalcula mesmos valores</span>
+<span class="cm">// fib(3) é calculado 3x em fib(5)!</span></div>
+</div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>🌳 Árvore de chamadas — fib(5)</h3>
+<div style="font-family:'Courier New',monospace; font-size:0.82rem; line-height:1.9; background:#f9f9f9; padding:12px; border-radius:8px;">
+fib(5)<br>
+├─ fib(4)<br>
+│  ├─ fib(3)<br>
+│  │  ├─ fib(2) → fib(1)+fib(0)<br>
+│  │  └─ fib(1) ← BASE<br>
+│  └─ fib(2) → fib(1)+fib(0) <span style="color:#c62828;">← recalcula!</span><br>
+└─ fib(3) <span style="color:#c62828;">← recalcula tudo!</span>
+</div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+<h4>🔵 C — Fibonacci iterativo (eficiente)</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">int</span> <span class="fn">fibIter</span>(<span class="kw">int</span> <span class="nm">n</span>) {
+  <span class="kw">if</span>(<span class="nm">n</span> <span class="op">&lt;=</span> <span class="nm">1</span>) <span class="ret">return</span> <span class="nm">n</span>;
+  <span class="kw">int</span> ant=<span class="nm">0</span>, at=<span class="nm">1</span>, prox;
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">2</span>; i<span class="op">&lt;=</span><span class="nm">n</span>; i<span class="op">++</span>) {
+    prox = ant + at;
+    ant  = at;
+    at   = prox;
+  }
+  <span class="ret">return</span> at;
+}
+<span class="cm">// O(n) — muito mais rápido!</span>
+<span class="cm">// fib(50) em microssegundos ✅</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5 — BUSCA BINÁRIA RECURSIVA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 2 — Busca Binária Recursiva</h2>
+<p>Dividir o vetor ordenado ao meio a cada chamada — O(log n) com recursão elegante</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>Buscar um valor em um vetor <strong>ordenado</strong> dividindo o intervalo de busca ao meio em cada chamada recursiva.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — busca binária recursiva</h4>
+<div class="code"><span class="kw">int</span> <span class="fn">buscaBinaria</span>(<span class="kw">int</span> <span class="nm">v[]</span>, <span class="kw">int</span> <span class="nm">ini</span>,
+                  <span class="kw">int</span> <span class="nm">fim</span>, <span class="kw">int</span> <span class="nm">alvo</span>) {
+
+  <span class="cm">// ① Caso base: intervalo vazio</span>
+  <span class="kw">if</span>(<span class="nm">ini</span> <span class="op">&gt;</span> <span class="nm">fim</span>) <span class="ret">return</span> <span class="bc">-1</span>; <span class="cm">← não achou</span>
+
+  <span class="kw">int</span> meio = (<span class="nm">ini</span> <span class="op">+</span> <span class="nm">fim</span>) / <span class="nm">2</span>;
+
+  <span class="cm">// ② Caso base: encontrou!</span>
+  <span class="kw">if</span>(<span class="nm">v</span>[meio] == <span class="nm">alvo</span>)
+    <span class="ret">return</span> <span class="bc">meio</span>;
+
+  <span class="cm">// ③ Chamadas recursivas</span>
+  <span class="kw">if</span>(<span class="nm">alvo</span> <span class="op">&lt;</span> <span class="nm">v</span>[meio])
+    <span class="ret">return</span> <span class="fn">buscaBinaria</span>(<span class="nm">v</span>,<span class="nm">ini</span>,<span class="rc">meio-1</span>,<span class="nm">alvo</span>);
+  <span class="kw">else</span>
+    <span class="ret">return</span> <span class="fn">buscaBinaria</span>(<span class="nm">v</span>,<span class="rc">meio+1</span>,<span class="nm">fim</span>,<span class="nm">alvo</span>);
+}
+
+<span class="cm">// Uso:</span>
+<span class="kw">int</span> v[] = {<span class="nm">2</span>,<span class="nm">5</span>,<span class="nm">8</span>,<span class="nm">12</span>,<span class="nm">16</span>,<span class="nm">23</span>,<span class="nm">38</span>,<span class="nm">56</span>};
+<span class="kw">int</span> pos = <span class="fn">buscaBinaria</span>(v, <span class="nm">0</span>, <span class="nm">7</span>, <span class="nm">23</span>);
+<span class="cm">// pos = 5 ✅</span></div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>🔍 Trace: buscar 23 em {2,5,8,12,16,23,38,56}</h3>
+<div style="font-family:'Courier New',monospace; font-size:0.85rem; line-height:2.0; padding:8px;">
+  <strong>Chamada 1:</strong> ini=0, fim=7, meio=3 → v[3]=12 &lt; 23 → vai direita<br>
+  <strong>Chamada 2:</strong> ini=4, fim=7, meio=5 → v[5]=23 == 23 → <span style="color:#2e7d32;font-weight:700;">retorna 5 ✅</span>
+</div>
+<p style="font-size:0.92rem; color:var(--unifil-gray); margin-top:4px;">Apenas 2 chamadas para achar em 8 elementos!</p>
+</div>
+
+<div class="box" style="margin-top:14px;">
+<h3>📊 Comparação de desempenho</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.88rem;margin-top:8px;">
+  <tr style="background:var(--unifil-orange);color:white;">
+    <th style="padding:8px 12px;text-align:left;">N elementos</th>
+    <th style="padding:8px 12px;text-align:center;">Busca Linear</th>
+    <th style="padding:8px 12px;text-align:center;">Busca Binária</th>
+  </tr>
+  <tr style="background:#f9f9f9;"><td style="padding:7px 12px;">100</td><td style="text-align:center;">100 comp.</td><td style="text-align:center;color:#2e7d32;font-weight:700;">7 comp.</td></tr>
+  <tr><td style="padding:7px 12px;">1.000</td><td style="text-align:center;">1.000 comp.</td><td style="text-align:center;color:#2e7d32;font-weight:700;">10 comp.</td></tr>
+  <tr style="background:#f9f9f9;"><td style="padding:7px 12px;">1.000.000</td><td style="text-align:center;">1.000.000 comp.</td><td style="text-align:center;color:#2e7d32;font-weight:700;">20 comp.</td></tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6 — TORRE DE HANÓI -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 3 — Torre de Hanói</h2>
+<p>O problema clássico que só faz sentido com recursão — solução em 3 linhas!</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-h">Avançado</span></h4>
+<p>Mover N discos da haste A para C usando B como auxiliar. Regra: disco maior nunca fica sobre disco menor. Para N=3: mínimo de <strong>7 movimentos</strong>. Para N discos: <strong>2ⁿ − 1 movimentos</strong>.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — solução recursiva</h4>
+<div class="code"><span class="kw">void</span> <span class="fn">hanoi</span>(<span class="kw">int</span> <span class="nm">n</span>, <span class="kw">char</span> <span class="nm">orig</span>,
+           <span class="kw">char</span> <span class="nm">dest</span>, <span class="kw">char</span> <span class="nm">aux</span>) {
+
+  <span class="cm">// ① Caso base: disco único</span>
+  <span class="kw">if</span>(<span class="nm">n</span> == <span class="bc">1</span>) {
+    <span class="fn">printf</span>(<span class="str">"Disco 1: %c → %c\n"</span>,<span class="nm">orig</span>,<span class="nm">dest</span>);
+    <span class="ret">return</span>;
+  }
+
+  <span class="cm">// ② Mover n-1 discos para aux</span>
+  <span class="fn">hanoi</span>(<span class="rc">n-1</span>, <span class="nm">orig</span>, <span class="nm">aux</span>, <span class="nm">dest</span>);
+
+  <span class="cm">// ③ Mover disco maior para dest</span>
+  <span class="fn">printf</span>(<span class="str">"Disco %d: %c → %c\n"</span>,<span class="nm">n</span>,<span class="nm">orig</span>,<span class="nm">dest</span>);
+
+  <span class="cm">// ④ Mover n-1 discos de aux para dest</span>
+  <span class="fn">hanoi</span>(<span class="rc">n-1</span>, <span class="nm">aux</span>, <span class="nm">dest</span>, <span class="nm">orig</span>);
+}
+
+<span class="cm">// hanoi(3, 'A', 'C', 'B') imprime:</span>
+<span class="cm">// Disco 1: A → C</span>
+<span class="cm">// Disco 2: A → B</span>
+<span class="cm">// Disco 1: C → B</span>
+<span class="cm">// Disco 3: A → C</span>
+<span class="cm">// Disco 1: B → A</span>
+<span class="cm">// Disco 2: B → C</span>
+<span class="cm">// Disco 1: A → C  (7 movimentos)</span></div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>🏛️ A estratégia recursiva</h3>
+<p>
+  Para mover N discos de A para C:<br><br>
+  1️⃣ Mover os N-1 menores de <strong>A → B</strong> (recursão)<br>
+  2️⃣ Mover o maior de <strong>A → C</strong> (direto)<br>
+  3️⃣ Mover os N-1 menores de <strong>B → C</strong> (recursão)<br><br>
+  É exatamente isso que o código faz — em 3 linhas de lógica!
+</p>
+</div>
+
+<div class="box" style="margin-top:14px;">
+<h3>📐 Crescimento exponencial</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.88rem;margin-top:8px;">
+  <tr style="background:var(--unifil-orange);color:white;">
+    <th style="padding:8px 12px;">N discos</th>
+    <th style="padding:8px 12px;text-align:center;">Movimentos</th>
+    <th style="padding:8px 12px;text-align:center;">Tempo (1 mov/s)</th>
+  </tr>
+  <tr style="background:#f9f9f9;"><td style="padding:6px 12px;">3</td><td style="text-align:center;">7</td><td style="text-align:center;">7 segundos</td></tr>
+  <tr><td style="padding:6px 12px;">10</td><td style="text-align:center;">1.023</td><td style="text-align:center;">17 minutos</td></tr>
+  <tr style="background:#f9f9f9;"><td style="padding:6px 12px;">20</td><td style="text-align:center;">1.048.575</td><td style="text-align:center;">12 dias</td></tr>
+  <tr><td style="padding:6px 12px;">64</td><td style="text-align:center;">1,8 × 10¹⁹</td><td style="text-align:center;color:#c62828;">585 bilhões de anos</td></tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7 — RECURSÃO × ITERAÇÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>⚖️ Recursão vs. Iteração</h2>
+<p>Cada abordagem tem vantagens — saiba quando usar cada uma</p>
+</div>
+<div class="slide-body">
+<table class="tbl" style="margin-top:15px;">
+<thead><tr><th>Aspecto</th><th>Recursão</th><th>Iteração (laços)</th></tr></thead>
+<tbody>
+<tr><td>Legibilidade</td><td>✅ Muito clara para problemas naturalmente recursivos</td><td>👍 Clara para sequências lineares</td></tr>
+<tr><td>Desempenho</td><td>⚠️ Overhead de chamadas de função e pilha</td><td>✅ Geralmente mais rápida</td></tr>
+<tr><td>Memória</td><td>⚠️ O(n) na pilha — risco de stack overflow</td><td>✅ O(1) para maioria dos casos</td></tr>
+<tr><td>Depuração</td><td>⚠️ Mais difícil — fluxo não linear</td><td>✅ Mais fácil de acompanhar</td></tr>
+<tr><td>Problemas ideais</td><td>✅ Árvores, grafos, dividir e conquistar</td><td>✅ Sequências, contagens, somas</td></tr>
+</tbody>
+</table>
+<div class="two-col" style="margin-top:15px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 Fatorial recursivo vs. iterativo</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// RECURSIVO — elegante, mas consome pilha</span>
+<span class="kw">int</span> <span class="fn">fatR</span>(<span class="kw">int</span> n) {
+  <span class="kw">if</span>(n<span class="op">&lt;=</span><span class="nm">1</span>) <span class="ret">return</span> <span class="nm">1</span>;
+  <span class="ret">return</span> n <span class="op">*</span> <span class="fn">fatR</span>(n<span class="op">-</span><span class="nm">1</span>);
+}
+
+<span class="cm">// ITERATIVO — eficiente, sem overhead</span>
+<span class="kw">int</span> <span class="fn">fatI</span>(<span class="kw">int</span> n) {
+  <span class="kw">int</span> f=<span class="nm">1</span>;
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">2</span>; i<span class="op">&lt;=</span>n; i<span class="op">++</span>)
+    f <span class="op">*=</span> i;
+  <span class="ret">return</span> f;
+}
+<span class="cm">// Mesmo resultado, custo diferente!</span></div>
+</div>
+<div>
+<div class="grn" style="margin-top:0;">
+<h3>✅ Quando usar recursão?</h3>
+<ul>
+<li>O problema tem <strong>estrutura recursiva natural</strong> (árvores, listas encadeadas)</li>
+<li>A solução recursiva é muito mais <strong>simples e legível</strong></li>
+<li>O problema é <strong>dividir e conquistar</strong> (merge sort, quick sort)</li>
+<li>Profundidade de recursão é <strong>limitada e pequena</strong></li>
+</ul>
+</div>
+<div class="red" style="margin-top:15px;">
+<h3>⚠️ Quando evitar recursão?</h3>
+<p>Evite se: o mesmo subproblema é recalculado várias vezes (Fibonacci ingênuo), a recursão pode ser muito profunda (n &gt; 10.000), ou existe uma solução iterativa simples de igual clareza.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8 — EXEMPLO 4: SOMA DE DÍGITOS E POTÊNCIA -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 4 — Problemas Clássicos Recursivos</h2>
+<p>Soma de dígitos, potência eficiente e inversão de string</p>
+</div>
+<div class="slide-body">
+<div class="three-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 Soma dos dígitos</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// somaDigitos(1234) = 10</span>
+<span class="kw">int</span> <span class="fn">somaDigitos</span>(<span class="kw">int</span> <span class="nm">n</span>) {
+  <span class="kw">if</span>(<span class="nm">n</span> == <span class="nm">0</span>)
+    <span class="ret">return</span> <span class="bc">0</span>;
+  <span class="ret">return</span> (<span class="nm">n</span> <span class="op">%</span> <span class="nm">10</span>)
+    <span class="op">+</span> <span class="fn">somaDigitos</span>(<span class="rc">n/10</span>);
+}
+
+<span class="cm">// Trace: 1234</span>
+<span class="cm">// 4 + somaD(123)</span>
+<span class="cm">//   3 + somaD(12)</span>
+<span class="cm">//     2 + somaD(1)</span>
+<span class="cm">//       1 + somaD(0)=0</span>
+<span class="cm">// = 4+3+2+1 = 10 ✅</span></div>
+</div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Potência eficiente</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// Potência rápida O(log n)</span>
+<span class="kw">double</span> <span class="fn">potencia</span>(<span class="kw">double</span> <span class="nm">b</span>, <span class="kw">int</span> <span class="nm">e</span>) {
+  <span class="kw">if</span>(<span class="nm">e</span> == <span class="nm">0</span>)
+    <span class="ret">return</span> <span class="bc">1</span>;
+  <span class="kw">if</span>(<span class="nm">e</span> % <span class="nm">2</span> == <span class="nm">0</span>) {
+    <span class="kw">double</span> h = <span class="fn">potencia</span>(<span class="nm">b</span>, <span class="rc">e/2</span>);
+    <span class="ret">return</span> h <span class="op">*</span> h; <span class="cm">← reutiliza!</span>
+  }
+  <span class="ret">return</span> <span class="nm">b</span> <span class="op">*</span> <span class="fn">potencia</span>(<span class="nm">b</span>, <span class="rc">e-1</span>);
+}
+
+<span class="cm">// 2^10 em 5 chamadas!</span>
+<span class="cm">// vs. 10 no iterativo</span></div>
+</div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Imprimir dígitos invertidos</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// Inverter sem vetor!</span>
+<span class="kw">void</span> <span class="fn">invertido</span>(<span class="kw">int</span> <span class="nm">n</span>) {
+  <span class="kw">if</span>(<span class="nm">n</span> == <span class="nm">0</span>) <span class="ret">return</span>;
+
+  <span class="fn">printf</span>(<span class="str">"%d"</span>, <span class="nm">n</span> <span class="op">%</span> <span class="nm">10</span>);
+  <span class="fn">invertido</span>(<span class="rc">n / 10</span>);
+}
+
+<span class="cm">// invertido(1234)</span>
+<span class="cm">// imprime: 4</span>
+<span class="cm">// depois:  3</span>
+<span class="cm">// depois:  2</span>
+<span class="cm">// depois:  1</span>
+<span class="cm">// Saída: 4321 ✅</span></div>
+</div>
+</div>
+<div class="two-col" style="margin-top:15px;">
+<div class="grn">
+<h3>✅ Padrão: trabalhar na descida ou na subida</h3>
+<p>
+  <strong>Trabalhar na descida</strong> (antes da chamada recursiva): <code>invertido()</code> imprime o último dígito <em>antes</em> de chamar o recursivo — resultado na ordem inversa.<br><br>
+  <strong>Trabalhar na subida</strong> (depois da chamada recursiva): colocar <code>printf</code> <em>após</em> a chamada recursiva imprime na ordem original. A pilha funciona como um depósito!
+</p>
+</div>
+<div class="yel">
+<h3>💡 A pilha como estrutura de dados</h3>
+<p>A recursão usa implicitamente a pilha de chamadas como uma estrutura de dados. Quando você processa na subida, está usando a pilha como armazenamento — o mesmo que uma pilha (stack) explícita faria iterativamente.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9 — EXEMPLO 5: MERGE SORT -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 5 — Merge Sort: Dividir e Conquistar</h2>
+<p>Ordenação O(n log n) — recursão em todo seu esplendor</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Ideia: dividir o vetor ao meio, ordenar cada metade recursivamente, mesclar as duas metades ordenadas</h4>
+</div>
+<div class="two-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — Merge Sort</h4>
+<div class="code" style="font-size:0.79rem;"><span class="cm">// Mescla dois sub-vetores ordenados</span>
+<span class="kw">void</span> <span class="fn">merge</span>(<span class="kw">int</span> <span class="nm">v[]</span>, <span class="kw">int</span> <span class="nm">ini</span>, <span class="kw">int</span> <span class="nm">meio</span>, <span class="kw">int</span> <span class="nm">fim</span>) {
+  <span class="kw">int</span> n1 = <span class="nm">meio</span><span class="op">-</span><span class="nm">ini</span><span class="op">+</span><span class="nm">1</span>, n2 = <span class="nm">fim</span><span class="op">-</span><span class="nm">meio</span>;
+  <span class="kw">int</span> esq[n1], dir[n2];
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;n1;i++) esq[i]=<span class="nm">v</span>[<span class="nm">ini</span>+i];
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>;j&lt;n2;j++) dir[j]=<span class="nm">v</span>[<span class="nm">meio</span>+<span class="nm">1</span>+j];
+  <span class="kw">int</span> i=<span class="nm">0</span>, j=<span class="nm">0</span>, k=<span class="nm">ini</span>;
+  <span class="kw">while</span>(i&lt;n1 &amp;&amp; j&lt;n2)
+    <span class="nm">v</span>[k<span class="op">++</span>] = (esq[i]&lt;=dir[j]) ? esq[i<span class="op">++</span>] : dir[j<span class="op">++</span>];
+  <span class="kw">while</span>(i&lt;n1) <span class="nm">v</span>[k<span class="op">++</span>]=esq[i<span class="op">++</span>];
+  <span class="kw">while</span>(j&lt;n2) <span class="nm">v</span>[k<span class="op">++</span>]=dir[j<span class="op">++</span>];
+}
+
+<span class="cm">// Divide e ordena recursivamente</span>
+<span class="kw">void</span> <span class="fn">mergeSort</span>(<span class="kw">int</span> <span class="nm">v[]</span>, <span class="kw">int</span> <span class="nm">ini</span>, <span class="kw">int</span> <span class="nm">fim</span>) {
+  <span class="kw">if</span>(<span class="nm">ini</span> <span class="op">&gt;=</span> <span class="nm">fim</span>) <span class="ret">return</span>; <span class="cm">← BASE: 1 elemento</span>
+  <span class="kw">int</span> meio = (<span class="nm">ini</span><span class="op">+</span><span class="nm">fim</span>) / <span class="nm">2</span>;
+  <span class="fn">mergeSort</span>(<span class="nm">v</span>, <span class="nm">ini</span>, <span class="rc">meio</span>);    <span class="cm">← metade esq.</span>
+  <span class="fn">mergeSort</span>(<span class="nm">v</span>, <span class="rc">meio+1</span>, <span class="nm">fim</span>); <span class="cm">← metade dir.</span>
+  <span class="fn">merge</span>(<span class="nm">v</span>, <span class="nm">ini</span>, <span class="nm">meio</span>, <span class="nm">fim</span>);  <span class="cm">← mescla</span>
+}</div>
+</div>
+<div>
+<div class="yel" style="margin-top:0;">
+<h3>🌳 Árvore de divisões — {38,27,43,3,9,82,10}</h3>
+<div style="font-family:'Courier New',monospace; font-size:0.8rem; line-height:1.9; background:#f9f9f9; padding:10px; border-radius:8px;">
+{38,27,43,3,9,82,10}<br>
+├─ {38,27,43,3} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {9,82,10}<br>
+│&nbsp;&nbsp;├─ {38,27} &nbsp;&nbsp; {43,3} &nbsp; ├─{9,82} {10}<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;├─{38}{27} ├─{43}{3}<br>
+│&nbsp;&nbsp;│&nbsp;&nbsp;└─merge→{27,38} └─merge→{3,43}<br>
+│&nbsp;&nbsp;└─merge→{3,27,38,43}<br>
+└─merge→<span style="color:#2e7d32;font-weight:700;">{3,9,10,27,38,43,82} ✅</span>
+</div>
+</div>
+<div class="box" style="margin-top:14px;">
+<h3>📊 Bubble Sort vs. Merge Sort</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.88rem;margin-top:8px;">
+<tr style="background:var(--unifil-orange);color:white;">
+  <th style="padding:7px 10px;">N</th><th style="text-align:center;padding:7px 10px;">Bubble O(n²)</th><th style="text-align:center;padding:7px 10px;">Merge O(n log n)</th>
+</tr>
+<tr style="background:#f9f9f9;"><td style="padding:6px 10px;">1.000</td><td style="text-align:center;">1.000.000 ops</td><td style="text-align:center;color:#2e7d32;font-weight:700;">10.000 ops</td></tr>
+<tr><td style="padding:6px 10px;">1.000.000</td><td style="text-align:center;">10¹² ops</td><td style="text-align:center;color:#2e7d32;font-weight:700;">20.000.000 ops</td></tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 10 — ERROS COMUNS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🚨 Erros Comuns com Recursividade</h2>
+<p>Armadilhas que causam stack overflow e resultados errados</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="red">
+<h3>❌ Erro 1: Sem caso base → recursão infinita</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: sem condição de parada!</span>
+<span class="kw">int</span> <span class="fn">fatorial</span>(<span class="kw">int</span> n) {
+  <span class="ret">return</span> n <span class="op">*</span> <span class="fn">fatorial</span>(n <span class="op">-</span> <span class="nm">1</span>);
+  <span class="cm">// Nunca para! Stack overflow!</span>
+}
+
+<span class="cm">// CORRETO: sempre com caso base</span>
+<span class="kw">int</span> <span class="fn">fatorial</span>(<span class="kw">int</span> n) {
+  <span class="kw">if</span>(n <span class="op">&lt;=</span> <span class="nm">1</span>) <span class="ret">return</span> <span class="bc">1</span>; <span class="cm">← obrigatório!</span>
+  <span class="ret">return</span> n <span class="op">*</span> <span class="fn">fatorial</span>(n <span class="op">-</span> <span class="nm">1</span>);
+}</div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 2: Não avançar em direção ao caso base</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: n não diminui!</span>
+<span class="kw">int</span> <span class="fn">fatorial</span>(<span class="kw">int</span> n) {
+  <span class="kw">if</span>(n <span class="op">&lt;=</span> <span class="nm">1</span>) <span class="ret">return</span> <span class="nm">1</span>;
+  <span class="ret">return</span> n <span class="op">*</span> <span class="fn">fatorial</span>(n); <span class="cm">← n, não n-1!</span>
+  <span class="cm">// Sempre chama com o mesmo n!</span>
+  <span class="cm">// Stack overflow!</span>
+}
+
+<span class="cm">// CORRETO: sempre n-1 (ou menor)</span>
+<span class="ret">return</span> n <span class="op">*</span> <span class="fn">fatorial</span>(<span class="rc">n <span class="op">-</span> <span class="nm">1</span></span>);</div>
+</div>
+</div>
+<div>
+<div class="red">
+<h3>❌ Erro 3: Caso base errado (resultado incorreto)</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: caso base n==0 para fatorial</span>
+<span class="kw">int</span> <span class="fn">fatorial</span>(<span class="kw">int</span> n) {
+  <span class="kw">if</span>(n == <span class="nm">0</span>) <span class="ret">return</span> <span class="bc">0</span>; <span class="cm">← deve ser 1!</span>
+  <span class="ret">return</span> n <span class="op">*</span> <span class="fn">fatorial</span>(n<span class="op">-</span><span class="nm">1</span>);
+}
+<span class="cm">// fatorial(5)→5×4×3×2×1×0 = 0 ❌</span>
+<span class="cm">// fatorial(0) deve ser 1 (0! = 1)</span>
+
+<span class="cm">// CORRETO:</span>
+<span class="kw">if</span>(n <span class="op">&lt;=</span> <span class="nm">1</span>) <span class="ret">return</span> <span class="bc">1</span>;</div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 4: Recursão com inteiro negativo</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: chamar com n negativo!</span>
+<span class="fn">fatorial</span>(-<span class="nm">5</span>);
+<span class="cm">// n=-5 → n-1=-6 → n-2=-7 → ...</span>
+<span class="cm">// Nunca chega em n&lt;=1 → infinito!</span>
+
+<span class="cm">// CORRETO: validar antes de chamar</span>
+<span class="kw">if</span>(n <span class="op">&lt;</span> <span class="nm">0</span>) {
+  <span class="fn">printf</span>(<span class="str">"Erro: n negativo!\n"</span>);
+  <span class="ret">return</span> <span class="nm">-1</span>;
+}</div>
+</div>
+</div>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ Checklist para funções recursivas</h3>
+<p>☑ Tem pelo menos um caso base com <code>return</code>? &nbsp;|&nbsp; ☑ Cada chamada avança em direção ao caso base? &nbsp;|&nbsp; ☑ O caso base retorna o valor correto? &nbsp;|&nbsp; ☑ A entrada foi validada (sem negativos, nulos, etc.)?</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 11 — EXERCÍCIOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📝 Exercícios Propostos</h2>
+<p>Pratique identificando o caso base e a chamada recursiva!</p>
+</div>
+<div class="slide-body">
+<div class="big">Para cada problema: 1) defina o caso base 2) defina como reduzir o problema 3) codifique! 🎯</div>
+<div class="two-col" style="margin-top:18px;">
+<div>
+<div class="ex">
+<h4>📌 Exercício A — Contador Regressivo <span class="lv lv-e">Básico</span></h4>
+<p>Escreva uma função recursiva <code>contagem(n)</code> que imprime: n, n-1, n-2, ..., 1, "Feliz Ano Novo!". Sem nenhum laço — apenas recursão. Identifique claramente o caso base.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício B — MDC de Euclides <span class="lv lv-e">Básico</span></h4>
+<p>Implemente <code>mdc(a, b)</code> recursivamente usando o algoritmo de Euclides: <code>mdc(a,0) = a</code> e <code>mdc(a,b) = mdc(b, a%b)</code>. Trace manualmente para <code>mdc(48, 18)</code>.</p>
+</div>
+</div>
+<div>
+<div class="ex">
+<h4>📌 Exercício C — Palíndromo <span class="lv lv-m">Intermediário</span></h4>
+<p>Crie <code>palindromo(str, ini, fim)</code> que verifica recursivamente se uma string é palíndromo (igual lida ao contrário). Ex: "arara" → sim, "radar" → sim, "hello" → não. Caso base: ini >= fim.</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício D — Exibir Caminhos <span class="lv lv-x">Desafio</span></h4>
+<p>Uma grade N×M tem apenas dois movimentos: direita (→) e abaixo (↓). Escreva uma função recursiva que imprime <strong>todos os caminhos possíveis</strong> do canto (0,0) até (N-1,M-1). Para N=2, M=2: há 2 caminhos. Para N=3, M=3: há 6 caminhos.</p>
+</div>
+</div>
+</div>
+<div class="hi" style="margin-top:15px;">
+<h3>🎯 Entrega</h3>
+<p>Resolva ao menos <strong>2 exercícios</strong> em C ou Portugol e envie via Google Classroom.
+Na próxima aula: <strong>Strings</strong> — cadeia de caracteres, manipulação e funções da biblioteca!</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12 — RESUMO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎯 Resumo e Próximos Passos</h2>
+<p>Recursividade — elegância com responsabilidade!</p>
+</div>
+<div class="slide-body">
+<div class="big">Toda recursão precisa de dois elementos: caso base (parar) + problema menor (avançar)! 🪞</div>
+<div class="two-col" style="margin-top:20px;">
+<div class="box">
+<h3>✅ Conceitos aprendidos</h3>
+<ul>
+<li>Recursão = caso base + chamada recursiva</li>
+<li>Descida: empilha frames | Subida: desempilha e calcula</li>
+<li>Sem caso base → stack overflow</li>
+<li>Todo recursivo tem equivalente iterativo</li>
+</ul>
+</div>
+<div class="box">
+<h3>✅ Exemplos resolvidos</h3>
+<ul>
+<li>Fatorial — recursão direta com trace de pilha</li>
+<li>Fibonacci — dois casos base + problema de eficiência</li>
+<li>Busca Binária recursiva — O(log n)</li>
+<li>Torre de Hanói — 3 linhas de lógica, 2ⁿ−1 movimentos</li>
+<li>Merge Sort — dividir e conquistar O(n log n)</li>
+</ul>
+</div>
+<div class="box">
+<h3>⚠️ Erros a evitar</h3>
+<ul>
+<li>Omitir o caso base → loop infinito</li>
+<li>Não avançar em direção ao caso base</li>
+<li>Caso base com valor errado</li>
+<li>Usar recursão onde iteração é muito mais eficiente</li>
+</ul>
+</div>
+<div class="box">
+<h3>🔥 Próximas Aulas</h3>
+<ul>
+<li><strong>Aula 19:</strong> Strings (cadeia de caracteres)</li>
+<li><strong>Aula 20:</strong> Structs e registros</li>
+<li><strong>Aula 21:</strong> Ponteiros</li>
+<li><strong>Aula 22:</strong> Arquivos</li>
+</ul>
+</div>
+</div>
+<div class="hi" style="margin-top:18px;">
+<h3>📚 Para a Próxima Aula</h3>
+<p>
+1️⃣ <strong>Entregar:</strong> 2 exercícios no Google Classroom &nbsp;|&nbsp;
+2️⃣ <strong>Comparar:</strong> Implemente Fibonacci recursivo e iterativo — meça qual é mais rápido para n=40 &nbsp;|&nbsp;
+3️⃣ <strong>Pensar:</strong> Como armazenar e comparar palavras no computador? (prévia de strings!)
+</p>
+</div>
+<div class="two-col" style="margin-top:16px;">
+<div class="box">
+<h3>💬 Dúvidas?</h3>
+<p><strong>E-mail:</strong> tiago.galvao@unifil.br<br>
+<strong>Atendimento:</strong> Terças 18h–19h<br>
+<strong>Google Classroom:</strong> Fórum disponível</p>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+<div style="text-align:center;color:var(--unifil-gray);">
+<p style="font-size:1.3rem;font-weight:600;">Excelente aula! 🙏</p>
+<p style="font-size:0.9rem;margin-top:12px;font-style:italic;">
+"Para entender recursão, primeiro você precisa entender recursão. 🪞"
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav">
+<button class="nb" id="pb" onclick="ch(-1)" disabled>← Anterior</button>
+<span class="sc" id="sc">1 / 12</span>
+<button class="nb" id="nb" onclick="ch(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+let cur=0;
+const sl=document.querySelectorAll('.slide'), tot=sl.length;
+function show(n){
+  sl.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; sl[cur].classList.add('active');
+  document.getElementById('sc').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===tot-1;
+  document.getElementById('pf').style.width=((cur+1)/tot*100)+'%';
+  sl[cur].querySelectorAll('.box,.card,.hi,.big,.stat,.yel,.red,.grn,.ex,.tbl,.stack-wrap,.fractal-box')
+    .forEach((el,i)=>{el.style.animation='none';el.style.opacity='0';
+      setTimeout(()=>{el.style.animation=`fadeInUp .5s ease-out ${i*.07}s forwards`;},10);});
+}
+function ch(d){const n=cur+d;if(n>=0&&n<tot)show(n);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')ch(-1);if(e.key==='ArrowRight')ch(1);});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)ch(d>0?1:-1);});
+show(0);
+</script>
+</body>
+</html>

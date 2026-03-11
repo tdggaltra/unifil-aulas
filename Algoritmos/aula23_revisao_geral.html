@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 23 - Revisão Geral | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5; --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B; --code-bg: #282c34; --code-text: #abb2bf;
+        }
+        body { font-family: 'Segoe UI', sans-serif;
+               background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+               overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width:100%; height:100%; position:absolute; top:0; left:0;
+                 display:none; opacity:0; transform:translateX(100%);
+                 transition:all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); }
+        .slide.active { display:flex; opacity:1; transform:translateX(0); }
+        .slide-content { background:white; width:90%; max-width:1200px; height:90%;
+                         margin:auto; border-radius:20px;
+                         box-shadow:0 20px 60px rgba(0,0,0,0.3);
+                         display:flex; flex-direction:column; overflow:hidden; }
+        .slide-header { background:linear-gradient(135deg,var(--unifil-orange) 0%,var(--unifil-accent) 100%);
+                        padding:28px 50px; color:white; position:relative; flex-shrink:0; }
+        .slide-header::after { content:''; position:absolute; bottom:-20px; left:0; right:0; height:40px;
+                                background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                                clip-path:polygon(0 0,100% 0,100% 100%,0 0); }
+        .slide-header h1 { font-size:2.4rem; margin-bottom:8px; font-weight:700; }
+        .slide-header h2 { font-size:1.7rem; margin-bottom:8px; font-weight:600; }
+        .slide-header p  { font-size:1.05rem; opacity:0.95; }
+        .slide-body { flex:1; padding:55px 50px 36px; overflow-y:auto; }
+        .slide-body::-webkit-scrollbar { width:8px; }
+        .slide-body::-webkit-scrollbar-thumb { background:var(--unifil-orange); border-radius:10px; }
+        .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin:20px 0; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; margin:20px 0; }
+        .four-col  { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px; margin:20px 0; }
+        .box { background:var(--unifil-light); padding:22px; border-radius:15px;
+               border-left:5px solid var(--unifil-orange);
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .box h3 { color:var(--unifil-orange); margin-bottom:10px; font-size:1.2rem; }
+        .box p  { font-size:0.97rem; line-height:1.7; }
+        .box ul { list-style:none; }
+        .box li { padding:6px 0 6px 26px; position:relative; font-size:0.97rem; line-height:1.5; }
+        .box li::before { content:'→'; position:absolute; left:0; color:var(--unifil-orange); font-weight:bold; }
+        .hi { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+              color:white; padding:24px 30px; border-radius:15px; margin:20px 0;
+              animation:fadeInUp 0.6s ease-out 0.2s forwards; opacity:0; }
+        .hi h3 { margin-bottom:10px; font-size:1.35rem; }
+        .hi p  { font-size:1rem; line-height:1.7; }
+        .card { background:white; border:2px solid var(--unifil-orange); padding:20px;
+                border-radius:12px; margin:14px 0;
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .card h4 { color:var(--unifil-orange); margin-bottom:8px; font-size:1.15rem; }
+        .code { background:var(--code-bg); color:var(--code-text); padding:16px;
+                border-radius:10px; font-family:'Courier New',monospace;
+                font-size:0.82rem; margin:10px 0; line-height:1.65; white-space:pre;
+                overflow-x:auto; }
+        .kw  { color:#c678dd; font-weight:600; }
+        .fn  { color:#61afef; }
+        .str { color:#98c379; }
+        .cm  { color:#5c6370; font-style:italic; }
+        .nm  { color:#d19a66; }
+        .op  { color:#FF8C00; font-weight:600; }
+        .ret { color:#e06c75; font-weight:800; }
+        .tp  { color:#56b6c2; font-weight:700; }
+        .fd  { color:#e5c07b; font-weight:700; }
+        .ptr { color:#c678dd; font-weight:700; }
+        .big { background:linear-gradient(135deg,#4A90E2,#357ABD); color:white;
+               padding:26px 36px; border-radius:20px; font-size:1.45rem;
+               font-weight:600; text-align:center; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel { background:#fff3cd; border:3px solid #ffc107; border-radius:15px;
+               padding:22px; margin:18px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel h3 { color:#856404; margin-bottom:10px; font-size:1.2rem; }
+        .yel p  { font-size:0.97rem; line-height:1.7; color:#533f03; }
+        .red { background:#ffebee; border:3px solid #f44336; border-radius:15px;
+               padding:20px; margin:16px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .red h3 { color:#c62828; margin-bottom:10px; font-size:1.15rem; }
+        .red p, .red li { font-size:0.95rem; line-height:1.6; color:#b71c1c; }
+        .grn { background:#e8f5e9; border:3px solid #4caf50; border-radius:15px;
+               padding:22px; margin:18px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .grn h3 { color:#2e7d32; margin-bottom:10px; font-size:1.2rem; }
+        .grn p  { font-size:0.97rem; line-height:1.7; color:#1b5e20; }
+        .tbl { width:100%; border-collapse:collapse; margin:12px 0;
+               border-radius:10px; overflow:hidden;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tbl th { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                  color:white; padding:11px 16px; text-align:left; font-size:0.95rem; }
+        .tbl td { padding:9px 16px; border-bottom:1px solid var(--unifil-light); font-size:0.92rem; }
+        .tbl tr:hover td { background:var(--unifil-light); }
+
+        /* ── TIMELINE DE AULAS ── */
+        .timeline { margin:18px 0; animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tl-row { display:flex; align-items:stretch; margin:5px 0; gap:0; }
+        .tl-num { width:46px; min-width:46px; display:flex; align-items:center; justify-content:center;
+                  font-weight:800; font-size:0.85rem; border-radius:8px 0 0 8px;
+                  color:white; padding:10px 6px; }
+        .tl-body { flex:1; padding:9px 16px; border-radius:0 8px 8px 0; font-size:0.88rem; line-height:1.5; }
+        .tl-label { font-weight:700; }
+        .tl-sub   { font-size:0.8rem; opacity:0.85; margin-top:2px; }
+        .c1 { background:#e53935; }    .b1 { background:#ffebee; border-left:3px solid #e53935; color:#b71c1c; }
+        .c2 { background:#8e24aa; }    .b2 { background:#f3e5f5; border-left:3px solid #8e24aa; color:#4a148c; }
+        .c3 { background:#1976d2; }    .b3 { background:#e3f2fd; border-left:3px solid #1976d2; color:#0d47a1; }
+        .c4 { background:#388e3c; }    .b4 { background:#e8f5e9; border-left:3px solid #388e3c; color:#1b5e20; }
+        .c5 { background:#f57c00; }    .b5 { background:#fff3e0; border-left:3px solid #f57c00; color:#e65100; }
+        .c6 { background:#0097a7; }    .b6 { background:#e0f7fa; border-left:3px solid #0097a7; color:#006064; }
+
+        /* ── MINI QUIZ ── */
+        .quiz-q { background:#f0f4ff; border:2px solid #3f51b5; border-radius:12px;
+                  padding:18px 22px; margin:12px 0;
+                  animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .quiz-q p.q  { font-weight:700; color:#283593; font-size:1rem; margin-bottom:10px; }
+        .quiz-q .ans { background:#e8f5e9; border:1px solid #4caf50; border-radius:8px;
+                       padding:8px 14px; font-family:'Courier New',monospace; font-size:0.88rem;
+                       color:#1b5e20; margin-top:8px; display:none; }
+        .quiz-q button { background:var(--unifil-orange); color:white; border:none;
+                         padding:6px 16px; border-radius:20px; cursor:pointer;
+                         font-size:0.85rem; font-weight:600; margin-top:6px; }
+        .quiz-q button:hover { background:var(--unifil-accent); }
+
+        /* ── CHECKLIST ── */
+        .check-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+        .check-item { display:flex; align-items:flex-start; gap:10px; padding:10px 14px;
+                      border-radius:10px; font-size:0.9rem; line-height:1.5;
+                      animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .ci-ok  { background:#e8f5e9; border:1px solid #4caf50; }
+        .ci-warn{ background:#fff3cd; border:1px solid #ffc107; }
+        .ci-ico { font-size:1.2rem; flex-shrink:0; margin-top:1px; }
+
+        .lv { display:inline-block; padding:3px 10px; border-radius:20px;
+              font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+        .lv-e { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .lv-m { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .lv-h { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+        .lv-x { background:#e1bee7; color:#6a1b9a; border:1px solid #9c27b0; }
+
+        .nav { position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+               display:flex; gap:20px; align-items:center;
+               background:rgba(255,255,255,0.95); padding:15px 30px;
+               border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:1000; }
+        .nb  { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+               color:white; border:none; padding:12px 24px; border-radius:25px;
+               cursor:pointer; font-size:1rem; font-weight:600; transition:all .3s; }
+        .nb:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,140,0,.4); }
+        .nb:disabled { opacity:.5; cursor:not-allowed; }
+        .sc { font-weight:600; color:var(--unifil-dark); min-width:80px; text-align:center; font-size:1.1rem; }
+        .pb { position:fixed; top:0; left:0; width:100%; height:5px;
+              background:rgba(255,255,255,0.2); z-index:1001; }
+        .pf { height:100%; background:linear-gradient(90deg,var(--unifil-orange),var(--unifil-accent));
+              transition:width .3s; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        code { font-family:'Courier New',monospace; background:#f0f0f0;
+               padding:2px 6px; border-radius:4px; font-size:.9em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="pf"></div></div>
+<div class="presentation">
+
+<!-- SLIDE 1 — CAPA -->
+<div class="slide active">
+<div class="slide-content">
+<div class="slide-header">
+<h1>Lógica de Programação e Algoritmos</h1>
+<p>Aula 23 — Revisão Geral do Curso</p>
+</div>
+<div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<div style="font-size:4.5rem;margin-bottom:16px;">🗺️</div>
+<h2 style="font-size:2.3rem;color:var(--unifil-orange);margin-bottom:14px;">22 Aulas — Uma Jornada Completa!</h2>
+<p style="font-size:1.15rem;color:var(--unifil-gray);max-width:860px;margin-bottom:26px;">
+  De "o que é um algoritmo?" até sistemas com <strong>structs, ponteiros e arquivos</strong>.
+  Esta aula consolida toda a trilha percorrida, identifica os pontos de atenção
+  para o projeto final e serve como guia de estudo para a avaliação.
+</p>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;width:100%;max-width:1060px;margin-bottom:24px;">
+  <div style="background:#ffebee;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:1.4rem;">🧠</div><div style="font-size:0.78rem;font-weight:700;color:#c62828;margin-top:4px;">Fundamentos</div><div style="font-size:0.7rem;color:#999;">Aulas 01–04</div>
+  </div>
+  <div style="background:#f3e5f5;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:1.4rem;">🔀</div><div style="font-size:0.78rem;font-weight:700;color:#6a1b9a;margin-top:4px;">Decisão</div><div style="font-size:0.7rem;color:#999;">Aulas 05–07</div>
+  </div>
+  <div style="background:#e3f2fd;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:1.4rem;">🔁</div><div style="font-size:0.78rem;font-weight:700;color:#1565c0;margin-top:4px;">Repetição</div><div style="font-size:0.7rem;color:#999;">Aulas 08–13</div>
+  </div>
+  <div style="background:#e8f5e9;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:1.4rem;">📦</div><div style="font-size:0.78rem;font-weight:700;color:#2e7d32;margin-top:4px;">Vetores</div><div style="font-size:0.7rem;color:#999;">Aulas 14–16</div>
+  </div>
+  <div style="background:#fff3e0;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:1.4rem;">⚙️</div><div style="font-size:0.78rem;font-weight:700;color:#e65100;margin-top:4px;">Funções</div><div style="font-size:0.7rem;color:#999;">Aulas 17–18</div>
+  </div>
+  <div style="background:#e0f7fa;border-radius:10px;padding:12px 6px;text-align:center;">
+    <div style="font-size:1.4rem;">🗂️</div><div style="font-size:0.78rem;font-weight:700;color:#006064;margin-top:4px;">Dados/Arq.</div><div style="font-size:0.7rem;color:#999;">Aulas 19–22</div>
+  </div>
+</div>
+<div style="font-size:1.05rem;color:var(--unifil-gray);">
+  <strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2 — TRILHA COMPLETA (MAPA) -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🗺️ Mapa das 22 Aulas</h2>
+<p>Toda a trilha de um semestre — de algoritmos a sistemas com persistência</p>
+</div>
+<div class="slide-body">
+<div class="timeline">
+  <div class="tl-row"><div class="tl-num c1">01</div><div class="tl-body b1"><span class="tl-label">Introdução à Lógica</span><div class="tl-sub">Algoritmo, pseudocódigo, fluxograma, problema → solução</div></div></div>
+  <div class="tl-row"><div class="tl-num c1">02</div><div class="tl-body b1"><span class="tl-label">Representação de Algoritmos</span><div class="tl-sub">Portugol, C, Java — mesma lógica, diferentes sintaxes</div></div></div>
+  <div class="tl-row"><div class="tl-num c1">03</div><div class="tl-body b1"><span class="tl-label">Tipos de Dados</span><div class="tl-sub">inteiro, real, lógico, caractere — tamanho e limite de cada tipo</div></div></div>
+  <div class="tl-row"><div class="tl-num c1">04</div><div class="tl-body b1"><span class="tl-label">Variáveis, Constantes e Operadores</span><div class="tl-sub">declaração, escopo, aritméticos, relacionais, lógicos, precedência</div></div></div>
+  <div class="tl-row"><div class="tl-num c2">05</div><div class="tl-body b2"><span class="tl-label">Estruturas de Decisão — se/senão</span><div class="tl-sub">if/else aninhado, condições compostas</div></div></div>
+  <div class="tl-row"><div class="tl-num c2">06</div><div class="tl-body b2"><span class="tl-label">Decisão Múltipla — switch/case</span><div class="tl-sub">quando usar switch vs. if-else em cascata</div></div></div>
+  <div class="tl-row"><div class="tl-num c2">07</div><div class="tl-body b2"><span class="tl-label">Exercícios de Decisão</span><div class="tl-sub">calculadora, classificação, menu interativo</div></div></div>
+  <div class="tl-row"><div class="tl-num c3">08</div><div class="tl-body b3"><span class="tl-label">Laço while</span><div class="tl-sub">teste no início, sentinela, acumuladores</div></div></div>
+  <div class="tl-row"><div class="tl-num c3">09</div><div class="tl-body b3"><span class="tl-label">Laço do-while</span><div class="tl-sub">teste no fim — garante ao menos uma execução</div></div></div>
+  <div class="tl-row"><div class="tl-num c3">10</div><div class="tl-body b3"><span class="tl-label">Laço for</span><div class="tl-sub">contador explícito, tabelas, progressões</div></div></div>
+  <div class="tl-row"><div class="tl-num c3">11–12</div><div class="tl-body b3"><span class="tl-label">Exercícios e Laços Aninhados</span><div class="tl-sub">padrões, triângulos, multiplicação, Bubble Sort manual</div></div></div>
+  <div class="tl-row"><div class="tl-num c3">13</div><div class="tl-body b3"><span class="tl-label">break e continue</span><div class="tl-sub">interromper e pular iterações; uso com flag em laços aninhados</div></div></div>
+  <div class="tl-row"><div class="tl-num c4">14–15</div><div class="tl-body b4"><span class="tl-label">Vetores (Arrays)</span><div class="tl-sub">declaração, percurso, busca, Bubble Sort, histograma</div></div></div>
+  <div class="tl-row"><div class="tl-num c4">16</div><div class="tl-body b4"><span class="tl-label">Matrizes</span><div class="tl-sub">dois índices, diagonal, transposta, jogo da velha</div></div></div>
+  <div class="tl-row"><div class="tl-num c5">17</div><div class="tl-body b5"><span class="tl-label">Funções e Procedimentos</span><div class="tl-sub">DRY, parâmetros, retorno, valor vs. referência, escopo</div></div></div>
+  <div class="tl-row"><div class="tl-num c5">18</div><div class="tl-body b5"><span class="tl-label">Recursividade</span><div class="tl-sub">caso base, fatorial, Fibonacci, busca binária, Hanói</div></div></div>
+  <div class="tl-row"><div class="tl-num c6">19</div><div class="tl-body b6"><span class="tl-label">Strings</span><div class="tl-sub">vetor de char + '\0', string.h, ctype.h, dois ponteiros</div></div></div>
+  <div class="tl-row"><div class="tl-num c6">20</div><div class="tl-body b6"><span class="tl-label">Structs e Registros</span><div class="tl-sub">typedef, . vs. ->, aninhamento, enum, vetor de structs</div></div></div>
+  <div class="tl-row"><div class="tl-num c6">21</div><div class="tl-body b6"><span class="tl-label">Ponteiros</span><div class="tl-sub">&amp;, *, NULL, aritmética, malloc/free, lista encadeada</div></div></div>
+  <div class="tl-row"><div class="tl-num c6">22</div><div class="tl-body b6"><span class="tl-label">Arquivos</span><div class="tl-sub">fopen, fprintf/fscanf, fwrite/fread, modos r/w/a/rb/wb</div></div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3 — REVISÃO: FUNDAMENTOS + DECISÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🧠 Revisão — Fundamentos e Decisão (Aulas 01–07)</h2>
+<p>Tipos, variáveis, operadores e estruturas de controle condicional</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>📦 Tipos de dados em C</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">char</span>   c  = <span class="str">'A'</span>;       <span class="cm">← 1 byte, -128..127</span>
+<span class="kw">int</span>    n  = <span class="nm">42</span>;        <span class="cm">← 4 bytes, ~±2 bilhões</span>
+<span class="kw">float</span>  f  = <span class="nm">3.14f</span>;     <span class="cm">← 4 bytes, ~7 dígitos</span>
+<span class="kw">double</span> d  = <span class="nm">3.14159</span>;   <span class="cm">← 8 bytes, ~15 dígitos</span>
+<span class="kw">long</span>   l  = <span class="nm">9999999L</span>;  <span class="cm">← 8 bytes</span>
+
+<span class="cm">// Constantes</span>
+<span class="kw">#define</span> PI    <span class="nm">3.14159</span>
+<span class="kw">const int</span> MAX = <span class="nm">100</span>;</div>
+</div>
+<div class="card">
+<h4>🔀 Decisão — pontos-chave</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// if-else aninhado</span>
+<span class="kw">if</span>(nota &gt;= <span class="nm">7</span>)      <span class="fn">puts</span>(<span class="str">"Aprovado"</span>);
+<span class="kw">else if</span>(nota &gt;= <span class="nm">5</span>) <span class="fn">puts</span>(<span class="str">"Recuperação"</span>);
+<span class="kw">else</span>               <span class="fn">puts</span>(<span class="str">"Reprovado"</span>);
+
+<span class="cm">// switch — só inteiros/chars</span>
+<span class="kw">switch</span>(opcao) {
+  <span class="kw">case</span> <span class="nm">1</span>: <span class="fn">cadastrar</span>(); <span class="kw">break</span>; <span class="cm">← break obrigatório!</span>
+  <span class="kw">case</span> <span class="nm">2</span>: <span class="fn">listar</span>();    <span class="kw">break</span>;
+  <span class="kw">default</span>:<span class="fn">puts</span>(<span class="str">"Inválido"</span>);
+}</div>
+</div>
+</div>
+<div>
+<table class="tbl" style="margin-top:0;">
+<thead><tr><th>Operadores</th><th>Exemplos</th><th>Atenção</th></tr></thead>
+<tbody>
+<tr><td><strong>Aritméticos</strong></td><td><code>+ - * / %</code></td><td><code>/</code> inteiro trunca: <code>7/2=3</code></td></tr>
+<tr><td><strong>Relacionais</strong></td><td><code>== != &lt; &gt; &lt;= &gt;=</code></td><td><code>==</code> compara, <code>=</code> atribui!</td></tr>
+<tr><td><strong>Lógicos</strong></td><td><code>&amp;&amp; || !</code></td><td>curto-circuito em <code>&amp;&amp;</code> e <code>||</code></td></tr>
+<tr><td><strong>Incremento</strong></td><td><code>++ --</code></td><td><code>i++</code> pós, <code>++i</code> pré</td></tr>
+<tr><td><strong>Ternário</strong></td><td><code>a ? b : c</code></td><td>substitui if-else simples</td></tr>
+</tbody>
+</table>
+<div class="yel" style="margin-top:14px;">
+<h3>⚠️ Armadilhas clássicas</h3>
+<p>
+  <code>if(x = 5)</code> — atribuição dentro de if (sempre true)! Use <code>if(x == 5)</code>.<br>
+  <code>7 / 2</code> → <code>3</code> (inteiro). Para float: <code>7.0 / 2</code> → <code>3.5</code>.<br>
+  <code>switch</code> sem <code>break</code> → <em>fall-through</em> (executa todos os casos abaixo)!
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4 — REVISÃO: REPETIÇÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🔁 Revisão — Estruturas de Repetição (Aulas 08–13)</h2>
+<p>while, do-while, for, break, continue — quando usar cada um</p>
+</div>
+<div class="slide-body">
+<div class="three-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 while — teste no início</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// Pode não executar nenhuma vez</span>
+<span class="kw">while</span>(condicao) {
+  <span class="cm">// corpo</span>
+}
+
+<span class="cm">// Sentinela clássico:</span>
+<span class="kw">int</span> v, soma=<span class="nm">0</span>, n=<span class="nm">0</span>;
+<span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;v);
+<span class="kw">while</span>(v != <span class="nm">-1</span>) {
+  soma += v; n<span class="op">++</span>;
+  <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;v);
+}</div>
+</div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 do-while — teste no fim</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// Executa ao menos UMA vez</span>
+<span class="kw">do</span> {
+  <span class="cm">// corpo</span>
+} <span class="kw">while</span>(condicao);
+
+<span class="cm">// Menu sempre exibe ao menos 1x:</span>
+<span class="kw">int</span> op;
+<span class="kw">do</span> {
+  <span class="fn">exibirMenu</span>();
+  <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;op);
+  <span class="fn">executar</span>(op);
+} <span class="kw">while</span>(op != <span class="nm">0</span>);</div>
+</div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 for — contador explícito</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// init; condição; incremento</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>) {
+  <span class="cm">// corpo</span>
+}
+
+<span class="cm">// Decrescente:</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=n-<span class="nm">1</span>; i&gt;=<span class="nm">0</span>; i<span class="op">--</span>)
+
+<span class="cm">// Passo 2:</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i+=<span class="nm">2</span>)</div>
+</div>
+</div>
+<div class="two-col" style="margin-top:4px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 break e continue</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// break — sai do laço imediatamente</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)
+  <span class="kw">if</span>(v[i] == alvo) { pos=i; <span class="kw">break</span>; }
+
+<span class="cm">// continue — pula para próxima iteração</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>) {
+  <span class="kw">if</span>(v[i] &lt; <span class="nm">0</span>) <span class="kw">continue</span>; <span class="cm">← pula negativos</span>
+  soma += v[i];
+}</div>
+</div>
+</div>
+<div>
+<table class="tbl" style="margin-top:0;">
+<thead><tr><th>Laço</th><th>Quando usar</th></tr></thead>
+<tbody>
+<tr><td><code>while</code></td><td>Qtd de repetições desconhecida, pode ser 0</td></tr>
+<tr><td><code>do-while</code></td><td>Menu, validação — garante ao menos 1 execução</td></tr>
+<tr><td><code>for</code></td><td>Qtd conhecida, contador claro e explícito</td></tr>
+<tr><td><code>break</code></td><td>Sair cedo (busca encontrada, condição excepcional)</td></tr>
+<tr><td><code>continue</code></td><td>Pular item inválido sem sair do laço</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5 — REVISÃO: VETORES E MATRIZES -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📦 Revisão — Vetores e Matrizes (Aulas 14–16)</h2>
+<p>Arrays unidimensionais e bidimensionais — estruturas fundamentais de dados</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Vetores — operações essenciais</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">int</span> v[<span class="nm">5</span>] = {<span class="nm">4</span>,<span class="nm">2</span>,<span class="nm">7</span>,<span class="nm">1</span>,<span class="nm">9</span>};
+
+<span class="cm">// Percorrer</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">5</span>; i<span class="op">++</span>) <span class="fn">printf</span>(<span class="str">"%d "</span>,v[i]);
+
+<span class="cm">// Maior/menor</span>
+<span class="kw">int</span> max=v[<span class="nm">0</span>];
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">1</span>;i&lt;<span class="nm">5</span>;i<span class="op">++</span>) <span class="kw">if</span>(v[i]&gt;max) max=v[i];
+
+<span class="cm">// Busca linear — O(n)</span>
+<span class="kw">int</span> pos=-<span class="nm">1</span>;
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;<span class="nm">5</span>;i<span class="op">++</span>)
+  <span class="kw">if</span>(v[i]==alvo){pos=i;<span class="kw">break</span>;}
+
+<span class="cm">// Bubble Sort — O(n²)</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;<span class="nm">4</span>;i<span class="op">++</span>)
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>;j&lt;<span class="nm">4</span>-i;j<span class="op">++</span>)
+    <span class="kw">if</span>(v[j]&gt;v[j+<span class="nm">1</span>]){
+      <span class="kw">int</span> t=v[j];v[j]=v[j+<span class="nm">1</span>];v[j+<span class="nm">1</span>]=t;
+    }</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Matrizes — percurso e operações</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">int</span> m[<span class="nm">3</span>][<span class="nm">3</span>] = {
+  {<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>}, {<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>}, {<span class="nm">7</span>,<span class="nm">8</span>,<span class="nm">9</span>}
+};
+
+<span class="cm">// Percurso: linha externa, coluna interna</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;<span class="nm">3</span>;i<span class="op">++</span>) {
+  <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>;j&lt;<span class="nm">3</span>;j<span class="op">++</span>)
+    <span class="fn">printf</span>(<span class="str">"%3d"</span>,m[i][j]);
+  <span class="fn">printf</span>(<span class="str">"\n"</span>);
+}
+
+<span class="cm">// Diagonal principal: i==j</span>
+<span class="cm">// Triângulo superior: j > i</span>
+<span class="cm">// Transposta: T[j][i] = A[i][j]</span>
+
+<span class="cm">// Soma de linha i:</span>
+<span class="kw">int</span> soma=<span class="nm">0</span>;
+<span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>;j&lt;<span class="nm">3</span>;j<span class="op">++</span>) soma+=m[i][j];</div>
+</div>
+<div class="grn" style="margin-top:10px; margin-bottom:0;">
+<h3>✅ Regra de ouro dos arrays</h3>
+<p>Índice vai de <strong>0 a N-1</strong> em C/Java. Em Portugol, de <strong>1 a N</strong>. Acessar fora desse intervalo é <em>undefined behavior</em> — o programa pode funcionar, travar ou se comportar de forma imprevisível.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6 — REVISÃO: FUNÇÕES E RECURSIVIDADE -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>⚙️ Revisão — Funções e Recursividade (Aulas 17–18)</h2>
+<p>DRY, passagem por valor vs. referência, caso base obrigatório</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Anatomia de uma função</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// tipo_retorno nome(parâmetros)</span>
+<span class="kw">float</span> <span class="fn">media</span>(<span class="kw">float</span> v[], <span class="kw">int</span> n) {
+  <span class="kw">float</span> soma = <span class="nm">0</span>;
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;n;i<span class="op">++</span>) soma+=v[i];
+  <span class="ret">return</span> soma / n;
+}
+
+<span class="cm">// Por VALOR — cópia, original seguro</span>
+<span class="kw">void</span> <span class="fn">dobrar</span>(<span class="kw">int</span> x) { x *=<span class="nm">2</span>; } <span class="cm">← x local!</span>
+
+<span class="cm">// Por REFERÊNCIA — modifica original</span>
+<span class="kw">void</span> <span class="fn">dobrar</span>(<span class="kw">int</span> *x) { *x *=<span class="nm">2</span>; } <span class="cm">← ✅</span>
+
+<span class="cm">// Vetores: SEMPRE por referência</span>
+<span class="kw">void</span> <span class="fn">zerar</span>(<span class="kw">int</span> v[], <span class="kw">int</span> n) {
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;n;i<span class="op">++</span>) v[i]=<span class="nm">0</span>;
+}</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 Recursividade — 2 ingredientes</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// 1) CASO BASE — para a recursão</span>
+<span class="cm">// 2) CHAMADA RECURSIVA — problema menor</span>
+
+<span class="kw">int</span> <span class="fn">fatorial</span>(<span class="kw">int</span> n) {
+  <span class="kw">if</span>(n &lt;= <span class="nm">1</span>) <span class="ret">return</span> <span class="nm">1</span>;  <span class="cm">← caso base</span>
+  <span class="ret">return</span> n * <span class="fn">fatorial</span>(n-<span class="nm">1</span>); <span class="cm">← menor</span>
+}
+<span class="cm">// fatorial(4) = 4×3×2×1 = 24</span>
+
+<span class="kw">int</span> <span class="fn">buscaBinaria</span>(<span class="kw">int</span> v[], <span class="kw">int</span> ini,
+                  <span class="kw">int</span> fim, <span class="kw">int</span> alvo) {
+  <span class="kw">if</span>(ini &gt; fim) <span class="ret">return</span> -<span class="nm">1</span>;  <span class="cm">← base</span>
+  <span class="kw">int</span> meio = (ini+fim)/<span class="nm">2</span>;
+  <span class="kw">if</span>(v[meio]==alvo) <span class="ret">return</span> meio;
+  <span class="kw">if</span>(v[meio]&lt;alvo)
+    <span class="ret">return</span> <span class="fn">buscaBinaria</span>(v,meio+<span class="nm">1</span>,fim,alvo);
+  <span class="ret">return</span> <span class="fn">buscaBinaria</span>(v,ini,meio-<span class="nm">1</span>,alvo);
+}</div>
+</div>
+</div>
+</div>
+<div class="two-col" style="margin-top:6px;">
+<div class="yel" style="margin-top:0;">
+<h3>⚠️ Recursão sem caso base = stack overflow</h3>
+<p>Sem caso base a função chama a si mesma infinitamente até estourar a pilha. Sempre pergunte: "o que <strong>para</strong> a recursão?"</p>
+</div>
+<div class="grn" style="margin-top:0;">
+<h3>✅ Iterativo vs. Recursivo</h3>
+<p>Recursivo é elegante para problemas naturalmente recursivos (árvores, dividir e conquistar). Iterativo é mais eficiente em memória. Se há solução iterativa simples, prefira-a.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7 — REVISÃO: STRINGS E STRUCTS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🔤🗂️ Revisão — Strings e Structs (Aulas 19–20)</h2>
+<p>Texto como vetor de char, e tipos compostos com campos heterogêneos</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔤 Strings — resumo vital</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// String = char[] terminado com '\0'</span>
+<span class="kw">char</span> nome[<span class="nm">20</span>] = <span class="str">"Tiago"</span>; <span class="cm">← 5 chars + '\0'</span>
+
+<span class="cm">// Leitura (fgets lê com espaços)</span>
+<span class="fn">fgets</span>(nome, <span class="nm">20</span>, stdin);
+<span class="cm">// Remove '\n' do fgets:</span>
+nome[<span class="fn">strcspn</span>(nome,<span class="str">"\n"</span>)]=<span class="nm">0</span>;
+
+<span class="cm">// Funções essenciais</span>
+<span class="fn">strlen</span>(s)          <span class="cm">← comprimento sem '\0'</span>
+<span class="fn">strcpy</span>(dst, src)   <span class="cm">← cópia (não use =!)</span>
+<span class="fn">strcat</span>(dst, src)   <span class="cm">← concatena</span>
+<span class="fn">strcmp</span>(s1, s2)     <span class="cm">← 0 se iguais (não use ==!)</span>
+<span class="fn">strstr</span>(s, sub)     <span class="cm">← acha substring</span>
+<span class="fn">toupper</span>/<span class="fn">tolower</span>   <span class="cm">← converte maiúscula</span>
+<span class="fn">isalpha</span>/<span class="fn">isdigit</span>   <span class="cm">← testa caractere</span></div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🗂️ Structs — resumo vital</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">typedef struct</span> {
+  <span class="kw">char</span>  <span class="fd">nome</span>[<span class="nm">50</span>];
+  <span class="kw">int</span>   <span class="fd">matricula</span>;
+  <span class="kw">float</span> <span class="fd">media</span>;
+} <span class="tp">Aluno</span>;
+
+<span class="tp">Aluno</span> a1 = {<span class="str">"Maria"</span>, <span class="nm">2023001</span>, <span class="nm">8.5f</span>};
+
+<span class="cm">// Acesso: . para variável, -> para ponteiro</span>
+<span class="fn">printf</span>(<span class="str">"%s"</span>, a1.<span class="fd">nome</span>);
+<span class="tp">Aluno</span> *p = &amp;a1;
+<span class="fn">printf</span>(<span class="str">"%s"</span>, p-><span class="fd">nome</span>);
+
+<span class="cm">// Copiar struct inteira com =</span>
+<span class="tp">Aluno</span> a2 = a1;   <span class="cm">← copia todos os campos!</span>
+
+<span class="cm">// Vetor de structs: array[i].campo</span>
+<span class="tp">Aluno</span> turma[<span class="nm">30</span>]; <span class="kw">int</span> n=<span class="nm">0</span>;
+<span class="fn">strcpy</span>(turma[<span class="nm">0</span>].<span class="fd">nome</span>, <span class="str">"João"</span>); n<span class="op">++</span>;</div>
+</div>
+</div>
+</div>
+<div class="two-col" style="margin-top:8px;">
+<div class="red" style="margin-top:0;">
+<h3>❌ Os 4 erros mais comuns</h3>
+<p>
+  <strong>String:</strong> usar <code>==</code> → use <code>strcmp()</code> &nbsp;|&nbsp; usar <code>=</code> → use <code>strcpy()</code><br>
+  <strong>Struct:</strong> usar <code>.</code> com ponteiro → use <code>-></code> &nbsp;|&nbsp; percorrer até o tamanho máximo → percorra até <code>n</code>
+</p>
+</div>
+<div class="grn" style="margin-top:0;">
+<h3>✅ enum melhora a legibilidade</h3>
+<p>Use <code>enum</code> para campos com valores fixos: <code>APROVADO/REPROVADO</code>, <code>ATIVO/INATIVO</code>, <code>AMIGO/TRABALHO</code>. Elimina números mágicos e ativa avisos do compilador.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8 — REVISÃO: PONTEIROS E ARQUIVOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📍💾 Revisão — Ponteiros e Arquivos (Aulas 21–22)</h2>
+<p>Endereços de memória, alocação dinâmica e persistência em disco</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>📍 Ponteiros — resumo vital</h4>
+<div class="code" style="font-size:0.81rem;"><span class="kw">int</span> x = <span class="nm">42</span>;
+<span class="kw">int</span> *<span class="ptr">p</span> = &amp;x;    <span class="cm">← p guarda endereço de x</span>
+*<span class="ptr">p</span> = <span class="nm">99</span>;       <span class="cm">← modifica x via p</span>
+
+<span class="cm">// Array e ponteiros são equivalentes</span>
+<span class="cm">// v[i] == *(v+i)</span>
+
+<span class="cm">// Ponteiro NULL — sem alvo</span>
+<span class="kw">int</span> *<span class="ptr">q</span> = NULL;
+<span class="kw">if</span>(<span class="ptr">q</span>) *<span class="ptr">q</span> = <span class="nm">1</span>; <span class="cm">← só usa se não for NULL</span>
+
+<span class="cm">// Alocação dinâmica</span>
+<span class="kw">int</span> *<span class="ptr">v</span> = (<span class="kw">int</span>*)<span class="fn">malloc</span>(n*<span class="kw">sizeof</span>(<span class="kw">int</span>));
+<span class="kw">if</span>(!<span class="ptr">v</span>) { <span class="fn">puts</span>(<span class="str">"Sem mem!"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+<span class="cm">// ... usa v[0]..v[n-1] ...</span>
+<span class="fn">free</span>(<span class="ptr">v</span>); <span class="ptr">v</span>=NULL; <span class="cm">← SEMPRE liberar!</span></div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>💾 Arquivos — resumo vital</h4>
+<div class="code" style="font-size:0.81rem;"><span class="cm">// Ciclo obrigatório: fopen → operar → fclose</span>
+<span class="tp">FILE</span> *<span class="ptr">fp</span> = <span class="fn">fopen</span>(<span class="str">"dados.txt"</span>, <span class="str">"w"</span>);
+<span class="kw">if</span>(!<span class="ptr">fp</span>) { <span class="fn">perror</span>(<span class="str">"Erro"</span>); <span class="ret">return</span> <span class="nm">1</span>; }
+<span class="fn">fprintf</span>(<span class="ptr">fp</span>, <span class="str">"Nome,Nota\nMaria,8.5\n"</span>);
+<span class="fn">fclose</span>(<span class="ptr">fp</span>);
+
+<span class="cm">// Binário — structs inteiras</span>
+<span class="tp">FILE</span> *<span class="ptr">fb</span> = <span class="fn">fopen</span>(<span class="str">"dados.dat"</span>, <span class="str">"wb"</span>);
+<span class="fn">fwrite</span>(&amp;n,    <span class="kw">sizeof</span>(<span class="kw">int</span>),   <span class="nm">1</span>, <span class="ptr">fb</span>);
+<span class="fn">fwrite</span>(turma, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), n, <span class="ptr">fb</span>);
+<span class="fn">fclose</span>(<span class="ptr">fb</span>);
+
+<span class="cm">// Modos: "r" lê, "w" cria/apaga,</span>
+<span class="cm">//        "a" adiciona, "rb"/"wb" binário</span></div>
+</div>
+</div>
+</div>
+<div class="two-col" style="margin-top:8px;">
+<div class="red" style="margin-top:0;">
+<h3>❌ Proibições em ponteiros</h3>
+<p>
+  Usar ponteiro não inicializado (lixo) → crash &nbsp;|&nbsp;
+  <code>*p</code> quando <code>p == NULL</code> → Segfault &nbsp;|&nbsp;
+  <code>malloc</code> sem <code>free</code> → memory leak &nbsp;|&nbsp;
+  Retornar endereço de variável local → undefined behavior
+</p>
+</div>
+<div class="red" style="margin-top:0;">
+<h3>❌ Proibições em arquivos</h3>
+<p>
+  Usar <code>fp</code> sem verificar <code>NULL</code> → crash &nbsp;|&nbsp;
+  Esquecer <code>fclose</code> → dados ficam no buffer, não vão ao disco &nbsp;|&nbsp;
+  <code>"w"</code> em arquivo existente → apaga tudo sem aviso &nbsp;|&nbsp;
+  <code>fwrite</code> de struct em modo texto → corrupção
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9 — MINI-QUIZ INTERATIVO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🧪 Mini-Quiz — Teste Seus Conhecimentos!</h2>
+<p>Clique em "Ver resposta" depois de pensar — sem olhar o código!</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:12px;">
+<div>
+<div class="quiz-q">
+<p class="q">Q1. Qual a saída? <code>int x=7, y=2; printf("%d %d", x/y, x%y);</code></p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans">3 1 — divisão inteira trunca: 7÷2=3 resto 1.</div>
+</div>
+<div class="quiz-q">
+<p class="q">Q2. O que faz falta neste código?<br><code>for(int i=0; i&lt;5; i++) printf("%d", v[i]);</code><br>O vetor tem 5 elementos, mas o código imprime lixo.</p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans">O vetor não foi inicializado. Declarar <code>int v[5]</code> sem inicializar deixa lixo na memória. Use <code>= {0}</code> ou preencha antes.</div>
+</div>
+<div class="quiz-q">
+<p class="q">Q3. Por que <code>if(nome == "Maria")</code> nunca funciona em C?</p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans">Em C, <code>==</code> compara os <strong>endereços</strong> dos dois ponteiros, não o conteúdo. Use sempre <code>strcmp(nome, "Maria") == 0</code>.</div>
+</div>
+<div class="quiz-q">
+<p class="q">Q4. Quantas vezes executa?<br><code>int i=1; while(i&lt;=10) { i*=2; }</code></p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans">4 vezes: i=1→2→4→8→16 (sai quando 16&gt;10). Ou seja: iterações com i=1,2,4,8.</div>
+</div>
+</div>
+<div>
+<div class="quiz-q">
+<p class="q">Q5. Qual o erro? <code>char s[5] = "hello";</code></p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans">"hello" tem 5 chars + 1 '\0' = 6 bytes, mas o array só tem 5. Correto: <code>char s[6]</code> ou <code>char s[]</code>.</div>
+</div>
+<div class="quiz-q">
+<p class="q">Q6. O que fatorial(0) retorna com a implementação da aula?</p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans">1. O caso base é <code>if(n &lt;= 1) return 1</code>, então fatorial(0)=1, o que é matematicamente correto (0! = 1).</div>
+</div>
+<div class="quiz-q">
+<p class="q">Q7. Qual a diferença entre <code>"w"</code> e <code>"a"</code> no fopen?</p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans"><code>"w"</code> apaga o conteúdo existente e recomeça do zero. <code>"a"</code> (append) adiciona ao final sem apagar o que já existe.</div>
+</div>
+<div class="quiz-q">
+<p class="q">Q8. Qual o valor de <code>*p</code> após: <code>int x=5, *p=&amp;x; x=10;</code></p>
+<button onclick="toggleAns(this)">Ver resposta</button>
+<div class="ans">10. p aponta para x. Quando x muda, *p reflete a mudança, pois ambos apontam para o mesmo endereço de memória.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 10 — INTEGRAÇÃO: PROGRAMA COMPLETO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🔗 Integração — Tudo Junto em Um Sistema</h2>
+<p>Como os 22 temas se conectam em um programa real de cadastro com persistência</p>
+</div>
+<div class="slide-body">
+<div class="big" style="font-size:1.2rem;padding:18px 28px;margin-top:10px;">Sistema de Cadastro Acadêmico — todas as peças em seu lugar! 🎓</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🏗️ Arquitetura do sistema</h4>
+<div class="code" style="font-size:0.79rem;"><span class="cm">// ── TIPOS (Aulas 03, 20, 08) ──</span>
+<span class="kw">typedef enum</span> {REPROVADO,RECUP,APROVADO} <span class="tp">Sit</span>;
+<span class="kw">typedef struct</span> {
+  <span class="kw">char</span>  <span class="fd">nome</span>[<span class="nm">50</span>];         <span class="cm">← Aula 19: string</span>
+  <span class="kw">int</span>   <span class="fd">matricula</span>;
+  <span class="kw">float</span> <span class="fd">notas</span>[<span class="nm">4</span>];         <span class="cm">← Aula 14: vetor</span>
+  <span class="kw">float</span> <span class="fd">media</span>;
+  <span class="tp">Sit</span>   <span class="fd">situacao</span>;          <span class="cm">← Aula 20: enum</span>
+} <span class="tp">Aluno</span>;
+
+<span class="cm">// ── DADOS ──</span>
+<span class="tp">Aluno</span> turma[<span class="nm">100</span>];          <span class="cm">← Aula 15: vetor structs</span>
+<span class="kw">int</span>   n = <span class="nm">0</span>;
+
+<span class="cm">// ── FUNÇÕES (Aula 17) ──</span>
+<span class="kw">float</span> <span class="fn">calcMedia</span>(<span class="kw">float</span> ns[], <span class="kw">int</span> q); <span class="cm">← recebe vetor</span>
+<span class="tp">Sit</span>   <span class="fn">situacao</span>(<span class="kw">float</span> m);             <span class="cm">← decisão Aula 05</span>
+<span class="kw">int</span>   <span class="fn">buscar</span>(<span class="kw">int</span> mat);              <span class="cm">← busca Aula 14</span>
+<span class="kw">void</span>  <span class="fn">ordenar</span>();                     <span class="cm">← sort Aula 15</span>
+<span class="kw">void</span>  <span class="fn">carregar</span>();                    <span class="cm">← fread Aula 22</span>
+<span class="kw">void</span>  <span class="fn">salvar</span>();                      <span class="cm">← fwrite Aula 22</span>
+<span class="kw">void</span>  <span class="fn">exportarCSV</span>();                 <span class="cm">← fprintf Aula 22</span>
+
+<span class="cm">// ── MAIN ──</span>
+<span class="kw">int</span> <span class="fn">main</span>() {
+  <span class="fn">carregar</span>();         <span class="cm">← persistência</span>
+  <span class="kw">int</span> op;
+  <span class="kw">do</span> {               <span class="cm">← do-while Aula 09</span>
+    <span class="fn">menu</span>(); <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;op);
+    <span class="kw">switch</span>(op){...}  <span class="cm">← switch Aula 06</span>
+  } <span class="kw">while</span>(op!=<span class="nm">0</span>);
+  <span class="fn">salvar</span>();
+}</div>
+</div>
+<div>
+<div class="box" style="margin-top:0;">
+<h3>🧩 Cada aula contribui</h3>
+<ul>
+<li><strong>Aulas 01-04:</strong> Base conceitual — tipos, variáveis</li>
+<li><strong>Aulas 05-07:</strong> <code>if</code>/<code>switch</code> para situação e menu</li>
+<li><strong>Aulas 08-10:</strong> <code>do-while</code> no menu, <code>for</code> nos vetores</li>
+<li><strong>Aulas 11-13:</strong> Laços aninhados para matrizes de notas</li>
+<li><strong>Aulas 14-16:</strong> Vetor de notas e vetor de alunos</li>
+<li><strong>Aula 17:</strong> Modularização — cada função faz uma coisa</li>
+<li><strong>Aula 18:</strong> Ordenação recursiva (merge sort)</li>
+<li><strong>Aula 19:</strong> Nome do aluno como string manipulável</li>
+<li><strong>Aula 20:</strong> Struct <code>Aluno</code> agrupa todos os campos</li>
+<li><strong>Aula 21:</strong> Ponteiros para passagem e busca eficiente</li>
+<li><strong>Aula 22:</strong> Arquivo <code>.dat</code> persiste entre execuções</li>
+</ul>
+</div>
+<div class="hi" style="margin-top:14px; margin-bottom:0;">
+<h3>🎯 Projeto final = este sistema</h3>
+<p>O projeto integra <strong>todos os blocos</strong>: struct bem modelada, funções organizadas, persistência em arquivo, menu com do-while e relatório CSV. Não é sobre inventar — é sobre conectar bem o que você já sabe!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 11 — CHECKLIST DO PROJETO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>✅ Checklist para o Projeto Final</h2>
+<p>Avalie seu projeto antes de entregar — cada item vale pontos!</p>
+</div>
+<div class="slide-body">
+<div class="big" style="font-size:1.3rem;padding:18px 28px;margin-top:10px;">Revise cada item antes da entrega — qualidade vale mais que quantidade de código! 🏆</div>
+<div class="check-grid" style="margin-top:14px;">
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Struct bem modelada</strong><br>Campos com tipos corretos, typedef, campos string com tamanho adequado (+1 para '\0')</div></div>
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Funções modularizadas</strong><br>Cada função faz UMA coisa. Nomes descritivos. Sem código duplicado (DRY)</div></div>
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Persistência funciona</strong><br>carregar() ao iniciar, salvar() ao sair. Funciona em segunda execução com dados da primeira</div></div>
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Tratamento de erros</strong><br>fopen verificado (≠ NULL). Vetor não transborda (verifica se n &lt; MAX). malloc verificado</div></div>
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Menu funcional</strong><br>do-while garante exibição. switch para opções. Opção 0 sai e salva. Entrada inválida tratada</div></div>
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Strings comparadas com strcmp</strong><br>Nenhum <code>==</code> comparando strings. Nenhum <code>=</code> atribuindo strings (usar strcpy)</div></div>
+  <div class="check-item ci-warn"><span class="ci-ico">⚠️</span><div><strong>Ponteiros inicializados</strong><br>Todo ponteiro tem valor (endereço válido ou NULL). Verificado antes de desreferenciar</div></div>
+  <div class="check-item ci-warn"><span class="ci-ico">⚠️</span><div><strong>Relatório exportado</strong><br>Arquivo .csv gerado com cabeçalho e totais. Abre no Excel. Situação calculada corretamente</div></div>
+  <div class="check-item ci-warn"><span class="ci-ico">⚠️</span><div><strong>Busca implementada</strong><br>Busca por campo chave (matrícula, código, nome). Retorno -1 ou NULL quando não encontrado</div></div>
+  <div class="check-item ci-warn"><span class="ci-ico">⚠️</span><div><strong>Ordenação implementada</strong><br>Bubble Sort ou qsort com comparador. Resultado exibido em ordem ao listar</div></div>
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Código compila sem warnings</strong><br>Compile com <code>-Wall -Wextra</code>. Todo warning é um bug potencial esperando para acontecer</div></div>
+  <div class="check-item ci-ok"><span class="ci-ico">✅</span><div><strong>Testado com dados reais</strong><br>Cadastrar, sair, reabrir, verificar que os dados ainda estão lá. Testar edge cases (0 itens, máximo)</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12 — MENSAGEM FINAL -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎓 Parabéns — A Jornada Foi Real!</h2>
+<p>De algoritmos no papel a sistemas com estruturas, funções e persistência em disco</p>
+</div>
+<div class="slide-body">
+<div class="big">22 aulas. 1 semestre. Você aprendeu a transformar problemas em código! 🚀</div>
+
+<div class="four-col" style="margin-top:18px;">
+  <div style="text-align:center;padding:18px 10px;background:#fff3e0;border-radius:14px;border:2px solid #f57c00;animation:fadeInUp 0.6s ease-out forwards;opacity:0;">
+    <div style="font-size:2.5rem;">🧠</div>
+    <div style="font-weight:700;color:#e65100;margin-top:8px;font-size:0.95rem;">Pensar algoritmicamente</div>
+    <div style="font-size:0.82rem;color:#777;margin-top:4px;">Decompor problemas em passos executáveis</div>
+  </div>
+  <div style="text-align:center;padding:18px 10px;background:#e8f5e9;border-radius:14px;border:2px solid #388e3c;animation:fadeInUp 0.6s ease-out 0.1s forwards;opacity:0;">
+    <div style="font-size:2.5rem;">🔧</div>
+    <div style="font-weight:700;color:#2e7d32;margin-top:8px;font-size:0.95rem;">Estruturar dados</div>
+    <div style="font-size:0.82rem;color:#777;margin-top:4px;">Vetores, matrizes, structs, enums</div>
+  </div>
+  <div style="text-align:center;padding:18px 10px;background:#e3f2fd;border-radius:14px;border:2px solid #1976d2;animation:fadeInUp 0.6s ease-out 0.2s forwards;opacity:0;">
+    <div style="font-size:2.5rem;">⚙️</div>
+    <div style="font-weight:700;color:#1565c0;margin-top:8px;font-size:0.95rem;">Modularizar código</div>
+    <div style="font-size:0.82rem;color:#777;margin-top:4px;">Funções, recursão, DRY principle</div>
+  </div>
+  <div style="text-align:center;padding:18px 10px;background:#f3e5f5;border-radius:14px;border:2px solid #8e24aa;animation:fadeInUp 0.6s ease-out 0.3s forwards;opacity:0;">
+    <div style="font-size:2.5rem;">💾</div>
+    <div style="font-weight:700;color:#6a1b9a;margin-top:8px;font-size:0.95rem;">Persistir dados</div>
+    <div style="font-size:0.82rem;color:#777;margin-top:4px;">Ponteiros, memória, arquivos</div>
+  </div>
+</div>
+
+<div class="two-col" style="margin-top:20px;">
+<div class="box">
+<h3>📅 Próximos Passos</h3>
+<ul>
+<li><strong>Aula 24:</strong> Entrega e apresentação do Projeto Final</li>
+<li>Demonstração ao vivo do sistema funcionando</li>
+<li>Código comentado e documentado entregue no Classroom</li>
+<li>Avaliação individual: perguntas sobre o código entregue</li>
+</ul>
+</div>
+<div class="box">
+<h3>🔥 Onde esta base te leva</h3>
+<ul>
+<li>Estruturas de Dados (listas, árvores, grafos)</li>
+<li>Algoritmos avançados (Quicksort, Dijkstra, A*)</li>
+<li>Programação Orientada a Objetos (C++, Java, Python)</li>
+<li>Banco de Dados (SQL, índices, transações)</li>
+</ul>
+</div>
+</div>
+
+<div class="hi" style="margin-top:18px;">
+<h3>💬 Última mensagem</h3>
+<p style="font-style:italic;font-size:1.05rem;">
+"Programar não é sobre decorar sintaxe — é sobre <strong>aprender a pensar</strong>.
+E você fez exatamente isso durante todo o semestre.
+Leve esse raciocínio para todas as disciplinas que virão. 🎓"
+</p>
+<p style="margin-top:12px;font-size:0.95rem;">
+<strong>Prof. Tiago Dutra Galvão</strong> — tiago.galvao@unifil.br
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav">
+<button class="nb" id="pb" onclick="ch(-1)" disabled>← Anterior</button>
+<span class="sc" id="sc">1 / 12</span>
+<button class="nb" id="nb" onclick="ch(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+function toggleAns(btn){
+  const a=btn.nextElementSibling;
+  a.style.display=a.style.display==='block'?'none':'block';
+  btn.textContent=a.style.display==='block'?'Esconder':'Ver resposta';
+}
+let cur=0;
+const sl=document.querySelectorAll('.slide'), tot=sl.length;
+function show(n){
+  sl.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; sl[cur].classList.add('active');
+  document.getElementById('sc').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===tot-1;
+  document.getElementById('pf').style.width=((cur+1)/tot*100)+'%';
+  sl[cur].querySelectorAll('.box,.card,.hi,.big,.yel,.red,.grn,.tbl,.timeline,.quiz-q,.check-item')
+    .forEach((el,i)=>{el.style.animation='none';el.style.opacity='0';
+      setTimeout(()=>{el.style.animation=`fadeInUp .45s ease-out ${i*.06}s forwards`;},10);});
+}
+function ch(d){const n=cur+d;if(n>=0&&n<tot)show(n);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')ch(-1);if(e.key==='ArrowRight')ch(1);});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)ch(d>0?1:-1);});
+show(0);
+</script>
+</body>
+</html>

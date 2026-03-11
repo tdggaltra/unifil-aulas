@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 20 - Structs e Registros | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00; --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5; --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B; --code-bg: #282c34; --code-text: #abb2bf;
+        }
+        body { font-family: 'Segoe UI', sans-serif;
+               background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+               overflow: hidden; color: var(--unifil-dark); }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide { width:100%; height:100%; position:absolute; top:0; left:0;
+                 display:none; opacity:0; transform:translateX(100%);
+                 transition:all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55); }
+        .slide.active { display:flex; opacity:1; transform:translateX(0); }
+        .slide-content { background:white; width:90%; max-width:1200px; height:90%;
+                         margin:auto; border-radius:20px;
+                         box-shadow:0 20px 60px rgba(0,0,0,0.3);
+                         display:flex; flex-direction:column; overflow:hidden; }
+        .slide-header { background:linear-gradient(135deg,var(--unifil-orange) 0%,var(--unifil-accent) 100%);
+                        padding:30px 50px; color:white; position:relative; flex-shrink:0; }
+        .slide-header::after { content:''; position:absolute; bottom:-20px; left:0; right:0; height:40px;
+                                background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                                clip-path:polygon(0 0,100% 0,100% 100%,0 0); }
+        .slide-header h1 { font-size:2.5rem; margin-bottom:10px; font-weight:700; }
+        .slide-header h2 { font-size:1.8rem; margin-bottom:10px; font-weight:600; }
+        .slide-header p  { font-size:1.1rem; opacity:0.95; }
+        .slide-body { flex:1; padding:60px 50px 40px; overflow-y:auto; }
+        .slide-body::-webkit-scrollbar { width:8px; }
+        .slide-body::-webkit-scrollbar-thumb { background:var(--unifil-orange); border-radius:10px; }
+        .two-col   { display:grid; grid-template-columns:1fr 1fr; gap:35px; margin:25px 0; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:25px; margin:25px 0; }
+        .box { background:var(--unifil-light); padding:25px; border-radius:15px;
+               border-left:5px solid var(--unifil-orange);
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .box h3 { color:var(--unifil-orange); margin-bottom:12px; font-size:1.3rem; }
+        .box p  { font-size:1rem; line-height:1.7; }
+        .box ul { list-style:none; }
+        .box li { padding:7px 0 7px 28px; position:relative; font-size:1rem; line-height:1.6; }
+        .box li::before { content:'→'; position:absolute; left:0; color:var(--unifil-orange); font-weight:bold; }
+        .hi { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+              color:white; padding:28px; border-radius:15px; margin:25px 0;
+              animation:fadeInUp 0.6s ease-out 0.2s forwards; opacity:0; }
+        .hi h3 { margin-bottom:12px; font-size:1.4rem; }
+        .hi p  { font-size:1.05rem; line-height:1.7; }
+        .card { background:white; border:2px solid var(--unifil-orange); padding:22px;
+                border-radius:12px; margin:16px 0;
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .card h4 { color:var(--unifil-orange); margin-bottom:10px; font-size:1.2rem; }
+        .code { background:var(--code-bg); color:var(--code-text); padding:18px;
+                border-radius:10px; font-family:'Courier New',monospace;
+                font-size:0.85rem; margin:12px 0; line-height:1.65; white-space:pre;
+                overflow-x:auto; }
+        .kw  { color:#c678dd; font-weight:600; }
+        .fn  { color:#61afef; }
+        .str { color:#98c379; }
+        .cm  { color:#5c6370; font-style:italic; }
+        .nm  { color:#d19a66; }
+        .op  { color:#FF8C00; font-weight:600; }
+        .ret { color:#e06c75; font-weight:800; }
+        .tp  { color:#56b6c2; font-weight:700; }   /* type name */
+        .fd  { color:#e5c07b; font-weight:700; }   /* field access */
+        .big { background:linear-gradient(135deg,#4A90E2,#357ABD); color:white;
+               padding:30px 40px; border-radius:20px; font-size:1.5rem;
+               font-weight:600; text-align:center; margin:25px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel { background:#fff3cd; border:3px solid #ffc107; border-radius:15px;
+               padding:25px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .yel h3 { color:#856404; margin-bottom:12px; font-size:1.3rem; }
+        .yel p  { font-size:1rem; line-height:1.7; color:#533f03; }
+        .red { background:#ffebee; border:3px solid #f44336; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .red h3 { color:#c62828; margin-bottom:12px; font-size:1.2rem; }
+        .red p  { font-size:0.98rem; line-height:1.6; color:#b71c1c; }
+        .grn { background:#e8f5e9; border:3px solid #4caf50; border-radius:15px;
+               padding:22px; margin:20px 0;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .grn h3 { color:#2e7d32; margin-bottom:12px; font-size:1.2rem; }
+        .grn p  { font-size:1rem; line-height:1.7; color:#1b5e20; }
+        .grn ul { list-style:none; }
+        .grn li { padding:5px 0; font-size:0.98rem; color:#1b5e20; }
+        .stat { text-align:center; padding:22px; background:white;
+                border-radius:15px; border:3px solid var(--unifil-orange);
+                animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .stat .n { font-size:2.8rem; font-weight:700; color:var(--unifil-orange); margin-bottom:8px; }
+        .stat .l { font-size:1rem; color:var(--unifil-gray); font-weight:500; }
+        .ex { background:#f0f4ff; border:2px solid #3f51b5; border-radius:15px;
+              padding:22px; margin:18px 0;
+              animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .ex h4 { color:#283593; margin-bottom:10px; font-size:1.15rem; }
+        .ex p  { font-size:1rem; line-height:1.7; color:#1a237e; }
+        .tbl { width:100%; border-collapse:collapse; margin:15px 0;
+               border-radius:10px; overflow:hidden;
+               animation:fadeInUp 0.6s ease-out forwards; opacity:0; }
+        .tbl th { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+                  color:white; padding:13px 18px; text-align:left; font-size:0.98rem; }
+        .tbl td { padding:11px 18px; border-bottom:1px solid var(--unifil-light); font-size:0.95rem; }
+        .tbl tr:hover td { background:var(--unifil-light); }
+
+        /* ── STRUCT VISUAL ── */
+        .struct-vis {
+            background:#1e2129; border-radius:14px; padding:20px 24px;
+            margin:18px 0; animation:fadeInUp 0.6s ease-out forwards; opacity:0;
+            font-family:'Courier New',monospace;
+        }
+        .struct-header {
+            background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+            color:white; border-radius:8px; padding:8px 16px;
+            font-weight:700; font-size:0.9rem; margin-bottom:10px;
+            display:inline-block;
+        }
+        .struct-field {
+            display:flex; align-items:center; gap:12px;
+            padding:8px 12px; border-radius:8px; margin:4px 0;
+            font-size:0.87rem;
+        }
+        .sf-int  { background:rgba(86,182,194,0.15);  border-left:3px solid #56b6c2; }
+        .sf-flt  { background:rgba(152,195,121,0.15); border-left:3px solid #98c379; }
+        .sf-chr  { background:rgba(229,192,123,0.15); border-left:3px solid #e5c07b; }
+        .sf-str  { background:rgba(197,134,192,0.15); border-left:3px solid #c678dd; }
+        .sf-nest { background:rgba(255,140,0,0.12);   border-left:3px solid var(--unifil-orange); }
+        .sf-type { color:#56b6c2; min-width:70px; font-weight:700; }
+        .sf-name { color:#e5c07b; font-weight:700; min-width:90px; }
+        .sf-size { color:#5c6370; font-size:0.78rem; margin-left:auto; }
+
+        .lv { display:inline-block; padding:3px 10px; border-radius:20px;
+              font-size:0.78rem; font-weight:700; margin-bottom:8px; }
+        .lv-e { background:#c8e6c9; color:#2e7d32; border:1px solid #4caf50; }
+        .lv-m { background:#fff9c4; color:#f57f17; border:1px solid #ffc107; }
+        .lv-h { background:#ffcdd2; color:#c62828; border:1px solid #f44336; }
+        .lv-x { background:#e1bee7; color:#6a1b9a; border:1px solid #9c27b0; }
+
+        .nav { position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+               display:flex; gap:20px; align-items:center;
+               background:rgba(255,255,255,0.95); padding:15px 30px;
+               border-radius:50px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:1000; }
+        .nb  { background:linear-gradient(135deg,var(--unifil-orange),var(--unifil-accent));
+               color:white; border:none; padding:12px 24px; border-radius:25px;
+               cursor:pointer; font-size:1rem; font-weight:600; transition:all .3s; }
+        .nb:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,140,0,.4); }
+        .nb:disabled { opacity:.5; cursor:not-allowed; }
+        .sc { font-weight:600; color:var(--unifil-dark); min-width:80px; text-align:center; font-size:1.1rem; }
+        .pb { position:fixed; top:0; left:0; width:100%; height:5px;
+              background:rgba(255,255,255,0.2); z-index:1001; }
+        .pf { height:100%; background:linear-gradient(90deg,var(--unifil-orange),var(--unifil-accent));
+              transition:width .3s; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        code { font-family:'Courier New',monospace; background:#f0f0f0;
+               padding:2px 6px; border-radius:4px; font-size:.92em; color:#c0392b; }
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="pf"></div></div>
+<div class="presentation">
+
+<!-- SLIDE 1 — TÍTULO -->
+<div class="slide active">
+<div class="slide-content">
+<div class="slide-header">
+<h1>Lógica de Programação e Algoritmos</h1>
+<p>Aula 20 — Structs e Registros</p>
+</div>
+<div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<div style="font-size:5rem;margin-bottom:20px;">🗂️</div>
+<h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:16px;">Agrupe Dados Diferentes em Um Tipo Só!</h2>
+<p style="font-size:1.2rem;color:var(--unifil-gray);max-width:820px;margin-bottom:28px;">
+  Uma <strong>struct</strong> (registro) permite criar tipos compostos — reunir
+  campos de tipos diferentes (nome, idade, CPF, salário) em uma única
+  variável com significado real no domínio do problema.
+  É o primeiro passo da modelagem de dados!
+</p>
+
+<!-- Visual de struct Aluno -->
+<div class="struct-vis" style="width:100%;max-width:620px;margin-bottom:24px;text-align:left;">
+  <div class="struct-header">struct Aluno</div>
+  <div class="struct-field sf-str"><span class="sf-type">char</span><span class="sf-name">nome[50]</span><span style="color:#abb2bf;">→ "Maria Silva"</span><span class="sf-size">50 bytes</span></div>
+  <div class="struct-field sf-int"><span class="sf-type">int</span><span class="sf-name">matricula</span><span style="color:#abb2bf;">→ 20230042</span><span class="sf-size">4 bytes</span></div>
+  <div class="struct-field sf-flt"><span class="sf-type">float</span><span class="sf-name">media</span><span style="color:#abb2bf;">→ 8.75</span><span class="sf-size">4 bytes</span></div>
+  <div class="struct-field sf-chr"><span class="sf-type">char</span><span class="sf-name">turma</span><span style="color:#abb2bf;">→ 'A'</span><span class="sf-size">1 byte</span></div>
+</div>
+
+<div class="three-col" style="width:100%;max-width:1000px;">
+  <div class="stat"><div class="n">.</div><div class="l">operador ponto acessa campos</div></div>
+  <div class="stat"><div class="n">→</div><div class="l">seta acessa via ponteiro</div></div>
+  <div class="stat"><div class="n">typedef</div><div class="l">cria alias para o tipo</div></div>
+</div>
+<div style="margin-top:25px;font-size:1.05rem;color:var(--unifil-gray);">
+  <strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; <strong>Disciplina:</strong> Lógica de Programação e Algoritmos — UniFil
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2 — CONCEITO E DECLARAÇÃO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🏗️ Declaração e Uso Básico</h2>
+<p>Como criar um novo tipo, declarar variáveis e acessar campos</p>
+</div>
+<div class="slide-body">
+<div class="big">Struct = ficha cadastral no código. Cada campo é um dado; a struct é o formulário completo! 📋</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — declarar e usar struct</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// Definição do tipo (fora de main)</span>
+<span class="kw">struct</span> <span class="tp">Aluno</span> {
+  <span class="kw">char</span>  <span class="fd">nome</span>[<span class="nm">50</span>];
+  <span class="kw">int</span>   <span class="fd">matricula</span>;
+  <span class="kw">float</span> <span class="fd">media</span>;
+  <span class="kw">char</span>  <span class="fd">turma</span>;
+};
+
+<span class="cm">// Declarar variáveis</span>
+<span class="kw">struct</span> <span class="tp">Aluno</span> a1;          <span class="cm">← uma variável</span>
+<span class="kw">struct</span> <span class="tp">Aluno</span> turmaA[<span class="nm">30</span>];  <span class="cm">← vetor de structs</span>
+
+<span class="cm">// Atribuir campos — operador ponto (.)</span>
+<span class="fn">strcpy</span>(a1.<span class="fd">nome</span>, <span class="str">"Maria Silva"</span>);
+a1.<span class="fd">matricula</span> = <span class="nm">20230042</span>;
+a1.<span class="fd">media</span>     = <span class="nm">8.75</span>;
+a1.<span class="fd">turma</span>    = <span class="str">'A'</span>;
+
+<span class="cm">// Ler campo</span>
+<span class="fn">printf</span>(<span class="str">"Aluno: %s\n"</span>, a1.<span class="fd">nome</span>);
+<span class="fn">printf</span>(<span class="str">"Média: %.2f\n"</span>, a1.<span class="fd">media</span>);
+
+<span class="cm">// Inicialização com literal</span>
+<span class="kw">struct</span> <span class="tp">Aluno</span> a2 = {<span class="str">"João"</span>,<span class="nm">20230043</span>,<span class="nm">7.5</span>,<span class="str">'B'</span>};</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — typedef simplifica o uso</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// SEM typedef — verboso</span>
+<span class="kw">struct</span> <span class="tp">Aluno</span> a1;
+<span class="kw">struct</span> <span class="tp">Aluno</span> turma[<span class="nm">30</span>];
+
+<span class="cm">// COM typedef — limpo</span>
+<span class="kw">typedef struct</span> {
+  <span class="kw">char</span>  <span class="fd">nome</span>[<span class="nm">50</span>];
+  <span class="kw">int</span>   <span class="fd">matricula</span>;
+  <span class="kw">float</span> <span class="fd">media</span>;
+  <span class="kw">char</span>  <span class="fd">turma</span>;
+} <span class="tp">Aluno</span>;
+
+<span class="cm">// Agora usa sem "struct":</span>
+<span class="tp">Aluno</span> a1;           <span class="cm">← muito mais limpo!</span>
+<span class="tp">Aluno</span> turma[<span class="nm">30</span>];
+
+<span class="cm">// Atribuição direta entre structs</span>
+<span class="tp">Aluno</span> a3 = a1;     <span class="cm">← copia todos os campos!</span>
+<span class="cm">// (diferente de arrays — structs podem ser copiadas com =)</span></div>
+</div>
+<div class="yel" style="margin-top:12px; margin-bottom:0;">
+<h3>🆚 Struct vs. variáveis separadas</h3>
+<p>Sem struct você teria <code>nome[100][50]</code>, <code>matricula[100]</code>, <code>media[100]</code> — três vetores que se perdem. Com struct: <code>Aluno turma[100]</code> — tudo junto, organizado e passável como parâmetro!</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3 — STRUCTS E FUNÇÕES -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>⚙️ Structs em Funções</h2>
+<p>Passar struct por valor (cópia) ou por ponteiro (referência) — e retornar structs</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — passar por valor (cópia)</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// Recebe cópia — não altera original</span>
+<span class="kw">void</span> <span class="fn">exibirAluno</span>(<span class="tp">Aluno</span> <span class="fd">a</span>) {
+  <span class="fn">printf</span>(<span class="str">"%-20s %8d %5.2f %c\n"</span>,
+    <span class="fd">a</span>.<span class="fd">nome</span>, <span class="fd">a</span>.<span class="fd">matricula</span>,
+    <span class="fd">a</span>.<span class="fd">media</span>, <span class="fd">a</span>.<span class="fd">turma</span>);
+}
+
+<span class="cm">// Retornar struct (nova struct criada)</span>
+<span class="tp">Aluno</span> <span class="fn">criarAluno</span>(<span class="kw">char</span> *nome, <span class="kw">int</span> mat,
+                    <span class="kw">float</span> med, <span class="kw">char</span> t) {
+  <span class="tp">Aluno</span> novo;
+  <span class="fn">strcpy</span>(novo.<span class="fd">nome</span>, nome);
+  novo.<span class="fd">matricula</span> = mat;
+  novo.<span class="fd">media</span>     = med;
+  novo.<span class="fd">turma</span>    = t;
+  <span class="ret">return</span> novo;   <span class="cm">← retorna struct!</span>
+}
+
+<span class="tp">Aluno</span> a = <span class="fn">criarAluno</span>(<span class="str">"Ana"</span>,<span class="nm">2023001</span>,<span class="nm">9.0</span>,<span class="str">'A'</span>);</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — passar por ponteiro (modifica original)</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// Ponteiro para struct — operador -></span>
+<span class="kw">void</span> <span class="fn">aplicarBonus</span>(<span class="tp">Aluno</span> *<span class="fd">a</span>, <span class="kw">float</span> bonus) {
+  <span class="fd">a</span>-><span class="fd">media</span> += bonus;  <span class="cm">← modifica original!</span>
+  <span class="kw">if</span>(<span class="fd">a</span>-><span class="fd">media</span> > <span class="nm">10.0</span>) <span class="fd">a</span>-><span class="fd">media</span> = <span class="nm">10.0</span>;
+}
+<span class="cm">// a->campo  equivale a  (*a).campo</span>
+
+<span class="kw">void</span> <span class="fn">lerAluno</span>(<span class="tp">Aluno</span> *<span class="fd">a</span>) {
+  <span class="fn">printf</span>(<span class="str">"Nome: "</span>);
+  <span class="fn">fgets</span>(<span class="fd">a</span>-><span class="fd">nome</span>, <span class="nm">50</span>, stdin);
+  <span class="fn">printf</span>(<span class="str">"Matrícula: "</span>);
+  <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;<span class="fd">a</span>-><span class="fd">matricula</span>);
+  <span class="fn">printf</span>(<span class="str">"Média: "</span>);
+  <span class="fn">scanf</span>(<span class="str">"%f"</span>, &amp;<span class="fd">a</span>-><span class="fd">media</span>);
+}
+
+<span class="cm">// Uso:</span>
+<span class="tp">Aluno</span> a1;
+<span class="fn">lerAluno</span>(&amp;a1);        <span class="cm">← passa endereço</span>
+<span class="fn">aplicarBonus</span>(&amp;a1, <span class="nm">0.5</span>);</div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ . vs. -></h3>
+<p><code>a.campo</code> — variável direta <br>
+<code>ptr->campo</code> — via ponteiro (equivale a <code>(*ptr).campo</code>)<br>
+Regra prática: tem <code>*</code> na declaração? Use <code>-></code>. Caso contrário, use <code>.</code></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 4 — VETOR DE STRUCTS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📦 Vetor de Structs — Cadastro Completo</h2>
+<p>A combinação mais usada na prática: vários registros do mesmo tipo</p>
+</div>
+<div class="slide-body">
+<div class="big">Vetor de structs = banco de dados na memória! Cada posição é um registro completo. 🗃️</div>
+<div class="two-col" style="margin-top:15px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — turma de alunos</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">#define</span> MAX <span class="nm">30</span>
+
+<span class="tp">Aluno</span> turma[MAX];
+<span class="kw">int</span>   n = <span class="nm">0</span>;   <span class="cm">← qtd. cadastrada</span>
+
+<span class="cm">// CADASTRAR</span>
+<span class="kw">void</span> <span class="fn">cadastrar</span>(<span class="tp">Aluno</span> t[], <span class="kw">int</span> *n) {
+  <span class="kw">if</span>(*n == MAX) { <span class="fn">printf</span>(<span class="str">"Cheio!\n"</span>); <span class="ret">return</span>; }
+  <span class="fn">printf</span>(<span class="str">"Nome: "</span>); <span class="fn">fgets</span>(t[*n].<span class="fd">nome</span>,<span class="nm">50</span>,stdin);
+  t[*n].<span class="fd">nome</span>[<span class="fn">strcspn</span>(t[*n].<span class="fd">nome</span>,<span class="str">"\n"</span>)]=<span class="nm">0</span>;
+  <span class="fn">printf</span>(<span class="str">"Mat: "</span>);  <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;t[*n].<span class="fd">matricula</span>);
+  <span class="fn">printf</span>(<span class="str">"Média: "</span>); <span class="fn">scanf</span>(<span class="str">"%f"</span>,&amp;t[*n].<span class="fd">media</span>);
+  <span class="fn">printf</span>(<span class="str">"Turma: "</span>); <span class="fn">scanf</span>(<span class="str">" %c"</span>,&amp;t[*n].<span class="fd">turma</span>);
+  (*n)<span class="op">++</span>;
+  <span class="fn">printf</span>(<span class="str">"✅ Cadastrado!\n"</span>);
+}
+
+<span class="cm">// LISTAR</span>
+<span class="kw">void</span> <span class="fn">listar</span>(<span class="tp">Aluno</span> t[], <span class="kw">int</span> n) {
+  <span class="fn">printf</span>(<span class="str">"%-20s %10s %6s %5s\n"</span>,
+    <span class="str">"Nome"</span>,<span class="str">"Matrícula"</span>,<span class="str">"Média"</span>,<span class="str">"T"</span>);
+  <span class="fn">printf</span>(<span class="str">"%-20s %10s %6s %5s\n"</span>,
+    <span class="str">"────────────────────"</span>,<span class="str">"─────────"</span>,<span class="str">"─────"</span>,<span class="str">"─"</span>);
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;n;i++)
+    <span class="fn">printf</span>(<span class="str">"%-20s %10d %6.2f %5c\n"</span>,
+      t[i].<span class="fd">nome</span>,t[i].<span class="fd">matricula</span>,
+      t[i].<span class="fd">media</span>,t[i].<span class="fd">turma</span>);
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — buscar e calcular média da turma</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// BUSCAR por nome</span>
+<span class="kw">int</span> <span class="fn">buscarNome</span>(<span class="tp">Aluno</span> t[], <span class="kw">int</span> n, <span class="kw">char</span> *busca) {
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)
+    <span class="kw">if</span>(<span class="fn">strstr</span>(t[i].<span class="fd">nome</span>, busca))
+      <span class="ret">return</span> i;    <span class="cm">← índice encontrado</span>
+  <span class="ret">return</span> -<span class="nm">1</span>;       <span class="cm">← não encontrado</span>
+}
+
+<span class="cm">// ESTATÍSTICAS</span>
+<span class="kw">void</span> <span class="fn">estatisticas</span>(<span class="tp">Aluno</span> t[], <span class="kw">int</span> n) {
+  <span class="kw">float</span> soma=<span class="nm">0</span>, maior=t[<span class="nm">0</span>].<span class="fd">media</span>;
+  <span class="kw">int</span> aprov=<span class="nm">0</span>;
+  <span class="tp">Aluno</span> destaque = t[<span class="nm">0</span>];
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;n;i++){
+    soma += t[i].<span class="fd">media</span>;
+    <span class="kw">if</span>(t[i].<span class="fd">media</span> &gt; maior){
+      maior = t[i].<span class="fd">media</span>;
+      destaque = t[i];  <span class="cm">← copia struct!</span>
+    }
+    <span class="kw">if</span>(t[i].<span class="fd">media</span> &gt;= <span class="nm">6.0</span>) aprov<span class="op">++</span>;
+  }
+  <span class="fn">printf</span>(<span class="str">"Média turma : %.2f\n"</span>, soma/n);
+  <span class="fn">printf</span>(<span class="str">"Aprovados   : %d/%d\n"</span>, aprov, n);
+  <span class="fn">printf</span>(<span class="str">"Destaque    : %s (%.2f)\n"</span>,
+    destaque.<span class="fd">nome</span>, destaque.<span class="fd">media</span>);
+}</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 5 — STRUCTS ANINHADAS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🪆 Structs Aninhadas</h2>
+<p>Uma struct pode conter outra struct como campo — modelagem mais rica</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="struct-vis" style="text-align:left;">
+  <div class="struct-header">typedef struct — Data</div>
+  <div class="struct-field sf-int"><span class="sf-type">int</span><span class="sf-name">dia</span><span style="color:#abb2bf;">→ 7</span></div>
+  <div class="struct-field sf-int"><span class="sf-type">int</span><span class="sf-name">mes</span><span style="color:#abb2bf;">→ 3</span></div>
+  <div class="struct-field sf-int"><span class="sf-type">int</span><span class="sf-name">ano</span><span style="color:#abb2bf;">→ 2026</span></div>
+  <div style="height:12px;"></div>
+  <div class="struct-header">typedef struct — Funcionario</div>
+  <div class="struct-field sf-str"><span class="sf-type">char</span><span class="sf-name">nome[60]</span><span style="color:#abb2bf;">→ "Ana Lima"</span></div>
+  <div class="struct-field sf-int"><span class="sf-type">int</span><span class="sf-name">cpf</span><span style="color:#abb2bf;">→ 12345678</span></div>
+  <div class="struct-field sf-flt"><span class="sf-type">float</span><span class="sf-name">salario</span><span style="color:#abb2bf;">→ 4500.00</span></div>
+  <div class="struct-field sf-nest"><span class="sf-type">Data</span><span class="sf-name">admissao</span><span style="color:#abb2bf;">→ {1, 3, 2020}</span></div>
+  <div class="struct-field sf-nest"><span class="sf-type">Data</span><span class="sf-name">nascimento</span><span style="color:#abb2bf;">→ {15, 6, 1995}</span></div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — código com struct aninhada</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">typedef struct</span> {
+  <span class="kw">int</span> <span class="fd">dia</span>, <span class="fd">mes</span>, <span class="fd">ano</span>;
+} <span class="tp">Data</span>;
+
+<span class="kw">typedef struct</span> {
+  <span class="kw">char</span>  <span class="fd">nome</span>[<span class="nm">60</span>];
+  <span class="kw">long</span>  <span class="fd">cpf</span>;
+  <span class="kw">float</span> <span class="fd">salario</span>;
+  <span class="tp">Data</span>  <span class="fd">admissao</span>;    <span class="cm">← struct dentro de struct!</span>
+  <span class="tp">Data</span>  <span class="fd">nascimento</span>;
+} <span class="tp">Funcionario</span>;
+
+<span class="tp">Funcionario</span> f;
+<span class="fn">strcpy</span>(f.<span class="fd">nome</span>, <span class="str">"Ana Lima"</span>);
+f.<span class="fd">salario</span>          = <span class="nm">4500.0</span>;
+
+<span class="cm">// Acessar campo de struct aninhada:</span>
+f.<span class="fd">admissao</span>.<span class="fd">dia</span>  = <span class="nm">1</span>;   <span class="cm">← dois pontos!</span>
+f.<span class="fd">admissao</span>.<span class="fd">mes</span>  = <span class="nm">3</span>;
+f.<span class="fd">admissao</span>.<span class="fd">ano</span>  = <span class="nm">2020</span>;
+
+<span class="fn">printf</span>(<span class="str">"%s — admitido em %02d/%02d/%d\n"</span>,
+  f.<span class="fd">nome</span>, f.<span class="fd">admissao</span>.<span class="fd">dia</span>,
+  f.<span class="fd">admissao</span>.<span class="fd">mes</span>, f.<span class="fd">admissao</span>.<span class="fd">ano</span>);</div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ Encadeamento de pontos</h3>
+<p>Para campos aninhados, encadeie pontos: <code>f.admissao.dia</code>. Via ponteiro: <code>fp->admissao.dia</code> — o <code>-></code> é só para o nível do ponteiro; o campo interno usa <code>.</code> normalmente.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6 — EXEMPLO 1: SISTEMA DE PRODUTOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 1 — Sistema de Estoque com Structs</h2>
+<p>Modelando produtos reais: cadastro, busca e relatório financeiro</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>Sistema para uma loja com struct <code>Produto</code>: código, nome, preço, quantidade. Funções: cadastrar, listar, buscar por código, calcular valor total do estoque.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — struct e funções</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">typedef struct</span> {
+  <span class="kw">int</span>   <span class="fd">codigo</span>;
+  <span class="kw">char</span>  <span class="fd">nome</span>[<span class="nm">40</span>];
+  <span class="kw">float</span> <span class="fd">preco</span>;
+  <span class="kw">int</span>   <span class="fd">qtd</span>;
+} <span class="tp">Produto</span>;
+
+<span class="kw">#define</span> MAX <span class="nm">50</span>
+<span class="tp">Produto</span> estoque[MAX];
+<span class="kw">int</span> total = <span class="nm">0</span>;
+
+<span class="cm">// Cadastrar produto</span>
+<span class="kw">void</span> <span class="fn">cadastrar</span>() {
+  <span class="kw">if</span>(total==MAX){<span class="fn">printf</span>(<span class="str">"Cheio!\n"</span>);<span class="ret">return</span>;}
+  <span class="tp">Produto</span> *p = &amp;estoque[total];
+  <span class="fn">printf</span>(<span class="str">"Código: "</span>);  <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;p-><span class="fd">codigo</span>);
+  <span class="fn">printf</span>(<span class="str">"Nome  : "</span>);
+  <span class="fn">scanf</span>(<span class="str">" %39[^\n]"</span>, p-><span class="fd">nome</span>);
+  <span class="fn">printf</span>(<span class="str">"Preço : "</span>);  <span class="fn">scanf</span>(<span class="str">"%f"</span>,&amp;p-><span class="fd">preco</span>);
+  <span class="fn">printf</span>(<span class="str">"Qtd   : "</span>);  <span class="fn">scanf</span>(<span class="str">"%d"</span>,&amp;p-><span class="fd">qtd</span>);
+  total<span class="op">++</span>; <span class="fn">printf</span>(<span class="str">"✅ Cadastrado!\n"</span>);
+}
+
+<span class="cm">// Buscar por código</span>
+<span class="tp">Produto</span>* <span class="fn">buscar</span>(<span class="kw">int</span> cod) {
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;total;i<span class="op">++</span>)
+    <span class="kw">if</span>(estoque[i].<span class="fd">codigo</span>==cod)
+      <span class="ret">return</span> &amp;estoque[i]; <span class="cm">← retorna ponteiro!</span>
+  <span class="ret">return</span> NULL;
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — listar e valor total</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">void</span> <span class="fn">listar</span>() {
+  <span class="fn">printf</span>(<span class="str">"\n%4s %-20s %9s %6s %12s\n"</span>,
+    <span class="str">"Cód"</span>,<span class="str">"Nome"</span>,<span class="str">"Preço"</span>,<span class="str">"Qtd"</span>,<span class="str">"Total"</span>);
+  <span class="fn">printf</span>(<span class="str">"%s\n"</span>,<span class="str">"────────────────────────────────────────────"</span>);
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;total;i++) {
+    <span class="tp">Produto</span> p = estoque[i];
+    <span class="fn">printf</span>(<span class="str">"%4d %-20s R$%7.2f %6d R$%10.2f\n"</span>,
+      p.<span class="fd">codigo</span>,p.<span class="fd">nome</span>,p.<span class="fd">preco</span>,
+      p.<span class="fd">qtd</span>,p.<span class="fd">preco</span><span class="op">*</span>p.<span class="fd">qtd</span>);
+  }
+}
+
+<span class="kw">float</span> <span class="fn">valorTotal</span>() {
+  <span class="kw">float</span> vt = <span class="nm">0</span>;
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>;i&lt;total;i<span class="op">++</span>)
+    vt += estoque[i].<span class="fd">preco</span> <span class="op">*</span> estoque[i].<span class="fd">qtd</span>;
+  <span class="ret">return</span> vt;
+}
+
+<span class="cm">// Uso da busca com ponteiro:</span>
+<span class="tp">Produto</span> *p = <span class="fn">buscar</span>(<span class="nm">101</span>);
+<span class="kw">if</span>(p) {
+  <span class="fn">printf</span>(<span class="str">"Encontrado: %s\n"</span>, p-><span class="fd">nome</span>);
+  p-><span class="fd">qtd</span> += <span class="nm">10</span>; <span class="cm">← atualiza diretamente!</span>
+} <span class="kw">else</span>
+  <span class="fn">printf</span>(<span class="str">"Código não encontrado.\n"</span>);</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7 — EXEMPLO 2: ORDENAR VETOR DE STRUCTS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 2 — Ordenar Vetor de Structs</h2>
+<p>Bubble Sort adaptado para structs — comparar campo e trocar registros inteiros</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-m">Intermediário</span></h4>
+<p>Ordenar o vetor de alunos por média (decrescente) e exibir ranking. Usar a função <code>qsort</code> da stdlib e também implementar Bubble Sort manualmente.</p>
+</div>
+<div class="two-col" style="margin-top:12px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — Bubble Sort em structs</h4>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// Ordenar por média DECRESCENTE</span>
+<span class="kw">void</span> <span class="fn">ordenarPorMedia</span>(<span class="tp">Aluno</span> t[], <span class="kw">int</span> n) {
+  <span class="kw">int</span> trocou;
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n-<span class="nm">1</span>; i<span class="op">++</span>) {
+    trocou = <span class="nm">0</span>;
+    <span class="kw">for</span>(<span class="kw">int</span> j=<span class="nm">0</span>; j&lt;n-<span class="nm">1</span>-i; j<span class="op">++</span>) {
+      <span class="kw">if</span>(t[j].<span class="fd">media</span> &lt; t[j+<span class="nm">1</span>].<span class="fd">media</span>) {
+        <span class="cm">// Troca STRUCT inteira:</span>
+        <span class="tp">Aluno</span> tmp = t[j];  <span class="cm">← cópia!</span>
+        t[j]   = t[j+<span class="nm">1</span>];
+        t[j+<span class="nm">1</span>] = tmp;
+        trocou = <span class="nm">1</span>;
+      }
+    }
+    <span class="kw">if</span>(!trocou) <span class="kw">break</span>; <span class="cm">← otimizado</span>
+  }
+}
+
+<span class="cm">// Exibir ranking</span>
+<span class="kw">void</span> <span class="fn">ranking</span>(<span class="tp">Aluno</span> t[], <span class="kw">int</span> n) {
+  <span class="fn">ordenarPorMedia</span>(t, n);
+  <span class="fn">printf</span>(<span class="str">"\n🏆 RANKING DA TURMA\n"</span>);
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)
+    <span class="fn">printf</span>(<span class="str">"%2dº %-20s %.2f %s\n"</span>,
+      i+<span class="nm">1</span>, t[i].<span class="fd">nome</span>, t[i].<span class="fd">media</span>,
+      t[i].<span class="fd">media</span>&gt;=<span class="nm">6</span>?<span class="str">"✅"</span>:<span class="str">"❌"</span>);
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — qsort com função de comparação</h4>
+<div class="code" style="font-size:0.82rem;"><span class="kw">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+
+<span class="cm">// Função de comparação para qsort</span>
+<span class="kw">int</span> <span class="fn">cmpMedia</span>(<span class="kw">const void</span> *a, <span class="kw">const void</span> *b) {
+  <span class="tp">Aluno</span> *x = (<span class="tp">Aluno</span>*)a;
+  <span class="tp">Aluno</span> *y = (<span class="tp">Aluno</span>*)b;
+  <span class="cm">// Decrescente: y - x</span>
+  <span class="kw">if</span>(y-><span class="fd">media</span> > x-><span class="fd">media</span>) <span class="ret">return</span>  <span class="nm">1</span>;
+  <span class="kw">if</span>(y-><span class="fd">media</span> < x-><span class="fd">media</span>) <span class="ret">return</span> -<span class="nm">1</span>;
+  <span class="ret">return</span> <span class="nm">0</span>;
+}
+
+<span class="cm">// Ordenar com qsort:</span>
+<span class="fn">qsort</span>(turma, n, <span class="kw">sizeof</span>(<span class="tp">Aluno</span>), <span class="fn">cmpMedia</span>);
+
+<span class="cm">// Para ordenar por nome:</span>
+<span class="kw">int</span> <span class="fn">cmpNome</span>(<span class="kw">const void</span> *a, <span class="kw">const void</span> *b){
+  <span class="ret">return</span> <span class="fn">strcmp</span>((<span class="tp">Aluno</span>*)a-><span class="fd">nome</span>,
+                 (<span class="tp">Aluno</span>*)b-><span class="fd">nome</span>);
+}</span></div>
+</div>
+<div class="yel" style="margin-top:12px; margin-bottom:0;">
+<h3>🔑 Troca de struct inteira</h3>
+<p>Diferente de um vetor de int, ao ordenar structs a <strong>troca move o registro inteiro</strong> — todos os campos juntos. Basta usar uma variável temporária do mesmo tipo: <code>Aluno tmp = t[j]</code>. Isso funciona porque structs suportam cópia com <code>=</code>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8 — ENUM -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🔢 Enum — Conjuntos de Constantes Nomeadas</h2>
+<p>Enumerações tornam o código mais legível e seguro — adeus aos "números mágicos"!</p>
+</div>
+<div class="slide-body">
+<div class="big">enum substitui constantes numéricas por nomes significativos — código que se explica! 📖</div>
+<div class="two-col" style="margin-top:15px;">
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — enum básico</h4>
+<div class="code" style="font-size:0.83rem;"><span class="cm">// Sem enum — confuso</span>
+<span class="kw">int</span> situacao = <span class="nm">2</span>;  <span class="cm">← O que é 2?</span>
+<span class="kw">if</span>(situacao == <span class="nm">3</span>) ...  <span class="cm">← aprovado?</span>
+
+<span class="cm">// Com enum — claro!</span>
+<span class="kw">typedef enum</span> {
+  REPROVADO = <span class="nm">0</span>,
+  RECUPERACAO,      <span class="cm">← 1</span>
+  APROVADO,         <span class="cm">← 2</span>
+  APROVADO_DIST     <span class="cm">← 3</span>
+} <span class="tp">Situacao</span>;
+
+<span class="tp">Situacao</span> sit = APROVADO;
+<span class="kw">if</span>(sit == APROVADO)
+  <span class="fn">printf</span>(<span class="str">"Parabéns!\n"</span>);
+
+<span class="cm">// Enum em switch:</span>
+<span class="kw">switch</span>(sit) {
+  <span class="kw">case</span> REPROVADO:   <span class="fn">printf</span>(<span class="str">"Rep.\n"</span>); <span class="kw">break</span>;
+  <span class="kw">case</span> RECUPERACAO: <span class="fn">printf</span>(<span class="str">"Rec.\n"</span>); <span class="kw">break</span>;
+  <span class="kw">case</span> APROVADO:    <span class="fn">printf</span>(<span class="str">"Apr.\n"</span>); <span class="kw">break</span>;
+}</div>
+</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — enum dentro de struct</h4>
+<div class="code" style="font-size:0.83rem;"><span class="kw">typedef enum</span> {
+  MASCULINO, FEMININO, OUTRO
+} <span class="tp">Genero</span>;
+
+<span class="kw">typedef enum</span> {
+  ATIVO, INATIVO, LICENCA
+} <span class="tp">Status</span>;
+
+<span class="kw">typedef struct</span> {
+  <span class="kw">char</span>    <span class="fd">nome</span>[<span class="nm">60</span>];
+  <span class="kw">float</span>   <span class="fd">salario</span>;
+  <span class="tp">Genero</span>  <span class="fd">genero</span>;   <span class="cm">← enum como campo!</span>
+  <span class="tp">Status</span>  <span class="fd">status</span>;
+} <span class="tp">Funcionario</span>;
+
+<span class="tp">Funcionario</span> f;
+<span class="fn">strcpy</span>(f.<span class="fd">nome</span>, <span class="str">"Carlos"</span>);
+f.<span class="fd">genero</span> = MASCULINO;
+f.<span class="fd">status</span> = ATIVO;
+
+<span class="cm">// Muito mais legível que:</span>
+<span class="cm">// f.genero = 0; f.status = 0;</span>
+
+<span class="kw">if</span>(f.<span class="fd">status</span> == ATIVO)
+  <span class="fn">printf</span>(<span class="str">"%s está ativo.\n"</span>, f.<span class="fd">nome</span>);</div>
+</div>
+<div class="grn" style="margin-top:12px; margin-bottom:0;">
+<h3>✅ Quando usar enum</h3>
+<p>Use enum sempre que um campo tiver um conjunto <strong>fixo e limitado</strong> de valores possíveis: dias da semana, meses, estados de um processo, categorias, níveis de acesso. Elimina os "números mágicos" e ativa alertas do compilador para casos não tratados.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9 — EXEMPLO 3: AGENDA DE CONTATOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>💻 Exemplo 3 — Agenda de Contatos Completa</h2>
+<p>Structs aninhadas, enum, vetor e menu — programa completo e profissional</p>
+</div>
+<div class="slide-body">
+<div class="ex" style="margin-top:10px;">
+<h4>📌 Problema <span class="lv lv-h">Avançado</span></h4>
+<p>Agenda com struct <code>Contato</code> contendo: nome, telefone, email, Data de aniversário e tipo (AMIGO, TRABALHO, FAMILIA). Menu: adicionar, buscar, listar por tipo, aniversariantes do mês.</p>
+</div>
+<div class="two-col" style="margin-top:10px;">
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — tipos e estrutura</h4>
+<div class="code" style="font-size:0.80rem;"><span class="kw">typedef enum</span> {
+  AMIGO, TRABALHO, FAMILIA
+} <span class="tp">TipoContato</span>;
+
+<span class="kw">typedef struct</span> {
+  <span class="kw">int</span> <span class="fd">dia</span>, <span class="fd">mes</span>, <span class="fd">ano</span>;
+} <span class="tp">Data</span>;
+
+<span class="kw">typedef struct</span> {
+  <span class="kw">char</span>       <span class="fd">nome</span>[<span class="nm">60</span>];
+  <span class="kw">char</span>       <span class="fd">telefone</span>[<span class="nm">20</span>];
+  <span class="kw">char</span>       <span class="fd">email</span>[<span class="nm">60</span>];
+  <span class="tp">Data</span>       <span class="fd">aniversario</span>;
+  <span class="tp">TipoContato</span> <span class="fd">tipo</span>;
+} <span class="tp">Contato</span>;
+
+<span class="kw">char</span>* <span class="fn">tipoStr</span>(<span class="tp">TipoContato</span> t) {
+  <span class="kw">switch</span>(t){
+    <span class="kw">case</span> AMIGO:    <span class="ret">return</span> <span class="str">"👫 Amigo"</span>;
+    <span class="kw">case</span> TRABALHO: <span class="ret">return</span> <span class="str">"💼 Trabalho"</span>;
+    <span class="kw">case</span> FAMILIA:  <span class="ret">return</span> <span class="str">"🏠 Família"</span>;
+    <span class="kw">default</span>:       <span class="ret">return</span> <span class="str">"?"</span>;
+  }
+}</div>
+</div>
+<div>
+<div class="card" style="margin-top:0;">
+<h4>🔵 C — funções de consulta</h4>
+<div class="code" style="font-size:0.80rem;"><span class="cm">// Listar por tipo</span>
+<span class="kw">void</span> <span class="fn">listarPorTipo</span>(<span class="tp">Contato</span> a[], <span class="kw">int</span> n,
+                    <span class="tp">TipoContato</span> tipo) {
+  <span class="fn">printf</span>(<span class="str">"\n=== %s ===\n"</span>, <span class="fn">tipoStr</span>(tipo));
+  <span class="kw">int</span> found = <span class="nm">0</span>;
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)
+    <span class="kw">if</span>(a[i].<span class="fd">tipo</span> == tipo) {
+      <span class="fn">printf</span>(<span class="str">"  %s — %s\n"</span>,
+        a[i].<span class="fd">nome</span>, a[i].<span class="fd">telefone</span>);
+      found<span class="op">++</span>;
+    }
+  <span class="kw">if</span>(!found) <span class="fn">printf</span>(<span class="str">"  (nenhum)\n"</span>);
+}
+
+<span class="cm">// Aniversariantes do mês</span>
+<span class="kw">void</span> <span class="fn">aniversariantesMes</span>(<span class="tp">Contato</span> a[],
+                          <span class="kw">int</span> n, <span class="kw">int</span> mes) {
+  <span class="fn">printf</span>(<span class="str">"\n🎂 Aniversários em %02d:\n"</span>, mes);
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)
+    <span class="kw">if</span>(a[i].<span class="fd">aniversario</span>.<span class="fd">mes</span> == mes)
+      <span class="fn">printf</span>(<span class="str">"  %s — dia %02d\n"</span>,
+        a[i].<span class="fd">nome</span>,
+        a[i].<span class="fd">aniversario</span>.<span class="fd">dia</span>);
+}</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 10 — ERROS COMUNS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🚨 Erros Comuns com Structs</h2>
+<p>Armadilhas frequentes — aprenda antes de cair!</p>
+</div>
+<div class="slide-body">
+<div class="two-col" style="margin-top:10px;">
+<div>
+<div class="red">
+<h3>❌ Erro 1: Atribuir string com = dentro de struct</h3>
+<div class="code" style="font-size:0.82rem;"><span class="tp">Aluno</span> a;
+
+<span class="cm">// ERRADO: = não copia string!</span>
+a.<span class="fd">nome</span> = <span class="str">"Maria"</span>; <span class="cm">← ERRO de compilação!</span>
+
+<span class="cm">// CORRETO: strcpy para campos char[]</span>
+<span class="fn">strcpy</span>(a.<span class="fd">nome</span>, <span class="str">"Maria"</span>); <span class="cm">← ✅</span>
+
+<span class="cm">// EXCEÇÃO: inicialização na declaração</span>
+<span class="tp">Aluno</span> a2 = {<span class="str">"Maria"</span>, <span class="nm">1001</span>, <span class="nm">8.5</span>, <span class="str">'A'</span>}; <span class="cm">← ✅</span></div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 2: Usar . com ponteiro de struct</h3>
+<div class="code" style="font-size:0.82rem;"><span class="tp">Aluno</span> *p = &amp;turma[<span class="nm">0</span>];
+
+<span class="cm">// ERRADO: . com ponteiro</span>
+<span class="fn">printf</span>(<span class="str">"%s"</span>, p.<span class="fd">nome</span>); <span class="cm">← ERRO!</span>
+
+<span class="cm">// CORRETO: -> com ponteiro</span>
+<span class="fn">printf</span>(<span class="str">"%s"</span>, p-><span class="fd">nome</span>); <span class="cm">← ✅</span>
+
+<span class="cm">// Ou desrreferenciar antes:</span>
+<span class="fn">printf</span>(<span class="str">"%s"</span>, (*p).<span class="fd">nome</span>); <span class="cm">← ✅ (mas feio)</span></div>
+</div>
+</div>
+<div>
+<div class="red">
+<h3>❌ Erro 3: Vetor de structs sem controle de quantidade</h3>
+<div class="code" style="font-size:0.82rem;"><span class="cm">// ERRADO: percorrer além do cadastrado</span>
+<span class="tp">Aluno</span> turma[<span class="nm">30</span>];  <span class="cm">← capacidade 30</span>
+<span class="kw">int</span> n = <span class="nm">5</span>;         <span class="cm">← 5 cadastrados</span>
+
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;<span class="nm">30</span>; i<span class="op">++</span>)  <span class="cm">← ERRADO!</span>
+  <span class="fn">printf</span>(<span class="str">"%s\n"</span>, turma[i].<span class="fd">nome</span>); <span class="cm">← lixo!</span>
+
+<span class="cm">// CORRETO: usar n (quantidade real)</span>
+<span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i<span class="op">++</span>)    <span class="cm">← ✅</span>
+  <span class="fn">printf</span>(<span class="str">"%s\n"</span>, turma[i].<span class="fd">nome</span>);</div>
+</div>
+<div class="red" style="margin-top:10px;">
+<h3>❌ Erro 4: Comparar structs com ==</h3>
+<div class="code" style="font-size:0.82rem;"><span class="tp">Aluno</span> a1, a2;
+
+<span class="cm">// ERRADO: não funciona em C!</span>
+<span class="kw">if</span>(a1 == a2) ...  <span class="cm">← ERRO!</span>
+
+<span class="cm">// CORRETO: comparar campo por campo</span>
+<span class="kw">if</span>(a1.<span class="fd">matricula</span> == a2.<span class="fd">matricula</span> &&
+   <span class="fn">strcmp</span>(a1.<span class="fd">nome</span>, a2.<span class="fd">nome</span>) == <span class="nm">0</span>)
+  <span class="fn">printf</span>(<span class="str">"Iguais!\n"</span>);</div>
+</div>
+</div>
+</div>
+<div class="grn" style="margin-top:14px;">
+<h3>✅ Checklist para structs</h3>
+<p>☑ Campos <code>char[]</code> usam <code>strcpy</code>? &nbsp;|&nbsp; ☑ Ponteiro de struct usa <code>-></code>? &nbsp;|&nbsp; ☑ Vetor percorre até <code>n</code> (cadastrado), não o tamanho total? &nbsp;|&nbsp; ☑ Comparação de structs é campo a campo?</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 11 — EXERCÍCIOS -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>📝 Exercícios Propostos</h2>
+<p>Modele situações reais com structs — pense na ficha antes de codificar!</p>
+</div>
+<div class="slide-body">
+<div class="big">Antes de codificar: desenhe a struct no papel — quais campos? quais tipos? 📋</div>
+<div class="two-col" style="margin-top:18px;">
+<div>
+<div class="ex">
+<h4>📌 Exercício A — Biblioteca de Livros <span class="lv lv-e">Básico</span></h4>
+<p>Crie uma struct <code>Livro</code> com: titulo[80], autor[60], ano, paginas, disponivel (int 0/1). Implemente: cadastrar, listar disponíveis, buscar por título e emprestar/devolver (altera o campo disponivel).</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício B — Campeonato de Futebol <span class="lv lv-m">Intermediário</span></h4>
+<p>Struct <code>Time</code>: nome[30], pontos, vitorias, empates, derrotas, golsPro, golsContra. Calcule o saldo de gols. Ordene a tabela por pontos (e saldo como critério de desempate) e exiba classificação.</p>
+</div>
+</div>
+<div>
+<div class="ex">
+<h4>📌 Exercício C — Farmácia <span class="lv lv-m">Intermediário</span></h4>
+<p>Struct <code>Medicamento</code> com: nome[50], principioAtivo[50], preco, quantidade, Data validade, necessitaReceita (enum: SIM/NAO). Implemente alerta de produtos vencidos (dados mês/ano atual) e relatório de estoque crítico (qtd menor que 10).</p>
+</div>
+<div class="ex">
+<h4>📌 Exercício D — Banco de Questões <span class="lv lv-x">Desafio</span></h4>
+<p>Struct <code>Questao</code>: enunciado[200], alternativas[4][100] (vetor de strings!), gabarito (0-3), dificuldade (enum FACIL/MEDIO/DIFICIL), disciplina[30]. Implemente um simulado que sorteia 10 questões aleatórias e calcula a pontuação.</p>
+</div>
+</div>
+</div>
+<div class="hi" style="margin-top:15px;">
+<h3>🎯 Entrega</h3>
+<p>Resolva ao menos <strong>2 exercícios</strong> em C e envie via Google Classroom. Na próxima aula: <strong>Ponteiros</strong> — o poder (e perigo) de trabalhar diretamente com endereços de memória!</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12 — RESUMO -->
+<div class="slide">
+<div class="slide-content">
+<div class="slide-header">
+<h2>🎯 Resumo e Próximos Passos</h2>
+<p>Structs — o primeiro passo para modelar o mundo real no código!</p>
+</div>
+<div class="slide-body">
+<div class="big">struct agrupa campos de tipos diferentes em um único tipo com significado real! 🗂️</div>
+<div class="two-col" style="margin-top:20px;">
+<div class="box">
+<h3>✅ Conceitos aprendidos</h3>
+<ul>
+<li>struct reúne campos de tipos diferentes</li>
+<li><code>typedef struct</code> cria alias limpo para o tipo</li>
+<li>Acesso com <code>.</code> (variável) e <code>-></code> (ponteiro)</li>
+<li>Structs podem ser copiadas com <code>=</code></li>
+<li>enum define constantes nomeadas para conjuntos fixos</li>
+</ul>
+</div>
+<div class="box">
+<h3>✅ Exemplos resolvidos</h3>
+<ul>
+<li>Cadastro de alunos — vetor de structs com busca e estatísticas</li>
+<li>Sistema de estoque — ponteiro de retorno para atualização direta</li>
+<li>Ordenação — Bubble Sort e qsort em vetor de structs</li>
+<li>Agenda com structs aninhadas e enum de tipo de contato</li>
+</ul>
+</div>
+<div class="box">
+<h3>⚠️ Erros a evitar</h3>
+<ul>
+<li>Atribuir string com <code>=</code> → use <code>strcpy()</code></li>
+<li>Usar <code>.</code> com ponteiro → use <code>-></code></li>
+<li>Percorrer além do quantidade real (<code>n</code>)</li>
+<li>Comparar structs com <code>==</code> → compare campo a campo</li>
+</ul>
+</div>
+<div class="box">
+<h3>🔥 Próximas Aulas</h3>
+<ul>
+<li><strong>Aula 21:</strong> Ponteiros — endereços de memória</li>
+<li><strong>Aula 22:</strong> Alocação dinâmica (malloc/free)</li>
+<li><strong>Aula 23:</strong> Arquivos (fopen, fread, fwrite)</li>
+<li><strong>Aula 24:</strong> Projeto final integrado</li>
+</ul>
+</div>
+</div>
+<div class="hi" style="margin-top:18px;">
+<h3>📚 Para a Próxima Aula</h3>
+<p>
+1️⃣ <strong>Entregar:</strong> 2 exercícios no Google Classroom &nbsp;|&nbsp;
+2️⃣ <strong>Explorar:</strong> Use <code>sizeof(SuaStruct)</code> — veja quantos bytes ela ocupa na memória &nbsp;|&nbsp;
+3️⃣ <strong>Pensar:</strong> Se <code>&amp;variavel</code> é o endereço de uma variável, o que acontece quando você passa esse endereço para uma função? (prévia de ponteiros!)
+</p>
+</div>
+<div class="two-col" style="margin-top:16px;">
+<div class="box">
+<h3>💬 Dúvidas?</h3>
+<p><strong>E-mail:</strong> tiago.galvao@unifil.br<br>
+<strong>Atendimento:</strong> Terças 18h–19h<br>
+<strong>Google Classroom:</strong> Fórum disponível</p>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;">
+<div style="text-align:center;color:var(--unifil-gray);">
+<p style="font-size:1.3rem;font-weight:600;">Ótima aula! 🙏</p>
+<p style="font-size:0.9rem;margin-top:12px;font-style:italic;">
+"Uma struct é uma ficha. Um vetor de structs é um arquivo. Você acabou de criar um banco de dados! 🗂️"
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav">
+<button class="nb" id="pb" onclick="ch(-1)" disabled>← Anterior</button>
+<span class="sc" id="sc">1 / 12</span>
+<button class="nb" id="nb" onclick="ch(1)">Próximo →</button>
+</div>
+</div>
+
+<script>
+let cur=0;
+const sl=document.querySelectorAll('.slide'), tot=sl.length;
+function show(n){
+  sl.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; sl[cur].classList.add('active');
+  document.getElementById('sc').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===tot-1;
+  document.getElementById('pf').style.width=((cur+1)/tot*100)+'%';
+  sl[cur].querySelectorAll('.box,.card,.hi,.big,.stat,.yel,.red,.grn,.ex,.tbl,.struct-vis')
+    .forEach((el,i)=>{el.style.animation='none';el.style.opacity='0';
+      setTimeout(()=>{el.style.animation=`fadeInUp .5s ease-out ${i*.07}s forwards`;},10);});
+}
+function ch(d){const n=cur+d;if(n>=0&&n<tot)show(n);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')ch(-1);if(e.key==='ArrowRight')ch(1);});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)ch(d>0?1:-1);});
+show(0);
+</script>
+</body>
+</html>
