@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 11 - Artefatos Scrum | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --artifact-teal: #00897B;
+            --artifact-cyan: #00ACC1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+        }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px; height: 90%;
+            margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p { font-size: 1.1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+        .content-box {
+            background: var(--unifil-light); padding: 30px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.5rem; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li {
+            padding: 10px 0; padding-left: 30px; position: relative;
+            font-size: 1.1rem; line-height: 1.6;
+        }
+        .content-box li::before {
+            content: '→'; position: absolute; left: 0; color: var(--unifil-orange);
+            font-weight: bold; font-size: 1.3rem;
+        }
+        .artifact-box { background: #E0F2F1; border-left-color: var(--artifact-teal); }
+        .artifact-box h3 { color: var(--artifact-teal); }
+        .artifact-box li::before { color: var(--artifact-teal); }
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 40px; border-radius: 20px; text-align: center;
+            font-size: 1.8rem; font-weight: 600; margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.6rem; }
+        .artifact-card {
+            background: linear-gradient(135deg, var(--artifact-teal) 0%, var(--artifact-cyan) 100%);
+            color: white; padding: 35px; border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(0, 137, 123, 0.3);
+        }
+        .artifact-card h4 { font-size: 1.6rem; margin-bottom: 15px; }
+        .good-practice-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .good-practice-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .antipattern-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .antipattern-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white; padding: 35px; border-radius: 20px; margin: 30px 0;
+            font-style: italic; font-size: 1.3rem; text-align: center;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0; position: relative;
+        }
+        .quote-box::before {
+            content: '"'; font-size: 4rem; position: absolute;
+            top: -10px; left: 20px; opacity: 0.3;
+        }
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.3rem; }
+        .dod-checklist {
+            background: #E8F5E9; border: 2px solid #4CAF50;
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .dod-checklist h4 { color: #4CAF50; margin-bottom: 15px; font-size: 1.4rem; }
+        .dod-checklist ul { list-style: none; padding: 0; }
+        .dod-checklist li {
+            padding: 8px 0; padding-left: 30px; position: relative;
+            font-size: 1.05rem; line-height: 1.6;
+        }
+        .dod-checklist li::before {
+            content: '✓'; position: absolute; left: 0; color: #4CAF50;
+            font-weight: bold; font-size: 1.4rem;
+        }
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center; z-index: 1000;
+        }
+        .nav-button {
+            background: var(--unifil-orange); color: white; border: none;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent); transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter {
+            background: white; padding: 10px 25px; border-radius: 50px;
+            font-weight: 600; color: var(--unifil-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 5px;
+            background: var(--unifil-orange); transition: width 0.3s ease; z-index: 1001;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-body::-webkit-scrollbar { width: 10px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">📦 Aula 11</h2>
+                    <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Artefatos Scrum</h3>
+                    <p style="font-size: 1.5rem; color: var(--artifact-teal); margin-bottom: 15px; font-weight: 600;">Product Backlog, Sprint Backlog, Incremento e DoD</p>
+                    <p style="font-size: 1.3rem; color: #6B6B6B; margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                    <p style="font-size: 1.1rem; color: #6B6B6B;">Terça-feira, 10 de Março de 2026</p>
+                    <div class="big-idea" style="margin-top: 40px;">"Artefatos = Transparência! Todos sabem O QUÊ fazer!" 📋</div>
+                    <div style="margin-top: 40px; color: #6B6B6B; font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: OS 3 ARTEFATOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📦 Os 3 Artefatos do Scrum</h2>
+                    <p>Transparência e visibilidade do trabalho</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">3 Artefatos = Papéis + Eventos + Artefatos = Scrum Completo! 🎯</div>
+                    <div class="artifact-card" style="animation-delay: 0s;">
+                        <h4>📖 O Que São Artefatos?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Artefatos do Scrum representam <strong>trabalho ou valor</strong>.<br>
+                            São projetados para <strong>maximizar transparência</strong> de informações-chave.<br>
+                            Assim, todos têm o <strong>mesmo entendimento</strong> do artefato.
+                        </p>
+                    </div>
+                    <div class="three-column">
+                        <div class="content-box artifact-box">
+                            <h3>📋 Product Backlog</h3>
+                            <ul>
+                                <li><strong>O QUÊ:</strong> Lista ordenada de tudo que é necessário no produto</li>
+                                <li><strong>QUEM:</strong> PO é dono</li>
+                                <li><strong>OBJETIVO:</strong> Única fonte da verdade</li>
+                            </ul>
+                        </div>
+                        <div class="content-box artifact-box">
+                            <h3>📝 Sprint Backlog</h3>
+                            <ul>
+                                <li><strong>O QUÊ:</strong> Plano para entregar Sprint Goal</li>
+                                <li><strong>QUEM:</strong> Developers são donos</li>
+                                <li><strong>OBJETIVO:</strong> Visibilidade do Sprint</li>
+                            </ul>
+                        </div>
+                        <div class="content-box artifact-box">
+                            <h3>✅ Incremento</h3>
+                            <ul>
+                                <li><strong>O QUÊ:</strong> Produto funcionando</li>
+                                <li><strong>QUEM:</strong> Time cria</li>
+                                <li><strong>OBJETIVO:</strong> Entregar valor</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Cada Artefato Tem Um "Commitment"</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.15rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">📋 <strong>Product Backlog</strong> → Commitment: <strong>Product Goal</strong></li>
+                            <li style="padding: 8px 0;">📝 <strong>Sprint Backlog</strong> → Commitment: <strong>Sprint Goal</strong></li>
+                            <li style="padding: 8px 0;">✅ <strong>Incremento</strong> → Commitment: <strong>Definition of Done</strong></li>
+                        </ul>
+                        <p style="font-size: 1.1rem; margin-top: 20px;">
+                            Esses commitments reforçam <strong>empirismo e valores Scrum</strong>!
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        Artefatos sem transparência = trabalho invisível = desperdício!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: PRODUCT BACKLOG -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Product Backlog</h2>
+                    <p>A fonte única da verdade</p>
+                </div>
+                <div class="slide-body">
+                    <div class="artifact-card">
+                        <h4>📋 O Que É Product Backlog?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Lista <strong>ordenada e emergente</strong> de tudo que é necessário para melhorar o produto.<br>
+                            É a <strong>única fonte de trabalho</strong> realizado pelo Scrum Team.<br>
+                            Nunca está completo. Evolui constantemente.
+                        </p>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box artifact-box">
+                            <h3>✅ Características</h3>
+                            <ul>
+                                <li><strong>Ordenado:</strong> Por valor, risco, dependência</li>
+                                <li><strong>Emergente:</strong> Nunca completo, sempre evoluindo</li>
+                                <li><strong>Transparente:</strong> Todos podem ver</li>
+                                <li><strong>Dinâmico:</strong> Muda a cada Sprint</li>
+                                <li><strong>Único:</strong> Um backlog por produto</li>
+                            </ul>
+                        </div>
+                        <div class="content-box artifact-box">
+                            <h3>📦 O Que Contém?</h3>
+                            <ul>
+                                <li>User Stories (funcionalidades)</li>
+                                <li>Bugs e correções</li>
+                                <li>Melhorias técnicas</li>
+                                <li>Pesquisas/Spikes</li>
+                                <li>Débito técnico</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--artifact-teal);">
+                        <h4 style="color: var(--artifact-teal);">📝 Estrutura de Item do Product Backlog</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Título:</strong> Login com Google<br>
+                                <strong>Descrição:</strong> Como usuário, quero fazer login com minha conta Google para não precisar criar nova senha<br>
+                                <strong>Critérios de Aceitação:</strong><br>
+                                • Botão "Login com Google" visível na tela de login<br>
+                                • Redireciona para OAuth do Google<br>
+                                • Cria conta automaticamente se primeiro login<br>
+                                • Redireciona para dashboard após sucesso<br><br>
+                                <strong>Valor de Negócio:</strong> Alto (reduz fricção no onboarding)<br>
+                                <strong>Estimativa:</strong> 8 pontos<br>
+                                <strong>Prioridade:</strong> #5 no backlog
+                            </p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>👑 PO é Dono do Product Backlog</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Responsabilidades do PO:</strong><br>
+                            • Ordenar itens por valor<br>
+                            • Refinar itens (adicionar detalhes)<br>
+                            • Garantir visibilidade e transparência<br>
+                            • Aceitar ou rejeitar sugestões de mudança<br><br>
+                            <strong>PO pode delegar refinamento, mas permanece responsável!</strong>
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        Product Backlog nunca está "pronto". Se está parado, produto está morrendo!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: SPRINT BACKLOG -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📝 Sprint Backlog</h2>
+                    <p>O plano do Sprint</p>
+                </div>
+                <div class="slide-body">
+                    <div class="artifact-card">
+                        <h4>📝 O Que É Sprint Backlog?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Composto de: <strong>Sprint Goal</strong> + <strong>Itens selecionados</strong> + <strong>Plano para entregá-los</strong><br>
+                            É um plano <strong>feito POR Developers PARA Developers</strong>.<br>
+                            Atualizado em tempo real durante o Sprint.
+                        </p>
+                    </div>
+                    <div class="big-idea">Sprint Backlog = Sprint Goal + O QUÊ fazer + COMO fazer 🎯</div>
+                    <div class="two-column">
+                        <div class="content-box artifact-box">
+                            <h3>🎯 Sprint Goal</h3>
+                            <ul>
+                                <li>Objetivo único do Sprint</li>
+                                <li>Criado no Planning</li>
+                                <li>Direciona Developers</li>
+                                <li>Permite flexibilidade</li>
+                                <li><strong>Exemplo:</strong> "Usuários podem fazer checkout completo"</li>
+                            </ul>
+                        </div>
+                        <div class="content-box artifact-box">
+                            <h3>📋 Itens Selecionados</h3>
+                            <ul>
+                                <li>Do Product Backlog</li>
+                                <li>Selecionados no Planning</li>
+                                <li>Suficientes para Sprint Goal</li>
+                                <li>Podem ser ajustados</li>
+                                <li>Negociados com PO</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--artifact-teal);">
+                        <h4 style="color: var(--artifact-teal);">📊 Exemplo de Sprint Backlog (Visual)</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Sprint Goal:</strong> "Usuários podem comprar produtos com cartão de crédito"<br><br>
+                                <strong>📋 Itens do Product Backlog:</strong><br>
+                                ✓ User Story: Adicionar produtos ao carrinho (8 pts)<br>
+                                ✓ User Story: Integração com gateway pagamento (13 pts)<br>
+                                ✓ User Story: Página de confirmação pedido (5 pts)<br>
+                                ✓ Bug: Corrigir cálculo de frete (3 pts)<br><br>
+                                <strong>🛠️ Plano (Tarefas):</strong><br>
+                                • Backend: Criar API carrinho (João, 6h)<br>
+                                • Frontend: Tela carrinho (Maria, 8h)<br>
+                                • Integração: Stripe SDK (Pedro, 10h)<br>
+                                • QA: Testes end-to-end (Ana, 4h)<br>
+                                • DevOps: Deploy staging (Carlos, 2h)<br><br>
+                                <strong>Total Estimado:</strong> 29 pontos | 30 horas trabalho
+                            </p>
+                        </div>
+                    </div>
+                    <div class="good-practice-card">
+                        <h4>👥 Developers São Donos do Sprint Backlog</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Durante o Sprint, APENAS Developers podem:</strong><br>
+                            • Adicionar/remover tarefas<br>
+                            • Atualizar progresso<br>
+                            • Reestimar trabalho restante<br>
+                            • Reorganizar plano<br><br>
+                            <strong>PO NÃO pode mudar Sprint Backlog sem consenso dos Developers!</strong>
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        Sprint Backlog é transparente, atualizado e visível a todos. Qualquer um pode VER, só Developers podem MUDAR!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: INCREMENTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>✅ Incremento</h2>
+                    <p>O produto funcionando</p>
+                </div>
+                <div class="slide-body">
+                    <div class="artifact-card">
+                        <h4>✅ O Que É Incremento?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Um <strong>degrau concreto</strong> em direção ao Product Goal.<br>
+                            Cada Incremento é <strong>aditivo</strong> a todos os Incrementos anteriores.<br>
+                            Deve estar <strong>"Done"</strong> (atender Definition of Done).<br>
+                            Múltiplos Incrementos podem ser criados em um Sprint.
+                        </p>
+                    </div>
+                    <div class="big-idea">Incremento = Soma de TUDO que está "Done" até agora! 📦</div>
+                    <div class="two-column">
+                        <div class="content-box artifact-box">
+                            <h3>✅ Características</h3>
+                            <ul>
+                                <li><strong>Funcionando:</strong> Produto real, não protótipo</li>
+                                <li><strong>Usável:</strong> Pode ser usado por usuário</li>
+                                <li><strong>Testado:</strong> Passou em todos os testes</li>
+                                <li><strong>"Done":</strong> Atende DoD</li>
+                                <li><strong>Potencialmente Liberável:</strong> Pode ir para produção</li>
+                            </ul>
+                        </div>
+                        <div class="content-box artifact-box">
+                            <h3>🚀 Quando Criar?</h3>
+                            <ul>
+                                <li>Pelo menos 1 por Sprint</li>
+                                <li>Pode ter vários por Sprint</li>
+                                <li>Deve ser apresentado no Review</li>
+                                <li>PO decide quando liberar</li>
+                                <li>Incrementos se somam!</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--artifact-teal);">
+                        <h4 style="color: var(--artifact-teal);">📈 Exemplo: Incrementos Acumulativos</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Sprint 1 - Incremento:</strong><br>
+                                • Login funcionando<br>
+                                • Cadastro de usuário<br>
+                                • Página inicial<br>
+                                <strong>= Produto tem 3 features</strong><br><br>
+                                
+                                <strong>Sprint 2 - Incremento:</strong><br>
+                                • Catálogo de produtos<br>
+                                • Busca<br>
+                                <strong>= Produto agora tem 5 features (3 + 2)</strong><br><br>
+                                
+                                <strong>Sprint 3 - Incremento:</strong><br>
+                                • Carrinho de compras<br>
+                                • Checkout<br>
+                                <strong>= Produto agora tem 7 features (5 + 2)</strong><br><br>
+                                
+                                <strong>💡 Cada Incremento ADICIONA ao anterior!</strong> Produto cresce continuamente.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 "Potencialmente Liberável" ≠ "Deve Ser Liberado"</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Potencialmente Liberável:</strong> Incremento PODE ir para produção (está pronto)<br>
+                            <strong>Decisão de Liberar:</strong> PO decide QUANDO liberar<br><br>
+                            Time pode criar vários Incrementos no Sprint, mas PO decide se/quando deployar!<br>
+                            Algumas organizações deployam a cada Sprint. Outras acumulam para releases maiores.
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        Incremento que não está "Done" NÃO pode ser liberado. Incremento "Done" CAN (mas não MUST) ser liberado!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: DEFINITION OF DONE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>✅ Definition of Done (DoD)</h2>
+                    <p>Quando algo está realmente "pronto"?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="artifact-card">
+                        <h4>✅ O Que É Definition of Done?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Descrição <strong>formal</strong> do estado do Incremento quando ele atende as <strong>medidas de qualidade</strong> requeridas para o produto.<br>
+                            Checklist que TODO item do backlog deve atender para ser considerado <strong>"Done"</strong>.<br>
+                            Cria <strong>transparência</strong> do que significa "completo".
+                        </p>
+                    </div>
+                    <div class="big-idea">DoD = Contrato de qualidade! Se não passou em tudo, NÃO está Done! ✅</div>
+                    <div class="dod-checklist">
+                        <h4>📋 Exemplo: Definition of Done (E-commerce)</h4>
+                        <ul style="margin-top: 15px;">
+                            <li>Código escrito e revisado (Code Review aprovado)</li>
+                            <li>Testes unitários criados e passando (>80% cobertura)</li>
+                            <li>Testes de integração passando</li>
+                            <li>Testes de aceitação (E2E) passando</li>
+                            <li>Documentação técnica atualizada</li>
+                            <li>Sem bugs críticos ou bloqueadores</li>
+                            <li>Deploy em ambiente de staging bem-sucedido</li>
+                            <li>Aceito pelo Product Owner</li>
+                            <li>Atende critérios de acessibilidade (WCAG 2.1)</li>
+                            <li>Performance dentro dos SLAs (< 2s carregamento)</li>
+                            <li>Segurança verificada (OWASP top 10)</li>
+                            <li>Pode ser demonstrado ao usuário final</li>
+                        </ul>
+                        <p style="margin-top: 20px; font-size: 1.1rem; color: var(--unifil-dark);">
+                            <strong>Se 1 item não for atendido, trabalho NÃO está "Done"!</strong>
+                        </p>
+                    </div>
+                    <div class="two-column">
+                        <div class="good-practice-card">
+                            <h4>✅ Bom DoD</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.05rem;">
+                                <li style="padding: 5px 0;">✓ Específico e verificável</li>
+                                <li style="padding: 5px 0;">✓ Mesmo padrão para tudo</li>
+                                <li style="padding: 5px 0;">✓ Criado pelo Scrum Team</li>
+                                <li style="padding: 5px 0;">✓ Evolui ao longo do tempo</li>
+                                <li style="padding: 5px 0;">✓ Público e visível</li>
+                                <li style="padding: 5px 0;">✓ 8-15 itens (não muito longo)</li>
+                            </ul>
+                        </div>
+                        <div class="antipattern-card">
+                            <h4>❌ DoD Ruim</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.05rem;">
+                                <li style="padding: 5px 0;">❌ Vago: "Código de qualidade"</li>
+                                <li style="padding: 5px 0;">❌ Diferente por tipo de trabalho</li>
+                                <li style="padding: 5px 0;">❌ Imposto por gerência</li>
+                                <li style="padding: 5px 0;">❌ Nunca atualizado</li>
+                                <li style="padding: 5px 0;">❌ Escondido/não compartilhado</li>
+                                <li style="padding: 5px 0;">❌ Lista gigante (50+ itens)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>⚙️ DoD Evolui Com o Time</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Time Novo:</strong> DoD pode ser simples (código funciona, testado manualmente)<br>
+                            <strong>Time Maduro:</strong> DoD inclui CI/CD, testes automatizados, segurança, performance<br><br>
+                            <strong>Na Retrospectiva:</strong> Time discute se DoD precisa evoluir!<br>
+                            Adicionar critério aumenta qualidade. Remover critério = técnico débito!
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Done" significa DONE! Não "quase pronto", "95% completo". É binário: Done ou Not Done!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você dominou os Artefatos Scrum! 📦</div>
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="content-box artifact-box">
+                            <h3>📋 Product Backlog</h3>
+                            <ul>
+                                <li>Lista ordenada</li>
+                                <li>PO é dono</li>
+                                <li>Nunca completo</li>
+                                <li>Evolui sempre</li>
+                                <li>Product Goal</li>
+                            </ul>
+                        </div>
+                        <div class="content-box artifact-box">
+                            <h3>📝 Sprint Backlog</h3>
+                            <ul>
+                                <li>Plano do Sprint</li>
+                                <li>Developers donos</li>
+                                <li>Goal + Items + Plan</li>
+                                <li>Atualizado diariamente</li>
+                                <li>Sprint Goal</li>
+                            </ul>
+                        </div>
+                        <div class="content-box artifact-box">
+                            <h3>✅ Incremento</h3>
+                            <ul>
+                                <li>Produto funcionando</li>
+                                <li>Aditivo (soma)</li>
+                                <li>Atende DoD</li>
+                                <li>Potencialmente liberável</li>
+                                <li>Definition of Done</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="artifact-card" style="margin-top: 30px;">
+                        <h4>🔑 Framework Scrum Completo</h4>
+                        <p style="font-size: 1.2rem; margin-top: 15px; text-align: center;">
+                            <strong>3 Papéis</strong> (PO, SM, Developers) +<br>
+                            <strong>5 Eventos</strong> (Sprint, Planning, Daily, Review, Retro) +<br>
+                            <strong>3 Artefatos</strong> (Product Backlog, Sprint Backlog, Incremento) =<br>
+                            <strong>SCRUM!</strong> 🎉
+                        </p>
+                    </div>
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (12/03)</h3>
+                            <ul>
+                                <li><strong>Métricas Ágeis</strong></li>
+                                <li>Velocity (Velocidade)</li>
+                                <li>Burndown Chart</li>
+                                <li>Burnup Chart</li>
+                                <li>Cumulative Flow</li>
+                            </ul>
+                        </div>
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Criar Product Backlog do projeto</li>
+                                <li>Definir DoD do time</li>
+                                <li>Planejar próximo Sprint</li>
+                                <li>Estimar itens do backlog</li>
+                                <li>Preparar demo incremento</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Artefatos criam transparência. Transparência gera confiança. Confiança permite inspeção e adaptação!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Pilares do Scrum! 🏛️</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 40px; color: #6B6B6B;">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado! Até quinta-feira! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Próxima: Métricas Ágeis (12/03)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 7</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>

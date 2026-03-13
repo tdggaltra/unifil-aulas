@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 10 - Sprint Retrospective | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --retro-purple: #9C27B0;
+            --retro-deep: #7B1FA2;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+        }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px; height: 90%;
+            margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p { font-size: 1.1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+        .content-box {
+            background: var(--unifil-light); padding: 30px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.5rem; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li {
+            padding: 10px 0; padding-left: 30px; position: relative;
+            font-size: 1.1rem; line-height: 1.6;
+        }
+        .content-box li::before {
+            content: '→'; position: absolute; left: 0; color: var(--unifil-orange);
+            font-weight: bold; font-size: 1.3rem;
+        }
+        .retro-box { background: #F3E5F5; border-left-color: var(--retro-purple); }
+        .retro-box h3 { color: var(--retro-purple); }
+        .retro-box li::before { color: var(--retro-purple); }
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 40px; border-radius: 20px; text-align: center;
+            font-size: 1.8rem; font-weight: 600; margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.6rem; }
+        .retro-card {
+            background: linear-gradient(135deg, var(--retro-purple) 0%, var(--retro-deep) 100%);
+            color: white; padding: 35px; border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(156, 39, 176, 0.3);
+        }
+        .retro-card h4 { font-size: 1.6rem; margin-bottom: 15px; }
+        .technique-card {
+            background: white; border: 3px solid var(--retro-purple);
+            padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .technique-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(156, 39, 176, 0.2);
+        }
+        .technique-card h4 { color: var(--retro-purple); font-size: 1.4rem; margin-bottom: 15px; }
+        .good-practice-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .good-practice-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .antipattern-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .antipattern-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white; padding: 35px; border-radius: 20px; margin: 30px 0;
+            font-style: italic; font-size: 1.3rem; text-align: center;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0; position: relative;
+        }
+        .quote-box::before {
+            content: '"'; font-size: 4rem; position: absolute;
+            top: -10px; left: 20px; opacity: 0.3;
+        }
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.3rem; }
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center; z-index: 1000;
+        }
+        .nav-button {
+            background: var(--unifil-orange); color: white; border: none;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent); transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter {
+            background: white; padding: 10px 25px; border-radius: 50px;
+            font-weight: 600; color: var(--unifil-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 5px;
+            background: var(--unifil-orange); transition: width 0.3s ease; z-index: 1001;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-body::-webkit-scrollbar { width: 10px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">🔄 Aula 10</h2>
+                    <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Sprint Retrospective</h3>
+                    <p style="font-size: 1.5rem; color: var(--retro-purple); margin-bottom: 15px; font-weight: 600;">Melhoria Contínua e Kaizen</p>
+                    <p style="font-size: 1.3rem; color: #6B6B6B; margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                    <p style="font-size: 1.1rem; color: #6B6B6B;">Sábado, 08 de Março de 2026</p>
+                    <div class="big-idea" style="margin-top: 40px;">"Retro é o evento MAIS IMPORTANTE do Scrum!" 💜</div>
+                    <div style="margin-top: 40px; color: #6B6B6B; font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: O QUE É RETROSPECTIVE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 O Que É Sprint Retrospective?</h2>
+                    <p>O evento de melhoria contínua</p>
+                </div>
+                <div class="slide-body">
+                    <div class="retro-card">
+                        <h4>📖 Definição do Scrum Guide</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            "O propósito da Sprint Retrospective é planejar maneiras de <strong>aumentar qualidade e eficácia</strong>. 
+                            O Scrum Team inspeciona como foi o último Sprint em relação a <strong>indivíduos, interações, processos, 
+                            ferramentas e Definition of Done</strong>."
+                        </p>
+                    </div>
+                    <div class="big-idea">Retro = Time olha para DENTRO e se pergunta: "Como podemos melhorar?" 🔍</div>
+                    <div class="two-column">
+                        <div class="content-box retro-box">
+                            <h3>🎯 Propósito</h3>
+                            <ul>
+                                <li>Inspecionar o PROCESSO</li>
+                                <li>Identificar o que funcionou</li>
+                                <li>Descobrir o que pode melhorar</li>
+                                <li>Criar plano de ação</li>
+                                <li>Celebrar conquistas</li>
+                            </ul>
+                        </div>
+                        <div class="content-box retro-box">
+                            <h3>👥 Participantes</h3>
+                            <ul>
+                                <li><strong>Scrum Team:</strong> TODOS obrigatório</li>
+                                <li><strong>PO:</strong> SIM!</li>
+                                <li><strong>Developers:</strong> SIM!</li>
+                                <li><strong>SM:</strong> Facilita</li>
+                                <li><strong>Stakeholders:</strong> NÃO!</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box retro-box">
+                            <h3>⏰ Timebox</h3>
+                            <ul>
+                                <li><strong>Sprint 1 mês:</strong> Máx 3 horas</li>
+                                <li><strong>Sprint 2 semanas:</strong> Máx 1.5 hora</li>
+                                <li><strong>Sprint 1 semana:</strong> Máx 45 min</li>
+                            </ul>
+                        </div>
+                        <div class="content-box retro-box">
+                            <h3>📅 Quando</h3>
+                            <ul>
+                                <li>ÚLTIMO evento do Sprint</li>
+                                <li>APÓS Sprint Review</li>
+                                <li>ANTES do próximo Planning</li>
+                                <li>Ambiente privado e seguro</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>💡 Por Que Retro É o MAIS IMPORTANTE?</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Todos os outros eventos melhoram o PRODUTO.<br>
+                            Retro é o ÚNICO que melhora o TIME e o PROCESSO!<br><br>
+                            Sem Retro, time NUNCA melhora. Com Retro, time evolui exponencialmente! 📈
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Loucura é fazer sempre a mesma coisa e esperar resultados diferentes"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Einstein (e Retro evita isso!)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: ESTRUTURA DA RETRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📐 Estrutura da Retrospective</h2>
+                    <p>As 5 fases clássicas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Retro segue estrutura: Preparar → Coletar → Insights → Decidir → Fechar 🎯</div>
+                    <div class="good-practice-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Set the Stage (5-10 min)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Objetivo:</strong> Preparar todos mentalmente, criar ambiente seguro<br>
+                            <strong>Como:</strong><br>
+                            • Check-in: cada pessoa diz como está se sentindo (1 palavra)<br>
+                            • Relembrar Prime Directive: "Todos fizeram o melhor com conhecimento, habilidades e recursos disponíveis"<br>
+                            • Revisar ações da última Retro<br>
+                            <strong>Exemplo:</strong> "Em uma palavra, como foi esse Sprint para você?"
+                        </p>
+                    </div>
+                    <div class="good-practice-card" style="animation-delay: 0.1s;">
+                        <h4>2️⃣ Gather Data (15-20 min)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Objetivo:</strong> Coletar fatos e sentimentos sobre o Sprint<br>
+                            <strong>Como:</strong><br>
+                            • Timeline: construir linha do tempo do Sprint juntos<br>
+                            • Cada pessoa adiciona eventos/sentimentos<br>
+                            • Identificar padrões e tendências<br>
+                            <strong>Ferramentas:</strong> Post-its, Miro, Mural
+                        </p>
+                    </div>
+                    <div class="good-practice-card" style="animation-delay: 0.2s;">
+                        <h4>3️⃣ Generate Insights (20-30 min)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Objetivo:</strong> Descobrir POR QUÊ as coisas aconteceram<br>
+                            <strong>Como:</strong><br>
+                            • Agrupar temas similares<br>
+                            • Fazer 5 Whys para causa raiz<br>
+                            • Votar nos tópicos mais importantes<br>
+                            • Discutir os top 3-5 tópicos em profundidade
+                        </p>
+                    </div>
+                    <div class="good-practice-card" style="animation-delay: 0.3s;">
+                        <h4>4️⃣ Decide What to Do (15-20 min)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Objetivo:</strong> Criar ações concretas de melhoria<br>
+                            <strong>Como:</strong><br>
+                            • Brainstorm de possíveis ações<br>
+                            • Selecionar 1-3 ações (não mais!)<br>
+                            • Cada ação tem: O QUE + QUEM + QUANDO<br>
+                            <strong>⚠️ Crítico:</strong> Ações devem ser SMART (específicas, mensuráveis, alcançáveis)
+                        </p>
+                    </div>
+                    <div class="good-practice-card" style="animation-delay: 0.4s;">
+                        <h4>5️⃣ Close the Retro (5-10 min)</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Objetivo:</strong> Encerrar positivamente e agradecer<br>
+                            <strong>Como:</strong><br>
+                            • Recap das ações acordadas<br>
+                            • Agradecimentos e apreciações<br>
+                            • Feedback sobre a própria Retro (meta!)<br>
+                            • Check-out: "O que você leva dessa Retro?"
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        Retro sem ações concretas = reunião de desabafo. Retro COM ações = melhoria!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: TÉCNICAS DE RETRO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎨 Técnicas de Retrospective</h2>
+                    <p>Formatos populares para variar</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Varie o formato! Retro igual todo Sprint fica chata! 🔄</div>
+                    <div class="technique-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Start-Stop-Continue</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Quando usar:</strong> Times novos em Retro, simples e direto<br>
+                            <strong>Como funciona:</strong><br>
+                            • <strong>Start:</strong> O que devemos COMEÇAR a fazer?<br>
+                            • <strong>Stop:</strong> O que devemos PARAR de fazer?<br>
+                            • <strong>Continue:</strong> O que está funcionando e devemos MANTER?<br>
+                            <strong>Duração:</strong> 60 min total
+                        </p>
+                    </div>
+                    <div class="technique-card" style="animation-delay: 0.1s;">
+                        <h4>2️⃣ Glad-Sad-Mad</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Quando usar:</strong> Sprint emocionalmente intenso<br>
+                            <strong>Como funciona:</strong><br>
+                            • <strong>Glad 😊:</strong> O que te deixou feliz/orgulhoso?<br>
+                            • <strong>Sad 😢:</strong> O que te deixou triste/desapontado?<br>
+                            • <strong>Mad 😡:</strong> O que te deixou frustrado/irritado?<br>
+                            <strong>Benefício:</strong> Valida emoções, cria empatia
+                        </p>
+                    </div>
+                    <div class="technique-card" style="animation-delay: 0.2s;">
+                        <h4>3️⃣ Sailboat (Barco à Vela)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Quando usar:</strong> Visualizar o que impulsiona vs atrasa time<br>
+                            <strong>Metáfora:</strong> Time é um barco navegando para ilha (meta)<br>
+                            • <strong>Vento ⛵:</strong> O que nos impulsiona?<br>
+                            • <strong>Âncora ⚓:</strong> O que nos segura?<br>
+                            • <strong>Rochas 🪨:</strong> Riscos à frente<br>
+                            • <strong>Ilha 🏝️:</strong> Nossa meta/Sprint Goal<br>
+                            <strong>Visual:</strong> Desenhe barco no quadro!
+                        </p>
+                    </div>
+                    <div class="technique-card" style="animation-delay: 0.3s;">
+                        <h4>4️⃣ 4Ls (Liked, Learned, Lacked, Longed For)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Quando usar:</strong> Foco em aprendizado e crescimento<br>
+                            <strong>Como funciona:</strong><br>
+                            • <strong>Liked:</strong> O que gostei?<br>
+                            • <strong>Learned:</strong> O que aprendi?<br>
+                            • <strong>Lacked:</strong> O que faltou?<br>
+                            • <strong>Longed For:</strong> O que desejei ter?<br>
+                            <strong>Benefício:</strong> Celebra aprendizado
+                        </p>
+                    </div>
+                    <div class="technique-card" style="animation-delay: 0.4s;">
+                        <h4>5️⃣ Starfish (Estrela do Mar)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Quando usar:</strong> Nuance além de Start-Stop-Continue<br>
+                            <strong>5 categorias:</strong><br>
+                            • <strong>Keep Doing:</strong> Continue fazendo<br>
+                            • <strong>Less Of:</strong> Faça menos (não pare completamente)<br>
+                            • <strong>More Of:</strong> Faça mais (não comece do zero)<br>
+                            • <strong>Stop Doing:</strong> Pare de fazer<br>
+                            • <strong>Start Doing:</strong> Comece a fazer<br>
+                            <strong>Visual:</strong> Desenhe estrela de 5 pontas!
+                        </p>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Recurso Incrível</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Retromat.org:</strong> Mais de 100+ técnicas de Retro!<br>
+                            Gera agenda aleatória com 5 atividades. Nunca repita formato! 🎲
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: AMBIENTE SEGURO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🛡️ Ambiente Psicologicamente Seguro</h2>
+                    <p>Fundação de toda Retro eficaz</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Sem segurança psicológica, Retro é teatro. Com segurança, é transformação! 💜</div>
+                    <div class="retro-card">
+                        <h4>🔑 Prime Directive (Diretiva Principal)</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px; font-style: italic;">
+                            "Independente do que descobrimos, entendemos e acreditamos verdadeiramente que 
+                            <strong>todos fizeram o melhor trabalho possível</strong>, dado o que sabiam na época, 
+                            suas habilidades e recursos disponíveis, e a situação em questão."
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 20px;">
+                            <strong>SM deve ler isso NO INÍCIO de TODA Retro!</strong> 📢
+                        </p>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box retro-box">
+                            <h3>✅ Sinais de Ambiente Seguro</h3>
+                            <ul>
+                                <li>Pessoas falam honestamente</li>
+                                <li>Admitem erros sem medo</li>
+                                <li>Fazem perguntas "bobas"</li>
+                                <li>Discordam respeitosamente</li>
+                                <li>Compartilham vulnerabilidades</li>
+                                <li>Riem juntos</li>
+                            </ul>
+                        </div>
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">❌ Sinais de Ambiente INSEGURO</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">❌ Silêncio ou respostas genéricas</li>
+                                <li style="padding: 8px 0;">❌ Culpar outros/externos</li>
+                                <li style="padding: 8px 0;">❌ Pessoas com medo de falar</li>
+                                <li style="padding: 8px 0;">❌ Gerente/chefe presente</li>
+                                <li style="padding: 8px 0;">❌ Retaliação após feedback</li>
+                                <li style="padding: 8px 0;">❌ "Tudo está ótimo!"</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="good-practice-card" style="margin-top: 30px;">
+                        <h4>🛡️ Como SM Cria Ambiente Seguro</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.05rem;">
+                            <li style="padding: 8px 0;">✓ <strong>Privacidade:</strong> Retro NUNCA tem stakeholders/gerentes</li>
+                            <li style="padding: 8px 0;">✓ <strong>Confidencialidade:</strong> O que é dito na Retro, fica na Retro</li>
+                            <li style="padding: 8px 0;">✓ <strong>Sem julgamento:</strong> Todas as opiniões são válidas</li>
+                            <li style="padding: 8px 0;">✓ <strong>Foco no sistema:</strong> Não culpar pessoas</li>
+                            <li style="padding: 8px 0;">✓ <strong>Exemplo:</strong> SM compartilha vulnerabilidade primeiro</li>
+                            <li style="padding: 8px 0;">✓ <strong>Intervir:</strong> Se alguém ataca outro, SM protege</li>
+                        </ul>
+                    </div>
+                    <div class="example-card" style="border-color: var(--retro-purple); margin-top: 30px;">
+                        <h4 style="color: var(--retro-purple);">🎭 Exemplo: SM Criando Segurança</h4>
+                        <div style="background: #F3E5F5; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Situação:</strong> João culpa Maria: "O bug foi culpa da Maria, ela não testou!"<br><br>
+                                <strong>SM intervém:</strong><br>
+                                "João, vamos reformular isso. <strong>Não buscamos culpados, buscamos melhorias no PROCESSO.</strong><br>
+                                Perguntas mais úteis:<br>
+                                • Por que o bug não foi detectado antes de produção?<br>
+                                • O que podemos mudar no nosso processo de testes?<br>
+                                • Como podemos evitar isso no futuro?<br><br>
+                                Maria, você está segura para compartilhar sua perspectiva?"<br><br>
+                                <strong>✅ Resultado:</strong> Foco volta para processo, não pessoas. Ambiente restaurado.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="quote-box">
+                        "Culpa é inimiga da melhoria. Foque no SISTEMA, não nas PESSOAS!"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: ANTI-PADRÕES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚠️ Anti-Padrões da Retro</h2>
+                    <p>Armadilhas que matam a melhoria</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Reconheça os assassinos da Retro! ☠️</div>
+                    <div class="antipattern-card" style="animation-delay: 0s;">
+                        <h4>❌ 1. Retro Sem Ações</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Retro termina sem nenhum compromisso concreto<br>
+                            <strong>Causa:</strong> Apenas desabafar, sem pensar em soluções<br>
+                            <strong>Solução:</strong> Sempre sair com 1-3 ações SMART (específicas, mensuráveis)
+                        </p>
+                    </div>
+                    <div class="antipattern-card" style="animation-delay: 0.1s;">
+                        <h4>❌ 2. Ações Nunca Implementadas</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Time cria ações mas nunca executa<br>
+                            <strong>Causa:</strong> Ações vagas OU muitas ações OU sem responsável<br>
+                            <strong>Solução:</strong> Máximo 3 ações. Cada ação tem QUEM + QUANDO. Review próxima Retro.
+                        </p>
+                    </div>
+                    <div class="antipattern-card" style="animation-delay: 0.2s;">
+                        <h4>❌ 3. Sempre Mesmo Formato</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Start-Stop-Continue todo Sprint, time entediado<br>
+                            <strong>Causa:</strong> SM não varia técnicas<br>
+                            <strong>Solução:</strong> Retromat.org! Novo formato cada Sprint. Time escolhe às vezes.
+                        </p>
+                    </div>
+                    <div class="antipattern-card" style="animation-delay: 0.3s;">
+                        <h4>❌ 4. Gerente na Retro</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Chefe/gerente participa, time se cala<br>
+                            <strong>Causa:</strong> Falta entendimento que Retro é apenas Scrum Team<br>
+                            <strong>Solução:</strong> SM educadamente remove gerente. "Retro é privada para time Scrum"
+                        </p>
+                    </div>
+                    <div class="antipattern-card" style="animation-delay: 0.4s;">
+                        <h4>❌ 5. Retro de Culpa</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Time aponta dedos, culpa pessoas específicas<br>
+                            <strong>Causa:</strong> Cultura de punição, falta segurança psicológica<br>
+                            <strong>Solução:</strong> Prime Directive. SM redireciona para sistema. "Não quem, mas por quê"
+                        </p>
+                    </div>
+                    <div class="antipattern-card" style="animation-delay: 0.5s;">
+                        <h4>❌ 6. Retro Cancelada</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> "Sprint foi bom, vamos pular Retro hoje"<br>
+                            <strong>Causa:</strong> Time não vê valor OU SM não defende importância<br>
+                            <strong>Solução:</strong> Retro é OBRIGATÓRIA. Mesmo Sprint perfeito tem oportunidades de melhoria!
+                        </p>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🚨 Red Flag Máximo</h3>
+                        <p style="font-size: 1.3rem; margin-top: 15px; font-weight: 600;">
+                            Se time diz "Retro é perda de tempo", algo está MUITO errado!<br><br>
+                            Retro ruim é pior que sem Retro. Mas Retro BOA transforma times! 🚀
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você dominou a Sprint Retrospective! 🔄</div>
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box retro-box">
+                            <h3>🔄 Sprint Retrospective</h3>
+                            <ul>
+                                <li>MAIS IMPORTANTE evento Scrum</li>
+                                <li>Melhoria contínua (Kaizen)</li>
+                                <li>Apenas Scrum Team</li>
+                                <li>5 fases: Set-Gather-Insights-Decide-Close</li>
+                                <li>Max 3h (Sprint 1 mês)</li>
+                            </ul>
+                        </div>
+                        <div class="content-box retro-box">
+                            <h3>🎨 Técnicas</h3>
+                            <ul>
+                                <li>Start-Stop-Continue</li>
+                                <li>Glad-Sad-Mad</li>
+                                <li>Sailboat (Barco)</li>
+                                <li>4Ls (Liked-Learned...)</li>
+                                <li>Starfish (Estrela)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="retro-card" style="margin-top: 30px;">
+                        <h4>🔑 Chaves para Retro de Sucesso</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">1️⃣ <strong>Ambiente Seguro:</strong> Prime Directive sempre!</li>
+                            <li style="padding: 8px 0;">2️⃣ <strong>Ações Concretas:</strong> 1-3 ações SMART</li>
+                            <li style="padding: 8px 0;">3️⃣ <strong>Variar Formato:</strong> Nunca mesma técnica 2x</li>
+                            <li style="padding: 8px 0;">4️⃣ <strong>Foco Sistema:</strong> Não culpar pessoas</li>
+                            <li style="padding: 8px 0;">5️⃣ <strong>Implementar:</strong> Review ações na próxima Retro</li>
+                        </ul>
+                    </div>
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Trabalho Final</h3>
+                            <ul>
+                                <li><strong>Projeto Semestral</strong></li>
+                                <li>Aplicar TODOS conceitos</li>
+                                <li>Scrum completo no projeto</li>
+                                <li>Apresentação final</li>
+                                <li>Entrega: Conforme cronograma</li>
+                            </ul>
+                        </div>
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Fazer Retro no grupo projeto</li>
+                                <li>Experimentar 2 técnicas diferentes</li>
+                                <li>Criar 2-3 ações melhoria</li>
+                                <li>Preparar apresentação final</li>
+                                <li>Revisar TODO o conteúdo</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Kaizen: Melhoria contínua. Hoje melhor que ontem, amanhã melhor que hoje!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Essência do Scrum! 💜</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 40px; color: #6B6B6B;">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado pela jornada! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Vocês dominaram Scrum! Agora, PRATIQUEM! 🚀</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 7</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>

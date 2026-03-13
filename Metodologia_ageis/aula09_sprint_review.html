@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 9 - Sprint Review | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --review-blue: #2196F3;
+            --review-indigo: #3F51B5;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+        }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px; height: 90%;
+            margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p { font-size: 1.1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .content-box {
+            background: var(--unifil-light); padding: 30px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.5rem; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li {
+            padding: 10px 0; padding-left: 30px; position: relative;
+            font-size: 1.1rem; line-height: 1.6;
+        }
+        .content-box li::before {
+            content: '→'; position: absolute; left: 0; color: var(--unifil-orange);
+            font-weight: bold; font-size: 1.3rem;
+        }
+        .review-box { background: #E3F2FD; border-left-color: var(--review-blue); }
+        .review-box h3 { color: var(--review-blue); }
+        .review-box li::before { color: var(--review-blue); }
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 40px; border-radius: 20px; text-align: center;
+            font-size: 1.8rem; font-weight: 600; margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.6rem; }
+        .demo-card {
+            background: linear-gradient(135deg, var(--review-blue) 0%, var(--review-indigo) 100%);
+            color: white; padding: 35px; border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.3);
+        }
+        .demo-card h4 { font-size: 1.6rem; margin-bottom: 15px; }
+        .good-practice-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .good-practice-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .antipattern-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .antipattern-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white; padding: 35px; border-radius: 20px; margin: 30px 0;
+            font-style: italic; font-size: 1.3rem; text-align: center;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0; position: relative;
+        }
+        .quote-box::before {
+            content: '"'; font-size: 4rem; position: absolute;
+            top: -10px; left: 20px; opacity: 0.3;
+        }
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2);
+        }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.3rem; }
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center; z-index: 1000;
+        }
+        .nav-button {
+            background: var(--unifil-orange); color: white; border: none;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent); transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter {
+            background: white; padding: 10px 25px; border-radius: 50px;
+            font-weight: 600; color: var(--unifil-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 5px;
+            background: var(--unifil-orange); transition: width 0.3s ease; z-index: 1001;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-body::-webkit-scrollbar { width: 10px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">🎬 Aula 9</h2>
+                    <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Sprint Review</h3>
+                    <p style="font-size: 1.5rem; color: var(--review-blue); margin-bottom: 15px; font-weight: 600;">Demo e Colaboração com Stakeholders</p>
+                    <p style="font-size: 1.3rem; color: #6B6B6B; margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                    <p style="font-size: 1.1rem; color: #6B6B6B;">Quinta-feira, 06 de Março de 2026</p>
+                    <div class="big-idea" style="margin-top: 40px;">"Review não é PowerPoint! É produto FUNCIONANDO!" 💻</div>
+                    <div style="margin-top: 40px; color: #6B6B6B; font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: O QUE É SPRINT REVIEW -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎬 O Que É Sprint Review?</h2>
+                    <p>Inspeção e adaptação do produto</p>
+                </div>
+                <div class="slide-body">
+                    <div class="demo-card">
+                        <h4>📖 Definição do Scrum Guide</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            "O propósito do Sprint Review é <strong>inspecionar o resultado</strong> do Sprint e determinar 
+                            <strong>adaptações futuras</strong>. O Scrum Team apresenta os resultados do trabalho para 
+                            stakeholders chave e o progresso em direção ao Product Goal é discutido."
+                        </p>
+                    </div>
+                    <div class="big-idea">Review = DEMO ao vivo + COLABORAÇÃO! Não é relatório! 🎯</div>
+                    <div class="two-column">
+                        <div class="content-box review-box">
+                            <h3>🎯 Propósito</h3>
+                            <ul>
+                                <li>Inspecionar incremento "Done"</li>
+                                <li>Obter feedback stakeholders</li>
+                                <li>Adaptar Product Backlog</li>
+                                <li>Colaborar sobre próximos passos</li>
+                                <li>Avaliar progresso → Product Goal</li>
+                            </ul>
+                        </div>
+                        <div class="content-box review-box">
+                            <h3>👥 Participantes</h3>
+                            <ul>
+                                <li><strong>Scrum Team:</strong> TODOS</li>
+                                <li><strong>Stakeholders:</strong> Convidados</li>
+                                <li><strong>Usuários:</strong> Se possível!</li>
+                                <li><strong>Clientes:</strong> Essencial</li>
+                                <li><strong>Gerência:</strong> Bem-vinda</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box review-box">
+                            <h3>⏰ Timebox</h3>
+                            <ul>
+                                <li><strong>Sprint 1 mês:</strong> Máx 4 horas</li>
+                                <li><strong>Sprint 2 semanas:</strong> Máx 2 horas</li>
+                                <li><strong>Sprint 1 semana:</strong> Máx 1 hora</li>
+                                <li>Proporcional ao Sprint</li>
+                            </ul>
+                        </div>
+                        <div class="content-box review-box">
+                            <h3>📅 Quando</h3>
+                            <ul>
+                                <li>Penúltimo dia do Sprint</li>
+                                <li>ANTES da Retrospective</li>
+                                <li>Após último Daily</li>
+                                <li>Horário fixo e recorrente</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box">
+                        Review é reunião de TRABALHO, não cerimônia formal!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: DEMO AO VIVO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💻 Demo ao Vivo</h2>
+                    <p>O coração do Sprint Review</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">NUNCA mostre PowerPoint! Mostre PRODUTO FUNCIONANDO! 🚀</div>
+                    <div class="demo-card">
+                        <h4>🎬 O Que É Demo?</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Demonstração AO VIVO</strong> do incremento de produto funcionando.<br>
+                            Mostra features completas que atendem Definition of Done.<br>
+                            Stakeholders <strong>USAM</strong> o produto, não apenas assistem!<br><br>
+                            <strong>Regra de ouro:</strong> Se não está "Done", não mostra!
+                        </p>
+                    </div>
+                    <div class="two-column">
+                        <div class="good-practice-card">
+                            <h4>✅ DEMO Eficaz</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">✓ Produto funcionando ao vivo</li>
+                                <li style="padding: 8px 0;">✓ Usuário real testando</li>
+                                <li style="padding: 8px 0;">✓ Navegação completa</li>
+                                <li style="padding: 8px 0;">✓ Dados reais (não mock)</li>
+                                <li style="padding: 8px 0;">✓ Foco em valor de negócio</li>
+                                <li style="padding: 8px 0;">✓ Stakeholders podem tocar</li>
+                            </ul>
+                        </div>
+                        <div class="antipattern-card">
+                            <h4>❌ DEMO Ruim</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.05rem;">
+                                <li style="padding: 8px 0;">❌ PowerPoint com screenshots</li>
+                                <li style="padding: 8px 0;">❌ Vídeo gravado</li>
+                                <li style="padding: 8px 0;">❌ Apenas mostrar código</li>
+                                <li style="padding: 8px 0;">❌ "Quase funciona..."</li>
+                                <li style="padding: 8px 0;">❌ Mockups/protótipos</li>
+                                <li style="padding: 8px 0;">❌ Ambiente localhost quebrado</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--review-blue);">
+                        <h4 style="color: var(--review-blue);">📝 Estrutura de Demo Eficaz (30 min)</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>1. Contexto (2 min):</strong><br>
+                                "Nosso Sprint Goal era: 'Usuários podem fazer checkout completo'"<br><br>
+                                <strong>2. Demo Feature 1 (8 min):</strong><br>
+                                • PO ou Dev navega pelo fluxo real<br>
+                                • Stakeholder vê produto ao vivo<br>
+                                • Perguntas e feedback imediato<br><br>
+                                <strong>3. Demo Feature 2 (8 min):</strong><br>
+                                • Outro membro do time demonstra<br>
+                                • Rotaciona responsabilidade<br><br>
+                                <strong>4. Features Menores (7 min):</strong><br>
+                                • Melhorias, bugfixes, refatorações visíveis<br><br>
+                                <strong>5. O Que NÃO Fizemos (5 min):</strong><br>
+                                • Transparência! Explica o que ficou pendente e por quê
+                            </p>
+                        </div>
+                    </div>
+                    <div class="quote-box">
+                        "Working software over comprehensive documentation" - Manifesto Ágil
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: COLABORAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🤝 Colaboração com Stakeholders</h2>
+                    <p>Review é diálogo, não monólogo</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Review eficaz = 50% demo + 50% discussão! 💬</div>
+                    <div class="demo-card">
+                        <h4>🎯 Objetivos da Colaboração</h4>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>1. Validar entendimento:</strong> "Isso é o que vocês precisavam?"<br>
+                            <strong>2. Capturar feedback:</strong> O que funciona? O que pode melhorar?<br>
+                            <strong>3. Descobrir novas oportunidades:</strong> "Isso me fez pensar em..."<br>
+                            <strong>4. Adaptar backlog:</strong> Reordenar prioridades com novas informações<br>
+                            <strong>5. Alinhar visão:</strong> Todos na mesma página sobre direção do produto
+                        </p>
+                    </div>
+                    <div class="example-card" style="border-color: var(--review-blue);">
+                        <h4 style="color: var(--review-blue);">💬 Perguntas Poderosas para Stakeholders</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem; line-height: 1.8;">
+                                <li style="padding: 8px 0;"><strong>PO:</strong> "Isso resolve o problema que vocês tinham?"</li>
+                                <li style="padding: 8px 0;"><strong>SM:</strong> "O que mais vocês gostariam de ver?"</li>
+                                <li style="padding: 8px 0;"><strong>Dev:</strong> "Alguma dúvida sobre como funciona?"</li>
+                                <li style="padding: 8px 0;"><strong>Time:</strong> "Isso muda alguma prioridade para vocês?"</li>
+                                <li style="padding: 8px 0;"><strong>PO:</strong> "Baseado nisso, deveríamos ajustar algo no backlog?"</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box review-box">
+                            <h3>✅ Boa Colaboração</h3>
+                            <ul>
+                                <li>Discussão aberta e honesta</li>
+                                <li>Stakeholders fazem perguntas</li>
+                                <li>Time escuta ativamente</li>
+                                <li>Feedback construtivo</li>
+                                <li>Decisões tomadas juntos</li>
+                                <li>Próximos passos claros</li>
+                            </ul>
+                        </div>
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">❌ Má Colaboração</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">❌ Monólogo do time</li>
+                                <li style="padding: 8px 0;">❌ Stakeholders passivos</li>
+                                <li style="padding: 8px 0;">❌ Críticas destrutivas</li>
+                                <li style="padding: 8px 0;">❌ Time defensivo</li>
+                                <li style="padding: 8px 0;">❌ Sem ação concreta</li>
+                                <li style="padding: 8px 0;">❌ "Só viemos ver"</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>📊 Adaptando o Product Backlog</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Review SEMPRE resulta em mudanças no backlog!<br><br>
+                            • Novas histórias descobertas durante demo<br>
+                            • Prioridades reordenadas com novo conhecimento<br>
+                            • Itens removidos (não mais necessários)<br>
+                            • Critérios de aceitação ajustados<br><br>
+                            <strong>PO é responsável por atualizar backlog após Review!</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: ANTI-PADRÕES -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚠️ Anti-Padrões do Review</h2>
+                    <p>Armadilhas que destroem o Review</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Reconheça os cheiros ruins do Review! 👃</div>
+                    <div class="antipattern-card">
+                        <h4>❌ 1. PowerPoint Review</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Review é apresentação com 40 slides mostrando screenshots<br>
+                            <strong>Causa:</strong> Time não completou trabalho "Done" ou medo de demo ao vivo<br>
+                            <strong>Solução:</strong> Regra: Se não funciona, não mostra! Seja honesto sobre o que não foi feito.
+                        </p>
+                    </div>
+                    <div class="antipattern-card">
+                        <h4>❌ 2. Review Sem Stakeholders</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Apenas Scrum Team presente. Stakeholders "muito ocupados"<br>
+                            <strong>Causa:</strong> Review não demonstra valor OU stakeholders não veem importância<br>
+                            <strong>Solução:</strong> PO convida pessoalmente. Mostra impacto de negócio. Horário fixo.
+                        </p>
+                    </div>
+                    <div class="antipattern-card">
+                        <h4>❌ 3. Demo Quebrada ao Vivo</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> "Funcionava ontem... deixa eu reiniciar... hmm, estranho..."<br>
+                            <strong>Causa:</strong> Não testaram demo antes OU ambiente instável<br>
+                            <strong>Solução:</strong> Dry-run 1h antes. Ambiente de staging dedicado para demos.
+                        </p>
+                    </div>
+                    <div class="antipattern-card">
+                        <h4>❌ 4. Review Aprovação (Sim/Não)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Stakeholder diz "Aprovado" ou "Rejeitado" como se fosse UAT<br>
+                            <strong>Causa:</strong> Confusão entre Review e Acceptance Testing<br>
+                            <strong>Solução:</strong> Review é INSPEÇÃO e ADAPTAÇÃO, não aprovação binária!
+                        </p>
+                    </div>
+                    <div class="antipattern-card">
+                        <h4>❌ 5. Review Apenas para "Done"</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sintoma:</strong> Time só mostra o que completou 100%, esconde problemas<br>
+                            <strong>Causa:</strong> Cultura de punição por não cumprir compromisso<br>
+                            <strong>Solução:</strong> Transparência! "Planejamos 8, fizemos 5 porque X". Aprendizado!
+                        </p>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🚨 Red Flag Máximo</h3>
+                        <p style="font-size: 1.3rem; margin-top: 15px; font-weight: 600;">
+                            Se Review sempre termina sem NENHUMA mudança no backlog, algo está errado!<br><br>
+                            Review eficaz SEMPRE gera aprendizado e adaptação!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: REVIEW REMOTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🌐 Sprint Review Remoto</h2>
+                    <p>Demo distribuída com impacto</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Review remoto BEM FEITO impressiona MAIS que presencial ruim! 💻</div>
+                    <div class="two-column">
+                        <div class="content-box review-box">
+                            <h3>✅ Setup Ideal</h3>
+                            <ul>
+                                <li>Zoom/Meet com gravação</li>
+                                <li>Câmeras ON (todos!)</li>
+                                <li>Compartilhar tela produto</li>
+                                <li>Ambiente staging acessível</li>
+                                <li>Chat para perguntas</li>
+                                <li>Stakeholders podem testar</li>
+                            </ul>
+                        </div>
+                        <div class="content-box review-box">
+                            <h3>🛠️ Ferramentas</h3>
+                            <ul>
+                                <li>Loom: Gravar prévia demo</li>
+                                <li>Miro: Feedback visual</li>
+                                <li>Slido: Q&A interativo</li>
+                                <li>Product Board: Notas colaborativas</li>
+                                <li>BrowserStack: Testar juntos</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--review-blue);">
+                        <h4 style="color: var(--review-blue);">🎬 Protocolo Review Remoto (2h)</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Antes (14h00 - 14h15):</strong><br>
+                                • Link Zoom enviado 1 dia antes com agenda<br>
+                                • Stakeholders recebem credenciais de acesso produto staging<br>
+                                • Time faz dry-run da demo 1h antes<br><br>
+                                <strong>Durante (14h15 - 16h00):</strong><br>
+                                • 0-5min: Boas-vindas, contexto do Sprint<br>
+                                • 5-50min: Demo ao vivo (time compartilha tela)<br>
+                                • 50-90min: Discussão colaborativa, feedback<br>
+                                • 90-105min: Próximos passos, ajustes backlog<br><br>
+                                <strong>Depois (16h00+):</strong><br>
+                                • Gravação compartilhada para ausentes<br>
+                                • PO atualiza backlog com insights<br>
+                                • Notas enviadas para todos stakeholders
+                            </p>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="good-practice-card">
+                            <h4>✅ FAÇA em Review Remoto</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 5px 0;">✓ Gravar sessão</li>
+                                <li style="padding: 5px 0;">✓ Compartilhar tela produto (não slides!)</li>
+                                <li style="padding: 5px 0;">✓ Pausar para perguntas</li>
+                                <li style="padding: 5px 0;">✓ Usar chat para Q&A assíncrono</li>
+                                <li style="padding: 5px 0;">✓ Dar acesso staging para stakeholders</li>
+                            </ul>
+                        </div>
+                        <div class="antipattern-card">
+                            <h4>❌ NÃO FAÇA</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 5px 0;">❌ Demo sem testar conexão antes</li>
+                                <li style="padding: 5px 0;">❌ Compartilhar slides ao invés de produto</li>
+                                <li style="padding: 5px 0;">❌ Monólogo de 2 horas</li>
+                                <li style="padding: 5px 0;">❌ Ignorar perguntas no chat</li>
+                                <li style="padding: 5px 0;">❌ Câmeras off (perde engajamento)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box">
+                        Review remoto BEM PREPARADO pode ser MELHOR que presencial improvisado!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você dominou o Sprint Review! 🎬</div>
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box review-box">
+                            <h3>🎬 Sprint Review</h3>
+                            <ul>
+                                <li>Demo produto FUNCIONANDO</li>
+                                <li>Não é PowerPoint!</li>
+                                <li>Colaboração stakeholders</li>
+                                <li>Adaptar Product Backlog</li>
+                                <li>Max 4h (Sprint 1 mês)</li>
+                            </ul>
+                        </div>
+                        <div class="content-box review-box">
+                            <h3>🎯 Elementos-Chave</h3>
+                            <ul>
+                                <li>Incremento "Done"</li>
+                                <li>Feedback imediato</li>
+                                <li>Discussão aberta</li>
+                                <li>Próximos passos</li>
+                                <li>Transparência total</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="demo-card" style="margin-top: 30px;">
+                        <h4>💡 Fórmula do Review de Sucesso</h4>
+                        <p style="font-size: 1.3rem; margin-top: 15px; text-align: center;">
+                            50% DEMO ao vivo + 50% DISCUSSÃO colaborativa = Review eficaz! 🎯
+                        </p>
+                    </div>
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (08/03)</h3>
+                            <ul>
+                                <li><strong>Sprint Retrospective</strong></li>
+                                <li>Inspeção do processo</li>
+                                <li>Melhoria contínua</li>
+                                <li>Técnicas de retro</li>
+                                <li>Ações de melhoria</li>
+                            </ul>
+                        </div>
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Preparar demo do projeto</li>
+                                <li>Praticar apresentação</li>
+                                <li>Testar ambiente staging</li>
+                                <li>Convidar "stakeholders"</li>
+                                <li>Fazer dry-run da demo</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Review eficaz transforma produto medíocre em produto incrível!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Feedback é ouro! 💰</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 40px; color: #6B6B6B;">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado! Até sábado! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Próxima: Sprint Retrospective (08/03)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 7</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 12 - Métricas Ágeis | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --metrics-blue: #1976D2;
+            --metrics-light-blue: #42A5F5;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+        }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px; height: 90%;
+            margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p { font-size: 1.1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .content-box {
+            background: var(--unifil-light); padding: 30px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.5rem; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li {
+            padding: 10px 0; padding-left: 30px; position: relative;
+            font-size: 1.1rem; line-height: 1.6;
+        }
+        .content-box li::before {
+            content: '→'; position: absolute; left: 0; color: var(--unifil-orange);
+            font-weight: bold; font-size: 1.3rem;
+        }
+        .metrics-box { background: #E3F2FD; border-left-color: var(--metrics-blue); }
+        .metrics-box h3 { color: var(--metrics-blue); }
+        .metrics-box li::before { color: var(--metrics-blue); }
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 40px; border-radius: 20px; text-align: center;
+            font-size: 1.8rem; font-weight: 600; margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.6rem; }
+        .metrics-card {
+            background: linear-gradient(135deg, var(--metrics-blue) 0%, var(--metrics-light-blue) 100%);
+            color: white; padding: 35px; border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(25, 118, 210, 0.3);
+        }
+        .metrics-card h4 { font-size: 1.6rem; margin-bottom: 15px; }
+        .chart-example {
+            background: white; border: 3px solid var(--metrics-blue);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .chart-example h4 { color: var(--metrics-blue); font-size: 1.4rem; margin-bottom: 15px; }
+        .good-practice-card {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .good-practice-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .antipattern-card {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+            color: white; padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .antipattern-card h4 { font-size: 1.4rem; margin-bottom: 15px; }
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white; padding: 35px; border-radius: 20px; margin: 30px 0;
+            font-style: italic; font-size: 1.3rem; text-align: center;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0; position: relative;
+        }
+        .quote-box::before {
+            content: '"'; font-size: 4rem; position: absolute;
+            top: -10px; left: 20px; opacity: 0.3;
+        }
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.3rem; }
+        .velocity-display {
+            background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
+            color: white; padding: 40px; border-radius: 20px; text-align: center; margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 15px 40px rgba(0, 188, 212, 0.3);
+        }
+        .velocity-display h3 { font-size: 4rem; font-weight: 700; margin-bottom: 15px; }
+        .velocity-display p { font-size: 1.3rem; }
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center; z-index: 1000;
+        }
+        .nav-button {
+            background: var(--unifil-orange); color: white; border: none;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent); transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter {
+            background: white; padding: 10px 25px; border-radius: 50px;
+            font-weight: 600; color: var(--unifil-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 5px;
+            background: var(--unifil-orange); transition: width 0.3s ease; z-index: 1001;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-body::-webkit-scrollbar { width: 10px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">📊 Aula 12</h2>
+                    <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Métricas Ágeis</h3>
+                    <p style="font-size: 1.5rem; color: var(--metrics-blue); margin-bottom: 15px; font-weight: 600;">Velocity, Burndown, Burnup e Fluxo</p>
+                    <p style="font-size: 1.3rem; color: #6B6B6B; margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                    <p style="font-size: 1.1rem; color: #6B6B6B;">Quinta-feira, 12 de Março de 2026</p>
+                    <div class="big-idea" style="margin-top: 40px;">"Medir para melhorar! Métricas guiam, não punem!" 📈</div>
+                    <div style="margin-top: 40px; color: #6B6B6B; font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: POR QUE MÉTRICAS? -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Por Que Métricas Ágeis?</h2>
+                    <p>O que não se mede, não se melhora</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Métricas servem para APRENDER e MELHORAR, não para PUNIR! 🎯</div>
+                    <div class="two-column">
+                        <div class="content-box metrics-box">
+                            <h3>✅ Boas Razões para Métricas</h3>
+                            <ul>
+                                <li>Entender capacidade do time</li>
+                                <li>Prever entregas futuras</li>
+                                <li>Identificar gargalos</li>
+                                <li>Melhorar processos</li>
+                                <li>Tomar decisões baseadas em dados</li>
+                                <li>Celebrar melhorias</li>
+                            </ul>
+                        </div>
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">❌ Más Razões</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;">❌ Comparar times</li>
+                                <li style="padding: 8px 0;">❌ Avaliar desempenho individual</li>
+                                <li style="padding: 8px 0;">❌ Punir time "lento"</li>
+                                <li style="padding: 8px 0;">❌ Microgerenciar</li>
+                                <li style="padding: 8px 0;">❌ Gaming (manipular números)</li>
+                                <li style="padding: 8px 0;">❌ Pressionar por velocidade</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="metrics-card">
+                        <h4>🎯 Princípios das Métricas Ágeis</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;"><strong>1. Transparência:</strong> Métricas visíveis para todos</li>
+                            <li style="padding: 8px 0;"><strong>2. Contexto:</strong> Números sem contexto não significam nada</li>
+                            <li style="padding: 8px 0;"><strong>3. Tendências:</strong> Importa mais a direção que o valor absoluto</li>
+                            <li style="padding: 8px 0;"><strong>4. Múltiplas Métricas:</strong> Uma métrica sozinha engana</li>
+                            <li style="padding: 8px 0;"><strong>5. Ação:</strong> Métricas devem levar a melhorias concretas</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>⚠️ Goodhart's Law</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px; font-style: italic;">
+                            "Quando uma medida se torna uma meta, ela deixa de ser uma boa medida."<br><br>
+                            <strong>Exemplo:</strong> Se você medir time por "Story Points entregues" e transformar isso em meta,<br>
+                            time vai inflar estimativas para "bater meta". Métrica se corrompe! 📉
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Métricas são como faróis: iluminam o caminho, mas não dirigem o barco!"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: VELOCITY -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🚀 Velocity (Velocidade)</h2>
+                    <p>Quanto o time entrega por Sprint?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="metrics-card">
+                        <h4>🚀 O Que É Velocity?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Quantidade de <strong>Story Points</strong> (ou outras unidades) que o time consegue completar em um Sprint.<br>
+                            Medida de <strong>capacidade do time</strong>, não de produtividade individual!<br>
+                            Usada para <strong>prever</strong> quanto trabalho cabe em futuros Sprints.
+                        </p>
+                    </div>
+                    <div class="velocity-display">
+                        <h3>42 pts</h3>
+                        <p>Velocity Média do Time (últimos 3 Sprints)</p>
+                    </div>
+                    <div class="example-card" style="border-color: var(--metrics-blue);">
+                        <h4 style="color: var(--metrics-blue);">📊 Exemplo: Calculando Velocity</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Sprint 1:</strong> Planejado 50 pts → Completado 38 pts ✅<br>
+                                <strong>Sprint 2:</strong> Planejado 45 pts → Completado 42 pts ✅<br>
+                                <strong>Sprint 3:</strong> Planejado 48 pts → Completado 46 pts ✅<br><br>
+                                <strong>Velocity Média:</strong> (38 + 42 + 46) / 3 = <strong>42 pontos</strong><br><br>
+                                <strong>Sprint 4 Planning:</strong> Time deve planejar ~42 pontos<br>
+                                (Pode variar entre 38-46 pts dependendo do contexto)
+                            </p>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="good-practice-card">
+                            <h4>✅ Bom Uso de Velocity</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 5px 0;">✓ Previsibilidade de entregas</li>
+                                <li style="padding: 5px 0;">✓ Planejamento realista</li>
+                                <li style="padding: 5px 0;">✓ Identificar instabilidade</li>
+                                <li style="padding: 5px 0;">✓ Comunicar com stakeholders</li>
+                                <li style="padding: 5px 0;">✓ Melhorar estimativas</li>
+                            </ul>
+                        </div>
+                        <div class="antipattern-card">
+                            <h4>❌ Mau Uso</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 5px 0;">❌ Comparar times diferentes</li>
+                                <li style="padding: 5px 0;">❌ Pressão para aumentar velocity</li>
+                                <li style="padding: 5px 0;">❌ KPI de performance</li>
+                                <li style="padding: 5px 0;">❌ Bônus baseado em velocity</li>
+                                <li style="padding: 5px 0;">❌ Ignorar contexto (férias, etc)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>⚡ Velocity NÃO É Constante!</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Velocity varia por muitos motivos:</strong><br>
+                            • Férias, feriados, doenças<br>
+                            • Novo membro no time (velocity cai temporariamente)<br>
+                            • Débito técnico resolvido (velocity sobe depois)<br>
+                            • Complexidade das histórias varia<br><br>
+                            <strong>Use MÉDIA dos últimos 3-5 Sprints, não apenas o último!</strong>
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Velocity é FERRAMENTA do time, não ARMA da gerência!"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: BURNDOWN CHART -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📉 Burndown Chart</h2>
+                    <p>Quanto trabalho resta no Sprint?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="metrics-card">
+                        <h4>📉 O Que É Burndown Chart?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Gráfico que mostra <strong>trabalho restante</strong> ao longo do tempo.<br>
+                            Eixo Y: Story Points/Horas restantes<br>
+                            Eixo X: Dias do Sprint<br>
+                            Linha ideal: Reta descendente do total até zero.
+                        </p>
+                    </div>
+                    <div class="chart-example">
+                        <h4>📊 Sprint Burndown Chart (Exemplo Visual)</h4>
+                        <div style="background: #F5F5F5; padding: 30px; border-radius: 10px; margin-top: 15px; position: relative; height: 300px;">
+                            <div style="position: absolute; left: 40px; top: 20px; bottom: 40px; width: 2px; background: #333;"></div>
+                            <div style="position: absolute; left: 40px; bottom: 40px; right: 20px; height: 2px; background: #333;"></div>
+                            <div style="position: absolute; left: 50px; top: 30px; right: 30px; bottom: 50px;">
+                                <svg width="100%" height="100%" style="overflow: visible;">
+                                    <line x1="0" y1="0" x2="100%" y2="100%" stroke="#4CAF50" stroke-width="2" stroke-dasharray="5,5" opacity="0.6"/>
+                                    <polyline points="0,0 15%,20 30%,35 45%,50 60%,45 75%,70 90%,85 100%,95" 
+                                              fill="none" stroke="#2196F3" stroke-width="3"/>
+                                    <circle cx="0" cy="0" r="4" fill="#2196F3"/>
+                                    <circle cx="100%" cy="95%" r="4" fill="#2196F3"/>
+                                </svg>
+                            </div>
+                            <div style="position: absolute; left: 5px; top: 20px; font-size: 0.9rem; color: #666;">50pts</div>
+                            <div style="position: absolute; left: 15px; bottom: 35px; font-size: 0.9rem; color: #666;">0pts</div>
+                            <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 0.9rem; color: #666;">Dias do Sprint →</div>
+                            <div style="position: absolute; top: 50%; left: 200px; font-size: 0.85rem; color: #4CAF50;">Linha Ideal</div>
+                            <div style="position: absolute; top: 70%; right: 100px; font-size: 0.85rem; color: #2196F3;">Trabalho Real</div>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box metrics-box">
+                            <h3>✅ Padrões Saudáveis</h3>
+                            <ul>
+                                <li><strong>Declínio Suave:</strong> Trabalho diminui gradualmente</li>
+                                <li><strong>Próximo da Ideal:</strong> Real acompanha linha ideal</li>
+                                <li><strong>Chega a Zero:</strong> Todo trabalho completo no fim</li>
+                            </ul>
+                        </div>
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">⚠️ Padrões de Alerta</h4>
+                            <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                                <li style="padding: 8px 0;"><strong>Flat Line:</strong> Trabalho não diminui (impedimentos?)</li>
+                                <li style="padding: 8px 0;"><strong>Muito Acima Ideal:</strong> Overcommitment</li>
+                                <li style="padding: 8px 0;"><strong>Scope Creep:</strong> Linha sobe (trabalho adicionado)</li>
+                                <li style="padding: 8px 0;"><strong>Queda Abrupta Final:</strong> Work in Progress demais</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Como Usar Burndown no Daily</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>1. SM atualiza burndown diariamente</strong> (após Daily)<br>
+                            <strong>2. Time visualiza progresso</strong> em direção a Sprint Goal<br>
+                            <strong>3. Se fora da ideal:</strong> Time discute ajustes<br>
+                            <strong>4. Não é para cobrar!</strong> É para inspecionar e adaptar<br><br>
+                            Burndown é ferramenta do TIME para auto-organização!
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Burndown mostra o presente. Use-o para ajustar o curso, não para culpar!"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: BURNUP CHART -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📈 Burnup Chart</h2>
+                    <p>Quanto trabalho foi completado?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="metrics-card">
+                        <h4>📈 O Que É Burnup Chart?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Gráfico que mostra <strong>trabalho completado</strong> ao longo do tempo.<br>
+                            <strong>2 linhas:</strong><br>
+                            • Linha de Total Scope (pode mudar!)<br>
+                            • Linha de Work Completed (sempre sobe)<br><br>
+                            Quando as duas linhas se encontram = Sprint completo!
+                        </p>
+                    </div>
+                    <div class="big-idea">Burnup mostra PROGRESSO positivo! Mais motivador que Burndown! 📈</div>
+                    <div class="two-column">
+                        <div class="content-box metrics-box">
+                            <h3>✅ Vantagens do Burnup</h3>
+                            <ul>
+                                <li>Mostra scope creep claramente</li>
+                                <li>Celebra trabalho completado</li>
+                                <li>Mais motivador (linha sobe!)</li>
+                                <li>Útil para releases longos</li>
+                                <li>Visualiza mudanças de escopo</li>
+                            </ul>
+                        </div>
+                        <div class="content-box metrics-box">
+                            <h3>📊 Quando Usar Burnup?</h3>
+                            <ul>
+                                <li>Projetos com escopo variável</li>
+                                <li>Releases multi-Sprint</li>
+                                <li>Stakeholders querem ver progresso</li>
+                                <li>Time desmotivado (burndown negativo)</li>
+                                <li>Product Goal de longo prazo</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--metrics-blue);">
+                        <h4 style="color: var(--metrics-blue);">📊 Burndown vs Burnup: Mesma Situação</h4>
+                        <div style="background: #E3F2FD; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Situação:</strong> Sprint de 50 pts, 10 dias<br><br>
+                                <strong>Dia 5:</strong><br>
+                                • <strong>Burndown:</strong> Ainda restam 25 pts (metade!) 😐<br>
+                                • <strong>Burnup:</strong> Já completamos 25 pts! 🎉<br><br>
+                                <strong>Mesmo dado, percepção diferente!</strong><br>
+                                Burnup enfatiza conquista. Burndown enfatiza trabalho restante.<br><br>
+                                Use o que motiva SEU time! Ou use AMBOS! 📊
+                            </p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🔄 Burnup para Release Planning</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Ideal para prever quando um Product Goal será atingido:</strong><br><br>
+                            • Linha superior = Total do Product Backlog para o Goal<br>
+                            • Linha inferior = Story Points completados (acumula a cada Sprint)<br>
+                            • Extrapole a linha de progresso → estima quantos Sprints faltam<br><br>
+                            Se escopo mudar (linha superior sobe/desce), impacto é imediatamente visível!
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Burndown pergunta: Quanto falta? Burnup celebra: Quanto fizemos!"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: LEAD TIME E CYCLE TIME -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⏱️ Lead Time e Cycle Time</h2>
+                    <p>Quanto tempo leva para entregar valor?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="metrics-card">
+                        <h4>⏱️ O Que São Lead Time e Cycle Time?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Métricas de <strong>fluxo</strong> que medem tempo de entrega:<br><br>
+                            <strong>Lead Time:</strong> Tempo desde REQUEST até DELIVERY<br>
+                            (Cliente pede → Cliente recebe)<br><br>
+                            <strong>Cycle Time:</strong> Tempo desde START até DONE<br>
+                            (Time começa → Time completa)
+                        </p>
+                    </div>
+                    <div class="example-card" style="border-color: var(--metrics-blue);">
+                        <h4 style="color: var(--metrics-blue);">📊 Exemplo: Lead Time vs Cycle Time</h4>
+                        <div style="background: #E3F2FD; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>User Story:</strong> "Login com Google"<br><br>
+                                • <strong>01/03:</strong> PO adiciona ao Product Backlog (REQUEST)<br>
+                                • <strong>05/03:</strong> Time começa a trabalhar (START)<br>
+                                • <strong>12/03:</strong> Feature completa e em produção (DONE)<br><br>
+                                <strong>Lead Time:</strong> 01/03 → 12/03 = <strong>11 dias</strong><br>
+                                <strong>Cycle Time:</strong> 05/03 → 12/03 = <strong>7 dias</strong><br><br>
+                                <strong>Diferença:</strong> Lead Time inclui tempo esperando no backlog!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box metrics-box">
+                            <h3>🎯 Por Que Medir Lead Time?</h3>
+                            <ul>
+                                <li>Perspectiva do CLIENTE</li>
+                                <li>Quanto tempo espera por valor?</li>
+                                <li>Inclui todo o processo</li>
+                                <li>Útil para SLA com cliente</li>
+                                <li>Indica eficiência total</li>
+                            </ul>
+                        </div>
+                        <div class="content-box metrics-box">
+                            <h3>🎯 Por Que Medir Cycle Time?</h3>
+                            <ul>
+                                <li>Perspectiva do TIME</li>
+                                <li>Quanto tempo leva para fazer?</li>
+                                <li>Exclui espera no backlog</li>
+                                <li>Identifica gargalos internos</li>
+                                <li>Melhora processo do time</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>📊 Como Reduzir Lead/Cycle Time?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;"><strong>1. Quebrar User Stories:</strong> Histórias menores = ciclos mais curtos</li>
+                            <li style="padding: 8px 0;"><strong>2. Limitar WIP:</strong> Menos trabalho simultâneo = entrega mais rápida</li>
+                            <li style="padding: 8px 0;"><strong>3. Automatizar:</strong> CI/CD reduz tempo de deploy</li>
+                            <li style="padding: 8px 0;"><strong>4. Reduzir Handoffs:</strong> Menos transferências entre pessoas</li>
+                            <li style="padding: 8px 0;"><strong>5. Priorizar Backlog:</strong> Itens importantes não esperam semanas</li>
+                        </ul>
+                    </div>
+                    <div class="quote-box">
+                        "Lead Time longo? Cliente espera demais. Cycle Time longo? Time tem gargalo!"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Fechamento</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você dominou as Métricas Ágeis! 📊</div>
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box metrics-box">
+                            <h3>🚀 Velocity</h3>
+                            <ul>
+                                <li>Capacidade do time</li>
+                                <li>Story Points/Sprint</li>
+                                <li>Para planejamento</li>
+                                <li>Média 3-5 Sprints</li>
+                                <li>NÃO comparar times</li>
+                            </ul>
+                        </div>
+                        <div class="content-box metrics-box">
+                            <h3>📉 Burndown</h3>
+                            <ul>
+                                <li>Trabalho RESTANTE</li>
+                                <li>Usado no Sprint</li>
+                                <li>Linha desce até zero</li>
+                                <li>Mostra se no caminho</li>
+                                <li>Atualizado diariamente</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box metrics-box">
+                            <h3>📈 Burnup</h3>
+                            <ul>
+                                <li>Trabalho COMPLETADO</li>
+                                <li>2 linhas (scope + done)</li>
+                                <li>Mais motivador</li>
+                                <li>Mostra scope creep</li>
+                                <li>Ideal para releases</li>
+                            </ul>
+                        </div>
+                        <div class="content-box metrics-box">
+                            <h3>⏱️ Lead/Cycle Time</h3>
+                            <ul>
+                                <li>Tempo de entrega</li>
+                                <li>Lead = request → done</li>
+                                <li>Cycle = start → done</li>
+                                <li>Identifica gargalos</li>
+                                <li>Melhora fluxo</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="metrics-card" style="margin-top: 30px;">
+                        <h4>🔑 Lembre-se Sempre</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.15rem;">
+                            <li style="padding: 10px 0;">📊 Métricas servem para APRENDER, não PUNIR</li>
+                            <li style="padding: 10px 0;">📈 Tendências importam mais que valores absolutos</li>
+                            <li style="padding: 10px 0;">🎯 Use múltiplas métricas (uma sozinha engana)</li>
+                            <li style="padding: 10px 0;">🤝 Métricas devem ser transparentes para todos</li>
+                            <li style="padding: 10px 0;">🔄 Métricas levam a AÇÃO e MELHORIA</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎓 Parabéns! Curso Completo!</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            Você dominou o Framework Scrum completo:<br><br>
+                            ✅ Papéis (PO, SM, Developers)<br>
+                            ✅ Eventos (Sprint, Planning, Daily, Review, Retro)<br>
+                            ✅ Artefatos (Product Backlog, Sprint Backlog, Incremento)<br>
+                            ✅ Métricas (Velocity, Burndown, Burnup, Lead/Cycle Time)<br><br>
+                            <strong>Agora é PRATICAR no Projeto Semestral! 🚀</strong>
+                        </p>
+                    </div>
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Conhecimento sem ação é ilusão. Agora pratiquem Scrum!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Vão transformar projetos! 💪</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 40px; color: #6B6B6B;">
+                        <p style="font-size: 1.5rem; font-weight: 600; color: var(--unifil-orange);">Obrigado pela jornada! 🙏</p>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">Sucesso no Projeto Final!</p>
+                        <p style="font-size: 1rem; margin-top: 10px;">Foquem no VALOR, não na perfeição! 🎯</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 7</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>
