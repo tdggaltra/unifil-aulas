@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 11 - MR-MPS-RH | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --green: #28a745;
+            --blue: #007bff;
+            --purple: #6f42c1;
+            --red: #dc3545;
+            --yellow: #ffc107;
+            --rh-purple: #8b5cf6;
+            --rh-light: #a78bfa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--rh-purple);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--rh-purple);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--rh-purple);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--rh-purple);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .example-card h4 {
+            color: var(--rh-purple);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .process-category {
+            background: white;
+            border: 3px solid var(--unifil-light);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--rh-purple);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--rh-purple);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--rh-purple);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--rh-purple);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .competency-matrix {
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .competency-row {
+            display: grid;
+            grid-template-columns: 200px repeat(4, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+            align-items: center;
+        }
+
+        .competency-name {
+            font-weight: 600;
+            color: var(--unifil-dark);
+        }
+
+        .level-indicator {
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .level-basic { background: #fecaca; color: #991b1b; }
+        .level-intermediate { background: #fef08a; color: #854d0e; }
+        .level-advanced { background: #bbf7d0; color: #166534; }
+        .level-expert { background: #bfdbfe; color: #1e3a8a; }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--rh-purple) 0%, var(--rh-light) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .pillar-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            border-top: 4px solid var(--rh-purple);
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .pillar-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .pillar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--rh-purple);
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .pillar-card:nth-child(1) { animation-delay: 0s; }
+        .pillar-card:nth-child(2) { animation-delay: 0.15s; }
+        .pillar-card:nth-child(3) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>👥 MR-MPS-RH</h1>
+                    <p>Aula 11 - Modelo de Referência para Gestão de Recursos Humanos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 60px;">
+                        Pessoas são o Maior Ativo! 👥💎
+                    </div>
+
+                    <div style="text-align: center; margin-top: 50px;">
+                        <div style="display: inline-block; background: var(--rh-purple); color: white; padding: 30px 50px; border-radius: 15px; font-size: 2rem; font-weight: 700; margin-bottom: 20px;">
+                            MR-MPS-RH
+                        </div>
+                        <h2 style="color: var(--unifil-dark); font-size: 1.4rem; margin-top: 20px;">
+                            Modelo de Referência para Melhoria do Processo de Gestão de Recursos Humanos
+                        </h2>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 50px;">
+                        <div class="content-box">
+                            <h3>📚 O que você vai aprender</h3>
+                            <ul>
+                                <li>O que é MR-MPS-RH</li>
+                                <li>Por que gestão de pessoas é crítica</li>
+                                <li>Estrutura do modelo (3 pilares)</li>
+                                <li>Capacitação e desenvolvimento</li>
+                                <li>Ambiente de trabalho</li>
+                                <li>Integração com MPS.BR</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Por que estudar RH em Software?</h3>
+                            <ul>
+                                <li>Software = trabalho intelectual intenso</li>
+                                <li>Pessoas são 60-70% dos custos</li>
+                                <li>Turnover alto custa caro</li>
+                                <li>Talentos escassos no mercado</li>
+                                <li>Cultura impacta produtividade</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">65%</div>
+                            <div class="stat-label">dos custos são pessoas</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">18%</div>
+                            <div class="stat-label">turnover médio TI Brasil</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">6-9 meses</div>
+                            <div class="stat-label">custo substituir dev sênior</div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "A melhor forma de prever o futuro é contratando e retendo as pessoas certas!" 
+                        — Bill Gates
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: O QUE É MR-MPS-RH -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📖 O que é o MR-MPS-RH?</h2>
+                    <p>Definição e contexto</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Guia para Gestão Estratégica de Pessoas! 📚
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Definição</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            O <strong>MR-MPS-RH</strong> (Modelo de Referência para Melhoria do Processo de 
+                            Gestão de Recursos Humanos) é um modelo complementar ao MPS.BR que fornece 
+                            diretrizes para <strong>gestão estratégica de pessoas</strong> em organizações 
+                            de software, focando em <strong>capacitação, desenvolvimento e ambiente de trabalho</strong>.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>💡 Analogia: Time de Futebol</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 15px;">
+                                <strong>MPS.BR</strong> = Táticas e estratégias do jogo<br>
+                                <em>(como jogar, formação, processos)</em><br><br>
+                                
+                                <strong>MR-MPS-RH</strong> = Preparação dos jogadores<br>
+                                <em>(treinar, desenvolver, motivar, ambiente)</em><br><br>
+
+                                Você pode ter a melhor tática do mundo, mas sem jogadores bem 
+                                treinados, motivados e em ambiente adequado, você perde! ⚽
+                            </p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔑 Características Principais</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;">✓ <strong>Complementar:</strong> Funciona junto com MPS.BR</li>
+                                <li style="padding: 5px 0;">✓ <strong>Estratégico:</strong> RH não é burocracia, é vantagem competitiva</li>
+                                <li style="padding: 5px 0;">✓ <strong>Prático:</strong> Aplicável a PMEs brasileiras</li>
+                                <li style="padding: 5px 0;">✓ <strong>Holístico:</strong> Cobre todo ciclo de vida colaborador</li>
+                                <li style="padding: 5px 0;">✓ <strong>Mensurável:</strong> Métricas e indicadores RH</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>RH Tradicional</th>
+                                <th>MR-MPS-RH</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Visão</strong></td>
+                                <td>RH = Departamento administrativo</td>
+                                <td>RH = Parceiro estratégico</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Foco</strong></td>
+                                <td>Processos, conformidade legal</td>
+                                <td>Desenvolvimento, capacitação, cultura</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Métricas</strong></td>
+                                <td>Headcount, folha pagamento</td>
+                                <td>Competências, engajamento, produtividade</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Responsabilidade</strong></td>
+                                <td>Centralizada no RH</td>
+                                <td>Compartilhada (gestores + RH)</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Por que MR-MPS-RH existe?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2; margin-top: 15px;">
+                            <li>💡 <strong>Software = pessoas!</strong> Qualidade software depende de pessoas qualificadas</li>
+                            <li>📊 <strong>Gap competências:</strong> Brasil tem déficit 400k+ profissionais TI</li>
+                            <li>💸 <strong>Custo turnover:</strong> Perder dev custa 6-9 meses salário</li>
+                            <li>🚀 <strong>Diferencial competitivo:</strong> Times de alta performance ganham mercado</li>
+                            <li>🌱 <strong>Crescimento sustentável:</strong> Impossível escalar sem gestão RH</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: ESTRUTURA DO MODELO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏗️ Estrutura do MR-MPS-RH</h2>
+                    <p>3 Pilares fundamentais</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        3 Pilares para Gestão de Pessoas! 🏛️
+                    </div>
+
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="pillar-card">
+                            <div class="pillar-icon">🎓</div>
+                            <div class="pillar-title">1. Capacitação</div>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                                Desenvolver <strong>conhecimentos, habilidades e atitudes</strong> 
+                                necessários para desempenho eficaz.
+                            </p>
+                            <ul style="font-size: 1rem; line-height: 1.6; margin: 15px 0 0 20px;">
+                                <li>Treinamentos técnicos</li>
+                                <li>Soft skills</li>
+                                <li>Certificações</li>
+                                <li>Onboarding estruturado</li>
+                            </ul>
+                        </div>
+
+                        <div class="pillar-card">
+                            <div class="pillar-icon">📈</div>
+                            <div class="pillar-title">2. Desenvolvimento</div>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                                Criar <strong>oportunidades de crescimento</strong> profissional e 
+                                pessoal alinhadas com objetivos organizacionais.
+                            </p>
+                            <ul style="font-size: 1rem; line-height: 1.6; margin: 15px 0 0 20px;">
+                                <li>Planos de carreira</li>
+                                <li>Trilhas desenvolvimento (PDI)</li>
+                                <li>Mentorias</li>
+                                <li>Rotação de funções</li>
+                            </ul>
+                        </div>
+
+                        <div class="pillar-card">
+                            <div class="pillar-icon">🏢</div>
+                            <div class="pillar-title">3. Ambiente de Trabalho</div>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                                Prover <strong>ambiente físico, psicológico e social</strong> 
+                                que favoreça produtividade e bem-estar.
+                            </p>
+                            <ul style="font-size: 1rem; line-height: 1.6; margin: 15px 0 0 20px;">
+                                <li>Infraestrutura adequada</li>
+                                <li>Clima organizacional</li>
+                                <li>Comunicação eficaz</li>
+                                <li>Work-life balance</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>🔗 Como os 3 Pilares se Integram</h3>
+                        <p style="font-size: 1.15rem; line-height: 2; margin-top: 15px; text-align: center;">
+                            <strong>Capacitação</strong> dá as ferramentas 🔧<br>
+                            <strong>Desenvolvimento</strong> mostra o caminho 🛤️<br>
+                            <strong>Ambiente</strong> cria as condições 🌱<br><br>
+                            = Pessoas <strong>capazes + motivadas + produtivas</strong> = Sucesso! 🚀
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💼 Exemplo: Desenvolvedor Júnior → Sênior</h4>
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1rem; line-height: 1.8;">
+                                <strong style="color: var(--rh-purple);">Capacitação:</strong><br>
+                                • Treinamento Java → React → AWS → Kubernetes<br>
+                                • Curso design patterns, arquitetura limpa<br>
+                                • Certificação AWS Solutions Architect<br><br>
+
+                                <strong style="color: var(--rh-purple);">Desenvolvimento:</strong><br>
+                                • PDI: Júnior (0-2 anos) → Pleno (2-4) → Sênior (4-6)<br>
+                                • Mentoria com Tech Lead<br>
+                                • Liderar projeto pequeno (ano 3)<br>
+                                • Participar code review (desde ano 1)<br><br>
+
+                                <strong style="color: var(--rh-purple);">Ambiente:</strong><br>
+                                • Mac + 2 monitores + cadeira ergonômica<br>
+                                • Flexibilidade horário (home 2x/semana)<br>
+                                • Cultura feedback construtivo<br>
+                                • Tech talks, hackathons, budget conferências
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: PILAR 1 - CAPACITAÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎓 Pilar 1: Capacitação</h2>
+                    <p>Desenvolvendo competências</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Capacitar = Investir no Futuro! 📚
+                    </div>
+
+                    <div class="process-category" style="margin-top: 30px;">
+                        <div class="category-header">
+                            🎯 Componentes da Capacitação
+                        </div>
+                        
+                        <div class="two-column">
+                            <div class="content-box">
+                                <h3>1. Identificação de Necessidades</h3>
+                                <ul>
+                                    <li>Gap analysis: competências atual vs desejado</li>
+                                    <li>Feedback 360°</li>
+                                    <li>Avaliação desempenho</li>
+                                    <li>Roadmap tecnológico empresa</li>
+                                    <li>Planos estratégicos</li>
+                                </ul>
+                            </div>
+
+                            <div class="content-box">
+                                <h3>2. Planejamento de Capacitação</h3>
+                                <ul>
+                                    <li>Plano anual de treinamento</li>
+                                    <li>Orçamento por pessoa</li>
+                                    <li>Modalidades (presencial, online, híbrido)</li>
+                                    <li>Fornecedores (Udemy, Pluralsight, presencial)</li>
+                                    <li>Trilhas por cargo/senioridade</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="two-column" style="margin-top: 20px;">
+                            <div class="content-box">
+                                <h3>3. Execução</h3>
+                                <ul>
+                                    <li>Treinamentos técnicos (React, AWS, etc)</li>
+                                    <li>Soft skills (comunicação, liderança)</li>
+                                    <li>Certificações (AWS, Google Cloud, Scrum)</li>
+                                    <li>Onboarding estruturado (15-30 dias)</li>
+                                    <li>Mentorias internas</li>
+                                </ul>
+                            </div>
+
+                            <div class="content-box">
+                                <h3>4. Avaliação de Eficácia</h3>
+                                <ul>
+                                    <li>Modelo Kirkpatrick (4 níveis)</li>
+                                    <li>Reação: Satisfação participante</li>
+                                    <li>Aprendizado: Absorveu conteúdo?</li>
+                                    <li>Comportamento: Aplicou no trabalho?</li>
+                                    <li>Resultado: Impactou negócio?</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 Caso Prático: Startup 30 pessoas, Budget R$75k/ano</h4>
+                        
+                        <div class="comparison-table" style="margin-top: 15px;">
+                            <table style="font-size: 0.95rem;">
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Investimento</th>
+                                    <th>Detalhamento</th>
+                                </tr>
+                                <tr>
+                                    <td><strong>Plataformas Online</strong></td>
+                                    <td>R$25k (33%)</td>
+                                    <td>Udemy Business (30 licenças), Pluralsight (15)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Certificações</strong></td>
+                                    <td>R$20k (27%)</td>
+                                    <td>AWS, Google Cloud, Scrum (6 pessoas/ano)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Treinamentos Presenciais</strong></td>
+                                    <td>R$15k (20%)</td>
+                                    <td>Workshops específicos (arquitetura, segurança)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Conferências</strong></td>
+                                    <td>R$10k (13%)</td>
+                                    <td>QCon, The Developers Conference (4 pessoas)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Livros & Materiais</strong></td>
+                                    <td>R$5k (7%)</td>
+                                    <td>Budget R$150/pessoa/ano</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <p style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724; font-size: 1.05rem;">
+                            <strong>Resultado após 1 ano:</strong> 5 certificações obtidas, NPS treinamentos 8.5/10, 
+                            78% colaboradores aplicaram aprendizado, turnover caiu 12% → 8%
+                        </p>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "CFO pergunta ao CEO: 'E se investirmos em treinamento e eles saírem?' CEO responde: 
+                        'E se NÃO investirmos e eles ficarem?'" 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PILAR 2 - DESENVOLVIMENTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📈 Pilar 2: Desenvolvimento</h2>
+                    <p>Crescimento profissional e carreira</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Desenvolvimento = Retenção + Motivação! 🚀
+                    </div>
+
+                    <div class="process-category" style="margin-top: 30px;">
+                        <div class="category-header">
+                            🎯 Componentes do Desenvolvimento
+                        </div>
+                        
+                        <div class="example-card">
+                            <h4>1. Trilhas de Carreira (Career Paths)</h4>
+                            <div class="comparison-table" style="margin-top: 15px;">
+                                <table style="font-size: 0.9rem;">
+                                    <tr>
+                                        <th>Nível</th>
+                                        <th>Trilha IC (Individual Contributor)</th>
+                                        <th>Trilha Management</th>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>L1-L2</strong></td>
+                                        <td>Júnior → Pleno</td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>L3-L4</strong></td>
+                                        <td>Sênior → Staff Engineer</td>
+                                        <td>Tech Lead → Engineering Manager</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>L5-L6</strong></td>
+                                        <td>Principal → Distinguished Engineer</td>
+                                        <td>Senior EM → Director of Engineering</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>L7+</strong></td>
+                                        <td>Fellow / Chief Architect</td>
+                                        <td>VP Engineering / CTO</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <p style="margin-top: 15px; padding: 15px; background: var(--unifil-light); border-radius: 8px;">
+                                <strong>Chave:</strong> Reconhecer que crescimento ≠ virar gerente! 
+                                Desenvolvedores excelentes podem crescer como ICs (Individual Contributors)
+                            </p>
+                        </div>
+
+                        <div class="two-column" style="margin-top: 30px;">
+                            <div class="example-card">
+                                <h4>2. PDI (Plano Desenvolvimento Individual)</h4>
+                                <p style="font-size: 1.05rem; margin: 15px 0;">
+                                    Documento colaborativo (gestor + colaborador) com:
+                                </p>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin: 0 0 0 20px;">
+                                    <li><strong>Objetivo:</strong> "Pleno → Sênior em 18 meses"</li>
+                                    <li><strong>Gap atual:</strong> Falta experiência arquitetura</li>
+                                    <li><strong>Ações:</strong> Curso AWS, liderar projeto, mentoria</li>
+                                    <li><strong>Timeline:</strong> Q1-Q4 2026</li>
+                                    <li><strong>Métricas sucesso:</strong> Certificação AWS, projeto entregue</li>
+                                    <li><strong>Revisão:</strong> Trimestral com gestor</li>
+                                </ul>
+                            </div>
+
+                            <div class="example-card">
+                                <h4>3. Programas de Desenvolvimento</h4>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin: 15px 0 0 20px;">
+                                    <li><strong>Mentorias:</strong> 1:1 mentor experiente</li>
+                                    <li><strong>Job Rotation:</strong> 3 meses outro time</li>
+                                    <li><strong>Stretch assignments:</strong> Projetos desafiadores</li>
+                                    <li><strong>Tech Leads em rotação:</strong> Experiência liderança</li>
+                                    <li><strong>Speaking opportunities:</strong> Tech talks internas</li>
+                                    <li><strong>Open source:</strong> Contribuir 20% tempo</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💼 Caso Real: DevPleno "Estagnado"</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1rem; line-height: 1.8;">
+                                <strong style="color: var(--red);">Situação Inicial:</strong><br>
+                                • Maria, Dev Pleno há 3 anos, mesma função<br>
+                                • Performance boa, mas sem desafios novos<br>
+                                • Começou olhar ofertas externas (sinal alerta!)<br><br>
+
+                                <strong style="color: var(--yellow);">Intervenção:</strong><br>
+                                • 1:1 gestor: "Onde quer chegar em 2 anos?"<br>
+                                • Maria: "Ser Staff Engineer, trabalhar arquitetura"<br>
+                                • PDI construído: 18 meses Pleno → Sênior, 18 meses Sênior → Staff<br><br>
+
+                                <strong style="color: var(--green);">Ações (12 meses):</strong><br>
+                                • Curso System Design (Educative.io)<br>
+                                • Mentoria com Principal Engineer (2x/mês)<br>
+                                • Liderar redesign arquitetura módulo pagamentos<br>
+                                • Apresentar arquitetura em All Hands (200 pessoas)<br>
+                                • Rotação 2 meses time infra (aprender Kubernetes)<br><br>
+
+                                <strong style="color: var(--blue);">Resultado:</strong><br>
+                                • Promoção Sênior após 15 meses<br>
+                                • Maria ficou (recusou 2 ofertas externas)<br>
+                                • Virou mentora de 2 plenos<br>
+                                • NPS engajamento: 9/10
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: PILAR 3 - AMBIENTE DE TRABALHO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏢 Pilar 3: Ambiente de Trabalho</h2>
+                    <p>Condições para alta performance</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Ambiente = Fundação da Produtividade! 🏗️
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>🖥️ Ambiente Físico</h3>
+                            <ul>
+                                <li><strong>Hardware:</strong> Máquinas potentes (16GB+ RAM)</li>
+                                <li><strong>Periféricos:</strong> 2+ monitores, teclado mecânico</li>
+                                <li><strong>Ergonomia:</strong> Cadeiras ergonômicas, mesas ajustáveis</li>
+                                <li><strong>Espaço:</strong> Salas silenciosas, áreas colaboração</li>
+                                <li><strong>Infraestrutura:</strong> Internet rápida, backup power</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🧠 Ambiente Psicológico</h3>
+                            <ul>
+                                <li><strong>Segurança psicológica:</strong> OK errar e aprender</li>
+                                <li><strong>Feedback construtivo:</strong> Cultura crescimento</li>
+                                <li><strong>Autonomia:</strong> Empowerment decisões técnicas</li>
+                                <li><strong>Transparência:</strong> Comunicação clara objetivos</li>
+                                <li><strong>Reconhecimento:</strong> Celebrar conquistas</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 20px;">
+                        <div class="content-box">
+                            <h3>🤝 Ambiente Social</h3>
+                            <ul>
+                                <li><strong>Cultura colaborativa:</strong> Pair programming, code review</li>
+                                <li><strong>Diversidade:</strong> Inclusão, respeito diferenças</li>
+                                <li><strong>Eventos sociais:</strong> Happy hours, team building</li>
+                                <li><strong>Comunidades:</strong> Guilds, chapters, CoPs</li>
+                                <li><strong>Onboarding buddy:</strong> Novo = 1 colega mentor</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>⚖️ Work-Life Balance</h3>
+                            <ul>
+                                <li><strong>Flexibilidade:</strong> Horários flexíveis, híbrido</li>
+                                <li><strong>Home office:</strong> 2-3 dias/semana</li>
+                                <li><strong>Férias:</strong> Incentivo usar integral</li>
+                                <li><strong>Saúde mental:</strong> Psicólogo, mindfulness</li>
+                                <li><strong>Família:</strong> Licenças parentais estendidas</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 Pesquisa Clima Organizacional - Exemplo</h4>
+                        
+                        <div class="comparison-table" style="margin-top: 15px;">
+                            <table style="font-size: 0.95rem;">
+                                <tr>
+                                    <th>Dimensão</th>
+                                    <th>Score 2025</th>
+                                    <th>Score 2026</th>
+                                    <th>Ações tomadas</th>
+                                </tr>
+                                <tr>
+                                    <td><strong>Infraestrutura</strong></td>
+                                    <td>6.5/10</td>
+                                    <td style="background: #d4edda; font-weight: 700;">8.8/10 ✅</td>
+                                    <td>Upgrade máquinas, 2 monitores todos</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Comunicação</strong></td>
+                                    <td>7.2/10</td>
+                                    <td style="background: #d4edda; font-weight: 700;">8.5/10 ✅</td>
+                                    <td>All Hands mensais, OKRs transparentes</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Desenvolvimento</strong></td>
+                                    <td>5.8/10</td>
+                                    <td style="background: #d4edda; font-weight: 700;">7.9/10 ✅</td>
+                                    <td>PDIs 100% pessoas, budget treinamento +50%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Work-Life Balance</strong></td>
+                                    <td>7.5/10</td>
+                                    <td style="background: #d4edda; font-weight: 700;">8.7/10 ✅</td>
+                                    <td>Híbrido 3 dias home, sextas meio período</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Reconhecimento</strong></td>
+                                    <td>6.1/10</td>
+                                    <td style="background: #fff3cd; font-weight: 700;">7.2/10 ⚠️</td>
+                                    <td>Kudos públicos, bônus desempenho (em progresso)</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <p style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724;">
+                            <strong>Impacto:</strong> Turnover 18% → 9%, Produtividade +23%, 
+                            Glassdoor rating 3.2 → 4.5 ⭐
+                        </p>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "Cultura come estratégia no café da manhã!" — Peter Drucker 🍽️
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: MATRIZ DE COMPETÊNCIAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Matriz de Competências</h2>
+                    <p>Ferramenta central do MR-MPS-RH</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Matriz de Competências = Mapa do Talento! 🗺️
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 O que é Matriz de Competências?</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Ferramenta que mapeia <strong>competências necessárias</strong> por cargo vs 
+                            <strong>competências atuais</strong> dos colaboradores, permitindo identificar 
+                            gaps, planejar capacitação e sucessões.
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📋 Exemplo: Matriz Time Backend (8 pessoas)</h4>
+                        
+                        <div class="competency-matrix" style="margin-top: 15px;">
+                            <div class="competency-row" style="font-weight: 700; background: var(--rh-purple); color: white; border-radius: 8px; padding: 10px;">
+                                <div>Competência</div>
+                                <div style="text-align: center;">Júnior</div>
+                                <div style="text-align: center;">Pleno</div>
+                                <div style="text-align: center;">Sênior</div>
+                                <div style="text-align: center;">Staff</div>
+                            </div>
+
+                            <div class="competency-row">
+                                <div class="competency-name">Java/Spring Boot</div>
+                                <div class="level-indicator level-intermediate">2 pessoas</div>
+                                <div class="level-indicator level-advanced">3 pessoas</div>
+                                <div class="level-indicator level-advanced">2 pessoas</div>
+                                <div class="level-indicator level-expert">1 pessoa</div>
+                            </div>
+
+                            <div class="competency-row">
+                                <div class="competency-name">Microservices</div>
+                                <div class="level-indicator level-basic">1 pessoa</div>
+                                <div class="level-indicator level-intermediate">4 pessoas</div>
+                                <div class="level-indicator level-advanced">2 pessoas</div>
+                                <div class="level-indicator level-expert">1 pessoa</div>
+                            </div>
+
+                            <div class="competency-row">
+                                <div class="competency-name">Kubernetes</div>
+                                <div class="level-indicator level-basic">0 pessoas ❌</div>
+                                <div class="level-indicator level-intermediate">2 pessoas</div>
+                                <div class="level-indicator level-advanced">4 pessoas</div>
+                                <div class="level-indicator level-expert">2 pessoas</div>
+                            </div>
+
+                            <div class="competency-row">
+                                <div class="competency-name">PostgreSQL</div>
+                                <div class="level-indicator level-intermediate">2 pessoas</div>
+                                <div class="level-indicator level-advanced">4 pessoas</div>
+                                <div class="level-indicator level-advanced">1 pessoa</div>
+                                <div class="level-indicator level-expert">1 pessoa</div>
+                            </div>
+
+                            <div class="competency-row">
+                                <div class="competency-name">GraphQL</div>
+                                <div class="level-indicator level-basic">3 pessoas ⚠️</div>
+                                <div class="level-indicator level-intermediate">3 pessoas</div>
+                                <div class="level-indicator level-advanced">2 pessoas</div>
+                                <div class="level-indicator level-expert">0 pessoas ❌</div>
+                            </div>
+
+                            <div class="competency-row">
+                                <div class="competency-name">System Design</div>
+                                <div class="level-indicator level-basic">1 pessoa ⚠️</div>
+                                <div class="level-indicator level-intermediate">3 pessoas</div>
+                                <div class="level-indicator level-advanced">3 pessoas</div>
+                                <div class="level-indicator level-expert">1 pessoa</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>🚨 Gaps Identificados</h4>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin: 10px 0 0 20px;">
+                                <li><strong style="color: var(--red);">Crítico:</strong> Zero júnior em Kubernetes</li>
+                                <li><strong style="color: var(--red);">Crítico:</strong> Zero expert em GraphQL</li>
+                                <li><strong style="color: var(--yellow);">Atenção:</strong> Poucos júnior System Design</li>
+                                <li><strong style="color: var(--yellow);">Atenção:</strong> Muitos básico GraphQL</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🎯 Ações Planejadas</h4>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin: 10px 0 0 20px;">
+                                <li>Treinamento Kubernetes para todos júniors (Q1)</li>
+                                <li>Contratar 1 Staff Engineer GraphQL (Q2)</li>
+                                <li>Workshop System Design (Q1 + Q3)</li>
+                                <li>Job rotation: 2 plenos → time infra (K8s)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Benefícios da Matriz de Competências</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2; margin-top: 15px;">
+                            <li>✓ <strong>Visibilidade:</strong> Ver gaps time todo em 1 lugar</li>
+                            <li>✓ <strong>Priorização:</strong> Onde investir treinamento?</li>
+                            <li>✓ <strong>Sucessão:</strong> Quem pode assumir se líder sair?</li>
+                            <li>✓ <strong>Recrutamento:</strong> Que perfil contratar?</li>
+                            <li>✓ <strong>Alocação:</strong> Quem tem skill para projeto X?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: MÉTRICAS E INDICADORES RH -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📈 Métricas e Indicadores RH</h2>
+                    <p>O que medir?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        "O que não se mede, não se gerencia!" 📊
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Como calcular</th>
+                                <th>Meta típica</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Turnover Rate</strong></td>
+                                <td>(Saídas / Headcount médio) × 100%</td>
+                                <td>< 10%/ano</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Time to Hire</strong></td>
+                                <td>Dias entre abertura vaga e aceite</td>
+                                <td>< 45 dias</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Custo por Contratação</strong></td>
+                                <td>Total custos recrutamento / Contratações</td>
+                                <td>R$5-15k/pessoa</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Horas Treinamento/Pessoa</strong></td>
+                                <td>Total horas treinamento / Headcount</td>
+                                <td>> 40h/ano</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Investimento Treinamento</strong></td>
+                                <td>R$ treinamento / pessoa / ano</td>
+                                <td>R$2-5k/pessoa</td>
+                            </tr>
+                            <tr>
+                                <td><strong>eNPS (Employee NPS)</strong></td>
+                                <td>% Promotores - % Detratores</td>
+                                <td>> +30</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Absenteísmo</strong></td>
+                                <td>(Dias ausência / Dias úteis) × 100%</td>
+                                <td>< 3%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Taxa Promoção Interna</strong></td>
+                                <td>(Promoções / Headcount) × 100%</td>
+                                <td>10-15%/ano</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 Dashboard RH - Exemplo Real</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <h5 style="color: var(--rh-purple); margin-bottom: 15px;">Software House 80 pessoas - Q1 2026</h5>
+                            
+                            <div class="stats-grid" style="gap: 15px;">
+                                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid var(--green);">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--green);">7.2%</div>
+                                    <div style="font-size: 0.9rem; color: var(--unifil-gray);">Turnover (meta <10%) ✅</div>
+                                </div>
+                                
+                                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid var(--yellow);">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--yellow);">52 dias</div>
+                                    <div style="font-size: 0.9rem; color: var(--unifil-gray);">Time to Hire (meta <45) ⚠️</div>
+                                </div>
+                                
+                                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid var(--green);">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--green);">48h</div>
+                                    <div style="font-size: 0.9rem; color: var(--unifil-gray);">Treinamento/pessoa (meta >40h) ✅</div>
+                                </div>
+                            </div>
+
+                            <div class="stats-grid" style="gap: 15px; margin-top: 15px;">
+                                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid var(--green);">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--green);">+42</div>
+                                    <div style="font-size: 0.9rem; color: var(--unifil-gray);">eNPS (meta >+30) ✅</div>
+                                </div>
+                                
+                                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid var(--green);">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--green);">12%</div>
+                                    <div style="font-size: 0.9rem; color: var(--unifil-gray);">Promoção interna ✅</div>
+                                </div>
+                                
+                                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid var(--green);">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--green);">R$3.2k</div>
+                                    <div style="font-size: 0.9rem; color: var(--unifil-gray);">Investimento treino/pessoa ✅</div>
+                                </div>
+                            </div>
+
+                            <p style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+                                <strong>Ação requerida:</strong> Time to Hire acima da meta → Revisar processo seleção, 
+                                considerar banco talentos, parcerias universidades
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Métricas RH não são sobre controlar pessoas — são sobre criar um ambiente onde 
+                        pessoas QUEREM dar o melhor! 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: INTEGRAÇÃO MR-MPS-RH + MPS.BR -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔗 Integração MR-MPS-RH + MPS.BR</h2>
+                    <p>Como usar juntos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        MPS.BR + MR-MPS-RH = Sistema Completo! 🤝
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>📋 MPS.BR fornece</h3>
+                            <ul>
+                                <li><strong>Processo GRH (Nível E):</strong> O QUE fazer</li>
+                                <li>Resultados esperados RH</li>
+                                <li>Atributos de processo</li>
+                                <li>Capacidade de processo</li>
+                                <li>Critérios avaliação</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>👥 MR-MPS-RH fornece</h3>
+                            <ul>
+                                <li><strong>Detalhamento:</strong> COMO fazer</li>
+                                <li>Práticas específicas</li>
+                                <li>Templates e ferramentas</li>
+                                <li>Exemplos práticos</li>
+                                <li>Métricas e indicadores</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🏢 Roadmap Implementação: Empresa buscando Nível E</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <h5 style="color: var(--rh-purple); margin-bottom: 15px; font-size: 1.3rem;">
+                                Fase 1: Preparação (Meses 1-2)
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.8; margin-bottom: 20px;">
+                                • Estudar GRH do MPS.BR (resultados esperados)<br>
+                                • Estudar MR-MPS-RH (práticas detalhadas)<br>
+                                • Gap analysis: onde estamos vs onde precisamos estar<br>
+                                • Montar grupo de trabalho RH (RH + líderes técnicos)
+                            </p>
+
+                            <h5 style="color: var(--rh-purple); margin-bottom: 15px; font-size: 1.3rem;">
+                                Fase 2: Implementação Capacitação (Meses 3-6)
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.8; margin-bottom: 20px;">
+                                • Criar matriz de competências (MR-MPS-RH)<br>
+                                • Identificar gaps capacitação<br>
+                                • Planejar programa treinamento anual<br>
+                                • Definir budget (R$2-5k/pessoa)<br>
+                                • Implementar plataformas (Udemy Business, etc)<br>
+                                • <strong>Evidências MPS.BR:</strong> Matriz competências, Plano capacitação, Registros treinamentos
+                            </p>
+
+                            <h5 style="color: var(--rh-purple); margin-bottom: 15px; font-size: 1.3rem;">
+                                Fase 3: Implementação Desenvolvimento (Meses 7-10)
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.8; margin-bottom: 20px;">
+                                • Definir trilhas de carreira (IC + Management)<br>
+                                • Criar template PDI<br>
+                                • Treinar gestores em 1:1s e feedback<br>
+                                • Implementar programa mentorias<br>
+                                • <strong>Evidências MPS.BR:</strong> Trilhas carreira, PDIs preenchidos, Registros mentorias
+                            </p>
+
+                            <h5 style="color: var(--rh-purple); margin-bottom: 15px; font-size: 1.3rem;">
+                                Fase 4: Implementação Ambiente (Meses 11-14)
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.8; margin-bottom: 20px;">
+                                • Pesquisa clima organizacional (baseline)<br>
+                                • Plano ação melhorias ambiente<br>
+                                • Implementar melhorias (infra, políticas, cultura)<br>
+                                • Repetir pesquisa clima (pós-implementação)<br>
+                                • <strong>Evidências MPS.BR:</strong> Pesquisas clima, Planos ação, Melhorias implementadas
+                            </p>
+
+                            <h5 style="color: var(--rh-purple); margin-bottom: 15px; font-size: 1.3rem;">
+                                Fase 5: Avaliação (Mês 15)
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                • Avaliação MA-MPS (método oficial)<br>
+                                • Verificação aderência GRH (nível E)<br>
+                                • Certificação MPS.BR Nível E 🎉
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        MPS.BR diz O QUE, MR-MPS-RH mostra COMO! Juntos, transformam gestão de pessoas! 🚀
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Pessoas Certas + Capacitadas + Motivadas = Sucesso! 🚀
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ O que aprendemos</h3>
+                            <ul>
+                                <li>MR-MPS-RH: modelo gestão pessoas</li>
+                                <li>3 Pilares: Capacitação + Desenvolvimento + Ambiente</li>
+                                <li>Matriz de competências</li>
+                                <li>PDI e trilhas carreira</li>
+                                <li>Métricas e indicadores RH</li>
+                                <li>Integração com MPS.BR</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Próxima Aula</h3>
+                            <ul>
+                                <li><strong>Tema:</strong> Ciclo PDCA - Parte 1</li>
+                                <li>Plan-Do-Check-Act</li>
+                                <li>Origem e filosofia</li>
+                                <li>Aplicação em melhoria processos</li>
+                                <li>Ferramentas da qualidade</li>
+                                <li>Casos práticos PDCA</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">pilares MR-MPS-RH</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">65%</div>
+                            <div class="stat-label">custos são pessoas</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">6-9x</div>
+                            <div class="stat-label">ROI retenção vs substituir</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para Casa</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2; margin-top: 15px;">
+                            <li>📖 Leitura: Introdução ao Ciclo PDCA (Deming)</li>
+                            <li>🔍 Pesquisar: Como sua empresa gerencia RH? Tem PDI? Matriz competências?</li>
+                            <li>💭 Refletir: Qual dos 3 pilares (Capacitação/Desenvolvimento/Ambiente) sua empresa faz melhor? Pior?</li>
+                            <li>📝 Preparar: Exemplo de gap competência VOCÊ tem e como poderia desenvolver</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 40px;">
+                        <table>
+                            <tr>
+                                <th>Conceito</th>
+                                <th>Key Takeaway</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Capacitação</strong></td>
+                                <td>Invista 2-5% folha em treinamento = 40+ h/pessoa/ano</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Desenvolvimento</strong></td>
+                                <td>PDI + Trilhas carreira = Retenção e motivação</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ambiente</strong></td>
+                                <td>Pesquisa clima + Plano ação = Melhoria contínua</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Matriz Competências</strong></td>
+                                <td>Visibilidade gaps = Decisões estratégicas RH</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Métricas</strong></td>
+                                <td>Medir para gerenciar: Turnover, eNPS, h treino</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 60px;">
+                        <p style="font-size: 1.4rem; color: var(--rh-purple); font-weight: 600;">Obrigado! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px; color: var(--unifil-gray);">
+                            Nos vemos na Aula 12 (Ciclo PDCA)!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 10</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .quote-box, .comparison-table, .process-category, .pillar-card, .competency-matrix');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => { el.style.animation = ''; }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

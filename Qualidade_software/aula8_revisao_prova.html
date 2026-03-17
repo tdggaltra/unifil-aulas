@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 8 - Revisão para Prova Intermediária | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --green: #28a745;
+            --blue: #007bff;
+            --purple: #6f42c1;
+            --red: #dc3545;
+            --yellow: #ffc107;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.3);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+        }
+
+        .review-section {
+            background: white;
+            border: 3px solid var(--unifil-light);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .review-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .level-box {
+            background: var(--unifil-light);
+            padding: 20px 10px;
+            border-radius: 10px;
+            text-align: center;
+            border-top: 4px solid;
+            transition: transform 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .level-box:hover {
+            transform: scale(1.05);
+        }
+
+        .level-box.g { border-top-color: #95a5a6; }
+        .level-box.f { border-top-color: #e74c3c; }
+        .level-box.e { border-top-color: #f39c12; }
+        .level-box.d { border-top-color: #2c3e50; }
+        .level-box.c { border-top-color: #9b59b6; }
+        .level-box.b { border-top-color: #e67e22; }
+        .level-box.a { border-top-color: #16a085; }
+
+        .level-letter {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .level-name {
+            font-size: 0.85rem;
+            color: var(--unifil-gray);
+            margin-bottom: 8px;
+        }
+
+        .level-count {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--unifil-orange);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--unifil-orange);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .checklist {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .checklist-item {
+            padding: 12px 0;
+            padding-left: 35px;
+            position: relative;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-item::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-size: 1.5rem;
+        }
+
+        .key-concepts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .concept-card {
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .concept-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            margin-bottom: 10px;
+        }
+
+        .concept-desc {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .concept-card:nth-child(1) { animation-delay: 0s; }
+        .concept-card:nth-child(2) { animation-delay: 0.1s; }
+        .concept-card:nth-child(3) { animation-delay: 0.2s; }
+        .concept-card:nth-child(4) { animation-delay: 0.3s; }
+        .level-box:nth-child(1) { animation-delay: 0s; }
+        .level-box:nth-child(2) { animation-delay: 0.1s; }
+        .level-box:nth-child(3) { animation-delay: 0.2s; }
+        .level-box:nth-child(4) { animation-delay: 0.3s; }
+        .level-box:nth-child(5) { animation-delay: 0.4s; }
+        .level-box:nth-child(6) { animation-delay: 0.5s; }
+        .level-box:nth-child(7) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>📚 Revisão para Prova Intermediária</h1>
+                    <p>Aula 8 - Tudo que você precisa saber!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 60px;">
+                        Prepare-se para a Prova! 🎯
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 50px;">
+                        <h3>📋 Informações da Prova</h3>
+                        <div class="two-column" style="gap: 30px; margin-top: 20px;">
+                            <div>
+                                <p style="font-size: 1.2rem; line-height: 2;">
+                                    <strong>📅 Data:</strong> Segunda, 03/03/2026<br>
+                                    <strong>⏰ Duração:</strong> 90 minutos<br>
+                                    <strong>💯 Peso:</strong> 25% da nota final<br>
+                                    <strong>📝 Formato:</strong> Questões objetivas e dissertativas
+                                </p>
+                            </div>
+                            <div>
+                                <p style="font-size: 1.2rem; line-height: 2;">
+                                    <strong>📖 Conteúdo:</strong> Aulas 1 a 7<br>
+                                    <strong>🚫 Consulta:</strong> Sem consulta<br>
+                                    <strong>📱 Material:</strong> Apenas caneta<br>
+                                    <strong>✅ Permitido:</strong> Calculadora simples
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">7</div>
+                            <div class="stat-label">aulas de conteúdo</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">21</div>
+                            <div class="stat-label">processos do MPS.BR</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">90min</div>
+                            <div class="stat-label">duração da prova</div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 50px;">
+                        <div class="content-box">
+                            <h3>📚 O que estudar?</h3>
+                            <ul>
+                                <li>Conceitos de qualidade de software</li>
+                                <li>Custos da qualidade (4 categorias)</li>
+                                <li>Estrutura do MR-MPS-SW</li>
+                                <li>Processos de cada nível (G até A)</li>
+                                <li>Diferenças entre níveis</li>
+                                <li>Capacidade de processo</li>
+                                <li>Atributos de processo (APs)</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Como se preparar?</h3>
+                            <ul>
+                                <li>Revise TODAS as apresentações</li>
+                                <li>Refaça exercícios propostos</li>
+                                <li>Estude processos por nível</li>
+                                <li>Entenda PROPÓSITO de cada processo</li>
+                                <li>Saiba diferenciar processos similares</li>
+                                <li>Pratique cálculos de ROI</li>
+                                <li>Forme grupos de estudo!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        Esta revisão cobre os PRINCIPAIS tópicos. Use como guia, mas estude TODO o material! 📖
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: AULA 1 + 2 - QUALIDADE E CUSTOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Aulas 1 e 2: Qualidade e Custos</h2>
+                    <p>Fundamentos e economia da qualidade</p>
+                </div>
+                <div class="slide-body">
+                    <div class="review-section">
+                        <div class="review-header">📖 Aula 1: Introdução à Qualidade</div>
+                        
+                        <div class="key-concepts">
+                            <div class="concept-card">
+                                <div class="concept-title">Definição de Qualidade</div>
+                                <div class="concept-desc">
+                                    ISO 25010: 6 dimensões (Funcionalidade, Desempenho, 
+                                    Compatibilidade, Usabilidade, Confiabilidade, Segurança, 
+                                    Manutenibilidade, Portabilidade)
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">Produto vs Processo</div>
+                                <div class="concept-desc">
+                                    Qualidade do PRODUTO: o que entregamos ao cliente.
+                                    Qualidade do PROCESSO: como fazemos (bom processo → bom produto)
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">Crise do Software</div>
+                                <div class="concept-desc">
+                                    Standish Group: 31% projetos cancelados, 53% atrasados/orçamento,
+                                    apenas 16% bem-sucedidos
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">Regra 1-10-100</div>
+                                <div class="concept-desc">
+                                    Prevenir custa R$1, corrigir em desenvolvimento R$10,
+                                    corrigir em produção R$100
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="review-section" style="margin-top: 30px;">
+                        <div class="review-header">💰 Aula 2: Custos da Qualidade e ROI</div>
+                        
+                        <div class="comparison-table">
+                            <table>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Descrição</th>
+                                    <th>Exemplos</th>
+                                </tr>
+                                <tr>
+                                    <td><strong>Prevenção 🛡️</strong></td>
+                                    <td>Evitar defeitos</td>
+                                    <td>Treinamento, planejamento, code review</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Avaliação 🔍</strong></td>
+                                    <td>Detectar defeitos</td>
+                                    <td>Testes, inspeções, auditorias</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Falhas Internas 🔧</strong></td>
+                                    <td>Defeitos pré-entrega</td>
+                                    <td>Retrabalho, debugging, refatoração</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Falhas Externas 💥</strong></td>
+                                    <td>Defeitos pós-entrega</td>
+                                    <td>Suporte, recalls, danos reputação</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="example-card" style="margin-top: 20px;">
+                            <h4>📊 Fórmula do ROI</h4>
+                            <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                                <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 15px;">
+                                    ROI = [(Ganho - Investimento) / Investimento] × 100%
+                                </p>
+                                <p style="font-size: 1.1rem; color: var(--unifil-gray);">
+                                    <strong>Exemplo:</strong> Investimento R$200k, economia R$750k<br>
+                                    ROI = [(750-200)/200] × 100% = <span style="color: var(--green); font-weight: 700;">275%</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Pontos-Chave para a Prova</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li>✓ Saiba as 4 categorias de custos da qualidade</li>
+                            <li>✓ Entenda a regra 1-10-100</li>
+                            <li>✓ Saiba calcular ROI</li>
+                            <li>✓ Conheça estatísticas da crise do software</li>
+                            <li>✓ Diferencie qualidade de produto vs processo</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: AULA 3 - ESTRUTURA MPS.BR -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏗️ Aula 3: Estrutura Geral do MPS.BR</h2>
+                    <p>Níveis, processos e capacidade</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        7 Níveis + 21 Processos + Capacidade! 🎯
+                    </div>
+
+                    <div class="level-grid" style="margin-top: 40px;">
+                        <div class="level-box g">
+                            <div class="level-letter">G</div>
+                            <div class="level-name">Parcialmente<br>Gerenciado</div>
+                            <div class="level-count">2 proc</div>
+                        </div>
+
+                        <div class="level-box f">
+                            <div class="level-letter">F</div>
+                            <div class="level-name">Gerenciado</div>
+                            <div class="level-count">+5 = 7</div>
+                        </div>
+
+                        <div class="level-box e">
+                            <div class="level-letter">E</div>
+                            <div class="level-name">Parcialmente<br>Definido</div>
+                            <div class="level-count">+3 = 10</div>
+                        </div>
+
+                        <div class="level-box d">
+                            <div class="level-letter">D</div>
+                            <div class="level-name">Largamente<br>Definido</div>
+                            <div class="level-count">+3 = 13</div>
+                        </div>
+
+                        <div class="level-box c">
+                            <div class="level-letter">C</div>
+                            <div class="level-name">Definido</div>
+                            <div class="level-count">+4 = 17</div>
+                        </div>
+
+                        <div class="level-box b">
+                            <div class="level-letter">B</div>
+                            <div class="level-name">Gerenciado<br>Quantit.</div>
+                            <div class="level-count">+2 = 19</div>
+                        </div>
+
+                        <div class="level-box a">
+                            <div class="level-letter">A</div>
+                            <div class="level-name">Em<br>Otimização</div>
+                            <div class="level-count">+2 = 21</div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Nível Capacidade</th>
+                                <th>Nome</th>
+                                <th>Atributos de Processo</th>
+                            </tr>
+                            <tr>
+                                <td><strong>0</strong></td>
+                                <td>Incompleto</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td>Executado</td>
+                                <td>AP 1.1</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td>Gerenciado</td>
+                                <td>AP 2.1, AP 2.2</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td>Definido</td>
+                                <td>AP 3.1, AP 3.2</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4</strong></td>
+                                <td>Previsível</td>
+                                <td>AP 4.1, AP 4.2</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5</strong></td>
+                                <td>Em Otimização</td>
+                                <td>AP 5.1, AP 5.2</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>📊 Escala de Avaliação</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;"><strong>N (Não alcançado):</strong> 0-15%</li>
+                                <li style="padding: 5px 0;"><strong>P (Parcialmente):</strong> 16-50%</li>
+                                <li style="padding: 5px 0;"><strong>L (Largamente):</strong> 51-85%</li>
+                                <li style="padding: 5px 0;"><strong>T (Totalmente):</strong> 86-100%</li>
+                            </ul>
+                            <p style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+                                <strong>Regra:</strong> Todos APs devem estar L ou T para alcançar o nível!
+                            </p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🎯 MPS.BR vs CMMI vs ISO</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;"><strong>MPS.BR:</strong> 7 níveis, PMEs, R$15-40k</li>
+                                <li style="padding: 5px 0;"><strong>CMMI:</strong> 5 níveis, grandes, US$50-200k</li>
+                                <li style="padding: 5px 0;"><strong>ISO 15504:</strong> 6 níveis, internacional</li>
+                            </ul>
+                            <p style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724;">
+                                <strong>Vantagem MPS.BR:</strong> Acessível para PMEs brasileiras!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Pontos-Chave para a Prova</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li>✓ Decorar os 7 níveis em ordem (G→A)</li>
+                            <li>✓ Saber quantos processos em cada nível</li>
+                            <li>✓ Entender níveis de capacidade (0-5)</li>
+                            <li>✓ Escala NPLТ de avaliação</li>
+                            <li>✓ Diferenças MPS.BR vs CMMI</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: NÍVEIS G e F -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Aulas 4 e 5: Níveis G e F</h2>
+                    <p>Gerenciamento básico e qualidade</p>
+                </div>
+                <div class="slide-body">
+                    <div class="review-section">
+                        <div class="review-header">📖 Nível G: GPR e GRE</div>
+                        
+                        <div class="two-column">
+                            <div class="example-card">
+                                <h4>GPR - Gerência de Projetos</h4>
+                                <p style="margin: 15px 0; font-size: 1.05rem;">
+                                    <strong>Propósito:</strong> Estabelecer planos, prover informações de andamento
+                                </p>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin-left: 20px;">
+                                    <li>17 resultados esperados</li>
+                                    <li>Escopo, WBS, cronograma, riscos</li>
+                                    <li>Orçamento, recursos, marcos</li>
+                                    <li>Monitoramento e ações corretivas</li>
+                                </ul>
+                            </div>
+
+                            <div class="example-card">
+                                <h4>GRE - Gerência de Requisitos</h4>
+                                <p style="margin: 15px 0; font-size: 1.05rem;">
+                                    <strong>Propósito:</strong> Gerenciar requisitos, assegurar alinhamento
+                                </p>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin-left: 20px;">
+                                    <li>5 resultados esperados</li>
+                                    <li>Entendimento com fornecedores</li>
+                                    <li>Rastreabilidade bidirecional</li>
+                                    <li>Gerenciamento de mudanças</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="review-section" style="margin-top: 30px;">
+                        <div class="review-header">📖 Nível F: +5 Processos</div>
+                        
+                        <div class="key-concepts">
+                            <div class="concept-card">
+                                <div class="concept-title">MED - Medição</div>
+                                <div class="concept-desc">
+                                    Coletar, armazenar, analisar dados de produtos e processos.
+                                    Métricas: produtividade, qualidade, prazo, custo.
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">GQA - Garantia da Qualidade</div>
+                                <div class="concept-desc">
+                                    Assegurar aderência de produtos e processos.
+                                    Auditorias, code review, não conformidades.
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">GCO - Gerência de Configuração</div>
+                                <div class="concept-desc">
+                                    Controlar versões, mudanças, baselines.
+                                    Git, SVN, CCB (Change Control Board).
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">AQU - Aquisição</div>
+                                <div class="concept-desc">
+                                    Gerenciar fornecedores terceiros.
+                                    RFP, seleção, contrato, monitoramento.
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">GPP - Gerência de Portfólio</div>
+                                <div class="concept-desc">
+                                    Priorizar projetos estrategicamente.
+                                    ROI, recursos, alinhamento estratégico.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Pontos-Chave para a Prova</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li>✓ GPR: 17 resultados, GRE: 5 resultados</li>
+                            <li>✓ Artefatos: Plano Projeto, Baseline Requisitos, Matriz Rastreabilidade</li>
+                            <li>✓ Nível G: capacidade 2 (Gerenciado) para ambos</li>
+                            <li>✓ Nível F: 5 processos (MED, GQA, GCO, AQU, GPP)</li>
+                            <li>✓ Diferença GRE (gerenciar) vs DRE (desenvolver)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: NÍVEL E -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏢 Aula 5: Nível E</h2>
+                    <p>Processos organizacionais e RH</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Nível E = Padronizar e Reutilizar! 📚
+                    </div>
+
+                    <div class="review-section" style="margin-top: 30px;">
+                        <div class="review-header">📖 Nível E: 3 Processos Organizacionais</div>
+                        
+                        <div class="key-concepts">
+                            <div class="concept-card">
+                                <div class="concept-title">DFP - Definição do Processo Organizacional</div>
+                                <div class="concept-desc">
+                                    <strong>Biblioteca de processos reutilizáveis!</strong><br>
+                                    • Processos-padrão organização<br>
+                                    • Descrições ciclo vida<br>
+                                    • Guias adaptação<br>
+                                    • Biblioteca ativos (templates)<br>
+                                    • Repositório medições<br>
+                                    • Padrões ambiente
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">AMP - Avaliação e Melhoria</div>
+                                <div class="concept-desc">
+                                    <strong>Melhoria contínua sistemática!</strong><br>
+                                    • Identificar melhorias processos<br>
+                                    • Planejar/implementar melhorias<br>
+                                    • Confirmar eficácia<br>
+                                    • Ciclo PDCA
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">GRH - Gerência de Recursos Humanos</div>
+                                <div class="concept-desc">
+                                    <strong>Gestão estratégica pessoas!</strong><br>
+                                    • Matriz competências<br>
+                                    • Plano desenvolvimento (PDI)<br>
+                                    • Trilhas carreira<br>
+                                    • Programa treinamento<br>
+                                    • Base conhecimento
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>Antes de E (até F)</th>
+                                <th>Com Nível E</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Processos</strong></td>
+                                <td>Cada projeto cria seus próprios</td>
+                                <td>Processos-padrão organizacionais</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Reutilização</strong></td>
+                                <td>Baixa, cada projeto "reinventa"</td>
+                                <td>Alta, biblioteca ativos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Melhoria</strong></td>
+                                <td>Por projeto, não sistemática</td>
+                                <td>Programa formal (AMP)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pessoas</strong></td>
+                                <td>Informal, ad-hoc</td>
+                                <td>Gestão estratégica (GRH)</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>💡 Benefícios do Nível E</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;">✓ -25% tempo criando processos</li>
+                                <li style="padding: 5px 0;">✓ +30% consistência entre projetos</li>
+                                <li style="padding: 5px 0;">✓ 50% mais fácil treinar novos</li>
+                                <li style="padding: 5px 0;">✓ Melhoria contínua sistemática</li>
+                                <li style="padding: 5px 0;">✓ Retenção talentos</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>⚠️ Quando buscar E?</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;">✓ Nível F consolidado (6+ meses)</li>
+                                <li style="padding: 5px 0;">✓ Múltiplos projetos simultâneos</li>
+                                <li style="padding: 5px 0;">✓ Muito retrabalho entre projetos</li>
+                                <li style="padding: 5px 0;">✓ Dificuldade treinar novos</li>
+                                <li style="padding: 5px 0;">✓ Quer escalar operação</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Pontos-Chave para a Prova</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li>✓ Nível E: 3 processos (DFP, AMP, GRH)</li>
+                            <li>✓ DFP: 6 componentes (processos-padrão, ciclos vida, guias, biblioteca, repositório, padrões)</li>
+                            <li>✓ Grande mudança: processos individuais → organizacionais</li>
+                            <li>✓ AMP: ciclo PDCA de melhoria</li>
+                            <li>✓ GRH: matriz competências, PDI, trilhas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: NÍVEL D -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏗️ Aula 6: Nível D</h2>
+                    <p>Engenharia completa do produto</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Nível D = DRE + DES + VAL! 🎯
+                    </div>
+
+                    <div class="review-section" style="margin-top: 30px;">
+                        <div class="review-header">📖 Nível D: 3 Processos de Engenharia</div>
+                        
+                        <div class="key-concepts">
+                            <div class="concept-card">
+                                <div class="concept-title">DRE - Desenvolvimento de Requisitos</div>
+                                <div class="concept-desc">
+                                    <strong>Engenharia de requisitos!</strong><br>
+                                    • Elicitar, analisar, especificar<br>
+                                    • Decompor em componentes<br>
+                                    • Validar com stakeholders<br>
+                                    • Rastreabilidade completa<br>
+                                    <em>≠ GRE (que apenas gerencia)</em>
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">DES - Design e Construção</div>
+                                <div class="concept-desc">
+                                    <strong>Do design à integração!</strong><br>
+                                    • Design arquitetural + detalhado<br>
+                                    • Make-or-buy analysis<br>
+                                    • Implementação + verificação<br>
+                                    • Integração componentes<br>
+                                    <em>Processo técnico completo</em>
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">VAL - Validação</div>
+                                <div class="concept-desc">
+                                    <strong>Produto certo?</strong><br>
+                                    • Testes aceitação, UAT<br>
+                                    • Beta testing, pilotos<br>
+                                    • Validação usuários reais<br>
+                                    • Foco: valor cliente<br>
+                                    <em>≠ Verificação (DES)</em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Conceito</th>
+                                <th>Definição</th>
+                                <th>Como?</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Verificação (DES)</strong></td>
+                                <td>"Construí CERTO?"</td>
+                                <td>Unit tests, code review, inspeções</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Validação (VAL)</strong></td>
+                                <td>"Construí o CERTO?"</td>
+                                <td>UAT, beta, usuários reais</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GRE (Nível G)</strong></td>
+                                <td>Gerenciar requisitos</td>
+                                <td>Rastrear, versionar, mudanças</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DRE (Nível D)</strong></td>
+                                <td>Desenvolver requisitos</td>
+                                <td>Elicitar, analisar, especificar</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>🎯 DRE: 5 Fases</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;"><strong>1. Elicitação:</strong> Entrevistas, workshops</li>
+                                <li style="padding: 5px 0;"><strong>2. Análise:</strong> Conflitos, priorização</li>
+                                <li style="padding: 5px 0;"><strong>3. Especificação:</strong> Documentar claramente</li>
+                                <li style="padding: 5px 0;"><strong>4. Decomposição:</strong> Requisitos componentes</li>
+                                <li style="padding: 5px 0;"><strong>5. Validação:</strong> Confirmar com cliente</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🎯 DES: Ciclo Técnico</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;"><strong>1. Design Arquitetural:</strong> Estrutura alto nível</li>
+                                <li style="padding: 5px 0;"><strong>2. Design Detalhado:</strong> Classes, APIs, BD</li>
+                                <li style="padding: 5px 0;"><strong>3. Implementação:</strong> Codificação</li>
+                                <li style="padding: 5px 0;"><strong>4. Verificação:</strong> Tests, review</li>
+                                <li style="padding: 5px 0;"><strong>5. Integração:</strong> Juntar componentes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Pontos-Chave para a Prova</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li>✓ Nível D: 3 processos (DRE, DES, VAL)</li>
+                            <li>✓ Diferença Verificação vs Validação</li>
+                            <li>✓ Diferença GRE vs DRE</li>
+                            <li>✓ Nível D = primeiro nível com engenharia técnica</li>
+                            <li>✓ DES cobre design, implementação, verificação, integração</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: NÍVEIS C, B, A -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏆 Aula 7: Níveis C, B e A</h2>
+                    <p>A elite da maturidade</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        C + B + A = Excelência! 🌟
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Nível</th>
+                                <th>Nome</th>
+                                <th>Processos</th>
+                                <th>Foco</th>
+                            </tr>
+                            <tr>
+                                <td><strong>C</strong></td>
+                                <td>Definido</td>
+                                <td>+4 = 17 total</td>
+                                <td>VER, ITP, GRI, GDE</td>
+                            </tr>
+                            <tr>
+                                <td><strong>B</strong></td>
+                                <td>Gerenciado Quantitativamente</td>
+                                <td>+2 = 19 total</td>
+                                <td>GQP (controle estatístico)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>A</strong></td>
+                                <td>Em Otimização</td>
+                                <td>+2 = 21 total</td>
+                                <td>IIO, ACP (melhoria contínua)</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="review-section" style="margin-top: 30px;">
+                        <div class="review-header">📖 Nível C: 4 Processos</div>
+                        
+                        <div class="key-concepts">
+                            <div class="concept-card">
+                                <div class="concept-title">VER - Verificação</div>
+                                <div class="concept-desc">
+                                    Confirmar que produtos refletem requisitos.
+                                    Peer review, testes, inspeções formais.
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">ITP - Integração do Produto</div>
+                                <div class="concept-desc">
+                                    Compor produto a partir de componentes.
+                                    Estratégia integração, testes integração.
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">GRI - Gerência de Riscos</div>
+                                <div class="concept-desc">
+                                    Identificar, analisar, tratar riscos proativamente.
+                                    Matriz riscos, planos mitigação.
+                                </div>
+                            </div>
+
+                            <div class="concept-card">
+                                <div class="concept-title">GDE - Gerência de Decisões</div>
+                                <div class="concept-desc">
+                                    Decisões formais com critérios objetivos.
+                                    Análise alternativas, seleção baseada em critérios.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>📊 Nível B: Quantitativo!</h4>
+                            <p style="margin: 15px 0; font-size: 1.05rem;">
+                                <strong>Grande Mudança: Qualitativo → Quantitativo</strong>
+                            </p>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin-left: 20px;">
+                                <li><strong>Antes (até C):</strong> "Qualidade boa?" → Opinião</li>
+                                <li><strong>B:</strong> "Defeitos/KLOC: 2.5 ± 0.3" → Dados!</li>
+                                <li>Controle estatístico processos (SPC)</li>
+                                <li>Modelos preditivos</li>
+                                <li>Decisões baseadas em DADOS</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🚀 Nível A: Otimização!</h4>
+                            <p style="margin: 15px 0; font-size: 1.05rem;">
+                                <strong>Melhoria Contínua Sistemática</strong>
+                            </p>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin-left: 20px;">
+                                <li><strong>IIO:</strong> Inovação e Implantação</li>
+                                <li><strong>ACP:</strong> Análise Causas Problemas</li>
+                                <li>Ciclo: Medir → Analisar → Inovar → Implantar</li>
+                                <li>Cultura de excelência</li>
+                                <li>Apenas ~0.5% empresas BR!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Pontos-Chave para a Prova</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2;">
+                            <li>✓ C: VER, ITP, GRI, GDE (completar engenharia)</li>
+                            <li>✓ B: GQP (controle estatístico, quantitativo)</li>
+                            <li>✓ A: IIO, ACP (otimização, análise causas)</li>
+                            <li>✓ Diferença qualitativo (até C) vs quantitativo (B+)</li>
+                            <li>✓ Pouquíssimas empresas alcançam C, B, A (~5% total)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: RESUMO TODOS OS PROCESSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Resumo: Todos os 21 Processos</h2>
+                    <p>A lista completa para decorar!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="comparison-table">
+                        <table style="font-size: 0.95rem;">
+                            <tr>
+                                <th>Nível</th>
+                                <th>Sigla</th>
+                                <th>Nome</th>
+                                <th>Propósito Principal</th>
+                            </tr>
+                            <tr style="background: #ecf0f1;">
+                                <td rowspan="2"><strong>G</strong></td>
+                                <td><strong>GPR</strong></td>
+                                <td>Gerência de Projetos</td>
+                                <td>Planejar e monitorar projetos</td>
+                            </tr>
+                            <tr style="background: #ecf0f1;">
+                                <td><strong>GRE</strong></td>
+                                <td>Gerência de Requisitos</td>
+                                <td>Gerenciar requisitos e mudanças</td>
+                            </tr>
+                            <tr style="background: #fadbd8;">
+                                <td rowspan="5"><strong>F</strong></td>
+                                <td><strong>MED</strong></td>
+                                <td>Medição</td>
+                                <td>Coletar e analisar métricas</td>
+                            </tr>
+                            <tr style="background: #fadbd8;">
+                                <td><strong>GQA</strong></td>
+                                <td>Garantia da Qualidade</td>
+                                <td>Assegurar aderência processos</td>
+                            </tr>
+                            <tr style="background: #fadbd8;">
+                                <td><strong>GCO</strong></td>
+                                <td>Gerência de Configuração</td>
+                                <td>Controlar versões e baselines</td>
+                            </tr>
+                            <tr style="background: #fadbd8;">
+                                <td><strong>AQU</strong></td>
+                                <td>Aquisição</td>
+                                <td>Gerenciar fornecedores</td>
+                            </tr>
+                            <tr style="background: #fadbd8;">
+                                <td><strong>GPP</strong></td>
+                                <td>Gerência de Portfólio</td>
+                                <td>Priorizar projetos</td>
+                            </tr>
+                            <tr style="background: #fef5e7;">
+                                <td rowspan="3"><strong>E</strong></td>
+                                <td><strong>DFP</strong></td>
+                                <td>Definição Processo Organizacional</td>
+                                <td>Criar processos-padrão</td>
+                            </tr>
+                            <tr style="background: #fef5e7;">
+                                <td><strong>AMP</strong></td>
+                                <td>Avaliação e Melhoria</td>
+                                <td>Melhorar processos (PDCA)</td>
+                            </tr>
+                            <tr style="background: #fef5e7;">
+                                <td><strong>GRH</strong></td>
+                                <td>Gerência de Recursos Humanos</td>
+                                <td>Gestão estratégica pessoas</td>
+                            </tr>
+                            <tr style="background: #d6eaf8;">
+                                <td rowspan="3"><strong>D</strong></td>
+                                <td><strong>DRE</strong></td>
+                                <td>Desenvolvimento de Requisitos</td>
+                                <td>Engenharia de requisitos</td>
+                            </tr>
+                            <tr style="background: #d6eaf8;">
+                                <td><strong>DES</strong></td>
+                                <td>Design e Construção</td>
+                                <td>Design + implementação + verificação</td>
+                            </tr>
+                            <tr style="background: #d6eaf8;">
+                                <td><strong>VAL</strong></td>
+                                <td>Validação</td>
+                                <td>Confirmar atende necessidades</td>
+                            </tr>
+                            <tr style="background: #ebdef0;">
+                                <td rowspan="4"><strong>C</strong></td>
+                                <td><strong>VER</strong></td>
+                                <td>Verificação</td>
+                                <td>Confirmar conformidade especificação</td>
+                            </tr>
+                            <tr style="background: #ebdef0;">
+                                <td><strong>ITP</strong></td>
+                                <td>Integração do Produto</td>
+                                <td>Compor produto de componentes</td>
+                            </tr>
+                            <tr style="background: #ebdef0;">
+                                <td><strong>GRI</strong></td>
+                                <td>Gerência de Riscos</td>
+                                <td>Identificar e tratar riscos</td>
+                            </tr>
+                            <tr style="background: #ebdef0;">
+                                <td><strong>GDE</strong></td>
+                                <td>Gerência de Decisões</td>
+                                <td>Decisões formais com critérios</td>
+                            </tr>
+                            <tr style="background: #fdebd0;">
+                                <td rowspan="2"><strong>B</strong></td>
+                                <td><strong>GQP</strong></td>
+                                <td>Gerência Quantitativa do Projeto</td>
+                                <td>Controle estatístico processos</td>
+                            </tr>
+                            <tr style="background: #fdebd0;">
+                                <td colspan="3" style="font-style: italic;">Técnicas: SPC, Seis Sigma, modelos preditivos</td>
+                            </tr>
+                            <tr style="background: #d1f2eb;">
+                                <td rowspan="2"><strong>A</strong></td>
+                                <td><strong>IIO</strong></td>
+                                <td>Inovação e Implantação</td>
+                                <td>Inovações e melhorias</td>
+                            </tr>
+                            <tr style="background: #d1f2eb;">
+                                <td><strong>ACP</strong></td>
+                                <td>Análise de Causas de Problemas</td>
+                                <td>Análise causas raiz estatística</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Dica de Memorização</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8;">
+                            <strong>Mnemônico por nível:</strong><br>
+                            G: <strong>GPR GRE</strong> (Gerenciar Projeto e Requisitos)<br>
+                            F: <strong>MED GQA GCO AQU GPP</strong> (Medir, Qualidade, Configuração, Aquisição, Portfólio)<br>
+                            E: <strong>DFP AMP GRH</strong> (Definir, Avaliar/Melhorar, RH)<br>
+                            D: <strong>DRE DES VAL</strong> (Desenvolver Req, Design, Validar)<br>
+                            C: <strong>VER ITP GRI GDE</strong> (Verificar, Integrar, Riscos, Decisões)<br>
+                            B: <strong>GQP</strong> (Quantitativo!)<br>
+                            A: <strong>IIO ACP</strong> (Inovar, Analisar Causas)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: DICAS PARA A PROVA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💡 Dicas Finais para a Prova</h2>
+                    <p>Como se sair bem!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Estude SMART, não apenas HARD! 🧠
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ O que FAZER</h3>
+                            <ul>
+                                <li>Revisar TODAS as apresentações</li>
+                                <li>Decorar siglas e propósitos</li>
+                                <li>Entender DIFERENÇAS entre conceitos</li>
+                                <li>Praticar cálculos (ROI)</li>
+                                <li>Formar grupos de estudo</li>
+                                <li>Resolver questões exemplo</li>
+                                <li>Dormir bem na véspera</li>
+                                <li>Chegar 15min antes</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box" style="border-left-color: var(--red);">
+                            <h3 style="color: var(--red);">❌ O que NÃO fazer</h3>
+                            <ul>
+                                <li>Estudar só na véspera</li>
+                                <li>Decorar sem entender</li>
+                                <li>Confundir siglas parecidas</li>
+                                <li>Ignorar exemplos práticos</li>
+                                <li>Não revisar cálculos</li>
+                                <li>Deixar questões em branco</li>
+                                <li>Ficar nervoso demais</li>
+                                <li>Esquecer material permitido</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="checklist" style="margin-top: 40px;">
+                        <h3 style="color: var(--unifil-orange); margin-bottom: 20px; font-size: 1.5rem;">
+                            📋 Checklist de Estudo
+                        </h3>
+                        
+                        <div class="checklist-item">
+                            Sei as 4 categorias de custos da qualidade + exemplos
+                        </div>
+                        <div class="checklist-item">
+                            Sei calcular ROI [(Ganho-Invest)/Invest × 100%]
+                        </div>
+                        <div class="checklist-item">
+                            Decorei os 7 níveis em ordem (G→F→E→D→C→B→A)
+                        </div>
+                        <div class="checklist-item">
+                            Sei quantos processos em cada nível (2→7→10→13→17→19→21)
+                        </div>
+                        <div class="checklist-item">
+                            Conheço TODOS os 21 processos (sigla + nome + propósito)
+                        </div>
+                        <div class="checklist-item">
+                            Entendo diferença GRE vs DRE
+                        </div>
+                        <div class="checklist-item">
+                            Entendo diferença Verificação (VER/DES) vs Validação (VAL)
+                        </div>
+                        <div class="checklist-item">
+                            Sei os 6 níveis de capacidade (0-5) e escala NPLT
+                        </div>
+                        <div class="checklist-item">
+                            Conheço os 2 APs do nível 2 (AP 2.1 e AP 2.2)
+                        </div>
+                        <div class="checklist-item">
+                            Sei diferença qualitativo (até C) vs quantitativo (B+)
+                        </div>
+                        <div class="checklist-item">
+                            Revisei exemplos práticos de cada processo
+                        </div>
+                        <div class="checklist-item">
+                            Fiz simulados/exercícios propostos
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>🎯 Tipos de Questões Esperadas</h3>
+                        <div class="two-column" style="gap: 25px; margin-top: 20px;">
+                            <div>
+                                <h4 style="margin-bottom: 15px;">Objetivas (múltipla escolha)</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.8;">
+                                    • Identificar siglas/processos<br>
+                                    • Associar nível → processos<br>
+                                    • Diferenciar conceitos<br>
+                                    • Cálculos simples (ROI)<br>
+                                    • Verdadeiro/Falso
+                                </p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 15px;">Dissertativas</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.8;">
+                                    • Explicar propósito processo<br>
+                                    • Comparar processos/níveis<br>
+                                    • Analisar cenário prático<br>
+                                    • Justificar escolhas<br>
+                                    • Aplicar conhecimento
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        A melhor preparação é entender OS CONCEITOS, não apenas decorar! 
+                        Entenda o PORQUÊ de cada processo existir! 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: BOA SORTE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎉 Boa Sorte na Prova!</h2>
+                    <p>Você está preparado!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 80px; font-size: 2.5rem;">
+                        Você consegue! 💪
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 60px; padding: 50px;">
+                        <h3 style="font-size: 2rem; margin-bottom: 30px;">📅 Lembrete Final</h3>
+                        <div style="text-align: center;">
+                            <p style="font-size: 1.8rem; line-height: 2.5; font-weight: 600;">
+                                <strong>Data:</strong> Segunda, 03/03/2026<br>
+                                <strong>Horário:</strong> Horário normal da aula<br>
+                                <strong>Local:</strong> Sala de aula habitual<br>
+                                <strong>Material:</strong> Apenas caneta (+ calculadora simples)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 60px;">
+                        <div class="stat-card">
+                            <div class="stat-number">25%</div>
+                            <div class="stat-label">peso da prova</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">90min</div>
+                            <div class="stat-label">duração</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">de confiança em você!</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 80px;">
+                        <p style="font-size: 2rem; color: var(--unifil-orange); font-weight: 700; margin-bottom: 20px;">
+                            Confie no seu preparo! 🌟
+                        </p>
+                        <p style="font-size: 1.3rem; color: var(--unifil-gray); margin-bottom: 30px;">
+                            Você estudou, revisou e está pronto.
+                        </p>
+                        <p style="font-size: 1.5rem; color: var(--unifil-dark); font-weight: 600;">
+                            Nos vemos na Segunda! 🎯
+                        </p>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 50px; text-align: center; border-left: none; background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; font-size: 1.5rem;">
+                        "O sucesso é a soma de pequenos esforços repetidos dia após dia."<br>
+                        <em style="font-size: 1.2rem; margin-top: 10px; display: block;">— Robert Collier</em>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 60px;">
+                        <p style="font-size: 1.2rem; color: var(--unifil-gray);">
+                            📧 Dúvidas de última hora? Me procure hoje ou amanhã!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 10</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .quote-box, .comparison-table, .review-section, .concept-card, .level-box, .checklist');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => { el.style.animation = ''; }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

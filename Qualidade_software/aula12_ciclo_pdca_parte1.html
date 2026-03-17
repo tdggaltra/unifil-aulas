@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 12 - Ciclo PDCA Parte 1 | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --green: #28a745;
+            --blue: #007bff;
+            --purple: #6f42c1;
+            --red: #dc3545;
+            --yellow: #ffc107;
+            --pdca-blue: #2563eb;
+            --pdca-green: #16a34a;
+            --pdca-yellow: #eab308;
+            --pdca-red: #dc2626;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.3);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--unifil-orange);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .pdca-circle {
+            width: 400px;
+            height: 400px;
+            margin: 40px auto;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .pdca-quarter {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .pdca-quarter:hover {
+            transform: scale(1.1);
+        }
+
+        .pdca-plan {
+            background: var(--pdca-blue);
+            top: 0;
+            left: 0;
+            clip-path: polygon(50% 50%, 0 0, 100% 0);
+        }
+
+        .pdca-do {
+            background: var(--pdca-green);
+            top: 0;
+            right: 0;
+            clip-path: polygon(50% 50%, 100% 0, 100% 100%);
+        }
+
+        .pdca-check {
+            background: var(--pdca-yellow);
+            bottom: 0;
+            right: 0;
+            clip-path: polygon(50% 50%, 100% 100%, 0 100%);
+        }
+
+        .pdca-act {
+            background: var(--pdca-red);
+            bottom: 0;
+            left: 0;
+            clip-path: polygon(50% 50%, 0 100%, 0 0);
+        }
+
+        .pdca-step {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .pdca-step.plan { border-left-color: var(--pdca-blue); }
+        .pdca-step.do { border-left-color: var(--pdca-green); }
+        .pdca-step.check { border-left-color: var(--pdca-yellow); }
+        .pdca-step.act { border-left-color: var(--pdca-red); }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-right: 15px;
+        }
+
+        .step-icon.plan { background: var(--pdca-blue); }
+        .step-icon.do { background: var(--pdca-green); }
+        .step-icon.check { background: var(--pdca-yellow); }
+        .step-icon.act { background: var(--pdca-red); }
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--unifil-dark);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 30px 0;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--unifil-orange);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-content {
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            width: 45%;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 55%;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-right: 55%;
+        }
+
+        .timeline-year {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--unifil-orange);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .pdca-step:nth-child(1) { animation-delay: 0s; }
+        .pdca-step:nth-child(2) { animation-delay: 0.15s; }
+        .pdca-step:nth-child(3) { animation-delay: 0.3s; }
+        .pdca-step:nth-child(4) { animation-delay: 0.45s; }
+        .timeline-item:nth-child(1) { animation-delay: 0s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.4s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>🔄 Ciclo PDCA - Parte 1</h1>
+                    <p>Aula 12 - Plan-Do-Check-Act e Melhoria Contínua</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 60px;">
+                        A Ferramenta Universal de Melhoria! 🔄
+                    </div>
+
+                    <div style="text-align: center; margin-top: 50px;">
+                        <div style="display: inline-block;">
+                            <div style="font-size: 5rem; letter-spacing: 10px; font-weight: 700; margin-bottom: 20px;">
+                                <span style="color: var(--pdca-blue);">P</span>
+                                <span style="color: var(--pdca-green);">D</span>
+                                <span style="color: var(--pdca-yellow);">C</span>
+                                <span style="color: var(--pdca-red);">A</span>
+                            </div>
+                            <h2 style="color: var(--unifil-dark); font-size: 1.4rem;">
+                                Plan → Do → Check → Act
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 50px;">
+                        <div class="content-box">
+                            <h3>📚 O que você vai aprender</h3>
+                            <ul>
+                                <li>Origem e história do PDCA</li>
+                                <li>Os 4 passos em detalhes</li>
+                                <li>Aplicação em melhoria de processos</li>
+                                <li>Ferramentas da qualidade</li>
+                                <li>Casos práticos</li>
+                                <li>PDCA vs outras metodologias</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Por que PDCA é importante?</h3>
+                            <ul>
+                                <li>Universal: qualquer área, problema</li>
+                                <li>Simples: fácil entender e aplicar</li>
+                                <li>Eficaz: comprovado décadas de uso</li>
+                                <li>Científico: baseado em método</li>
+                                <li>Contínuo: melhoria nunca para</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">1920s</div>
+                            <div class="stat-label">origem do ciclo</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">4</div>
+                            <div class="stat-label">passos simples</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">100+ anos</div>
+                            <div class="stat-label">de uso e evolução</div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Não é necessário mudar. A sobrevivência não é obrigatória." — W. Edwards Deming
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: ORIGEM E HISTÓRIA -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📜 Origem e História do PDCA</h2>
+                    <p>De Shewhart a Deming</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        100 Anos de Melhoria Contínua! 📚
+                    </div>
+
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-year">1920s</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">Walter Shewhart - Bell Labs</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    Criou o <strong>ciclo de Shewhart</strong>: Specification → Production → Inspection → Redesign. 
+                                    Base do controle estatístico de qualidade (SPC).
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">1950</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">W. Edwards Deming no Japão</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    Deming ensina o ciclo ao Japão pós-guerra. Simplifica para 
+                                    <strong>Plan-Do-Check-Act</strong>. Japão adota massivamente, 
+                                    revoluciona indústria japonesa.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">1980s</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">Retorno ao Ocidente</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    Sucesso japonês (Toyota, Sony, Honda) chama atenção. 
+                                    Empresas ocidentais redescobrem Deming e PDCA. Vira padrão 
+                                    em gestão da qualidade.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">Hoje</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--unifil-orange); margin-bottom: 10px;">Universal</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    Usado em TODO setor: manufatura, software, saúde, educação. 
+                                    Base de ISO 9001, Lean, Six Sigma, Kaizen. Princípio fundamental 
+                                    de melhoria contínua.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>👨‍🔬 W. Edwards Deming (1900-1993)</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                                <strong>Estatístico americano</strong> considerado "pai da qualidade moderna".<br><br>
+                                <strong>Contribuições:</strong><br>
+                                • Ciclo PDCA<br>
+                                • 14 Pontos para Gestão<br>
+                                • Sistema de Conhecimento Profundo<br>
+                                • Transformou indústria japonesa<br><br>
+                                Prêmio Deming (Japão) = Nobel da Qualidade
+                            </p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>💡 Por que o PDCA funcionou tão bem?</h4>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin: 15px 0 0 20px;">
+                                <li><strong>Simples:</strong> 4 passos claros</li>
+                                <li><strong>Universal:</strong> Qualquer problema</li>
+                                <li><strong>Científico:</strong> Baseado em dados</li>
+                                <li><strong>Iterativo:</strong> Ciclo contínuo</li>
+                                <li><strong>Preventivo:</strong> Não só corretivo</li>
+                                <li><strong>Educativo:</strong> Ensina pensar</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "Não basta fazer o seu melhor. Primeiro você precisa saber O QUE fazer, 
+                        e então fazer o seu melhor." — W. Edwards Deming
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: VISÃO GERAL DO CICLO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔄 Visão Geral do Ciclo PDCA</h2>
+                    <p>Os 4 passos interconectados</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        PDCA = Método Científico Aplicado! 🔬
+                    </div>
+
+                    <div style="text-align: center; margin: 40px 0;">
+                        <svg width="500" height="500" viewBox="0 0 500 500" style="margin: 0 auto; display: block;">
+                            <!-- Círculo externo -->
+                            <circle cx="250" cy="250" r="220" fill="none" stroke="#ddd" stroke-width="3"/>
+                            
+                            <!-- Setas circulares -->
+                            <path d="M 250 30 A 220 220 0 0 1 470 250" fill="none" stroke="var(--pdca-blue)" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowblue)"/>
+                            <path d="M 470 250 A 220 220 0 0 1 250 470" fill="none" stroke="var(--pdca-green)" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowgreen)"/>
+                            <path d="M 250 470 A 220 220 0 0 1 30 250" fill="none" stroke="var(--pdca-yellow)" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowyellow)"/>
+                            <path d="M 30 250 A 220 220 0 0 1 250 30" fill="none" stroke="var(--pdca-red)" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowred)"/>
+                            
+                            <!-- Definir setas -->
+                            <defs>
+                                <marker id="arrowblue" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                    <polygon points="0,0 10,5 0,10" fill="var(--pdca-blue)"/>
+                                </marker>
+                                <marker id="arrowgreen" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                    <polygon points="0,0 10,5 0,10" fill="var(--pdca-green)"/>
+                                </marker>
+                                <marker id="arrowyellow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                    <polygon points="0,0 10,5 0,10" fill="var(--pdca-yellow)"/>
+                                </marker>
+                                <marker id="arrowred" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                    <polygon points="0,0 10,5 0,10" fill="var(--pdca-red)"/>
+                                </marker>
+                            </defs>
+                            
+                            <!-- Círculos com letras -->
+                            <circle cx="250" cy="80" r="50" fill="var(--pdca-blue)"/>
+                            <text x="250" y="95" text-anchor="middle" fill="white" font-size="40" font-weight="bold">P</text>
+                            
+                            <circle cx="420" cy="250" r="50" fill="var(--pdca-green)"/>
+                            <text x="420" y="265" text-anchor="middle" fill="white" font-size="40" font-weight="bold">D</text>
+                            
+                            <circle cx="250" cy="420" r="50" fill="var(--pdca-yellow)"/>
+                            <text x="250" y="435" text-anchor="middle" fill="white" font-size="40" font-weight="bold">C</text>
+                            
+                            <circle cx="80" cy="250" r="50" fill="var(--pdca-red)"/>
+                            <text x="80" y="265" text-anchor="middle" fill="white" font-size="40" font-weight="bold">A</text>
+                            
+                            <!-- Textos descritivos -->
+                            <text x="250" y="30" text-anchor="middle" fill="var(--pdca-blue)" font-size="16" font-weight="bold">PLANEJAR</text>
+                            <text x="480" y="255" text-anchor="start" fill="var(--pdca-green)" font-size="16" font-weight="bold">FAZER</text>
+                            <text x="250" y="485" text-anchor="middle" fill="var(--pdca-yellow)" font-size="16" font-weight="bold">VERIFICAR</text>
+                            <text x="10" y="255" text-anchor="start" fill="var(--pdca-red)" font-size="16" font-weight="bold">AGIR</text>
+                        </svg>
+                    </div>
+
+                    <div class="comparison-table">
+                        <table>
+                            <tr>
+                                <th>Passo</th>
+                                <th>Nome</th>
+                                <th>Essência</th>
+                                <th>Pergunta-Chave</th>
+                            </tr>
+                            <tr style="background: rgba(37, 99, 235, 0.1);">
+                                <td><strong>P</strong></td>
+                                <td><strong>Plan (Planejar)</strong></td>
+                                <td>Definir objetivos e métodos</td>
+                                <td>"O que vamos fazer e como?"</td>
+                            </tr>
+                            <tr style="background: rgba(22, 163, 74, 0.1);">
+                                <td><strong>D</strong></td>
+                                <td><strong>Do (Fazer/Executar)</strong></td>
+                                <td>Implementar o plano</td>
+                                <td>"Estamos executando conforme planejado?"</td>
+                            </tr>
+                            <tr style="background: rgba(234, 179, 8, 0.1);">
+                                <td><strong>C</strong></td>
+                                <td><strong>Check (Verificar)</strong></td>
+                                <td>Medir e avaliar resultados</td>
+                                <td>"Funcionou? Atingimos objetivos?"</td>
+                            </tr>
+                            <tr style="background: rgba(220, 38, 38, 0.1);">
+                                <td><strong>A</strong></td>
+                                <td><strong>Act (Agir)</strong></td>
+                                <td>Padronizar ou corrigir</td>
+                                <td>"Como garantir que melhoria persista?"</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Princípio Fundamental</h3>
+                        <p style="font-size: 1.3rem; line-height: 2; text-align: center; margin-top: 15px;">
+                            PDCA = <strong>Hipótese → Experimento → Análise → Conclusão</strong><br>
+                            É o método científico aplicado à gestão! 🔬
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: PLAN (PLANEJAR) -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 P = Plan (Planejar)</h2>
+                    <p>O passo mais importante!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="pdca-step plan">
+                        <div class="step-header">
+                            <div class="step-icon plan">P</div>
+                            <div class="step-title">PLAN - Planejar</div>
+                        </div>
+                        <p style="font-size: 1.15rem; line-height: 1.7;">
+                            <strong>Objetivo:</strong> Estabelecer objetivos e processos necessários 
+                            para entregar resultados de acordo com requisitos do cliente e políticas da organização.
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 5 Sub-passos do PLAN</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <h5 style="color: var(--pdca-blue); margin-bottom: 15px; font-size: 1.3rem;">
+                                1. Identificar o Problema
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • <strong>O que está errado?</strong> "Tempo deploy 4h, meta <1h"<br>
+                                • <strong>Qual impacto?</strong> "20 deploys/mês × 3h extra = 60h desperdiçadas"<br>
+                                • <strong>Por que resolver?</strong> "Atrasar releases, frustrar equipe"<br>
+                                • <strong>Ferramentas:</strong> 5 Porquês, Diagrama Ishikawa, Pareto
+                            </p>
+
+                            <h5 style="color: var(--pdca-blue); margin-bottom: 15px; font-size: 1.3rem;">
+                                2. Analisar o Processo Atual (Observação)
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • <strong>Como funciona hoje?</strong> Mapear processo atual (fluxograma)<br>
+                                • <strong>Onde estão gargalos?</strong> "Testes manuais levam 2h"<br>
+                                • <strong>Dados:</strong> Coletar métricas (tempos, taxas erro)<br>
+                                • <strong>Ferramentas:</strong> VSM, Fluxograma, Cronoanálise
+                            </p>
+
+                            <h5 style="color: var(--pdca-blue); margin-bottom: 15px; font-size: 1.3rem;">
+                                3. Identificar Causas Raiz
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • <strong>Por que acontece?</strong> Não sintomas, CAUSAS!<br>
+                                • <strong>Exemplo:</strong> "Testes manuais porque não temos CI/CD"<br>
+                                • <strong>Validar:</strong> Causa → Efeito comprovado com dados<br>
+                                • <strong>Ferramentas:</strong> 5 Porquês, Ishikawa, 5W2H
+                            </p>
+
+                            <h5 style="color: var(--pdca-blue); margin-bottom: 15px; font-size: 1.3rem;">
+                                4. Elaborar Plano de Ação
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • <strong>O que fazer?</strong> "Implementar CI/CD com GitHub Actions"<br>
+                                • <strong>Como?</strong> Passos detalhados, responsáveis, prazos<br>
+                                • <strong>Recursos?</strong> Tempo, pessoas, budget<br>
+                                • <strong>Ferramentas:</strong> 5W2H (What, Why, Who, When, Where, How, How much)
+                            </p>
+
+                            <h5 style="color: var(--pdca-blue); margin-bottom: 15px; font-size: 1.3rem;">
+                                5. Definir Metas e Indicadores
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                • <strong>Meta SMART:</strong> "Reduzir tempo deploy de 4h para <1h em 2 meses"<br>
+                                • <strong>KPIs:</strong> Tempo médio deploy, taxa sucesso, frequência<br>
+                                • <strong>Baseline:</strong> "Hoje: 4h ± 45min, 85% sucesso"<br>
+                                • <strong>Como medir:</strong> Dashboard automatizado (Grafana)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "Planejar bem = 50% do sucesso! Se você não sabe para onde vai, 
+                        qualquer caminho serve..." 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: DO (FAZER) -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>✅ D = Do (Fazer/Executar)</h2>
+                    <p>Hora de colocar em prática!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="pdca-step do">
+                        <div class="step-header">
+                            <div class="step-icon do">D</div>
+                            <div class="step-title">DO - Executar</div>
+                        </div>
+                        <p style="font-size: 1.15rem; line-height: 1.7;">
+                            <strong>Objetivo:</strong> Implementar o plano de ação, executar o processo 
+                            e coletar dados para análise posterior. Fazer pequeno ANTES de escalar!
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>✅ O que fazer no DO</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin: 15px 0 0 20px;">
+                                <li><strong>Executar conforme planejado:</strong> Seguir plano de ação</li>
+                                <li><strong>Teste piloto primeiro:</strong> Pequena escala, ambiente controlado</li>
+                                <li><strong>Educar e treinar:</strong> Time precisa entender mudança</li>
+                                <li><strong>Documentar TUDO:</strong> O que fez, quando, como</li>
+                                <li><strong>Coletar dados:</strong> Métricas definidas no Plan</li>
+                                <li><strong>Registrar desvios:</strong> O que foi diferente do planejado?</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>⚠️ Armadilhas comuns no DO</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin: 15px 0 0 20px;">
+                                <li><strong>Pular Plan:</strong> "Já sei o problema, vamos logo fazer!"</li>
+                                <li><strong>Escalar rápido demais:</strong> Implementar em TODA empresa</li>
+                                <li><strong>Não treinar:</strong> Time não entende a mudança</li>
+                                <li><strong>Não coletar dados:</strong> Como vai avaliar no Check?</li>
+                                <li><strong>Desviar do plano:</strong> Improvisar sem documentar</li>
+                                <li><strong>Desistir cedo:</strong> "Não funcionou na 1ª semana!"</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💼 Caso Prático: Implementando CI/CD</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong style="color: var(--pdca-green);">Semana 1-2: Preparação</strong><br>
+                                • Treinar time em GitHub Actions (workshop 4h)<br>
+                                • Setup repo teste (não produção ainda!)<br>
+                                • Documentar workflow desejado<br><br>
+
+                                <strong style="color: var(--pdca-green);">Semana 3-4: Piloto</strong><br>
+                                • Implementar CI/CD em 1 microserviço (não crítico)<br>
+                                • Pipeline: lint → test → build → deploy staging<br>
+                                • Time 3 devs monitora de perto<br>
+                                • Coletar métricas: tempo deploy, taxa sucesso<br><br>
+
+                                <strong style="color: var(--pdca-green);">Semana 5-6: Observação</strong><br>
+                                • 20 deploys realizados no piloto<br>
+                                • Tempo médio: 45 minutos (antes 4h!) 🎉<br>
+                                • Taxa sucesso: 90% (antes 85%)<br>
+                                • 2 problemas encontrados (secrets, rollback)<br><br>
+
+                                <strong style="color: var(--pdca-green);">Dados coletados:</strong><br>
+                                • Logs completos de cada deploy<br>
+                                • Tempos por etapa (lint 2min, test 8min, build 15min, deploy 20min)<br>
+                                • Feedback time: "Muito melhor! Confiamos mais"<br>
+                                • Incidentes: 1 rollback necessário (processo funcionou)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Princípio-Chave do DO</h3>
+                        <p style="font-size: 1.3rem; line-height: 2; text-align: center; margin-top: 15px;">
+                            <strong>Fazer pequeno primeiro!</strong><br>
+                            Piloto → Aprender → Ajustar → Escalar<br>
+                            Nunca implemente mudanças em larga escala sem testar! 🔬
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: CHECK (VERIFICAR) -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 C = Check (Verificar)</h2>
+                    <p>Analisando os resultados</p>
+                </div>
+                <div class="slide-body">
+                    <div class="pdca-step check">
+                        <div class="step-header">
+                            <div class="step-icon check">C</div>
+                            <div class="step-title">CHECK - Verificar</div>
+                        </div>
+                        <p style="font-size: 1.15rem; line-height: 1.7;">
+                            <strong>Objetivo:</strong> Monitorar e medir processos e resultados contra 
+                            objetivos e requisitos, relatar resultados. Comparar PLANEJADO vs REAL!
+                        </p>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📊 O que fazer no CHECK</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <h5 style="color: var(--pdca-yellow); margin-bottom: 15px; font-size: 1.3rem;">
+                                1. Coletar Dados
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • Usar métricas definidas no Plan<br>
+                                • Dados quantitativos (números) + qualitativos (percepções)<br>
+                                • Período adequado: não julgar em 1 dia!
+                            </p>
+
+                            <h5 style="color: var(--pdca-yellow); margin-bottom: 15px; font-size: 1.3rem;">
+                                2. Comparar com Metas
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • <strong>Meta:</strong> Tempo deploy <1h<br>
+                                • <strong>Real:</strong> 45 minutos ✅<br>
+                                • <strong>Conclusão:</strong> Meta atingida!
+                            </p>
+
+                            <h5 style="color: var(--pdca-yellow); margin-bottom: 15px; font-size: 1.3rem;">
+                                3. Analisar Desvios
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • <strong>Positivos:</strong> O que deu melhor que esperado?<br>
+                                • <strong>Negativos:</strong> O que não funcionou?<br>
+                                • <strong>Por quê?</strong> Entender causas dos desvios
+                            </p>
+
+                            <h5 style="color: var(--pdca-yellow); margin-bottom: 15px; font-size: 1.3rem;">
+                                4. Identificar Efeitos Colaterais
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-bottom: 20px;">
+                                • CI/CD melhorou deploy... mas aumentou carga servidor staging?<br>
+                                • Resolver problema A criou problema B?<br>
+                                • Benefícios inesperados? (ex: documentação melhorou)
+                            </p>
+
+                            <h5 style="color: var(--pdca-yellow); margin-bottom: 15px; font-size: 1.3rem;">
+                                5. Decidir: Continuar, Ajustar ou Descartar?
+                            </h5>
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                • <strong>Sucesso total:</strong> Prosseguir para ACT (padronizar)<br>
+                                • <strong>Sucesso parcial:</strong> Ajustar e repetir DO<br>
+                                • <strong>Falha:</strong> Voltar ao PLAN (nova análise)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Baseline</th>
+                                <th>Meta</th>
+                                <th>Real (Piloto)</th>
+                                <th>Status</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Tempo Deploy</strong></td>
+                                <td>4h ± 45min</td>
+                                <td><1h</td>
+                                <td>45 min ± 8min</td>
+                                <td style="color: var(--green); font-weight: 700;">✅ Atingido!</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Taxa Sucesso</strong></td>
+                                <td>85%</td>
+                                <td>>90%</td>
+                                <td>90%</td>
+                                <td style="color: var(--green); font-weight: 700;">✅ Atingido!</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Frequência Deploy</strong></td>
+                                <td>2x/semana</td>
+                                <td>>5x/semana</td>
+                                <td>7x/semana</td>
+                                <td style="color: var(--green); font-weight: 700;">✅ Superado!</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Satisfação Time</strong></td>
+                                <td>6/10</td>
+                                <td>>8/10</td>
+                                <td>9/10</td>
+                                <td style="color: var(--green); font-weight: 700;">✅ Superado!</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Conclusão do CHECK</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            ✅ <strong>Todas metas atingidas ou superadas!</strong><br>
+                            ✅ <strong>Nenhum efeito colateral negativo significativo</strong><br>
+                            ✅ <strong>Time está satisfeito e confiante</strong><br><br>
+                            <strong>Decisão:</strong> Prosseguir para ACT (padronizar e escalar)! 🚀
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: ACT (AGIR) -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 A = Act (Agir)</h2>
+                    <p>Padronizar ou corrigir</p>
+                </div>
+                <div class="slide-body">
+                    <div class="pdca-step act">
+                        <div class="step-header">
+                            <div class="step-icon act">A</div>
+                            <div class="step-title">ACT - Agir</div>
+                        </div>
+                        <p style="font-size: 1.15rem; line-height: 1.7;">
+                            <strong>Objetivo:</strong> Tomar ações para melhorar continuamente o desempenho 
+                            do processo. Se deu certo: PADRONIZAR! Se não: CORRIGIR e voltar ao PLAN!
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>✅ Cenário 1: SUCESSO</h4>
+                            <h5 style="color: var(--green); margin: 15px 0 10px;">Ações no ACT:</h5>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin: 0 0 0 20px;">
+                                <li><strong>Padronizar:</strong> Virar processo oficial</li>
+                                <li><strong>Documentar:</strong> Manual, wiki, runbooks</li>
+                                <li><strong>Treinar todos:</strong> Não só piloto</li>
+                                <li><strong>Comunicar:</strong> Compartilhar sucesso</li>
+                                <li><strong>Escalar:</strong> Implementar em TODA organização</li>
+                                <li><strong>Atualizar políticas:</strong> Novo padrão</li>
+                                <li><strong>Celebrar:</strong> Reconhecer time!</li>
+                            </ul>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>❌ Cenário 2: FALHA ou PARCIAL</h4>
+                            <h5 style="color: var(--red); margin: 15px 0 10px;">Ações no ACT:</h5>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin: 0 0 0 20px;">
+                                <li><strong>Não padronizar:</strong> Não escalar erro!</li>
+                                <li><strong>Analisar causa:</strong> Por que falhou?</li>
+                                <li><strong>Ajustar plano:</strong> Nova hipótese</li>
+                                <li><strong>Voltar ao PLAN:</strong> Reiniciar ciclo</li>
+                                <li><strong>Documentar lições:</strong> O que aprendemos?</li>
+                                <li><strong>Não desistir:</strong> Thomas Edison: 10.000 tentativas!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>💼 Caso CI/CD: Ações no ACT</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong style="color: var(--pdca-red);">Mês 3: Padronização</strong><br>
+                                • ✅ Documentar processo completo (Confluence 30 páginas)<br>
+                                • ✅ Criar templates GitHub Actions reutilizáveis<br>
+                                • ✅ Atualizar política: "Todo repo DEVE ter CI/CD"<br>
+                                • ✅ Workshop para TODOS devs (3 turmas, 60 pessoas)<br><br>
+
+                                <strong style="color: var(--pdca-red);">Mês 4-6: Escalamento</strong><br>
+                                • ✅ Implementar CI/CD em 15 microserviços restantes<br>
+                                • ✅ Time DevOps suporta migração (office hours diárias)<br>
+                                • ✅ Monitorar métricas: manter <1h deploy<br>
+                                • ✅ Ajustes finos (secrets management, notifications)<br><br>
+
+                                <strong style="color: var(--pdca-red);">Mês 7: Nova baseline</strong><br>
+                                • ✅ 100% repos com CI/CD funcionando<br>
+                                • ✅ Tempo deploy médio: 42 minutos (consistente!)<br>
+                                • ✅ Frequência: 10x/semana (era 2x)<br>
+                                • ✅ Taxa sucesso: 94% (era 85%)<br>
+                                • ✅ Satisfação time: 9.2/10<br><br>
+
+                                <strong style="color: var(--green);">Resultado Final:</strong><br>
+                                🎉 Melhoria permanente! Virou novo padrão!<br>
+                                🎉 Economia: 120h/mês time desenvolvimento<br>
+                                🎉 Novas melhorias identificadas (próximo PDCA!)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🔄 O Ciclo Nunca Para!</h3>
+                        <p style="font-size: 1.3rem; line-height: 2; text-align: center; margin-top: 15px;">
+                            ACT não é o fim — é o começo do PRÓXIMO ciclo!<br>
+                            Nova baseline → Novos problemas → Novo PLAN → ...<br>
+                            <strong>Melhoria CONTÍNUA!</strong> ♾️
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: FERRAMENTAS DA QUALIDADE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🛠️ Ferramentas da Qualidade</h2>
+                    <p>As 7 ferramentas clássicas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Ferramentas para Cada Passo do PDCA! 🔧
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Ferramenta</th>
+                                <th>Para quê serve</th>
+                                <th>Quando usar</th>
+                            </tr>
+                            <tr>
+                                <td><strong>1. Fluxograma</strong></td>
+                                <td>Mapear processo atual</td>
+                                <td><strong>PLAN:</strong> Entender como funciona hoje</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2. Diagrama Ishikawa (Espinha Peixe)</strong></td>
+                                <td>Identificar causas raiz</td>
+                                <td><strong>PLAN:</strong> Por que problema acontece?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3. Gráfico de Pareto (80/20)</strong></td>
+                                <td>Priorizar causas/problemas</td>
+                                <td><strong>PLAN:</strong> Onde focar esforço?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4. Histograma</strong></td>
+                                <td>Distribuição de dados</td>
+                                <td><strong>CHECK:</strong> Como dados se distribuem?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5. Diagrama de Dispersão</strong></td>
+                                <td>Correlação entre variáveis</td>
+                                <td><strong>CHECK:</strong> X influencia Y?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6. Gráfico de Controle</strong></td>
+                                <td>Monitorar variação processo</td>
+                                <td><strong>CHECK/ACT:</strong> Processo sob controle?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>7. Folha de Verificação</strong></td>
+                                <td>Coletar dados sistematicamente</td>
+                                <td><strong>DO/CHECK:</strong> Registrar ocorrências</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>🐟 Diagrama Ishikawa (Causa e Efeito)</h4>
+                            <p style="font-size: 1rem; margin: 15px 0;">
+                                <strong>Problema:</strong> Deploy lento (4h)
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; font-size: 0.95rem; line-height: 1.7;">
+                                <strong>Máquina/Tecnologia:</strong><br>
+                                • Servidor staging lento<br>
+                                • Docker build sem cache<br><br>
+                                
+                                <strong>Método/Processo:</strong><br>
+                                • Testes manuais (2h)<br>
+                                • Sem automação<br>
+                                • Deploy manual (script 50 passos)<br><br>
+                                
+                                <strong>Pessoas:</strong><br>
+                                • Só 1 pessoa sabe fazer deploy<br>
+                                • Falta treinamento CI/CD<br><br>
+                                
+                                <strong>Medida/Dados:</strong><br>
+                                • Não mede tempo por etapa<br>
+                                • Sem monitoramento
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>📊 Gráfico de Pareto (80/20)</h4>
+                            <p style="font-size: 1rem; margin: 15px 0;">
+                                <strong>Defeitos produção (último mês):</strong>
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; font-size: 0.95rem; line-height: 1.7;">
+                                1. <strong>Validação frontend:</strong> 45 bugs (50%) 📊<br>
+                                2. <strong>Integração API:</strong> 25 bugs (28%) 📊<br>
+                                3. <strong>Performance BD:</strong> 12 bugs (13%)<br>
+                                4. <strong>UI inconsistente:</strong> 5 bugs (6%)<br>
+                                5. <strong>Outros:</strong> 3 bugs (3%)<br><br>
+                                
+                                <strong style="color: var(--unifil-orange);">Conclusão Pareto:</strong><br>
+                                78% bugs vêm de 2 causas!<br>
+                                → Focar em validação frontend + integração API
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "Sem dados você é apenas mais uma pessoa com opinião." — W. Edwards Deming 📊
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: CASO COMPLETO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>💼 Caso Completo: Bug Rate Alto</h2>
+                    <p>PDCA do início ao fim</p>
+                </div>
+                <div class="slide-body">
+                    <div class="example-card">
+                        <h4>🚨 Problema: Taxa de bugs produção inaceitável</h4>
+                        <p style="margin: 15px 0; font-size: 1.05rem;">
+                            <strong>Situação:</strong> E-commerce, 45 bugs/mês produção, 
+                            clientes reclamando, NPS caindo
+                        </p>
+                    </div>
+
+                    <div class="pdca-step plan">
+                        <div class="step-header">
+                            <div class="step-icon plan">P</div>
+                            <div class="step-title">PLAN - 4 semanas</div>
+                        </div>
+                        <p style="font-size: 1rem; line-height: 1.7;">
+                            <strong>Identificar problema:</strong> 45 bugs/mês, meta <10 bugs/mês<br>
+                            <strong>Analisar:</strong> Pareto → 50% bugs são validação frontend<br>
+                            <strong>Causa raiz (Ishikawa):</strong> Falta testes automatizados frontend<br>
+                            <strong>Plano:</strong> Implementar testes E2E com Playwright<br>
+                            <strong>Meta SMART:</strong> Reduzir bugs validação de 23/mês para <5/mês em 3 meses
+                        </p>
+                    </div>
+
+                    <div class="pdca-step do">
+                        <div class="step-header">
+                            <div class="step-icon do">D</div>
+                            <div class="step-title">DO - 6 semanas</div>
+                        </div>
+                        <p style="font-size: 1rem; line-height: 1.7;">
+                            <strong>Semana 1-2:</strong> Setup Playwright, treinar 3 QAs<br>
+                            <strong>Semana 3-4:</strong> Escrever testes E2E para fluxo checkout (piloto)<br>
+                            <strong>Semana 5-6:</strong> Rodar testes em CI/CD, coletar dados<br>
+                            <strong>Resultado piloto:</strong> 15 testes E2E escritos, encontraram 8 bugs ANTES produção!
+                        </p>
+                    </div>
+
+                    <div class="pdca-step check">
+                        <div class="step-header">
+                            <div class="step-icon check">C</div>
+                            <div class="step-title">CHECK - 2 semanas</div>
+                        </div>
+                        <p style="font-size: 1rem; line-height: 1.7;">
+                            <strong>Dados (2 meses piloto):</strong><br>
+                            • Bugs validação checkout: 23/mês → 4/mês ✅ (Meta <5!)<br>
+                            • Bugs encontrados pré-produção: +8/mês<br>
+                            • Tempo QA: +2h/sprint (escrever testes) mas -4h/mês (debug produção)<br>
+                            <strong>Conclusão:</strong> Funcionou! Meta superada! 🎉
+                        </p>
+                    </div>
+
+                    <div class="pdca-step act">
+                        <div class="step-header">
+                            <div class="step-icon act">A</div>
+                            <div class="step-title">ACT - 4 semanas</div>
+                        </div>
+                        <p style="font-size: 1rem; line-height: 1.7;">
+                            <strong>Padronizar:</strong><br>
+                            • Expandir testes E2E para TODOS fluxos críticos (6 semanas)<br>
+                            • Política: "Todo PR precisa ter testes E2E se toca fluxo crítico"<br>
+                            • Treinar TODOS QAs (12 pessoas) em Playwright<br>
+                            • Dashboard: 120 testes E2E, cobertura 85% fluxos<br><br>
+                            <strong>Resultado 6 meses depois:</strong><br>
+                            • Bugs produção total: 45/mês → 12/mês (73% redução!) 🎉<br>
+                            • NPS: 45 → 68<br>
+                            • Time confiante, deploy menos estressante
+                        </p>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Lições Aprendidas</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            ✓ <strong>Pareto funcionou:</strong> Focamos nos 50% mais importantes<br>
+                            ✓ <strong>Piloto foi essencial:</strong> Aprendemos antes de escalar<br>
+                            ✓ <strong>Dados guiaram:</strong> Não achismos, MÉTRICAS!<br>
+                            ✓ <strong>Padronização manteve:</strong> Virou processo, não evento<br>
+                            ✓ <strong>Novo PDCA:</strong> Agora atacar bugs de integração API! 🔄
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        PDCA = Melhoria Contínua Sistemática! 🔄
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ O que aprendemos</h3>
+                            <ul>
+                                <li>Origem: Shewhart → Deming → Japão</li>
+                                <li>4 passos: Plan-Do-Check-Act</li>
+                                <li>Plan: Identificar, analisar, planejar (50% esforço!)</li>
+                                <li>Do: Executar piloto, coletar dados</li>
+                                <li>Check: Comparar real vs esperado</li>
+                                <li>Act: Padronizar ou voltar ao Plan</li>
+                                <li>7 Ferramentas da Qualidade</li>
+                                <li>Caso completo: bugs → testes E2E</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Próxima Aula</h3>
+                            <ul>
+                                <li><strong>Tema:</strong> Ciclo PDCA - Parte 2</li>
+                                <li>PDCA em diferentes contextos</li>
+                                <li>PDCA vs DMAIC (Six Sigma)</li>
+                                <li>PDCA ágil (Sprints)</li>
+                                <li>Ferramentas complementares</li>
+                                <li>Armadilhas e como evitar</li>
+                                <li>Projeto prático PDCA</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">4</div>
+                            <div class="stat-label">passos simples</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">♾️</div>
+                            <div class="stat-label">melhoria contínua</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">aplicabilidade universal</div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 40px;">
+                        <table>
+                            <tr>
+                                <th>Passo</th>
+                                <th>Essência</th>
+                                <th>% Esforço</th>
+                            </tr>
+                            <tr>
+                                <td><strong>PLAN</strong></td>
+                                <td>Entender problema, planejar solução</td>
+                                <td>50%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DO</strong></td>
+                                <td>Executar piloto, coletar dados</td>
+                                <td>25%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CHECK</strong></td>
+                                <td>Analisar resultados, comparar metas</td>
+                                <td>15%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ACT</strong></td>
+                                <td>Padronizar sucesso ou corrigir</td>
+                                <td>10%</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para Casa</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2; margin-top: 15px;">
+                            <li>📖 Leitura: Estudar as 7 Ferramentas da Qualidade</li>
+                            <li>🔍 Identificar: 1 problema real sua vida/trabalho</li>
+                            <li>💭 Aplicar PLAN: Analisar causa raiz, fazer plano</li>
+                            <li>📝 Preparar: Trazer para discussão próxima aula</li>
+                        </ul>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 60px;">
+                        <p style="font-size: 1.4rem; color: var(--unifil-orange); font-weight: 600;">Obrigado! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px; color: var(--unifil-gray);">
+                            Nos vemos na Aula 13 (PDCA Parte 2)!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 10</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .quote-box, .comparison-table, .pdca-step, .timeline-item, .pdca-circle');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => { el.style.animation = ''; }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

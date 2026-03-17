@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 9 - ISO/IEC 12207 Parte 1 | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --green: #28a745;
+            --blue: #007bff;
+            --purple: #6f42c1;
+            --red: #dc3545;
+            --yellow: #ffc107;
+            --iso-blue: #0066cc;
+            --iso-light: #3399ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--iso-blue);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--iso-blue);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--iso-blue);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--iso-blue);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 102, 204, 0.3);
+        }
+
+        .example-card h4 {
+            color: var(--iso-blue);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.3);
+        }
+
+        .process-category {
+            background: white;
+            border: 3px solid var(--unifil-light);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .process-item {
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--iso-blue);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .process-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--unifil-dark);
+            margin-bottom: 10px;
+        }
+
+        .process-desc {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+            line-height: 1.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--iso-blue);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--iso-blue);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--iso-blue);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--iso-blue);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 30px 0;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--iso-blue);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .timeline-content {
+            background: var(--unifil-light);
+            padding: 20px;
+            border-radius: 10px;
+            width: 45%;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 55%;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-right: 55%;
+        }
+
+        .timeline-year {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--iso-blue);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .icon-box {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--iso-blue) 0%, var(--iso-light) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .process-item:nth-child(1) { animation-delay: 0s; }
+        .process-item:nth-child(2) { animation-delay: 0.1s; }
+        .process-item:nth-child(3) { animation-delay: 0.2s; }
+        .process-item:nth-child(4) { animation-delay: 0.3s; }
+        .timeline-item:nth-child(1) { animation-delay: 0s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.4s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>🌐 ISO/IEC 12207</h1>
+                    <p>Aula 9 - Processos de Ciclo de Vida de Software (Parte 1)</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 60px;">
+                        O Padrão Internacional para Processos de Software! 🌍
+                    </div>
+
+                    <div style="text-align: center; margin-top: 50px;">
+                        <div style="display: inline-block; background: var(--iso-blue); color: white; padding: 30px 50px; border-radius: 15px; font-size: 2.5rem; font-weight: 700; margin-bottom: 20px;">
+                            ISO/IEC 12207
+                        </div>
+                        <h2 style="color: var(--unifil-dark); font-size: 1.6rem; margin-top: 20px;">
+                            Systems and software engineering — Software life cycle processes
+                        </h2>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 50px;">
+                        <div class="content-box">
+                            <h3>📚 O que você vai aprender</h3>
+                            <ul>
+                                <li>O que é a ISO/IEC 12207</li>
+                                <li>Histórico e evolução da norma</li>
+                                <li>Estrutura: grupos de processos</li>
+                                <li>Relação com MPS.BR</li>
+                                <li>Processos técnicos principais</li>
+                                <li>Aplicação prática</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Por que estudar ISO 12207?</h3>
+                            <ul>
+                                <li>Norma internacional reconhecida globalmente</li>
+                                <li>Base para outros modelos (MPS.BR, CMMI)</li>
+                                <li>Exigida em contratos internacionais</li>
+                                <li>Framework completo de processos</li>
+                                <li>Alinhamento com melhores práticas</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">48</div>
+                            <div class="stat-label">processos na norma</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">1995</div>
+                            <div class="stat-label">primeira versão publicada</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">2017</div>
+                            <div class="stat-label">versão atual (ISO/IEC/IEEE)</div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        A ISO/IEC 12207 é a "linguagem universal" dos processos de software!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: O QUE É A ISO 12207 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📖 O que é a ISO/IEC 12207?</h2>
+                    <p>Definição e propósito</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Framework Internacional de Processos de Ciclo de Vida! 📋
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Definição Oficial</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            A <strong>ISO/IEC 12207</strong> estabelece uma arquitetura comum para descrever 
+                            o <strong>ciclo de vida de software</strong>, contendo processos, atividades e 
+                            tarefas que podem ser aplicados durante a <strong>aquisição, fornecimento, 
+                            desenvolvimento, operação e manutenção</strong> de produtos de software.
+                        </p>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="example-card">
+                            <h4>💡 Analogia: Manual Universal de Construção</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 15px;">
+                                Imagine um <strong>manual universal</strong> que descreve TODOS os processos 
+                                para construir QUALQUER tipo de construção:
+                            </p>
+                            <ul style="font-size: 1rem; line-height: 1.7; margin: 15px 0 0 20px;">
+                                <li>🏠 Casa pequena → usa subset dos processos</li>
+                                <li>🏢 Prédio comercial → usa mais processos</li>
+                                <li>🏗️ Arranha-céu → usa TODOS os processos</li>
+                            </ul>
+                            <p style="margin-top: 15px; font-size: 1.05rem;">
+                                A ISO 12207 é esse "manual" para software!
+                            </p>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>🔑 Características Principais</h4>
+                            <ul style="font-size: 1.05rem; line-height: 1.8; margin-top: 15px; list-style: none; padding: 0;">
+                                <li style="padding: 5px 0;">✓ <strong>Internacional:</strong> Reconhecida globalmente</li>
+                                <li style="padding: 5px 0;">✓ <strong>Completa:</strong> Cobre TODO ciclo de vida</li>
+                                <li style="padding: 5px 0;">✓ <strong>Flexível:</strong> Adapta-se a diferentes contextos</li>
+                                <li style="padding: 5px 0;">✓ <strong>Tecnológica:</strong> Independente de tecnologia</li>
+                                <li style="padding: 5px 0;">✓ <strong>Modular:</strong> Processos podem ser combinados</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>O que NÃO é</th>
+                                <th>O que É</th>
+                            </tr>
+                            <tr>
+                                <td>❌ Metodologia de desenvolvimento</td>
+                                <td>✅ Framework de processos</td>
+                            </tr>
+                            <tr>
+                                <td>❌ Prescreve COMO fazer</td>
+                                <td>✅ Descreve O QUE fazer</td>
+                            </tr>
+                            <tr>
+                                <td>❌ Específico para uma tecnologia</td>
+                                <td>✅ Tecnologicamente neutro</td>
+                            </tr>
+                            <tr>
+                                <td>❌ Obrigatório usar tudo</td>
+                                <td>✅ Adapte ao seu contexto</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Para que serve?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2; margin-top: 15px;">
+                            <li>✓ <strong>Linguagem comum:</strong> Todos falam a mesma "língua"</li>
+                            <li>✓ <strong>Contratos:</strong> Base para acordos fornecedor-cliente</li>
+                            <li>✓ <strong>Melhoria:</strong> Identificar gaps nos processos atuais</li>
+                            <li>✓ <strong>Integração:</strong> Compatível com outros modelos (MPS.BR, CMMI)</li>
+                            <li>✓ <strong>Certificação:</strong> Base para auditorias e avaliações</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: HISTÓRICO E EVOLUÇÃO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📅 Histórico e Evolução</h2>
+                    <p>De 1995 até 2017</p>
+                </div>
+                <div class="slide-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-year">1995</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--iso-blue); margin-bottom: 10px;">ISO/IEC 12207:1995</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    <strong>Primeira versão!</strong> Estabeleceu framework com 17 processos 
+                                    divididos em 3 categorias: Fundamentais, Apoio e Organizacionais.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2002</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--iso-blue); margin-bottom: 10px;">Emenda 1</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    Adicionou processos de <strong>usabilidade</strong> e melhorou 
+                                    alinhamento com ISO/IEC 15504 (SPICE).
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2008</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--iso-blue); margin-bottom: 10px;">ISO/IEC 12207:2008</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    <strong>Revisão major!</strong> Reestruturação completa: 43 processos 
+                                    em 4 grupos. Alinhamento com ISO/IEC 15288 (Engenharia de Sistemas).
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-year">2017</div>
+                            <div class="timeline-content">
+                                <h4 style="color: var(--iso-blue); margin-bottom: 10px;">ISO/IEC/IEEE 12207:2017</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    <strong>Versão atual!</strong> Harmonização com IEEE, expansão para 
+                                    <strong>48 processos</strong>. Integração total com sistemas complexos.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">29 anos</div>
+                            <div class="stat-label">de evolução contínua</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">revisões principais</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">países adotaram</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Por que tantas revisões?</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2; margin-top: 15px;">
+                            <li>📱 <strong>Tecnologia evolui:</strong> Cloud, mobile, IoT, IA</li>
+                            <li>🔄 <strong>Processos mudam:</strong> Ágil, DevOps, CI/CD</li>
+                            <li>🌐 <strong>Contextos diferentes:</strong> Sistemas críticos, embarcados</li>
+                            <li>🤝 <strong>Harmonização:</strong> Alinhar com outras normas (IEEE, ISO 15288)</li>
+                            <li>📊 <strong>Lições aprendidas:</strong> Feedback de milhares de implementações</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: ESTRUTURA GERAL -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏗️ Estrutura da ISO/IEC 12207:2017</h2>
+                    <p>4 grupos de processos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        48 Processos em 4 Grupos! 📊
+                    </div>
+
+                    <div class="process-category" style="margin-top: 30px;">
+                        <div class="category-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                            1️⃣ Processos de Acordo (Agreement Processes)
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px;">
+                            <strong>Propósito:</strong> Estabelecer acordos entre organizações (comprador-fornecedor)
+                        </p>
+                        <div class="process-grid">
+                            <div class="process-item" style="border-left-color: #28a745;">
+                                <div class="process-name">🤝 Acquisition (Aquisição)</div>
+                                <div class="process-desc">
+                                    Obter produto ou serviço que satisfaça necessidades do comprador
+                                </div>
+                            </div>
+                            <div class="process-item" style="border-left-color: #28a745;">
+                                <div class="process-name">📦 Supply (Fornecimento)</div>
+                                <div class="process-desc">
+                                    Fornecer produto ou serviço que satisfaça o acordo estabelecido
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                            2️⃣ Processos Organizacionais (Organizational Project-Enabling Processes)
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px;">
+                            <strong>Propósito:</strong> Gerenciar capacidade organizacional de executar projetos
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>8 processos:</strong> Life Cycle Model Management, Infrastructure Management, 
+                                Portfolio Management, Human Resource Management, Quality Management, 
+                                Knowledge Management, Measurement, e outros
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            3️⃣ Processos Técnicos (Technical Processes)
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px;">
+                            <strong>Propósito:</strong> Transformar necessidades em produto (o "core" da engenharia!)
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>14 processos:</strong> Stakeholder Needs, Requirements Analysis, 
+                                Design, Implementation, Integration, Verification, Validation, 
+                                Transition, Operation, Maintenance, Disposal, e outros
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%);">
+                            4️⃣ Processos Gerenciais de Projeto (Project Management Processes)
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-bottom: 20px;">
+                            <strong>Propósito:</strong> Gerenciar a execução de projetos específicos
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px;">
+                            <p style="font-size: 1.05rem; line-height: 1.7;">
+                                <strong>8 processos:</strong> Project Planning, Project Assessment and Control, 
+                                Decision Management, Risk Management, Configuration Management, 
+                                Information Management, Measurement, Quality Assurance
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: RELAÇÃO COM MPS.BR -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔗 ISO 12207 vs MPS.BR</h2>
+                    <p>Como se relacionam?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        MPS.BR é BASEADO na ISO 12207! 🤝
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Relação Fundamental</h3>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            O <strong>MR-MPS-SW</strong> (Modelo de Referência MPS de Software) usa a 
+                            <strong>ISO/IEC 12207 como base conceitual</strong> para definir seus processos. 
+                            Cada processo do MPS.BR referencia processos correspondentes da ISO 12207!
+                        </p>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 30px;">
+                        <table>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>ISO/IEC 12207</th>
+                                <th>MPS.BR</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Tipo</strong></td>
+                                <td>Norma Internacional</td>
+                                <td>Modelo de Maturidade</td>
+                            </tr>
+                            <tr>
+                                <td><strong>O que define</strong></td>
+                                <td>Processos (O QUE fazer)</td>
+                                <td>Níveis de maturidade (QUANTO fazer)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estrutura</strong></td>
+                                <td>48 processos em 4 grupos</td>
+                                <td>21 processos em 7 níveis</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Foco</strong></td>
+                                <td>Definição de processos</td>
+                                <td>Evolução gradual de capacidade</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Uso típico</strong></td>
+                                <td>Base conceitual, contratos</td>
+                                <td>Avaliação de maturidade, certificação</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Público-alvo</strong></td>
+                                <td>Universal (qualquer org)</td>
+                                <td>PMEs brasileiras</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="example-card">
+                            <h4>📋 Exemplo: GPR do MPS.BR</h4>
+                            <p style="margin: 15px 0; font-size: 1.05rem;">
+                                <strong>GPR (Gerência de Projetos)</strong> do MPS.BR nível G
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px;">
+                                <p style="font-size: 1rem; line-height: 1.7;">
+                                    <strong>Referências ISO 12207:</strong>
+                                </p>
+                                <ul style="font-size: 0.95rem; line-height: 1.6; margin: 10px 0 0 20px;">
+                                    <li>Project Planning (Planejamento)</li>
+                                    <li>Project Assessment and Control (Monitoramento)</li>
+                                    <li>Decision Management (Decisões)</li>
+                                    <li>Risk Management (Riscos)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="example-card">
+                            <h4>💡 Analogia: Receita vs Chef</h4>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 15px;">
+                                <strong>ISO 12207</strong> = Livro de receitas universal<br>
+                                <em>"Aqui está TUDO que você pode fazer"</em>
+                            </p>
+                            <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                                <strong>MPS.BR</strong> = Níveis de habilidade do chef<br>
+                                <em>"Nível G: faça essas 2 receitas básicas"<br>
+                                "Nível F: agora faça +5 receitas"<br>
+                                "Nível A: domine TODAS!"</em>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        ISO 12207 define OS PROCESSOS. MPS.BR define QUANDO e QUANTO implementar! 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: PROCESSOS TÉCNICOS PARTE 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔧 Processos Técnicos - Parte 1</h2>
+                    <p>Stakeholder Needs até Requirements</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Os 14 Processos Técnicos! 🛠️
+                    </div>
+
+                    <div class="process-category" style="margin-top: 30px;">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            1️⃣ Business or Mission Analysis
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Definir problemas ou oportunidades de negócio, 
+                            caracterizar soluções desejadas e identificar stakeholders.
+                        </p>
+                        <div class="example-card">
+                            <h4>💼 Exemplo Prático</h4>
+                            <p style="font-size: 1rem; line-height: 1.7; margin-top: 10px;">
+                                <strong>Contexto:</strong> Empresa de varejo quer modernizar vendas<br>
+                                <strong>Análise:</strong> Problema = vendas caindo 30%/ano<br>
+                                <strong>Oportunidade:</strong> 80% clientes querem comprar online<br>
+                                <strong>Solução desejada:</strong> E-commerce integrado com lojas físicas<br>
+                                <strong>Stakeholders:</strong> Clientes, vendedores, gerentes, TI, financeiro
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            2️⃣ Stakeholder Needs and Requirements Definition
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Definir requisitos dos stakeholders para um sistema 
+                            que possa fornecer serviços necessários aos usuários em um ambiente definido.
+                        </p>
+                        <div class="two-column">
+                            <div class="example-card">
+                                <h4>📋 Atividades Principais</h4>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin: 10px 0 0 20px;">
+                                    <li>Elicitar necessidades stakeholders</li>
+                                    <li>Definir requisitos stakeholders</li>
+                                    <li>Analisar e manter requisitos</li>
+                                    <li>Avaliar que atendem necessidades</li>
+                                </ul>
+                            </div>
+
+                            <div class="example-card">
+                                <h4>💡 Exemplo</h4>
+                                <p style="font-size: 1rem; line-height: 1.7;">
+                                    <strong>Necessidade:</strong> "Preciso vender online"<br>
+                                    <strong>Requisito Stakeholder:</strong><br>
+                                    "O sistema deve permitir que clientes 
+                                    façam pedidos 24/7 com entrega em até 
+                                    48h e múltiplas formas de pagamento"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            3️⃣ System/Software Requirements Analysis
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Transformar requisitos dos stakeholders em 
+                            requisitos técnicos que guiarão design e implementação.
+                        </p>
+                        <div class="comparison-table">
+                            <table>
+                                <tr>
+                                    <th>Requisito Stakeholder</th>
+                                    <th>Requisito de Sistema/Software</th>
+                                </tr>
+                                <tr>
+                                    <td>"Sistema rápido"</td>
+                                    <td>Tempo resposta < 2s para 95% requisições</td>
+                                </tr>
+                                <tr>
+                                    <td>"Sistema seguro"</td>
+                                    <td>Autenticação 2FA, criptografia AES-256, HTTPS</td>
+                                </tr>
+                                <tr>
+                                    <td>"Fácil de usar"</td>
+                                    <td>Checkout em ≤3 cliques, SUS score >80</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Stakeholder fala "O QUÊ quer", engenheiro traduz para "COMO será feito"! 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: PROCESSOS TÉCNICOS PARTE 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔧 Processos Técnicos - Parte 2</h2>
+                    <p>Architecture Design até Implementation</p>
+                </div>
+                <div class="slide-body">
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            4️⃣ Architecture Design
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Sintetizar solução que satisfaz requisitos do sistema.
+                        </p>
+                        <div class="example-card">
+                            <h4>🏗️ Exemplo: Arquitetura E-commerce</h4>
+                            <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <p style="font-size: 1rem; line-height: 1.7;">
+                                    <strong>Arquitetura escolhida:</strong> Microservices + Event-Driven<br><br>
+                                    <strong>Componentes principais:</strong><br>
+                                    • Frontend (React SPA)<br>
+                                    • API Gateway (Kong)<br>
+                                    • Microservices (Node.js): Catálogo, Carrinho, Pedido, Pagamento, Estoque, Usuário<br>
+                                    • Message Broker (RabbitMQ)<br>
+                                    • Databases (PostgreSQL + Redis)<br>
+                                    • Storage (S3 para imagens)<br><br>
+                                    <strong>Justificativa:</strong> Escalabilidade independente, deploy contínuo, tolerância a falhas
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            5️⃣ Design Definition
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Fornecer dados e informações sobre o sistema 
+                            e seus elementos suficientes para implementação.
+                        </p>
+                        <div class="two-column">
+                            <div class="example-card">
+                                <h4>📐 Design de Alto Nível</h4>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin: 10px 0 0 20px;">
+                                    <li>Diagramas de componentes</li>
+                                    <li>Diagramas de sequência</li>
+                                    <li>Modelo de dados (ER)</li>
+                                    <li>Definição de APIs (OpenAPI)</li>
+                                </ul>
+                            </div>
+
+                            <div class="example-card">
+                                <h4>🔍 Design Detalhado</h4>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin: 10px 0 0 20px;">
+                                    <li>Diagramas de classes</li>
+                                    <li>Algoritmos específicos</li>
+                                    <li>Estruturas de dados</li>
+                                    <li>Padrões de design</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            6️⃣ System Analysis & 7️⃣ Implementation
+                        </div>
+                        <div class="two-column">
+                            <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px;">
+                                <h4 style="color: var(--iso-blue); margin-bottom: 10px;">System Analysis</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    <strong>Propósito:</strong> Assegurar que requisitos são 
+                                    completos, corretos e consistentes.<br><br>
+                                    <strong>Atividades:</strong> Trade-off analysis, análise 
+                                    de viabilidade técnica, identificação de riscos.
+                                </p>
+                            </div>
+
+                            <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px;">
+                                <h4 style="color: var(--iso-blue); margin-bottom: 10px;">Implementation</h4>
+                                <p style="font-size: 1.05rem; line-height: 1.7;">
+                                    <strong>Propósito:</strong> Produzir elementos do sistema 
+                                    especificados no design.<br><br>
+                                    <strong>Atividades:</strong> Codificação, unit tests, 
+                                    code review, documentação técnica.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🔄 Fluxo Completo: Requisitos → Código</h3>
+                        <p style="font-size: 1.15rem; line-height: 2; margin-top: 15px; text-align: center;">
+                            Stakeholder Needs → Requirements Analysis → Architecture → Design → Implementation
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: PROCESSOS TÉCNICOS PARTE 3 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔧 Processos Técnicos - Parte 3</h2>
+                    <p>Integration, Verification, Validation</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Integração + Verificação + Validação = Qualidade! ✅
+                    </div>
+
+                    <div class="process-category" style="margin-top: 30px;">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            8️⃣ Integration
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Combinar elementos do sistema para produzir 
+                            um sistema completo que satisfaça design e requisitos.
+                        </p>
+                        <div class="example-card">
+                            <h4>🔗 Estratégias de Integração</h4>
+                            <div class="comparison-table" style="margin-top: 15px;">
+                                <table style="font-size: 0.95rem;">
+                                    <tr>
+                                        <th>Estratégia</th>
+                                        <th>Quando usar</th>
+                                        <th>Vantagem</th>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Big Bang</strong></td>
+                                        <td>Sistemas pequenos</td>
+                                        <td>Rápido, simples</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Incremental Top-Down</strong></td>
+                                        <td>Interface crítica</td>
+                                        <td>Testa UI cedo</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Incremental Bottom-Up</strong></td>
+                                        <td>Lógica crítica</td>
+                                        <td>Testa core cedo</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Continuous (CI/CD)</strong></td>
+                                        <td>Ágil, DevOps</td>
+                                        <td>Feedback rápido</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            9️⃣ Verification
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Confirmar que cada elemento do sistema 
+                            reflete os requisitos especificados.
+                        </p>
+                        <div class="two-column">
+                            <div class="example-card">
+                                <h4>✅ "Construí CERTO?"</h4>
+                                <p style="font-size: 1.05rem; margin: 15px 0;">
+                                    Verificação compara produto com especificação
+                                </p>
+                                <ul style="font-size: 1rem; line-height: 1.7; margin: 10px 0 0 20px;">
+                                    <li><strong>Unit Tests:</strong> Testa funções isoladas</li>
+                                    <li><strong>Integration Tests:</strong> Testa componentes juntos</li>
+                                    <li><strong>Code Review:</strong> Verificação por pares</li>
+                                    <li><strong>Static Analysis:</strong> SonarQube, ESLint</li>
+                                    <li><strong>Inspections:</strong> Revisões formais</li>
+                                </ul>
+                            </div>
+
+                            <div class="example-card">
+                                <h4>📊 Exemplo Métrica</h4>
+                                <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                    <p style="font-size: 1rem; line-height: 1.7;">
+                                        <strong>Especificação:</strong> Função calcularDesconto(valor, percentual)<br>
+                                        <strong>Verificação:</strong><br>
+                                        • calcularDesconto(100, 10) == 90? ✅<br>
+                                        • calcularDesconto(50, 20) == 40? ✅<br>
+                                        • calcularDesconto(0, 10) == 0? ✅<br>
+                                        • calcularDesconto(100, -5) → exception? ✅<br>
+                                        <strong>Cobertura:</strong> 95% dos casos cobertos!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="process-category">
+                        <div class="category-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                            🔟 Validation
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Propósito:</strong> Fornecer evidência de que o sistema, quando em uso, 
+                            satisfará suas necessidades pretendidas.
+                        </p>
+                        <div class="example-card">
+                            <h4>✅ "Construí o CERTO?"</h4>
+                            <p style="font-size: 1.05rem; margin: 15px 0;">
+                                Validação verifica se resolve problema do usuário
+                            </p>
+                            <div class="two-column">
+                                <div>
+                                    <h5 style="margin-bottom: 10px;">Técnicas:</h5>
+                                    <ul style="font-size: 1rem; line-height: 1.7; margin: 0 0 0 20px;">
+                                        <li>UAT (User Acceptance Testing)</li>
+                                        <li>Beta Testing</li>
+                                        <li>Piloto em produção</li>
+                                        <li>Testes de usabilidade</li>
+                                        <li>A/B testing</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 style="margin-bottom: 10px;">Critérios:</h5>
+                                    <ul style="font-size: 1rem; line-height: 1.7; margin: 0 0 0 20px;">
+                                        <li>Stakeholders aprovam?</li>
+                                        <li>Resolve problema real?</li>
+                                        <li>Usuários conseguem usar?</li>
+                                        <li>Métricas negócio OK?</li>
+                                        <li>NPS/CSAT aceitável?</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Diferença Crucial</h3>
+                        <p style="font-size: 1.3rem; line-height: 2; margin-top: 15px; text-align: center;">
+                            <strong>Verification:</strong> "Faz o que deveria fazer?"<br>
+                            <strong>Validation:</strong> "Resolve o problema certo?"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: PROCESSOS TÉCNICOS PARTE 4 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔧 Processos Técnicos - Parte 4</h2>
+                    <p>Transition, Operation, Maintenance, Disposal</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Do Deploy ao "Aposentamento"! 🔄
+                    </div>
+
+                    <div class="process-grid" style="margin-top: 30px;">
+                        <div class="process-item">
+                            <div class="process-name">1️⃣1️⃣ Transition (Transição)</div>
+                            <div class="process-desc">
+                                <strong>Propósito:</strong> Estabelecer capacidade de fornecer serviços 
+                                em ambiente operacional.<br><br>
+                                <strong>Atividades:</strong> Deploy, treinamento usuários, migração dados, 
+                                rollback plan, cutover strategy
+                            </div>
+                        </div>
+
+                        <div class="process-item">
+                            <div class="process-name">1️⃣2️⃣ Operation (Operação)</div>
+                            <div class="process-desc">
+                                <strong>Propósito:</strong> Usar sistema para entregar serviços.<br><br>
+                                <strong>Atividades:</strong> Monitoramento 24/7, suporte usuários, 
+                                gestão incidentes, backup/recovery, performance tuning
+                            </div>
+                        </div>
+
+                        <div class="process-item">
+                            <div class="process-name">1️⃣3️⃣ Maintenance (Manutenção)</div>
+                            <div class="process-desc">
+                                <strong>Propósito:</strong> Manter capacidade do sistema de fornecer 
+                                serviços.<br><br>
+                                <strong>Tipos:</strong> Corretiva (bugs), Adaptativa (ambiente), 
+                                Perfectiva (melhorias), Preventiva (futuro)
+                            </div>
+                        </div>
+
+                        <div class="process-item">
+                            <div class="process-name">1️⃣4️⃣ Disposal (Descarte)</div>
+                            <div class="process-desc">
+                                <strong>Propósito:</strong> Terminar existência de elemento do sistema.<br><br>
+                                <strong>Atividades:</strong> Migração final de dados, arquivamento, 
+                                desativação segura, destruição dados sensíveis
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📱 Exemplo: Ciclo de Vida App Mobile Banking</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1rem; line-height: 1.8;">
+                                <strong style="color: var(--green);">Transition (Deploy):</strong><br>
+                                • Beta fechado 500 usuários (2 semanas)<br>
+                                • Beta público 10% usuários (1 mês)<br>
+                                • Rollout gradual 100% (2 semanas)<br>
+                                • Treinamento 200 atendentes call center<br><br>
+
+                                <strong style="color: var(--blue);">Operation (3 anos):</strong><br>
+                                • Uptime 99.95% (SLA)<br>
+                                • 2M transações/dia<br>
+                                • Suporte 24/7 em 3 idiomas<br>
+                                • Monitoramento APM (New Relic)<br><br>
+
+                                <strong style="color: var(--yellow);">Maintenance:</strong><br>
+                                • Corretiva: 120 bugs resolvidos<br>
+                                • Adaptativa: Suporte iOS 14→17, Android 10→14<br>
+                                • Perfectiva: 45 novas features<br>
+                                • Preventiva: Refatoração código legado<br><br>
+
+                                <strong style="color: var(--red);">Disposal (após 4 anos):</strong><br>
+                                • Migração para App v2.0 (nova arquitetura)<br>
+                                • 6 meses período transição (ambos funcionando)<br>
+                                • Dados migrados (100% usuários)<br>
+                                • App v1.0 desativado gradualmente<br>
+                                • Código arquivado, servidores desligados
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">70%</div>
+                            <div class="stat-label">custos na Operação + Manutenção</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">30%</div>
+                            <div class="stat-label">custos no Desenvolvimento</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">10+ anos</div>
+                            <div class="stat-label">ciclo de vida típico sistema enterprise</div>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        Software não morre ao fazer deploy — na verdade, aí que começa a vida dele! 🚀
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        ISO 12207: A Base Universal! 🌍
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ O que aprendemos</h3>
+                            <ul>
+                                <li>ISO 12207 = framework internacional</li>
+                                <li>48 processos em 4 grupos</li>
+                                <li>Evolução: 1995 → 2017</li>
+                                <li>Relação com MPS.BR (base conceitual)</li>
+                                <li>14 processos técnicos detalhados</li>
+                                <li>Do negócio ao descarte!</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Próxima Aula</h3>
+                            <ul>
+                                <li><strong>Tema:</strong> ISO 12207 - Parte 2</li>
+                                <li>Processos Organizacionais</li>
+                                <li>Processos Gerenciais de Projeto</li>
+                                <li>Processos de Acordo</li>
+                                <li>Tailoring (adaptação)</li>
+                                <li>Casos práticos de implementação</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 40px;">
+                        <table>
+                            <tr>
+                                <th>Grupo</th>
+                                <th>Quantidade</th>
+                                <th>Exemplos</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Acordo</strong></td>
+                                <td>2</td>
+                                <td>Acquisition, Supply</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Organizacionais</strong></td>
+                                <td>8</td>
+                                <td>Portfolio, HR, Quality, Infrastructure...</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Técnicos</strong></td>
+                                <td>14</td>
+                                <td>Requirements, Design, Implementation, Verification...</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Gerenciais</strong></td>
+                                <td>8</td>
+                                <td>Planning, Risk, Configuration, Quality Assurance...</td>
+                            </tr>
+                            <tr style="font-weight: 700; background: var(--iso-light); color: white;">
+                                <td>TOTAL</td>
+                                <td>32 principais</td>
+                                <td>+ 16 processos de suporte = 48 total</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>📚 Para Casa</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.1rem; line-height: 2; margin-top: 15px;">
+                            <li>📖 Leitura: ISO/IEC 12207 - Processos Organizacionais</li>
+                            <li>🔍 Pesquisar: Como sua empresa atual/futura usa ISO 12207</li>
+                            <li>💭 Refletir: Quais processos técnicos são mais críticos no seu contexto?</li>
+                            <li>📝 Preparar: Dúvidas para próxima aula</li>
+                        </ul>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 60px;">
+                        <p style="font-size: 1.4rem; color: var(--iso-blue); font-weight: 600;">Obrigado! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px; color: var(--unifil-gray);">
+                            Nos vemos na Aula 10!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 10</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .quote-box, .comparison-table, .process-category, .process-item, .timeline-item');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => { el.style.animation = ''; }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>

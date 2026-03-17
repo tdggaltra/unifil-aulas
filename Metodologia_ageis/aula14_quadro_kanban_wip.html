@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 14 - Quadro Kanban e WIP Limits | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --kanban-green: #00897B;
+            --kanban-teal: #26A69A;
+            --wip-red: #E53935;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+        }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px; height: 90%;
+            margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p { font-size: 1.1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .content-box {
+            background: var(--unifil-light); padding: 30px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.5rem; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li {
+            padding: 10px 0; padding-left: 30px; position: relative;
+            font-size: 1.1rem; line-height: 1.6;
+        }
+        .content-box li::before {
+            content: '→'; position: absolute; left: 0; color: var(--unifil-orange);
+            font-weight: bold; font-size: 1.3rem;
+        }
+        .kanban-box { background: #E0F2F1; border-left-color: var(--kanban-green); }
+        .kanban-box h3 { color: var(--kanban-green); }
+        .kanban-box li::before { color: var(--kanban-green); }
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 40px; border-radius: 20px; text-align: center;
+            font-size: 1.8rem; font-weight: 600; margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.6rem; }
+        .kanban-card {
+            background: linear-gradient(135deg, var(--kanban-green) 0%, var(--kanban-teal) 100%);
+            color: white; padding: 35px; border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(0, 137, 123, 0.3);
+        }
+        .kanban-card h4 { font-size: 1.6rem; margin-bottom: 15px; }
+        .board-visual {
+            background: white; border: 3px solid var(--kanban-green);
+            padding: 20px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .board-columns {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-top: 15px;
+        }
+        .board-column {
+            background: #F5F5F5; border-radius: 8px; padding: 15px; min-height: 200px;
+            border: 2px solid #DDD;
+        }
+        .board-column h5 {
+            color: var(--kanban-green); margin-bottom: 10px; text-align: center;
+            font-size: 1.1rem; padding-bottom: 10px; border-bottom: 2px solid var(--kanban-green);
+        }
+        .wip-limit {
+            background: var(--wip-red); color: white; padding: 3px 8px;
+            border-radius: 50%; font-size: 0.85rem; margin-left: 5px;
+            font-weight: 700;
+        }
+        .card-item {
+            background: white; border: 2px solid #4CAF50; border-radius: 6px;
+            padding: 10px; margin: 8px 0; font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .wip-card {
+            background: linear-gradient(135deg, var(--wip-red) 0%, #C62828 100%);
+            color: white; padding: 35px; border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(229, 57, 53, 0.3);
+        }
+        .wip-card h4 { font-size: 1.6rem; margin-bottom: 15px; }
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white; padding: 35px; border-radius: 20px; margin: 30px 0;
+            font-style: italic; font-size: 1.3rem; text-align: center;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0; position: relative;
+        }
+        .quote-box::before {
+            content: '"'; font-size: 4rem; position: absolute;
+            top: -10px; left: 20px; opacity: 0.3;
+        }
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.3rem; }
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center; z-index: 1000;
+        }
+        .nav-button {
+            background: var(--unifil-orange); color: white; border: none;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent); transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter {
+            background: white; padding: 10px 25px; border-radius: 50px;
+            font-weight: 600; color: var(--unifil-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 5px;
+            background: var(--unifil-orange); transition: width 0.3s ease; z-index: 1001;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-body::-webkit-scrollbar { width: 10px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">📊 Aula 14</h2>
+                    <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Quadro Kanban e WIP Limits</h3>
+                    <p style="font-size: 1.5rem; color: var(--kanban-green); margin-bottom: 15px; font-weight: 600;">Como Criar e Otimizar Seu Sistema Kanban</p>
+                    <p style="font-size: 1.3rem; color: #6B6B6B; margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                    <p style="font-size: 1.1rem; color: #6B6B6B;">Terça-feira, 24 de Março de 2026</p>
+                    <div class="big-idea" style="margin-top: 40px;">"Stop Starting, Start Finishing!" 🎯</div>
+                    <div style="margin-top: 40px; color: #6B6B6B; font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: ANATOMIA DO QUADRO KANBAN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Anatomia do Quadro Kanban</h2>
+                    <p>Elementos essenciais</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Quadro Kanban = Radiografia do seu trabalho! 🔍</div>
+                    <div class="board-visual">
+                        <h4 style="color: var(--kanban-green); margin-bottom: 15px; font-size: 1.4rem;">📊 Exemplo de Quadro Kanban</h4>
+                        <div class="board-columns">
+                            <div class="board-column">
+                                <h5>Backlog</h5>
+                                <div class="card-item">Login OAuth</div>
+                                <div class="card-item">Dashboard</div>
+                                <div class="card-item">Reports</div>
+                            </div>
+                            <div class="board-column">
+                                <h5>Análise <span class="wip-limit">2</span></h5>
+                                <div class="card-item">API Checkout</div>
+                                <div class="card-item">Email Notif</div>
+                            </div>
+                            <div class="board-column">
+                                <h5>Dev <span class="wip-limit">3</span></h5>
+                                <div class="card-item">Carrinho</div>
+                                <div class="card-item">Pagamento</div>
+                                <div class="card-item">Busca</div>
+                            </div>
+                            <div class="board-column">
+                                <h5>Teste <span class="wip-limit">2</span></h5>
+                                <div class="card-item">Cadastro</div>
+                                <div class="card-item">Login</div>
+                            </div>
+                            <div class="board-column">
+                                <h5>Done</h5>
+                                <div class="card-item">Homepage</div>
+                                <div class="card-item">Menu</div>
+                                <div class="card-item">Footer</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kanban-card">
+                        <h4>🏗️ 4 Elementos Principais do Quadro</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;"><strong>1. Colunas:</strong> Representam ESTADOS do trabalho (fases do fluxo)</li>
+                            <li style="padding: 10px 0;"><strong>2. Cards:</strong> Representam ITENS de trabalho individuais</li>
+                            <li style="padding: 10px 0;"><strong>3. WIP Limits:</strong> Limites de trabalho em progresso por coluna</li>
+                            <li style="padding: 10px 0;"><strong>4. Raias (Swimlanes):</strong> Opcional - separam tipos de trabalho</li>
+                        </ul>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box kanban-box">
+                            <h3>📍 1. Colunas (Estados)</h3>
+                            <ul>
+                                <li><strong>Representam:</strong> Fases do seu processo</li>
+                                <li><strong>Exemplos:</strong> To Do → Doing → Done (simples)</li>
+                                <li><strong>Mais detalhado:</strong> Backlog → Análise → Dev → Code Review → Test → Deploy → Done</li>
+                                <li><strong>Princípio:</strong> Mapeie SEU processo real!</li>
+                                <li><strong>Dica:</strong> Comece simples, adicione colunas conforme necessário</li>
+                            </ul>
+                        </div>
+                        <div class="content-box kanban-box">
+                            <h3>🎴 2. Cards (Itens)</h3>
+                            <ul>
+                                <li><strong>Cada card:</strong> Uma unidade de trabalho</li>
+                                <li><strong>Info mínima:</strong> Título, responsável, prazo</li>
+                                <li><strong>Info útil:</strong> Prioridade, tipo, bloqueios</li>
+                                <li><strong>Tamanho:</strong> Similar (quebrar grandes)</li>
+                                <li><strong>Movimento:</strong> Sempre da esquerda para direita</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--kanban-green);">
+                        <h4 style="color: var(--kanban-green);">📝 Informações em um Card Kanban</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Card Exemplo:</strong><br><br>
+                                <strong>🏷️ Título:</strong> Implementar Login OAuth Google<br>
+                                <strong>👤 Responsável:</strong> João Silva<br>
+                                <strong>⏱️ Lead Time:</strong> 4 dias (desde entrada no sistema)<br>
+                                <strong>🎯 Tipo:</strong> Feature<br>
+                                <strong>🔴 Prioridade:</strong> Alta<br>
+                                <strong>📅 Prazo:</strong> 28/03<br>
+                                <strong>🚧 Bloqueio:</strong> Aguardando chave API (bloqueador visível!)<br>
+                                <strong>✅ DoD:</strong> Code review + testes + deploy staging
+                            </p>
+                        </div>
+                    </div>
+                    <div class="quote-box">
+                        "Make work visible! Se você não vê o trabalho, você não pode gerenciá-lo."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: WIP LIMITS - CONCEITO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🚦 WIP Limits - O Coração do Kanban</h2>
+                    <p>Por que limitar trabalho em progresso?</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">WIP Limit é o que diferencia Kanban de "quadro com Post-its"! 🎯</div>
+                    <div class="wip-card">
+                        <h4>🚦 O Que É WIP Limit?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>WIP</strong> = Work in Progress (Trabalho em Andamento)<br>
+                            <strong>WIP Limit</strong> = Número MÁXIMO de itens permitidos em uma coluna/etapa<br><br>
+                            <strong>Regra de ouro:</strong> Se atingiu o WIP Limit, NÃO pode puxar novo trabalho!<br>
+                            Você precisa TERMINAR algo antes de começar algo novo!
+                        </p>
+                    </div>
+                    <div class="two-column">
+                        <div class="example-card" style="border-color: #F44336;">
+                            <h4 style="color: #F44336;">❌ SEM WIP Limits</h4>
+                            <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <ul style="list-style: none; padding: 0; font-size: 1.05rem; line-height: 1.8;">
+                                    <li style="padding: 5px 0;">❌ Time começa 10 tarefas ao mesmo tempo</li>
+                                    <li style="padding: 5px 0;">❌ Multitasking constante</li>
+                                    <li style="padding: 5px 0;">❌ Nada é completado rapidamente</li>
+                                    <li style="padding: 5px 0;">❌ Gargalos escondidos</li>
+                                    <li style="padding: 5px 0;">❌ Context switching (perda 20-40% produtividade)</li>
+                                    <li style="padding: 5px 0;">❌ Lead Time alto</li>
+                                    <li style="padding: 5px 0;">❌ Trabalho parcialmente feito acumula</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="example-card" style="border-color: #4CAF50;">
+                            <h4 style="color: #4CAF50;">✅ COM WIP Limits</h4>
+                            <div style="background: #E8F5E9; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                                <ul style="list-style: none; padding: 0; font-size: 1.05rem; line-height: 1.8;">
+                                    <li style="padding: 5px 0;">✅ Foco em COMPLETAR tarefas</li>
+                                    <li style="padding: 5px 0;">✅ Fluxo contínuo</li>
+                                    <li style="padding: 5px 0;">✅ Entrega mais rápida</li>
+                                    <li style="padding: 5px 0;">✅ Gargalos expostos rapidamente</li>
+                                    <li style="padding: 5px 0;">✅ Menos context switching</li>
+                                    <li style="padding: 5px 0;">✅ Lead Time menor</li>
+                                    <li style="padding: 5px 0;">✅ Qualidade melhor (foco!)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kanban-card">
+                        <h4>🎯 Por Que WIP Limits Funcionam?</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.1rem;">
+                            <li style="padding: 10px 0;"><strong>1. Lei de Little:</strong> Lead Time = WIP / Throughput<br>
+                            → Menos WIP = Menos Lead Time (entrega mais rápida!)</li>
+                            <li style="padding: 10px 0;"><strong>2. Foco:</strong> Cérebro humano não é bom em multitarefa<br>
+                            → 1 tarefa de cada vez = mais eficiência</li>
+                            <li style="padding: 10px 0;"><strong>3. Expõe Problemas:</strong> Gargalos ficam óbvios<br>
+                            → Time PRECISA resolver, não pode esconder acumulando trabalho</li>
+                            <li style="padding: 10px 0;"><strong>4. Incentiva Colaboração:</strong> Atingiu WIP limit?<br>
+                            → Ajude colega ao invés de começar novo trabalho!</li>
+                        </ul>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>📐 Lei de Little (Matemática!)</h3>
+                        <p style="font-size: 1.3rem; margin-top: 15px; text-align: center;">
+                            <strong>Lead Time = WIP ÷ Throughput</strong><br><br>
+                            <strong>Exemplo:</strong><br>
+                            WIP = 10 tarefas em andamento<br>
+                            Throughput = 2 tarefas/dia completadas<br>
+                            Lead Time = 10 ÷ 2 = <strong>5 dias em média</strong><br><br>
+                            <strong>Reduzir WIP de 10 para 5:</strong><br>
+                            Lead Time = 5 ÷ 2 = <strong>2.5 dias!</strong> (50% mais rápido!)
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Stop starting, start finishing!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Mantra Kanban sobre WIP Limits</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: COMO DEFINIR WIP LIMITS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Como Definir WIP Limits?</h2>
+                    <p>Estratégias práticas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Não existe número mágico! Experimente e ajuste! 🔬</div>
+                    <div class="kanban-card">
+                        <h4>📊 3 Estratégias para Definir WIP Limits</h4>
+                    </div>
+                    <div class="content-box kanban-box" style="animation-delay: 0s;">
+                        <h3>1️⃣ Começar pelo Número de Pessoas</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Estratégia mais simples:</strong><br>
+                            WIP Limit = Número de pessoas - 1<br><br>
+                            <strong>Exemplo:</strong> Time de 5 pessoas<br>
+                            WIP Limit por coluna = 4<br><br>
+                            <strong>Por quê -1?</strong> Sempre ter capacidade para ajudar, não ficar 100% lotado!<br><br>
+                            <strong>Variação:</strong> Algumas colunas podem ter limite diferente<br>
+                            • Dev: 4 (coluna mais longa, mais pessoas)<br>
+                            • Teste: 2 (menos pessoas nessa etapa)
+                        </p>
+                    </div>
+                    <div class="content-box kanban-box" style="animation-delay: 0.1s;">
+                        <h3>2️⃣ Regra 2x (Para Iniciar)</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Fórmula conservadora:</strong><br>
+                            WIP Limit = 2 × Número de pessoas<br><br>
+                            <strong>Exemplo:</strong> Time de 5 pessoas<br>
+                            WIP Limit = 10<br><br>
+                            <strong>Quando usar:</strong> Time começando Kanban, não quer mudança drástica<br><br>
+                            <strong>Depois:</strong> Reduza gradualmente! Objetivo é MENOS WIP, não mais!<br>
+                            Experimente 8 → depois 6 → depois 4...
+                        </p>
+                    </div>
+                    <div class="content-box kanban-box" style="animation-delay: 0.2s;">
+                        <h3>3️⃣ Baseado em Dados Históricos</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Se você já tem dados:</strong><br>
+                            Olhe quantos itens estão simultaneamente em cada coluna em média<br><br>
+                            <strong>Exemplo de dados:</strong><br>
+                            Coluna "Dev" tinha em média 8 itens ao mesmo tempo<br>
+                            Defina WIP Limit = 6 (um pouco abaixo da média)<br><br>
+                            <strong>Objetivo:</strong> Forçar melhoria! Não apenas manter status quo!
+                        </p>
+                    </div>
+                    <div class="example-card" style="border-color: var(--kanban-green);">
+                        <h4 style="color: var(--kanban-green);">📝 Exemplo Prático: Definindo WIP Limits</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Time de Desenvolvimento:</strong> 6 pessoas<br>
+                                <strong>Colunas:</strong> Backlog → Análise → Dev → Code Review → Test → Done<br><br>
+                                <strong>Definindo WIP Limits:</strong><br><br>
+                                • <strong>Backlog:</strong> Sem limite (é reservatório)<br>
+                                • <strong>Análise:</strong> WIP = 2 (1 analista, mas pode ter ajuda)<br>
+                                • <strong>Dev:</strong> WIP = 4 (4 devs, 2 full-stack)<br>
+                                • <strong>Code Review:</strong> WIP = 3 (rápido, não acumula)<br>
+                                • <strong>Test:</strong> WIP = 2 (2 QAs)<br>
+                                • <strong>Done:</strong> Sem limite (destino final)<br><br>
+                                <strong>Total WIP do sistema:</strong> 2+4+3+2 = 11 itens máximo em andamento!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>⚠️ Regras de Ouro</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 1.15rem; margin-top: 15px;">
+                            <li style="padding: 8px 0;">🎯 <strong>Comece conservador, depois reduza:</strong> É mais fácil diminuir WIP que aumentar</li>
+                            <li style="padding: 8px 0;">🎯 <strong>WIP Limit não é meta:</strong> Não precisa sempre atingir o limite!</li>
+                            <li style="padding: 8px 0;">🎯 <strong>Experimente:</strong> Mude WIP a cada 2-4 semanas e veja impacto</li>
+                            <li style="padding: 8px 0;">🎯 <strong>Observe gargalos:</strong> Coluna sempre cheia? Pode ser gargalo!</li>
+                            <li style="padding: 8px 0;">🎯 <strong>Seja consistente:</strong> Não mude WIP toda semana!</li>
+                        </ul>
+                    </div>
+                    <div class="quote-box">
+                        "The right WIP limit is the one that exposes your constraints."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: O QUE FAZER QUANDO ATINGIR WIP LIMIT -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🚦 Atingiu o WIP Limit. E Agora?</h2>
+                    <p>Comportamentos quando limite é alcançado</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">WIP Limit força comportamentos saudáveis! 💪</div>
+                    <div class="wip-card">
+                        <h4>🚫 Coluna Atingiu o WIP Limit!</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Situação:</strong> Coluna "Dev" tem WIP Limit de 3. Já tem 3 cards.<br>
+                            Dev quer puxar novo card do Backlog.<br><br>
+                            <strong>❌ O QUE NÃO FAZER:</strong> "Ah, só mais um não faz mal..." (QUEBRA SISTEMA!)<br>
+                            <strong>✅ O QUE FAZER:</strong> 4 opções saudáveis abaixo!
+                        </p>
+                    </div>
+                    <div class="content-box kanban-box" style="animation-delay: 0s;">
+                        <h3>1️⃣ Termine Algo Primeiro!</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Ação:</strong> Foque em mover um card para Done (ou próxima coluna)<br>
+                            <strong>Benefício:</strong> Fluxo contínuo, coisas são completadas!<br>
+                            <strong>Mentalidade:</strong> "Finish what you started before starting new work"<br><br>
+                            <strong>Exemplo:</strong> Dev foca em completar um dos 3 cards em Dev.<br>
+                            Quando move para Test, libera espaço e pode puxar novo card.
+                        </p>
+                    </div>
+                    <div class="content-box kanban-box" style="animation-delay: 0.1s;">
+                        <h3>2️⃣ Ajude Colegas Downstream (à frente)</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Ação:</strong> Vá para coluna à direita e ajude a mover trabalho<br>
+                            <strong>Benefício:</strong> Acelera fluxo geral, colaboração em swarming<br>
+                            <strong>Mindset:</strong> "Our goal is FLOW, not individual productivity"<br><br>
+                            <strong>Exemplo:</strong> Dev não pode puxar novo card?<br>
+                            Vai ajudar QA a testar! Ou faz code review de outro dev!<br>
+                            Resultado: Test avança, libera espaço, fluxo melhora!
+                        </p>
+                    </div>
+                    <div class="content-box kanban-box" style="animation-delay: 0.2s;">
+                        <h3>3️⃣ Remova Impedimentos/Bloqueios</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Ação:</strong> Identifique cards bloqueados e trabalhe para desbloqueá-los<br>
+                            <strong>Benefício:</strong> Resolve problemas que atrasam TUDO<br>
+                            <strong>Prioridade:</strong> Impedimentos têm prioridade máxima!<br><br>
+                            <strong>Exemplo:</strong> Card bloqueado esperando resposta de stakeholder?<br>
+                            Dev usa tempo "livre" para perseguir stakeholder e resolver!<br>
+                            Ou: Bug bloqueando deploy? Foca em corrigir!
+                        </p>
+                    </div>
+                    <div class="content-box kanban-box" style="animation-delay: 0.3s;">
+                        <h3>4️⃣ Melhoria de Processo (Kaizen)</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>Ação:</strong> Use tempo para melhorar algo no sistema<br>
+                            <strong>Benefício:</strong> Melhoria contínua, débito técnico reduzido<br>
+                            <strong>Exemplos:</strong><br>
+                            • Automatizar testes<br>
+                            • Melhorar documentação<br>
+                            • Refatorar código técnico débito<br>
+                            • Atualizar bibliotecas<br><br>
+                            <strong>Resultado:</strong> Próximos Sprints ficam mais rápidos!
+                        </p>
+                    </div>
+                    <div class="example-card" style="border-color: #F44336;">
+                        <h4 style="color: #F44336;">❌ O Que NÃO Fazer Quando Atingir WIP Limit</h4>
+                        <div style="background: #FFEBEE; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <ul style="list-style: none; padding: 0; font-size: 1.05rem; line-height: 1.8;">
+                                <li style="padding: 8px 0;">❌ <strong>Ignorar WIP Limit:</strong> "Só mais um card..." (Quebra sistema!)</li>
+                                <li style="padding: 8px 0;">❌ <strong>Aumentar WIP Limit sempre:</strong> Ajustar limite toda vez que incomoda derrota propósito!</li>
+                                <li style="padding: 8px 0;">❌ <strong>Ficar parado/ocioso:</strong> WIP limit não é desculpa para não trabalhar!</li>
+                                <li style="padding: 8px 0;">❌ <strong>Começar trabalho "oculto":</strong> Trabalho fora do quadro é trabalho invisível!</li>
+                                <li style="padding: 8px 0;">❌ <strong>Subdividir cards artificialmente:</strong> Só para "caber" no WIP (gaming!)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 WIP Limit Como Ferramenta de Melhoria</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>WIP Limit NÃO é punição!</strong> É ferramenta para:<br><br>
+                            ✅ Expor gargalos (coluna sempre cheia = gargalo!)<br>
+                            ✅ Forçar foco (completar ao invés de começar)<br>
+                            ✅ Incentivar colaboração (ajudar colegas)<br>
+                            ✅ Reduzir Lead Time (menos WIP = mais rápido)<br>
+                            ✅ Melhorar qualidade (menos multitask = menos erros)<br><br>
+                            <strong>Se WIP Limit incomoda constantemente, isso é BOM!</strong><br>
+                            Significa que está funcionando! Está expondo problemas que precisam ser resolvidos!
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "WIP limits make problems visible. And visible problems can be solved."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: POLÍTICAS EXPLÍCITAS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📜 Políticas Explícitas</h2>
+                    <p>Regras claras de como trabalho flui</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Políticas explícitas = Todos sabem "como trabalhamos aqui"! 📋</div>
+                    <div class="kanban-card">
+                        <h4>📜 O Que São Políticas Explícitas?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            Regras DOCUMENTADAS e VISÍVEIS sobre:<br>
+                            • Quando um card pode mover de uma coluna para outra<br>
+                            • Critérios de "Done" para cada coluna<br>
+                            • Como priorizar trabalho<br>
+                            • Como lidar com urgências<br>
+                            • Tipos de trabalho e suas classes de serviço<br><br>
+                            <strong>Chave:</strong> Políticas devem estar NO QUADRO, visíveis para todos!
+                        </p>
+                    </div>
+                    <div class="example-card" style="border-color: var(--kanban-green);">
+                        <h4 style="color: var(--kanban-green);">📋 Exemplo: Políticas por Coluna</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Coluna: "Development"</strong><br><br>
+                                <strong>Definition of Done (sair desta coluna):</strong><br>
+                                ✅ Código escrito e commitado<br>
+                                ✅ Testes unitários passando (cobertura >80%)<br>
+                                ✅ Code review aprovado por pelo menos 1 pessoa<br>
+                                ✅ Build CI passando sem erros<br>
+                                ✅ Documentação técnica atualizada<br><br>
+                                <strong>Critério de Entrada (entrar nesta coluna):</strong><br>
+                                ✅ User Story tem critérios de aceitação claros<br>
+                                ✅ Dependências técnicas identificadas<br>
+                                ✅ Estimativa feita (Story Points ou T-shirt)<br><br>
+                                <strong>WIP Limit:</strong> 3 cards<br>
+                                <strong>Responsável típico:</strong> Developers
+                            </p>
+                        </div>
+                    </div>
+                    <div class="two-column">
+                        <div class="content-box kanban-box">
+                            <h3>✅ Boas Políticas</h3>
+                            <ul>
+                                <li>Escritas em linguagem clara</li>
+                                <li>Visíveis no quadro físico/digital</li>
+                                <li>Específicas e verificáveis</li>
+                                <li>Acordadas pelo time todo</li>
+                                <li>Revisadas periodicamente</li>
+                                <li>Evoluem com aprendizado</li>
+                            </ul>
+                        </div>
+                        <div class="content-box kanban-box">
+                            <h3>❌ Políticas Ruins</h3>
+                            <ul>
+                                <li>Vagas ("código de qualidade")</li>
+                                <li>Escondidas/não documentadas</li>
+                                <li>Impossíveis de verificar</li>
+                                <li>Impostas por gerência</li>
+                                <li>Nunca revisadas</li>
+                                <li>Contradições entre políticas</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🔄 Evoluindo Políticas</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            <strong>Políticas não são imutáveis!</strong><br><br>
+                            1. <strong>Comece simples:</strong> Poucas políticas básicas<br>
+                            2. <strong>Observe problemas:</strong> Onde há confusão ou inconsistência?<br>
+                            3. <strong>Experimente mudanças:</strong> Adicione/modifique política<br>
+                            4. <strong>Meça impacto:</strong> Lead Time melhorou? Qualidade subiu?<br>
+                            5. <strong>Ajuste:</strong> Mantenha o que funciona, descarte o que não funciona<br><br>
+                            <strong>Revise políticas em Retrospectivas!</strong>
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Make policies explicit so they can be discussed, improved, and evolved."
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você dominou Quadro Kanban e WIP Limits! 📊</div>
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box kanban-box">
+                            <h3>📋 Quadro Kanban</h3>
+                            <ul>
+                                <li><strong>Colunas:</strong> Estados do trabalho</li>
+                                <li><strong>Cards:</strong> Itens individuais</li>
+                                <li><strong>WIP Limits:</strong> Limites por coluna</li>
+                                <li><strong>Raias:</strong> Tipos de trabalho</li>
+                                <li><strong>Políticas:</strong> Regras explícitas</li>
+                            </ul>
+                        </div>
+                        <div class="content-box kanban-box">
+                            <h3>🚦 WIP Limits</h3>
+                            <ul>
+                                <li>Limita trabalho simultâneo</li>
+                                <li>Força foco e conclusão</li>
+                                <li>Expõe gargalos</li>
+                                <li>Reduz Lead Time</li>
+                                <li>Incentiva colaboração</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="wip-card" style="margin-top: 30px;">
+                        <h4>🔑 Atingiu WIP Limit? 4 Ações!</h4>
+                        <ul style="list-style: none; padding: 0; margin-top: 15px; font-size: 1.1rem;">
+                            <li style="padding: 8px 0;">1️⃣ Termine algo primeiro (finish what you started)</li>
+                            <li style="padding: 8px 0;">2️⃣ Ajude colegas downstream (colaboração!)</li>
+                            <li style="padding: 8px 0;">3️⃣ Remova impedimentos (desbloqueie trabalho)</li>
+                            <li style="padding: 8px 0;">4️⃣ Melhoria de processo (Kaizen)</li>
+                        </ul>
+                    </div>
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (25/03)</h3>
+                            <ul>
+                                <li><strong>Métricas Ágeis</strong></li>
+                                <li>Scrum: Velocity, Burndown, Burnup</li>
+                                <li>Kanban: Lead Time, Cycle Time</li>
+                                <li>Throughput e CFD</li>
+                                <li>Como usar métricas</li>
+                            </ul>
+                        </div>
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Equipes: Implementar Kanban Sprint 2</li>
+                                <li>Definir WIP Limits para cada coluna</li>
+                                <li>Documentar políticas explícitas</li>
+                                <li>Medir Lead Time de cada tarefa</li>
+                                <li>Experimentar WIP limits diferentes</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Stop Starting, Start Finishing!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Kanban em uma frase! 🎯</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 40px; color: #6B6B6B;">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado! Até quarta-feira! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Próxima: Métricas Ágeis - Scrum e Kanban (25/03)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 7</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>

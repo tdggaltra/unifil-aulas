@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 13 - Introdução ao Kanban | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --kanban-green: #00897B;
+            --kanban-teal: #26A69A;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+        }
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px; height: 90%;
+            margin: auto; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p { font-size: 1.1rem; opacity: 0.95; }
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+        .content-box {
+            background: var(--unifil-light); padding: 30px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange); animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.5rem; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li {
+            padding: 10px 0; padding-left: 30px; position: relative;
+            font-size: 1.1rem; line-height: 1.6;
+        }
+        .content-box li::before {
+            content: '→'; position: absolute; left: 0; color: var(--unifil-orange);
+            font-weight: bold; font-size: 1.3rem;
+        }
+        .kanban-box { background: #E0F2F1; border-left-color: var(--kanban-green); }
+        .kanban-box h3 { color: var(--kanban-green); }
+        .kanban-box li::before { color: var(--kanban-green); }
+        .big-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 40px; border-radius: 20px; text-align: center;
+            font-size: 1.8rem; font-weight: 600; margin: 30px 0;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.6rem; }
+        .kanban-card {
+            background: linear-gradient(135deg, var(--kanban-green) 0%, var(--kanban-teal) 100%);
+            color: white; padding: 35px; border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(0, 137, 123, 0.3);
+        }
+        .kanban-card h4 { font-size: 1.6rem; margin-bottom: 15px; }
+        .principle-card {
+            background: white; border: 3px solid var(--kanban-green);
+            padding: 25px; border-radius: 12px; margin: 15px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .principle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 137, 123, 0.2);
+        }
+        .principle-card h4 { color: var(--kanban-green); font-size: 1.4rem; margin-bottom: 15px; }
+        .timeline {
+            position: relative; padding-left: 40px; margin: 30px 0;
+        }
+        .timeline::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--kanban-green);
+        }
+        .timeline-item {
+            position: relative; margin-bottom: 30px;
+            animation: slideInLeft 0.6s ease-out forwards; opacity: 0;
+        }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -48px; top: 5px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--kanban-green); border: 4px solid white;
+            box-shadow: 0 0 0 2px var(--kanban-green);
+        }
+        .timeline-item h4 { color: var(--kanban-green); margin-bottom: 8px; font-size: 1.2rem; }
+        .comparison-table {
+            width: 100%; border-collapse: separate; border-spacing: 0 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .comparison-table th {
+            background: var(--unifil-orange); color: white; padding: 15px;
+            text-align: left; font-size: 1.2rem;
+        }
+        .comparison-table th:first-child { border-radius: 10px 0 0 10px; }
+        .comparison-table th:last-child { border-radius: 0 10px 10px 0; }
+        .comparison-table td {
+            background: var(--unifil-light); padding: 20px; font-size: 1.05rem;
+        }
+        .comparison-table td:first-child {
+            border-radius: 10px 0 0 10px; font-weight: 600; color: var(--unifil-orange);
+        }
+        .comparison-table td:last-child { border-radius: 0 10px 10px 0; }
+        .quote-box {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white; padding: 35px; border-radius: 20px; margin: 30px 0;
+            font-style: italic; font-size: 1.3rem; text-align: center;
+            animation: scaleIn 0.6s ease-out forwards; opacity: 0; position: relative;
+        }
+        .quote-box::before {
+            content: '"'; font-size: 4rem; position: absolute;
+            top: -10px; left: 20px; opacity: 0.3;
+        }
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.3rem; }
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center; z-index: 1000;
+        }
+        .nav-button {
+            background: var(--unifil-orange); color: white; border: none;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+        .nav-button:hover:not(:disabled) {
+            background: var(--unifil-accent); transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.4);
+        }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-counter {
+            background: white; padding: 10px 25px; border-radius: 50px;
+            font-weight: 600; color: var(--unifil-dark); box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .progress-bar {
+            position: fixed; top: 0; left: 0; height: 5px;
+            background: var(--unifil-orange); transition: width 0.3s ease; z-index: 1001;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .slide-body::-webkit-scrollbar { width: 10px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="presentation">
+        
+        <!-- SLIDE 1: CAPA -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>Gerenciamento de Projetos</h1>
+                    <p>Ferramentas para Metodologias Ágeis</p>
+                </div>
+                <div class="slide-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h2 style="font-size: 3rem; color: var(--unifil-orange); margin-bottom: 20px;">🎯 Aula 13</h2>
+                    <h3 style="font-size: 2rem; color: var(--unifil-dark); margin-bottom: 30px;">Introdução ao Kanban</h3>
+                    <p style="font-size: 1.5rem; color: var(--kanban-green); margin-bottom: 15px; font-weight: 600;">Fundamentos e Princípios</p>
+                    <p style="font-size: 1.3rem; color: #6B6B6B; margin-bottom: 10px;">Prof. Tiago Galvão</p>
+                    <p style="font-size: 1.1rem; color: #6B6B6B;">Quarta-feira, 18 de Março de 2026</p>
+                    <div class="big-idea" style="margin-top: 40px;">"Kanban: Visualize o fluxo, limite o WIP, melhore continuamente!" 📊</div>
+                    <div style="margin-top: 40px; color: #6B6B6B; font-size: 1rem;">
+                        <p>📱 Use as setas do teclado para navegar</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: HISTÓRIA DO KANBAN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏭 História do Kanban</h2>
+                    <p>Da Toyota ao desenvolvimento de software</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Kanban nasceu nas fábricas da Toyota e migrou para conhecimento! 🚗→💻</div>
+                    <div class="timeline">
+                        <div class="timeline-item" style="animation-delay: 0s;">
+                            <h4>📅 Anos 1940-50: Origem na Toyota</h4>
+                            <p>Taiichi Ohno criou sistema Kanban para Toyota Production System (TPS)<br>
+                            <strong>Problema:</strong> Excesso de estoque e desperdício<br>
+                            <strong>Solução:</strong> Sistema "puxado" (pull) baseado em cartões (看板 = kanban)</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.1s;">
+                            <h4>📅 Anos 1980-90: Lean Manufacturing</h4>
+                            <p>Princípios Lean se espalham pelo mundo<br>
+                            Just-in-Time (JIT), redução de desperdício<br>
+                            Outras indústrias adotam práticas Lean</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.2s;">
+                            <h4>📅 2004: David Anderson adapta para TI</h4>
+                            <p>David Anderson aplica Kanban em equipe Microsoft<br>
+                            Adapta princípios para trabalho de conhecimento<br>
+                            Foco em fluxo ao invés de iterações</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.3s;">
+                            <h4>📅 2010: Livro "Kanban" publicado</h4>
+                            <p>"Kanban: Successful Evolutionary Change for Your Technology Business"<br>
+                            Formaliza método Kanban para software<br>
+                            Kanban se torna mainstream em desenvolvimento ágil</p>
+                        </div>
+                        <div class="timeline-item" style="animation-delay: 0.4s;">
+                            <h4>📅 Hoje: Amplamente adotado</h4>
+                            <p>Usado em desenvolvimento, suporte, marketing, RH, vendas...<br>
+                            Combinado com Scrum (Scrumban)<br>
+                            Parte essencial do toolkit ágil</p>
+                        </div>
+                    </div>
+                    <div class="kanban-card">
+                        <h4>🏭 O Que Significa "Kanban"?</h4>
+                        <p style="font-size: 1.2rem; line-height: 1.8; margin-top: 15px;">
+                            <strong>看板</strong> (kanban) em japonês = <strong>"cartão visual" ou "sinal"</strong><br><br>
+                            Na Toyota, cartões físicos sinalizavam quando reabastecer peças.<br>
+                            Sistema PULL: produção baseada em demanda real, não em previsão.<br><br>
+                            <strong>Princípio:</strong> Não produzir mais do que pode consumir! Evitar desperdício!
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "All we are doing is looking at the timeline from the moment the customer gives us an order to the point when we collect the cash. And we are reducing that timeline by removing the non-value-added wastes."
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Taiichi Ohno, criador do TPS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: KANBAN vs QUADRO KANBAN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📋 Kanban ≠ "Quadro Kanban"</h2>
+                    <p>Diferença crucial!</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Quadro é FERRAMENTA. Kanban é MÉTODO! 🎯</div>
+                    <div class="two-column">
+                        <div class="content-box kanban-box">
+                            <h3>📋 Quadro Kanban (Ferramenta)</h3>
+                            <ul>
+                                <li>Board com colunas (To Do, Doing, Done)</li>
+                                <li>Cards representando trabalho</li>
+                                <li>Visualização do fluxo</li>
+                                <li>Pode ser usado SEM Kanban method</li>
+                                <li><strong>Exemplo:</strong> Scrum usa quadro, mas não é Kanban!</li>
+                            </ul>
+                        </div>
+                        <div class="content-box kanban-box">
+                            <h3>🎯 Método Kanban (Sistema)</h3>
+                            <ul>
+                                <li>Sistema completo de gestão</li>
+                                <li>Princípios e práticas específicas</li>
+                                <li>WIP Limits (crucial!)</li>
+                                <li>Métricas de fluxo</li>
+                                <li>Melhoria evolutiva contínua</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--kanban-green);">
+                        <h4 style="color: var(--kanban-green);">🚨 Confusão Comum</h4>
+                        <div style="background: #E0F2F1; padding: 25px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.1rem; line-height: 1.8;">
+                                <strong>❌ ERRADO:</strong> "Usamos Kanban porque temos um quadro com Post-its!"<br><br>
+                                <strong>✅ CORRETO:</strong> "Usamos Kanban porque:<br>
+                                • Visualizamos nosso fluxo de trabalho<br>
+                                • Limitamos WIP (Work in Progress)<br>
+                                • Gerenciamos fluxo com métricas (Lead Time, Cycle Time)<br>
+                                • Temos políticas explícitas<br>
+                                • Melhoramos colaborativamente<br>
+                                • Evoluímos o processo experimentalmente"<br><br>
+                                <strong>Quadro é apenas UMA das práticas!</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Analogia</h3>
+                        <p style="font-size: 1.2rem; margin-top: 15px;">
+                            <strong>Quadro Kanban</strong> : Método Kanban<br>
+                            = <br>
+                            <strong>Stethoscope</strong> : Medicina<br><br>
+                            Estetoscópio é ferramenta do médico, mas ter estetoscópio não te faz médico!<br>
+                            Quadro é ferramenta de Kanban, mas ter quadro não significa fazer Kanban!
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "A tool is just a tool. Kanban is a holistic approach to evolutionary change."
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— David Anderson</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: PRINCÍPIOS DO KANBAN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Princípios do Kanban</h2>
+                    <p>3 Princípios de Mudança + 3 Princípios de Entrega</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Kanban: Mudança evolutiva, não revolucionária! 🌱</div>
+                    <div class="kanban-card">
+                        <h4>🔄 3 Princípios de Gestão da Mudança</h4>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">Como IMPLEMENTAR Kanban na organização</p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Comece com o que você faz agora</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Não precisa:</strong> Reorganizar times, mudar papéis, adotar framework novo<br>
+                            <strong>Comece:</strong> Mapeando processo atual COMO ELE É (não como deveria ser)<br>
+                            <strong>Vantagem:</strong> Baixa resistência à mudança. Evolução incremental.<br>
+                            <strong>Exemplo:</strong> Time usa Waterfall? Mapeie fases atuais no Kanban!
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.1s;">
+                        <h4>2️⃣ Aceite mudança evolutiva e incremental</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Não faça:</strong> "Big Bang" transformation. Reengenharia radical.<br>
+                            <strong>Faça:</strong> Pequenas melhorias contínuas (Kaizen)<br>
+                            <strong>Vantagem:</strong> Menos risco. Mudanças sustentáveis.<br>
+                            <strong>Metáfora:</strong> Jardineiro cuida da planta aos poucos, não arranca e replanta!
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.2s;">
+                        <h4>3️⃣ Respeite processos, papéis e responsabilidades atuais</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Não elimine:</strong> Estrutura organizacional atual de cara<br>
+                            <strong>Reconheça:</strong> Valor do que já existe. Papéis têm propósito.<br>
+                            <strong>Evolua:</strong> Ao longo do tempo, elimine o que não agrega valor<br>
+                            <strong>Diferença de Scrum:</strong> Scrum prescreve papéis. Kanban não!
+                        </p>
+                    </div>
+                    <div class="kanban-card" style="margin-top: 30px;">
+                        <h4>🎯 3 Princípios de Entrega de Serviço</h4>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">Como OPERAR com Kanban no dia-a-dia</p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.3s;">
+                        <h4>1️⃣ Foco em necessidades e expectativas do cliente</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Sempre pergunte:</strong> "Isso agrega valor para o cliente?"<br>
+                            <strong>Priorize:</strong> Trabalho que entrega valor mais rápido<br>
+                            <strong>Elimine:</strong> Desperdício que não serve ao cliente
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.4s;">
+                        <h4>2️⃣ Gerencie o trabalho, não as pessoas</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Foco:</strong> Fluxo de trabalho, não utilização de recursos<br>
+                            <strong>Deixe:</strong> Pessoas se auto-organizarem ao redor do trabalho<br>
+                            <strong>Pergunte:</strong> "Como o trabalho flui?" não "Quem está ocupado?"
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.5s;">
+                        <h4>3️⃣ Evolua políticas para melhorar resultados</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Políticas explícitas:</strong> Regras de como trabalho flui<br>
+                            <strong>Experimente:</strong> Teste mudanças pequenas<br>
+                            <strong>Meça:</strong> Veja impacto nos resultados (Lead Time, qualidade)<br>
+                            <strong>Adapte:</strong> Mantenha o que funciona, descarte o que não funciona
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Start where you are, use what you have, do what you can."
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Kanban Philosophy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: PRÁTICAS CORE DO KANBAN -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚙️ 6 Práticas Core do Kanban</h2>
+                    <p>O que você FAZ para implementar Kanban</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">6 Práticas fundamentais que DEFINEM Kanban! 🎯</div>
+                    <div class="principle-card" style="animation-delay: 0s;">
+                        <h4>1️⃣ Visualize o Fluxo de Trabalho</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Como:</strong> Crie quadro com colunas representando estados do trabalho<br>
+                            <strong>Por quê:</strong> Você não pode melhorar o que não vê!<br>
+                            <strong>Elementos:</strong> Colunas (estados), Cards (trabalho), Raias (tipos)<br>
+                            <strong>Exemplo:</strong> Backlog → Análise → Dev → Teste → Done
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.1s;">
+                        <h4>2️⃣ Limite Work in Progress (WIP)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Como:</strong> Defina número máximo de itens por coluna<br>
+                            <strong>Por quê:</strong> Limitar WIP força foco e expõe gargalos<br>
+                            <strong>Regra:</strong> Se WIP limit atingido, PARE de puxar novo trabalho<br>
+                            <strong>Exemplo:</strong> Coluna "Dev" com WIP limit de 3 itens
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.2s;">
+                        <h4>3️⃣ Gerencie o Fluxo</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Como:</strong> Monitore como trabalho se move pelo sistema<br>
+                            <strong>Por quê:</strong> Fluxo suave = entrega previsível e rápida<br>
+                            <strong>Métricas:</strong> Lead Time, Cycle Time, Throughput<br>
+                            <strong>Objetivo:</strong> Maximizar fluxo, minimizar tempo de espera
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.3s;">
+                        <h4>4️⃣ Torne Políticas Explícitas</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Como:</strong> Documente regras de quando mover cards, Definition of Done por coluna<br>
+                            <strong>Por quê:</strong> Todos entendem "como trabalhamos aqui"<br>
+                            <strong>Exemplo:</strong> "Card só vai para Done se tem testes automatizados + code review"<br>
+                            <strong>Visível:</strong> Políticas devem estar no quadro!
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.4s;">
+                        <h4>5️⃣ Implemente Loops de Feedback</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Como:</strong> Reuniões regulares (Daily standup, Replenishment, Review, Retro)<br>
+                            <strong>Por quê:</strong> Feedback rápido permite adaptação rápida<br>
+                            <strong>Cadências típicas:</strong> Diária (operacional), Semanal (tático), Mensal (estratégico)<br>
+                            <strong>Diferença de Scrum:</strong> Cadências não são prescritas, você define!
+                        </p>
+                    </div>
+                    <div class="principle-card" style="animation-delay: 0.5s;">
+                        <h4>6️⃣ Melhore Colaborativamente, Evolua Experimentalmente (Kaizen)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px;">
+                            <strong>Como:</strong> Use dados para propor experimentos. Teste mudanças pequenas.<br>
+                            <strong>Por quê:</strong> Melhoria contínua baseada em evidências<br>
+                            <strong>Ciclo:</strong> Hipótese → Experimento → Medição → Aprendizado → Ajuste<br>
+                            <strong>Método científico:</strong> Kanban é empirismo na prática!
+                        </p>
+                    </div>
+                    <div class="highlight-box">
+                        <h3>🎯 Todas as 6 Práticas São Essenciais!</h3>
+                        <p style="font-size: 1.15rem; margin-top: 15px;">
+                            Você não está "fazendo Kanban" se falta alguma prática!<br><br>
+                            <strong>Sem visualização:</strong> Trabalho invisível<br>
+                            <strong>Sem WIP limits:</strong> Multitarefa e caos<br>
+                            <strong>Sem gerenciar fluxo:</strong> Gargalos escondidos<br>
+                            <strong>Sem políticas explícitas:</strong> Inconsistência<br>
+                            <strong>Sem feedback:</strong> Problemas descobertos tarde<br>
+                            <strong>Sem kaizen:</strong> Estagnação<br><br>
+                            <strong>6 práticas juntas = Sistema Kanban completo!</strong>
+                        </p>
+                    </div>
+                    <div class="quote-box">
+                        "Kanban is not a software development lifecycle or project management methodology. It is a method for designing, managing, and improving flow systems for knowledge work."
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— David Anderson</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: KANBAN VS SCRUM -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚖️ Kanban vs Scrum</h2>
+                    <p>Diferenças fundamentais</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Não é "ou/ou"! Kanban e Scrum podem coexistir! 🤝</div>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Aspecto</th>
+                                <th>Scrum</th>
+                                <th>Kanban</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tipo</td>
+                                <td>Framework prescritivo</td>
+                                <td>Método adaptativo</td>
+                            </tr>
+                            <tr>
+                                <td>Cadência</td>
+                                <td>Iterações fixas (Sprints)</td>
+                                <td>Fluxo contínuo</td>
+                            </tr>
+                            <tr>
+                                <td>Papéis</td>
+                                <td>PO, SM, Developers (obrigatórios)</td>
+                                <td>Nenhum papel prescrito</td>
+                            </tr>
+                            <tr>
+                                <td>Mudanças</td>
+                                <td>Não durante Sprint</td>
+                                <td>Qualquer momento</td>
+                            </tr>
+                            <tr>
+                                <td>WIP Limits</td>
+                                <td>Implícito (Sprint capacity)</td>
+                                <td>Explícito por coluna</td>
+                            </tr>
+                            <tr>
+                                <td>Métricas</td>
+                                <td>Velocity, Burndown</td>
+                                <td>Lead Time, Cycle Time, Throughput</td>
+                            </tr>
+                            <tr>
+                                <td>Priorização</td>
+                                <td>PO prioriza, time puxa no Planning</td>
+                                <td>Puxar próximo item quando capacidade</td>
+                            </tr>
+                            <tr>
+                                <td>Compromisso</td>
+                                <td>Sprint Backlog (Sprint Goal)</td>
+                                <td>Nenhum compromisso formal</td>
+                            </tr>
+                            <tr>
+                                <td>Estimativas</td>
+                                <td>Requeridas (Story Points)</td>
+                                <td>Opcionais</td>
+                            </tr>
+                            <tr>
+                                <td>Eventos</td>
+                                <td>5 eventos prescritos</td>
+                                <td>Você define cadências</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box kanban-box">
+                            <h3>✅ Quando Usar Scrum?</h3>
+                            <ul>
+                                <li>Projeto com escopo definido</li>
+                                <li>Time novo em ágil (precisa estrutura)</li>
+                                <li>Entregas incrementais planejadas</li>
+                                <li>Time precisa de papéis claros</li>
+                                <li>Stakeholders querem previsibilidade</li>
+                                <li>Complexidade alta, mudanças moderadas</li>
+                            </ul>
+                        </div>
+                        <div class="content-box kanban-box">
+                            <h3>✅ Quando Usar Kanban?</h3>
+                            <ul>
+                                <li>Trabalho contínuo (suporte, manutenção)</li>
+                                <li>Prioridades mudam frequentemente</li>
+                                <li>Tamanhos de trabalho muito variados</li>
+                                <li>Time maduro, auto-organizado</li>
+                                <li>Fluxo constante de demandas</li>
+                                <li>Quer evolução gradual do processo</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="example-card" style="border-color: var(--kanban-green); margin-top: 30px;">
+                        <h4 style="color: var(--kanban-green);">🔄 Scrumban: Melhor dos 2 Mundos!</h4>
+                        <div style="background: #E0F2F1; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <p style="font-size: 1.05rem; line-height: 1.8;">
+                                <strong>Scrumban</strong> = Combinação de Scrum + Kanban<br><br>
+                                <strong>Mantém de Scrum:</strong><br>
+                                • Sprints de tempo fixo<br>
+                                • Papéis (PO, SM, Developers)<br>
+                                • Planning, Review, Retro<br><br>
+                                <strong>Adiciona de Kanban:</strong><br>
+                                • WIP Limits explícitos<br>
+                                • Quadro Kanban com políticas<br>
+                                • Métricas de fluxo (Lead Time, Cycle Time)<br>
+                                • Pull system dentro do Sprint<br><br>
+                                <strong>Quando usar:</strong> Time Scrum quer melhorar fluxo, mas não quer abandonar Sprints!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="quote-box">
+                        "Kanban and Scrum are not mutually exclusive. They can be combined!"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: RESUMO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>O que aprendemos hoje</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">Hoje você entendeu os FUNDAMENTOS do Kanban! 🎯</div>
+                    <div class="three-column" style="margin-top: 40px;">
+                        <div class="content-box kanban-box">
+                            <h3>🏭 História</h3>
+                            <ul>
+                                <li>Toyota (anos 40-50)</li>
+                                <li>Lean Manufacturing</li>
+                                <li>David Anderson (2004)</li>
+                                <li>Adaptação para TI</li>
+                                <li>看板 = sinal visual</li>
+                            </ul>
+                        </div>
+                        <div class="content-box kanban-box">
+                            <h3>🎯 6 Princípios</h3>
+                            <ul>
+                                <li><strong>Mudança:</strong> Comece onde está, evolua, respeite</li>
+                                <li><strong>Entrega:</strong> Foco cliente, gerencie trabalho, evolua políticas</li>
+                            </ul>
+                        </div>
+                        <div class="content-box kanban-box">
+                            <h3>⚙️ 6 Práticas</h3>
+                            <ul>
+                                <li>Visualize</li>
+                                <li>Limite WIP</li>
+                                <li>Gerencie fluxo</li>
+                                <li>Políticas explícitas</li>
+                                <li>Feedback loops</li>
+                                <li>Kaizen</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="kanban-card" style="margin-top: 30px;">
+                        <h4>🔑 Diferença Fundamental: Kanban ≠ Quadro</h4>
+                        <p style="font-size: 1.2rem; margin-top: 15px; text-align: center;">
+                            <strong>Quadro</strong> = Ferramenta visual<br>
+                            <strong>Kanban</strong> = Método completo de gestão de fluxo<br><br>
+                            Ter quadro não significa fazer Kanban!
+                        </p>
+                    </div>
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="content-box">
+                            <h3>🔥 Próxima Aula (24/03)</h3>
+                            <ul>
+                                <li><strong>Quadro Kanban</strong></li>
+                                <li>Anatomia do quadro</li>
+                                <li>WIP Limits na prática</li>
+                                <li>Políticas explícitas</li>
+                                <li>Hands-on: Criar quadro</li>
+                            </ul>
+                        </div>
+                        <div class="content-box">
+                            <h3>📚 Para Casa</h3>
+                            <ul>
+                                <li>Pesquisar exemplos de quadros Kanban</li>
+                                <li>Mapear seu fluxo de trabalho pessoal</li>
+                                <li>Ler sobre WIP Limits</li>
+                                <li>Observar onde tem desperdício no seu processo</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Stop starting, start finishing!"
+                        <div style="margin-top: 15px; font-size: 1rem; font-style: normal;">— Mantra do Kanban! 🎯</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 40px; color: #6B6B6B;">
+                        <p style="font-size: 1.3rem; font-weight: 600;">Obrigado! Até terça-feira! 🙏</p>
+                        <p style="font-size: 1.1rem; margin-top: 10px;">Próxima: Quadro Kanban e WIP Limits (24/03)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 7</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>

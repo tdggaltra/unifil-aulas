@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 14 - Ferramentas de Qualidade | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --green: #28a745;
+            --blue: #007bff;
+            --purple: #6f42c1;
+            --red: #dc3545;
+            --yellow: #ffc107;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-content {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px;
+            color: white;
+            position: relative;
+        }
+
+        .slide-header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+
+        .slide-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .slide-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slide-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .slide-body {
+            flex: 1;
+            padding: 60px 50px 40px;
+            overflow-y: auto;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .content-box {
+            background: var(--unifil-light);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .content-box h3 {
+            color: var(--unifil-orange);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .content-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-box li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .content-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--unifil-orange);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .highlight-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .example-card {
+            background: white;
+            border: 2px solid var(--unifil-orange);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.3);
+        }
+
+        .example-card h4 {
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .big-idea {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--unifil-orange);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--unifil-gray);
+        }
+
+        .comparison-table {
+            background: var(--unifil-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.05rem;
+        }
+
+        .comparison-table tr:hover {
+            background: white;
+        }
+
+        .quote-box {
+            background: var(--unifil-light);
+            border-left: 5px solid var(--unifil-orange);
+            padding: 25px 30px;
+            margin: 25px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: var(--unifil-dark);
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: '"';
+            font-size: 4rem;
+            color: var(--unifil-orange);
+            opacity: 0.3;
+            position: absolute;
+            margin-top: -20px;
+            margin-left: -15px;
+        }
+
+        .tool-card {
+            background: var(--unifil-light);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 5px solid;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateX(5px);
+        }
+
+        .tool-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .tool-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-weight: 600;
+            color: var(--unifil-dark);
+            font-size: 1.1rem;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-box:nth-child(1) { animation-delay: 0s; }
+        .content-box:nth-child(2) { animation-delay: 0.1s; }
+        .content-box:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .tool-card:nth-child(1) { animation-delay: 0s; }
+        .tool-card:nth-child(2) { animation-delay: 0.15s; }
+        .tool-card:nth-child(3) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="presentation">
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h1>🛠️ Ferramentas de Qualidade</h1>
+                    <p>Aula 14 - Ferramentas Clássicas e Modernas para Software</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea" style="margin-top: 60px;">
+                        Ferramentas Certas = Qualidade Garantida! 🎯
+                    </div>
+
+                    <div class="two-column" style="margin-top: 50px;">
+                        <div class="content-box">
+                            <h3>📚 O que você vai aprender</h3>
+                            <ul>
+                                <li>7 Ferramentas Clássicas da Qualidade</li>
+                                <li>Ferramentas de Análise (5 Porquês, FMEA)</li>
+                                <li>Ferramentas de Teste (Jest, Cypress, Selenium)</li>
+                                <li>Análise de Código (SonarQube, ESLint)</li>
+                                <li>CI/CD (GitHub Actions, Jenkins)</li>
+                                <li>Monitoramento (Grafana, Prometheus)</li>
+                                <li>Stack completo de qualidade</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎯 Por que ferramentas importam?</h3>
+                            <ul>
+                                <li>Automatizar tarefas repetitivas</li>
+                                <li>Prevenir erros humanos</li>
+                                <li>Detectar problemas cedo</li>
+                                <li>Economizar tempo e dinheiro</li>
+                                <li>Garantir consistência</li>
+                                <li>Facilitar melhoria contínua</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">7</div>
+                            <div class="stat-label">ferramentas clássicas</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">20+</div>
+                            <div class="stat-label">ferramentas modernas</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">80%</div>
+                            <div class="stat-label">bugs evitados com automação</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>💡 Princípio Fundamental</h3>
+                        <p style="font-size: 1.3rem; line-height: 2; text-align: center; margin-top: 15px;">
+                            Ferramentas são <strong>habilitadores</strong>, não substitutas!<br>
+                            Processos + Pessoas + Ferramentas = Qualidade 🎯
+                        </p>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 40px;">
+                        "Dê-me seis horas para derrubar uma árvore e gastarei as primeiras quatro afiando o machado." 
+                        — Abraham Lincoln
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: 7 FERRAMENTAS CLÁSSICAS - PARTE 1 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 7 Ferramentas Clássicas - Parte 1</h2>
+                    <p>Fluxograma, Ishikawa e Pareto</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Ferramentas Testadas por Décadas! 📈
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--blue);">
+                        <div class="tool-icon">📐</div>
+                        <h4 style="color: var(--blue);">1. Fluxograma (Flowchart)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Mapear processos visualmente, identificar gargalos e redundâncias<br>
+                            <strong>Quando usar:</strong> Fase PLAN do PDCA, documentação de processos<br>
+                            <strong>Símbolos principais:</strong> Oval (início/fim), Retângulo (ação), Losango (decisão), Setas (fluxo)
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--blue);">Exemplo: Processo de Deploy</strong>
+                            <p style="font-size: 1rem; line-height: 1.6; margin-top: 10px;">
+                                [Início] → [Executar testes] → ⟨Passou?⟩ → Sim → [Build Docker] → [Deploy staging] → 
+                                ⟨Validar?⟩ → Sim → [Deploy produção] → [Fim]<br>
+                                ⟨Passou?⟩ → Não → [Notificar dev] → [Fim]<br>
+                                ⟨Validar?⟩ → Não → [Rollback] → [Notificar] → [Fim]
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--purple);">
+                        <div class="tool-icon">🐟</div>
+                        <h4 style="color: var(--purple);">2. Diagrama Ishikawa (Espinha de Peixe / Causa e Efeito)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Identificar causas raiz de problemas<br>
+                            <strong>Quando usar:</strong> Fase PLAN do PDCA, análise de incidentes<br>
+                            <strong>6M's típicos:</strong> Máquina, Método, Mão-de-obra, Material, Medida, Meio Ambiente
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--purple);">Exemplo: API lenta (>2s response)</strong>
+                            <p style="font-size: 0.95rem; line-height: 1.6; margin-top: 10px;">
+                                <strong>Método:</strong> Query SQL sem índice, N+1 queries<br>
+                                <strong>Máquina:</strong> Servidor subdimensionado (2GB RAM)<br>
+                                <strong>Mão-de-obra:</strong> Dev júnior, sem code review<br>
+                                <strong>Medida:</strong> Não monitorando APM, sem alertas<br>
+                                <strong>Material:</strong> Banco dados sem otimização<br>
+                                <strong>Meio:</strong> Tráfego alto horário pico<br><br>
+                                <strong>Causa raiz principal:</strong> Query sem índice! 🎯
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--green);">
+                        <div class="tool-icon">📊</div>
+                        <h4 style="color: var(--green);">3. Gráfico de Pareto (Regra 80/20)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Priorizar problemas (poucos vitais vs muitos triviais)<br>
+                            <strong>Quando usar:</strong> Decisão sobre onde focar esforços<br>
+                            <strong>Princípio:</strong> 80% dos problemas vêm de 20% das causas
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--green);">Exemplo: Bugs produção último mês (100 total)</strong>
+                            <div class="comparison-table" style="font-size: 0.9rem; margin-top: 10px;">
+                                <table>
+                                    <tr><th>Causa</th><th>Qtd</th><th>%</th><th>Acum</th></tr>
+                                    <tr><td>Validação frontend</td><td>45</td><td>45%</td><td>45%</td></tr>
+                                    <tr><td>Erro integração API</td><td>30</td><td>30%</td><td style="font-weight: 700; background: #ffc;">75% ← Foco aqui!</td></tr>
+                                    <tr><td>Performance</td><td>12</td><td>12%</td><td>87%</td></tr>
+                                    <tr><td>UI inconsistente</td><td>8</td><td>8%</td><td>95%</td></tr>
+                                    <tr><td>Outros</td><td>5</td><td>5%</td><td>100%</td></tr>
+                                </table>
+                            </div>
+                            <p style="margin-top: 10px; color: var(--green); font-weight: 700;">
+                                → Resolver validação + API = eliminar 75% dos bugs! 🎯
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: 7 FERRAMENTAS CLÁSSICAS - PARTE 2 -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 7 Ferramentas Clássicas - Parte 2</h2>
+                    <p>Histograma, Dispersão, Controle e Folha Verificação</p>
+                </div>
+                <div class="slide-body">
+                    <div class="two-column">
+                        <div class="tool-card" style="border-left-color: var(--blue);">
+                            <div class="tool-icon">📊</div>
+                            <h4 style="color: var(--blue);">4. Histograma</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>Para quê:</strong> Visualizar distribuição de dados<br>
+                                <strong>Exemplo:</strong> Tempo resposta API
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem;">
+                                0-100ms: ████████ (40%)<br>
+                                100-200ms: ██████ (30%)<br>
+                                200-500ms: ████ (20%)<br>
+                                500-1s: ██ (10%)<br>
+                                <strong>Conclusão:</strong> 70% < 200ms ✅
+                            </div>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--purple);">
+                            <div class="tool-icon">📈</div>
+                            <h4 style="color: var(--purple);">5. Diagrama Dispersão</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>Para quê:</strong> Correlação entre variáveis<br>
+                                <strong>Exemplo:</strong> Complexidade código × Bugs
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem;">
+                                Complexidade ciclomática vs Bugs:<br>
+                                • 1-10: 2 bugs/módulo<br>
+                                • 11-20: 8 bugs/módulo<br>
+                                • 21+: 25 bugs/módulo<br>
+                                <strong>Conclusão:</strong> Correlação forte! ⚠️
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--green); margin-top: 20px;">
+                        <div class="tool-icon">📉</div>
+                        <h4 style="color: var(--green);">6. Gráfico de Controle (Control Chart)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Monitorar estabilidade do processo ao longo do tempo<br>
+                            <strong>Quando usar:</strong> Produção contínua, métricas de performance<br>
+                            <strong>Componentes:</strong> Linha central (média), Limites superior/inferior (±3σ)
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--green);">Exemplo: Build time últimas 30 builds</strong>
+                            <pre style="font-family: monospace; font-size: 0.85rem; line-height: 1.4; margin-top: 10px;">
+Limite Superior (LSC): 8min
+─────────────────────────────────────
+Média: 5min          ●  ●    ●
+                  ●     ●  ●    ● ●
+               ●                    ●
+─────────────────────────────────────
+Limite Inferior (LIC): 2min
+
+<strong>Análise:</strong>
+✅ Processo sob controle (todos dentro dos limites)
+✅ Tendência estável (sem padrões anormais)
+            </pre>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--red); margin-top: 20px;">
+                        <div class="tool-icon">☑️</div>
+                        <h4 style="color: var(--red);">7. Folha de Verificação (Checklist)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Coletar dados sistematicamente<br>
+                            <strong>Quando usar:</strong> Inspeções, testes, coleta dados repetitiva
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--red);">Exemplo: Checklist Code Review</strong>
+                            <div style="font-size: 1rem; line-height: 1.8; margin-top: 10px;">
+                                ☑ Testes unitários cobrem >80% código?<br>
+                                ☑ Sem comentários TODO/FIXME?<br>
+                                ☑ Variáveis nomeadas claramente?<br>
+                                ☑ Complexidade ciclomática <10?<br>
+                                ☑ Sem código duplicado?<br>
+                                ☑ Documentação atualizada?<br>
+                                ☑ SonarQube Quality Gate passou?<br><br>
+                                <strong>7/7 ✅ → Aprovar PR</strong><br>
+                                <strong><7 ❌ → Request changes</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: FERRAMENTAS DE ANÁLISE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔍 Ferramentas de Análise</h2>
+                    <p>5 Porquês, 5W2H e FMEA</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Análise Profunda de Problemas! 🔬
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--blue);">
+                        <div class="tool-icon">❓</div>
+                        <h4 style="color: var(--blue);">5 Porquês (5 Whys)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Chegar à causa raiz perguntando "Por quê?" 5 vezes<br>
+                            <strong>Origem:</strong> Toyota Production System (Taiichi Ohno)
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--blue);">Exemplo: Site fora do ar</strong>
+                            <p style="font-size: 1rem; line-height: 1.8; margin-top: 10px;">
+                                <strong>1. Por quê site caiu?</strong> → Servidor parou de responder<br>
+                                <strong>2. Por quê servidor parou?</strong> → Ficou sem memória (OOM)<br>
+                                <strong>3. Por quê ficou sem memória?</strong> → Memory leak na aplicação<br>
+                                <strong>4. Por quê tem memory leak?</strong> → Conexões BD não fechadas<br>
+                                <strong>5. Por quê conexões não foram fechadas?</strong> → Código sem try-finally<br><br>
+                                <strong style="color: var(--red);">CAUSA RAIZ:</strong> Falta de try-finally no código!<br>
+                                <strong style="color: var(--green);">SOLUÇÃO:</strong> Adicionar connection pooling + code review
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--purple);">
+                        <div class="tool-icon">📋</div>
+                        <h4 style="color: var(--purple);">5W2H (What, Why, Who, When, Where, How, How much)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Plano de ação estruturado<br>
+                            <strong>Quando usar:</strong> Fase PLAN do PDCA
+                        </p>
+                        <div class="comparison-table" style="margin-top: 15px; font-size: 0.95rem;">
+                            <table>
+                                <tr><th>Pergunta</th><th>Exemplo: Implementar CI/CD</th></tr>
+                                <tr><td><strong>What (O quê?)</strong></td><td>Pipeline CI/CD com GitHub Actions</td></tr>
+                                <tr><td><strong>Why (Por quê?)</strong></td><td>Reduzir tempo deploy de 4h para <1h</td></tr>
+                                <tr><td><strong>Who (Quem?)</strong></td><td>João (DevOps) + Maria (Dev Lead)</td></tr>
+                                <tr><td><strong>When (Quando?)</strong></td><td>Sprint 15-16 (4 semanas)</td></tr>
+                                <tr><td><strong>Where (Onde?)</strong></td><td>Repositório GitHub main branch</td></tr>
+                                <tr><td><strong>How (Como?)</strong></td><td>1. Setup Actions 2. Config workflow 3. Teste piloto 4. Rollout</td></tr>
+                                <tr><td><strong>How much (Quanto?)</strong></td><td>R$0 (GitHub free) + 80h trabalho time</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--red);">
+                        <div class="tool-icon">⚠️</div>
+                        <h4 style="color: var(--red);">FMEA (Failure Mode and Effects Analysis)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Para quê:</strong> Análise preventiva de falhas potenciais<br>
+                            <strong>RPN = Severidade × Ocorrência × Detecção</strong> (cada 1-10)<br>
+                            <strong>Quando usar:</strong> Projetos críticos, alta complexidade
+                        </p>
+                        <div class="comparison-table" style="margin-top: 15px; font-size: 0.85rem;">
+                            <table>
+                                <tr><th>Modo Falha</th><th>S</th><th>O</th><th>D</th><th>RPN</th><th>Ação</th></tr>
+                                <tr>
+                                    <td>BD principal falhar</td>
+                                    <td>10</td><td>2</td><td>3</td>
+                                    <td style="background: #fcc; font-weight: 700;">60</td>
+                                    <td>Setup replica automática</td>
+                                </tr>
+                                <tr>
+                                    <td>API externa timeout</td>
+                                    <td>6</td><td>5</td><td>4</td>
+                                    <td style="background: #ffc;">120</td>
+                                    <td>Circuit breaker + fallback</td>
+                                </tr>
+                                <tr>
+                                    <td>Disco servidor cheio</td>
+                                    <td>8</td><td>3</td><td>2</td>
+                                    <td style="background: #fcc;">48</td>
+                                    <td>Alerta 80% + auto-cleanup logs</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <p style="margin-top: 10px; font-size: 0.95rem;">
+                            <strong>Prioridade:</strong> RPN >100 = URGENTE, 50-100 = ALTO, <50 = MÉDIO
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: FERRAMENTAS DE TESTE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🧪 Ferramentas de Teste Automatizado</h2>
+                    <p>Garantindo qualidade do código</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Testes Automatizados = Confiança! ✅
+                    </div>
+
+                    <div class="three-column" style="margin-top: 30px;">
+                        <div class="tool-card" style="border-left-color: var(--red);">
+                            <div class="tool-icon">☕</div>
+                            <h4 style="color: var(--red);">JUnit (Java)</h4>
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>Tipo:</strong> Unit tests<br>
+                                <strong>Uso:</strong> Testar métodos/classes<br>
+                                <strong>Cobertura típica:</strong> 80%+
+                            </p>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--yellow);">
+                            <div class="tool-icon">🃏</div>
+                            <h4 style="color: var(--yellow);">Jest (JavaScript)</h4>
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>Tipo:</strong> Unit + Integration<br>
+                                <strong>Uso:</strong> React, Node.js<br>
+                                <strong>Feature:</strong> Snapshot testing
+                            </p>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--green);">
+                            <div class="tool-icon">🌲</div>
+                            <h4 style="color: var(--green);">Cypress</h4>
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>Tipo:</strong> E2E (End-to-End)<br>
+                                <strong>Uso:</strong> Testar fluxos usuário<br>
+                                <strong>Feature:</strong> Time-travel debug
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="three-column" style="margin-top: 20px;">
+                        <div class="tool-card" style="border-left-color: var(--blue);">
+                            <div class="tool-icon">🤖</div>
+                            <h4 style="color: var(--blue);">Selenium</h4>
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>Tipo:</strong> E2E browser automation<br>
+                                <strong>Uso:</strong> Multi-browser testing<br>
+                                <strong>Linguagens:</strong> Java, Python, JS
+                            </p>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--purple);">
+                            <div class="tool-icon">📮</div>
+                            <h4 style="color: var(--purple);">Postman</h4>
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>Tipo:</strong> API testing<br>
+                                <strong>Uso:</strong> Testar endpoints REST<br>
+                                <strong>Feature:</strong> Collections + automation
+                            </p>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--red);">
+                            <div class="tool-icon">🎭</div>
+                            <h4 style="color: var(--red);">Playwright</h4>
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>Tipo:</strong> E2E moderno<br>
+                                <strong>Uso:</strong> Cross-browser, mobile<br>
+                                <strong>Feature:</strong> Auto-wait, paralelo
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🎯 Pirâmide de Testes Ideal</h4>
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                            <pre style="font-family: monospace; font-size: 1rem; line-height: 1.6;">
+                 ╱───────╲
+                ╱   E2E   ╲     10% - Cypress/Playwright
+               ╱───────────╲    (Fluxos críticos completos)
+              ╱             ╲
+             ╱  Integration  ╲  20% - Jest/Postman
+            ╱─────────────────╲ (Integrações entre módulos)
+           ╱                   ╲
+          ╱       Unit          ╲ 70% - JUnit/Jest
+         ╱─────────────────────────╲ (Funções individuais)
+            </pre>
+                            <p style="font-size: 1rem; margin-top: 15px; line-height: 1.7;">
+                                <strong>Por quê essa proporção?</strong><br>
+                                • Unit tests: rápidos (ms), baratos, específicos<br>
+                                • Integration: médios (seg), necessários, cobrem APIs<br>
+                                • E2E: lentos (min), caros, mas testam experiência real
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>💡 Regra de Ouro</h3>
+                        <p style="font-size: 1.3rem; line-height: 2; text-align: center; margin-top: 15px;">
+                            <strong>Cobertura >80% ≠ Qualidade!</strong><br>
+                            Prefira testes ÚTEIS a testes que só aumentam %<br>
+                            1 teste E2E crítico > 100 unit tests inúteis 🎯
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: FERRAMENTAS DE ANÁLISE DE CÓDIGO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🔍 Ferramentas de Análise de Código</h2>
+                    <p>Qualidade e consistência automáticas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Código Limpo = Manutenção Fácil! 🧹
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--blue);">
+                        <div class="tool-icon">🔷</div>
+                        <h4 style="color: var(--blue);">SonarQube</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>O que faz:</strong> Análise estática de código (bugs, vulnerabilidades, code smells)<br>
+                            <strong>Linguagens:</strong> 25+ (Java, JS, Python, C#, etc)<br>
+                            <strong>Métricas:</strong> Duplicação, complexidade, cobertura testes, segurança
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--blue);">Quality Gate - Exemplo</strong>
+                            <div class="comparison-table" style="margin-top: 10px; font-size: 0.95rem;">
+                                <table>
+                                    <tr><th>Métrica</th><th>Condição</th><th>Valor</th><th>Status</th></tr>
+                                    <tr><td>Cobertura testes</td><td>>80%</td><td>85%</td><td style="color: var(--green);">✅ Passou</td></tr>
+                                    <tr><td>Duplicação código</td><td><3%</td><td>1.8%</td><td style="color: var(--green);">✅ Passou</td></tr>
+                                    <tr><td>Bugs</td><td>=0</td><td>2</td><td style="color: var(--red);">❌ Falhou</td></tr>
+                                    <tr><td>Vulnerabilidades</td><td>=0</td><td>0</td><td style="color: var(--green);">✅ Passou</td></tr>
+                                    <tr><td>Code Smells</td><td><10</td><td>15</td><td style="color: var(--red);">❌ Falhou</td></tr>
+                                </table>
+                            </div>
+                            <p style="margin-top: 10px; padding: 10px; background: #fee; border-radius: 6px; color: var(--red); font-weight: 700;">
+                                Quality Gate: FAILED ❌ → Bloquear merge!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="tool-card" style="border-left-color: var(--purple);">
+                            <div class="tool-icon">🔧</div>
+                            <h4 style="color: var(--purple);">ESLint (JavaScript/TypeScript)</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>O que faz:</strong> Linter - detecta problemas padrão código<br>
+                                <strong>Configurável:</strong> Regras personalizadas<br>
+                                <strong>Integra:</strong> VSCode, CI/CD
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px;">
+                                <strong>Exemplo regras:</strong><br>
+                                • no-unused-vars<br>
+                                • no-console (produção)<br>
+                                • eqeqeq (=== em vez de ==)<br>
+                                • max-lines-per-function: 50
+                            </div>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--green);">
+                            <div class="tool-icon">💅</div>
+                            <h4 style="color: var(--green);">Prettier (Formatação)</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>O que faz:</strong> Auto-formatação código<br>
+                                <strong>Opinionated:</strong> Poucas opções, consistência máxima<br>
+                                <strong>Linguagens:</strong> JS, TS, CSS, HTML, JSON
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px;">
+                                <strong>Benefício:</strong><br>
+                                Zero debate sobre estilo!<br>
+                                Salvar arquivo → formatado ✨<br>
+                                Time todo = código igual
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--yellow); margin-top: 20px;">
+                        <div class="tool-icon">📊</div>
+                        <h4 style="color: var(--yellow);">CodeClimate / CodeCov</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>CodeClimate:</strong> Análise qualidade + maintainability score (A-F)<br>
+                            <strong>CodeCov:</strong> Visualização cobertura testes, badges CI/CD
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--yellow);">Exemplo Maintainability Score</strong>
+                            <p style="font-size: 1rem; line-height: 1.6; margin-top: 10px;">
+                                <strong>Grade A:</strong> user-service (complexidade baixa, bem testado)<br>
+                                <strong>Grade B:</strong> api-gateway (bom, alguns code smells)<br>
+                                <strong>Grade D:</strong> legacy-module (⚠️ refatorar urgente!)<br><br>
+                                → Revisar módulos C/D em cada sprint!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Estratégia Análise Código</h3>
+                        <p style="font-size: 1.15rem; line-height: 1.8; margin-top: 15px;">
+                            1. <strong>Pre-commit:</strong> ESLint + Prettier (local)<br>
+                            2. <strong>PR:</strong> SonarQube Quality Gate (CI/CD)<br>
+                            3. <strong>Semanal:</strong> CodeClimate report dashboard<br>
+                            = Qualidade garantida em múltiplas camadas! 🛡️
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: FERRAMENTAS CI/CD -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>⚙️ Ferramentas de CI/CD</h2>
+                    <p>Integração e Deploy Contínuos</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Automatizar = Acelerar + Confiabilidade! 🚀
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--blue);">
+                        <div class="tool-icon">🔵</div>
+                        <h4 style="color: var(--blue);">GitHub Actions</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>O que faz:</strong> CI/CD nativo GitHub, workflows em YAML<br>
+                            <strong>Vantagens:</strong> Gratuito (public repos), integrado, marketplace actions<br>
+                            <strong>Uso típico:</strong> Lint → Test → Build → Deploy
+                        </p>
+                        <div style="background: #2d333b; color: #adbac7; padding: 15px; border-radius: 8px; margin-top: 15px; font-family: monospace; font-size: 0.85rem; line-height: 1.5;">
+name: CI/CD Pipeline<br>
+on: [push, pull_request]<br>
+jobs:<br>
+&nbsp;&nbsp;test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;runs-on: ubuntu-latest<br>
+&nbsp;&nbsp;&nbsp;&nbsp;steps:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- uses: actions/checkout@v3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- run: npm install<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- run: npm test<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- run: npm run build<br>
+&nbsp;&nbsp;deploy:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;needs: test<br>
+&nbsp;&nbsp;&nbsp;&nbsp;runs-on: ubuntu-latest<br>
+&nbsp;&nbsp;&nbsp;&nbsp;steps:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- run: ./deploy.sh production
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="tool-card" style="border-left-color: var(--red);">
+                            <div class="tool-icon">🔴</div>
+                            <h4 style="color: var(--red);">Jenkins</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>O que faz:</strong> CI/CD server open-source<br>
+                                <strong>Vantagens:</strong> Flexível, 1500+ plugins<br>
+                                <strong>Desvantagem:</strong> Requer manutenção server
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px;">
+                                <strong>Uso típico:</strong><br>
+                                Pipelines complexos<br>
+                                On-premise deployment<br>
+                                Integração legacy systems
+                            </div>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--purple);">
+                            <div class="tool-icon">🦊</div>
+                            <h4 style="color: var(--purple);">GitLab CI</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>O que faz:</strong> CI/CD integrado GitLab<br>
+                                <strong>Vantagens:</strong> All-in-one (Git + CI/CD + K8s)<br>
+                                <strong>Runners:</strong> Shared ou self-hosted
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px;">
+                                <strong>.gitlab-ci.yml:</strong><br>
+                                stages: [test, deploy]<br>
+                                Auto DevOps disponível<br>
+                                Registry Docker integrado
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🎯 Pipeline CI/CD Completo - Exemplo Real</h4>
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; text-align: center; font-size: 0.9rem;">
+                                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border: 2px solid var(--blue);">
+                                    <strong>1. Commit</strong><br>
+                                    git push<br>
+                                    ↓<br>
+                                    Trigger pipeline
+                                </div>
+                                <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border: 2px solid var(--purple);">
+                                    <strong>2. Lint</strong><br>
+                                    ESLint<br>
+                                    Prettier<br>
+                                    (30s)
+                                </div>
+                                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border: 2px solid var(--yellow);">
+                                    <strong>3. Test</strong><br>
+                                    Jest (unit)<br>
+                                    Cypress (E2E)<br>
+                                    (5min)
+                                </div>
+                                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 2px solid var(--green);">
+                                    <strong>4. Build</strong><br>
+                                    Docker image<br>
+                                    Push registry<br>
+                                    (3min)
+                                </div>
+                                <div style="background: #ffebee; padding: 15px; border-radius: 8px; border: 2px solid var(--red);">
+                                    <strong>5. Deploy</strong><br>
+                                    Staging → Prod<br>
+                                    Health check<br>
+                                    (2min)
+                                </div>
+                            </div>
+                            <p style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724; font-weight: 700; text-align: center;">
+                                Total: ~10 minutos do commit ao produção! 🚀<br>
+                                Antes: 4 horas deploy manual ❌
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "Se dói, faça mais vezes. Se faz mais vezes, automatize!" — DevOps Wisdom 🔄
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: FERRAMENTAS DE MONITORAMENTO -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>📊 Ferramentas de Monitoramento</h2>
+                    <p>Observabilidade em produção</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Não Pode Melhorar o Que Não Mede! 📈
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--blue);">
+                        <div class="tool-icon">📊</div>
+                        <h4 style="color: var(--blue);">Grafana + Prometheus</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Prometheus:</strong> Coleta métricas time-series (pull model)<br>
+                            <strong>Grafana:</strong> Visualização dashboards lindos<br>
+                            <strong>Alertas:</strong> Integra Slack, PagerDuty, email
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--blue);">Métricas Típicas Monitoradas</strong>
+                            <div class="two-column" style="font-size: 0.95rem; margin-top: 10px; gap: 15px;">
+                                <div>
+                                    <strong>Infraestrutura:</strong><br>
+                                    • CPU, RAM, Disk usage<br>
+                                    • Network I/O<br>
+                                    • Container health
+                                </div>
+                                <div>
+                                    <strong>Aplicação:</strong><br>
+                                    • Request rate (req/s)<br>
+                                    • Response time (p50, p95, p99)<br>
+                                    • Error rate (%)<br>
+                                    • Active users
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-column" style="margin-top: 30px;">
+                        <div class="tool-card" style="border-left-color: var(--green);">
+                            <div class="tool-icon">🔍</div>
+                            <h4 style="color: var(--green);">Datadog</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>O que faz:</strong> APM + Logs + Infra monitoring<br>
+                                <strong>Vantagens:</strong> All-in-one, fácil setup<br>
+                                <strong>Desvantagem:</strong> Caro ($$$)
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px;">
+                                <strong>Features:</strong><br>
+                                • Distributed tracing<br>
+                                • Anomaly detection (ML)<br>
+                                • Synthetic monitoring
+                            </div>
+                        </div>
+
+                        <div class="tool-card" style="border-left-color: var(--purple);">
+                            <div class="tool-icon">🚀</div>
+                            <h4 style="color: var(--purple);">New Relic</h4>
+                            <p style="font-size: 1rem; line-height: 1.6; margin: 10px 0;">
+                                <strong>O que faz:</strong> APM completo, transaction tracing<br>
+                                <strong>Vantagens:</strong> Deep insights, alertas smart<br>
+                                <strong>Uso:</strong> Debug performance issues
+                            </p>
+                            <div style="background: var(--unifil-light); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px;">
+                                <strong>Visualiza:</strong><br>
+                                • Slow queries SQL<br>
+                                • Bottlenecks API<br>
+                                • Error stack traces
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" style="border-left-color: var(--yellow); margin-top: 20px;">
+                        <div class="tool-icon">📝</div>
+                        <h4 style="color: var(--yellow);">ELK Stack (Elasticsearch + Logstash + Kibana)</h4>
+                        <p style="font-size: 1.05rem; line-height: 1.7; margin: 15px 0;">
+                            <strong>Elasticsearch:</strong> Search & analytics engine<br>
+                            <strong>Logstash:</strong> Pipeline processamento logs<br>
+                            <strong>Kibana:</strong> Visualização e dashboards
+                        </p>
+                        <div style="background: var(--unifil-light); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                            <strong style="color: var(--yellow);">Caso de Uso: Log Aggregation</strong>
+                            <p style="font-size: 1rem; line-height: 1.6; margin-top: 10px;">
+                                <strong>Problema:</strong> 50 microserviços, logs espalhados<br>
+                                <strong>Solução ELK:</strong><br>
+                                1. Todos serviços → logs JSON → Logstash<br>
+                                2. Logstash → parse, enrich → Elasticsearch<br>
+                                3. Kibana → search, visualize, alert<br><br>
+                                <strong>Resultado:</strong> Query "error 500 last 1h" → 
+                                encontra em TODOS serviços em segundos! 🔍
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 30px;">
+                        <h3>🎯 Pilares da Observabilidade</h3>
+                        <p style="font-size: 1.2rem; line-height: 2; margin-top: 15px;">
+                            <strong>1. Métricas:</strong> O QUÊ está acontecendo (Prometheus/Grafana)<br>
+                            <strong>2. Logs:</strong> POR QUÊ está acontecendo (ELK)<br>
+                            <strong>3. Traces:</strong> ONDE está o problema (Datadog/New Relic)<br>
+                            = Visibilidade completa! 👁️
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: STACK COMPLETO DE QUALIDADE -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🏗️ Stack Completo de Qualidade</h2>
+                    <p>Integrando todas as ferramentas</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Qualidade em Todas as Camadas! 🛡️
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>📋 Stack Recomendado - Startup/Médio Porte</h4>
+                        
+                        <div class="comparison-table" style="margin-top: 15px;">
+                            <table>
+                                <tr>
+                                    <th>Camada</th>
+                                    <th>Ferramenta</th>
+                                    <th>Custo</th>
+                                    <th>ROI</th>
+                                </tr>
+                                <tr>
+                                    <td><strong>Versionamento</strong></td>
+                                    <td>Git + GitHub</td>
+                                    <td>Gratuito</td>
+                                    <td style="color: var(--green);">⭐⭐⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Code Quality</strong></td>
+                                    <td>ESLint + Prettier</td>
+                                    <td>Gratuito</td>
+                                    <td style="color: var(--green);">⭐⭐⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Static Analysis</strong></td>
+                                    <td>SonarQube Community</td>
+                                    <td>Gratuito</td>
+                                    <td style="color: var(--green);">⭐⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Unit Tests</strong></td>
+                                    <td>Jest / JUnit</td>
+                                    <td>Gratuito</td>
+                                    <td style="color: var(--green);">⭐⭐⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>E2E Tests</strong></td>
+                                    <td>Cypress / Playwright</td>
+                                    <td>Gratuito</td>
+                                    <td style="color: var(--green);">⭐⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>CI/CD</strong></td>
+                                    <td>GitHub Actions</td>
+                                    <td>Gratuito (limites)</td>
+                                    <td style="color: var(--green);">⭐⭐⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Monitoring</strong></td>
+                                    <td>Grafana + Prometheus</td>
+                                    <td>Gratuito (self-host)</td>
+                                    <td style="color: var(--green);">⭐⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Logs</strong></td>
+                                    <td>ELK Stack</td>
+                                    <td>Gratuito (self-host)</td>
+                                    <td style="color: var(--yellow);">⭐⭐⭐</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>APM (opcional)</strong></td>
+                                    <td>Datadog / New Relic</td>
+                                    <td>$$$</td>
+                                    <td style="color: var(--yellow);">⭐⭐⭐⭐</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724;">
+                            <strong>Custo total:</strong> R$0-500/mês (exceto APM)<br>
+                            <strong>Benefício:</strong> 80% menos bugs, deploy 10x mais rápido, confiança 📈
+                        </div>
+                    </div>
+
+                    <div class="example-card" style="margin-top: 30px;">
+                        <h4>🔄 Workflow Integrado - Do Commit ao Deploy</h4>
+                        
+                        <div style="background: var(--unifil-light); padding: 20px; border-radius: 8px; margin-top: 15px; font-size: 1rem; line-height: 1.8;">
+                            <strong>1. Dev escreve código</strong><br>
+                            ↓ ESLint + Prettier auto-formatam (VSCode)<br>
+                            ↓ Pre-commit hook roda testes unitários<br><br>
+
+                            <strong>2. git push → GitHub</strong><br>
+                            ↓ GitHub Actions triggered<br>
+                            ↓ Lint → Test → SonarQube scan<br>
+                            ↓ Build Docker image<br><br>
+
+                            <strong>3. Quality Gates</strong><br>
+                            ✅ SonarQube: passed<br>
+                            ✅ Cobertura >80%: passed<br>
+                            ✅ E2E Cypress: passed<br><br>
+
+                            <strong>4. Deploy Staging</strong><br>
+                            ↓ Docker image → Kubernetes staging<br>
+                            ↓ Health check passed<br>
+                            ↓ Smoke tests passed<br><br>
+
+                            <strong>5. Aprovação Manual</strong><br>
+                            ↓ Product Owner testa staging<br>
+                            ↓ ✅ Aprovado!<br><br>
+
+                            <strong>6. Deploy Produção</strong><br>
+                            ↓ Blue-green deployment<br>
+                            ↓ Grafana mostra métricas real-time<br>
+                            ↓ Error rate normal ✅<br>
+                            ↓ Response time OK ✅<br><br>
+
+                            <strong>7. Monitoramento Contínuo</strong><br>
+                            📊 Grafana dashboards<br>
+                            📝 Logs centralizados ELK<br>
+                            🚨 Alertas configurados<br>
+                            = Qualidade garantida! 🎉
+                        </div>
+                    </div>
+
+                    <div class="quote-box" style="margin-top: 30px;">
+                        "Automação é o multiplicador de força da qualidade!" — Thoughtworks
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: RESUMO E PRÓXIMOS PASSOS -->
+        <div class="slide">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <h2>🎯 Resumo e Próximos Passos</h2>
+                    <p>Conclusão da disciplina</p>
+                </div>
+                <div class="slide-body">
+                    <div class="big-idea">
+                        Ferramentas Certas = Qualidade Garantida! ✅
+                    </div>
+
+                    <div class="two-column" style="margin-top: 40px;">
+                        <div class="content-box">
+                            <h3>✅ O que aprendemos hoje</h3>
+                            <ul>
+                                <li>7 Ferramentas Clássicas (Ishikawa, Pareto, etc)</li>
+                                <li>Ferramentas Análise (5 Porquês, FMEA)</li>
+                                <li>Testes (Jest, Cypress, Selenium)</li>
+                                <li>Análise Código (SonarQube, ESLint)</li>
+                                <li>CI/CD (GitHub Actions, Jenkins)</li>
+                                <li>Monitoramento (Grafana, ELK)</li>
+                                <li>Stack completo integrado</li>
+                            </ul>
+                        </div>
+
+                        <div class="content-box">
+                            <h3>🎓 Disciplina Completa!</h3>
+                            <ul>
+                                <li>14 aulas de Qualidade de Software</li>
+                                <li>MPS.BR (7 níveis de maturidade)</li>
+                                <li>ISO/IEC 12207 (48 processos)</li>
+                                <li>MR-MPS-RH (gestão pessoas)</li>
+                                <li>PDCA (melhoria contínua)</li>
+                                <li>Ferramentas práticas</li>
+                                <li>Vocês estão prontos! 🚀</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 40px;">
+                        <div class="stat-card">
+                            <div class="stat-number">14</div>
+                            <div class="stat-label">aulas completas</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">25+</div>
+                            <div class="stat-label">ferramentas apresentadas</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">prontos para mercado!</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box" style="margin-top: 40px;">
+                        <h3>💡 Mensagem Final</h3>
+                        <p style="font-size: 1.3rem; line-height: 2; text-align: center; margin-top: 15px;">
+                            <strong>Qualidade não é acidente — é intencional!</strong><br>
+                            Processos + Pessoas + Ferramentas = Software Excelente<br>
+                            Apliquem tudo que aprenderam! 🎯
+                        </p>
+                    </div>
+
+                    <div class="comparison-table" style="margin-top: 40px;">
+                        <table>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Ferramenta Essencial</th>
+                                <th>Comece Por</th>
+                            </tr>
+                            <tr>
+                                <td><strong>Clássicas</strong></td>
+                                <td>Ishikawa + Pareto</td>
+                                <td>Análise problemas</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Testes</strong></td>
+                                <td>Jest/JUnit</td>
+                                <td>Unit tests >80%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Código</strong></td>
+                                <td>ESLint + Prettier</td>
+                                <td>Setup hoje mesmo!</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CI/CD</strong></td>
+                                <td>GitHub Actions</td>
+                                <td>Pipeline básico</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Monitoramento</strong></td>
+                                <td>Grafana + Prometheus</td>
+                                <td>Métricas básicas</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 60px;">
+                        <p style="font-size: 1.8rem; color: var(--unifil-orange); font-weight: 700;">
+                            Parabéns! 🎉
+                        </p>
+                        <p style="font-size: 1.3rem; margin-top: 15px; color: var(--unifil-dark);">
+                            Disciplina Qualidade de Software - Concluída!
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 10px; color: var(--unifil-gray);">
+                            UniFil 2026 - Professor Tiago
+                        </p>
+                        <p style="font-size: 1.3rem; margin-top: 20px; color: var(--unifil-orange);">
+                            Boa sorte em suas carreiras! 🚀
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 10</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const activeSlide = slides[currentSlide];
+            const animatedElements = activeSlide.querySelectorAll('.content-box, .example-card, .highlight-box, .big-idea, .stat-card, .quote-box, .comparison-table, .tool-card');
+            animatedElements.forEach(el => {
+                el.style.animation = 'none';
+                setTimeout(() => { el.style.animation = ''; }, 10);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlide + direction >= 0 && currentSlide + direction < totalSlides) {
+                showSlide(currentSlide + direction);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
