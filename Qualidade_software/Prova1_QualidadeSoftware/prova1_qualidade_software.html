@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prova 1 - Qualidade de Software | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #FF8C00;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            color: #FF8C00;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #4A4A4A;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6B6B6B;
+            font-size: 1.1rem;
+        }
+
+        .info-box {
+            background: #FFF3E0;
+            border-left: 4px solid #FF8C00;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #FF8C00;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .info-item strong {
+            margin-right: 8px;
+            color: #4A4A4A;
+        }
+
+        .student-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 40px;
+        }
+
+        .student-info p {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #4A4A4A;
+        }
+
+        .student-info input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .instructions {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            color: #2196F3;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .question-block {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #fafafa;
+            border-radius: 8px;
+            border-left: 4px solid #FF8C00;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            background: #FF8C00;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .question-type {
+            background: #4A4A4A;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .context-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+        }
+
+        .options {
+            margin-top: 20px;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: #FF8C00;
+            background: #FFF8F0;
+        }
+
+        .option-letter {
+            background: #4A4A4A;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex: 1;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .essay-answer {
+            margin-top: 20px;
+        }
+
+        .essay-lines {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: white;
+            min-height: 200px;
+        }
+
+        .essay-line {
+            border-bottom: 1px solid #e0e0e0;
+            height: 30px;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #6B6B6B;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .question-block {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">UniFil</div>
+            <h1>Prova 1 - Qualidade de Software</h1>
+            <p>Avaliação Intermediária | Aulas 1-7</p>
+        </div>
+
+        <!-- INFO BOX -->
+        <div class="info-box">
+            <h3>📋 Informações da Prova</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Valor:</strong> 25% da nota final
+                </div>
+                <div class="info-item">
+                    <strong>Duração:</strong> 90 minutos
+                </div>
+                <div class="info-item">
+                    <strong>Total de questões:</strong> 10
+                </div>
+                <div class="info-item">
+                    <strong>Data:</strong> 03/03/2026
+                </div>
+                <div class="info-item">
+                    <strong>Múltipla escolha:</strong> 8 questões (0,8 cada)
+                </div>
+                <div class="info-item">
+                    <strong>Dissertativas:</strong> 2 questões (1,2 cada)
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDENT INFO -->
+        <div class="student-info">
+            <p><strong>Nome do aluno(a):</strong></p>
+            <input type="text" placeholder="Seu nome completo">
+            
+            <p style="margin-top: 15px;"><strong>Matrícula:</strong></p>
+            <input type="text" placeholder="Número de matrícula">
+        </div>
+
+        <!-- INSTRUCTIONS -->
+        <div class="instructions">
+            <h3>📖 Instruções</h3>
+            <ul>
+                <li>Leia atentamente cada questão antes de responder</li>
+                <li>Para questões de múltipla escolha, marque apenas UMA alternativa</li>
+                <li>Para questões dissertativas, responda de forma clara e objetiva no espaço fornecido</li>
+                <li>Não é permitido consulta a materiais ou dispositivos eletrônicos</li>
+                <li>Use caneta azul ou preta para responder</li>
+                <li>Rasuras nas questões de múltipla escolha anulam a resposta</li>
+                <li>Boa prova! 🚀</li>
+            </ul>
+        </div>
+
+        <!-- QUESTÃO 1 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 1</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma startup de tecnologia está crescendo rapidamente e começou a enfrentar problemas recorrentes: bugs em produção, clientes insatisfeitos e retrabalho constante. O CEO pergunta ao CTO: "Por que investir em qualidade de software? Não seria mais rápido apenas corrigir os bugs quando aparecem?"
+                <br><br>
+                Considerando os conceitos de custo da qualidade estudados, qual argumento MELHOR justifica o investimento em qualidade preventiva?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">O custo de prevenção é sempre maior que o custo de correção, mas gera mais empregos na equipe de QA.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Segundo estudos, corrigir um bug em produção custa de 10x a 100x mais do que preveni-lo durante o desenvolvimento, além de impactar negativamente a reputação da empresa.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Investir em qualidade é apenas uma tendência de mercado sem impacto real nos custos operacionais.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Qualidade de software só é importante para empresas grandes; startups devem priorizar velocidade de entrega.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Os custos de falha externa (clientes insatisfeitos, churn) são irrelevantes comparados aos custos de desenvolvimento.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 2 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 2</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa de desenvolvimento de software está no Nível 2 (Gerenciado) do CMMI e deseja alcançar o Nível 3 (Definido). O gerente de projetos questiona: "Qual é a principal diferença entre esses dois níveis?"
+                <br><br>
+                Assinale a alternativa que MELHOR descreve essa diferença:
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">No Nível 2, os processos são definidos apenas para projetos individuais; no Nível 3, há processos organizacionais padronizados e reutilizáveis para TODOS os projetos.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">No Nível 2, não há nenhum processo definido; no Nível 3, os processos são gerenciados por projeto.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Não há diferença significativa; ambos os níveis possuem processos organizacionais padronizados.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">O Nível 3 exige certificação ISO 9001, enquanto o Nível 2 não possui requisitos de certificação.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">No Nível 2, a organização já está otimizada; no Nível 3, foca-se apenas em métricas quantitativas.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 3 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 3</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma software house brasileira de 45 pessoas deseja obter uma avaliação de maturidade reconhecida nacionalmente, com custo acessível e adequada à realidade de empresas de médio porte no Brasil.
+                <br><br>
+                Considerando os modelos de maturidade estudados, qual seria a MELHOR opção e por quê?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">CMMI, pois é o único modelo aceito internacionalmente e garante contratos com grandes corporações.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">MPS.BR, pois foi desenvolvido especificamente para a realidade brasileira, possui custos mais acessíveis que o CMMI e é reconhecido nacionalmente, sendo ideal para PMEs.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">ISO 9001, pois é específica para desenvolvimento de software e mais barata que qualquer outro modelo.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Nenhum modelo de maturidade, pois empresas de médio porte não se beneficiam dessas certificações.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">CMMI-DEV Nível 5 imediatamente, pois é o único que garante qualidade máxima de software.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 4 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 4</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa que está no Nível G do MPS.BR deseja evoluir para o Nível F. Analisando a estrutura do modelo, quais processos ADICIONAIS a empresa precisará implementar?
+            </div>
+            <div class="context-box">
+                <strong>Lembre-se:</strong><br>
+                • Nível G: Gerência de Projetos (GPR) + Gerência de Requisitos (GRE)<br>
+                • Nível F: adiciona processos de Aquisição, Garantia da Qualidade, Gerência de Configuração, Medição e Portfólio
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Apenas Gerência de Configuração (GCO)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Aquisição (AQU), Gerência de Configuração (GCO), Garantia da Qualidade (GQA), Medição (MED) e Gerência de Portfólio de Projetos (GPP)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Somente Medição (MED) e Análise de Decisão e Resolução (ADR)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Todos os 24 processos do MPS.BR devem ser implementados simultaneamente</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Apenas Validação (VAL) e Verificação (VER)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 5 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 5</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                A ISO/IEC 12207 organiza os processos de ciclo de vida de software em grandes grupos. Uma empresa está estruturando seus processos e precisa entender onde cada atividade se enquadra.
+                <br><br>
+                Associe corretamente os processos abaixo aos seus respectivos grupos:
+                <br><br>
+                I. Codificação e testes unitários<br>
+                II. Definição de políticas e estratégias organizacionais<br>
+                III. Planejamento e controle do cronograma do projeto<br>
+                IV. Negociação de contratos com clientes<br>
+                <br>
+                Grupos:<br>
+                A) Processos Técnicos<br>
+                B) Processos Organizacionais<br>
+                C) Processos Gerenciais<br>
+                D) Processos de Acordo
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">I-A, II-B, III-C, IV-D</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">I-C, II-A, III-B, IV-D</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">I-B, II-C, III-A, IV-D</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">I-A, II-C, III-B, IV-D</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">I-D, II-A, III-C, IV-B</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 6 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 6</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Um desenvolvedor sênior afirma em uma reunião: "Métricas de qualidade são perda de tempo. O que importa é entregar funcionalidades rapidamente. Testes e code review apenas atrasam o projeto."
+                <br><br>
+                Com base nos conceitos de qualidade de software estudados, qual argumento REFUTA de forma mais completa essa afirmação?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Métricas são importantes apenas para relatórios gerenciais, mas não impactam a qualidade do código.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Estudos mostram que equipes que investem em qualidade (testes, code review, métricas) têm 40% menos bugs em produção, 60% menos retrabalho e entregam features 25% mais rápido no médio prazo, pois evitam débito técnico.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Code review é opcional; apenas testes automatizados são necessários para garantir qualidade.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Qualidade só é importante em sistemas críticos (saúde, aviação); para aplicações web comuns não faz diferença.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Testes devem ser feitos apenas pela equipe de QA após o desenvolvimento estar completo.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 7 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 7</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa está planejando sua evolução de maturidade no MPS.BR. Atualmente está no Nível G e traçou um roadmap de 24 meses para alcançar o Nível C.
+                <br><br>
+                Considerando a estrutura do MPS.BR e boas práticas de implementação, qual seria a sequência MAIS ADEQUADA de implementação?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">G → A (pular diretamente para o nível mais alto)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">G → F → E → D → C (implementação gradual e incremental, consolidando cada nível antes de avançar)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">G → C (implementar todos os processos simultaneamente em 24 meses)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Implementar apenas os processos do Nível C, ignorando os intermediários</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">A sequência não importa; pode-se implementar em qualquer ordem</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 8 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 8</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Durante uma avaliação de maturidade, um avaliador identifica que a empresa possui processos bem documentados e seguidos consistentemente em todos os projetos, utiliza métricas para controle de processo e possui uma base histórica de dados de projetos anteriores.
+                <br><br>
+                Com base nas características dos níveis de maturidade do CMMI, em qual nível essa empresa PROVAVELMENTE se encontra?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Nível 1 (Inicial) - porque ainda está em fase de implementação de processos</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Nível 2 (Gerenciado) - porque possui processos gerenciados por projeto</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Nível 3 (Definido) - porque possui processos organizacionais padronizados, documentados e seguidos consistentemente em todos os projetos</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Nível 4 (Gerenciado Quantitativamente) - porque utiliza métricas e possui base histórica</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Nível 5 (Otimizado) - porque possui processos consistentes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 9 - DISSERTATIVA -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 9</span>
+                <span class="question-type">Dissertativa | 1,2 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa de e-commerce está enfrentando sérios problemas de qualidade: 
+                <ul style="margin-left: 30px; margin-top: 15px; line-height: 1.8;">
+                    <li>Bug rate alto: 45 bugs/mês em produção</li>
+                    <li>Tempo médio de correção: 5 dias</li>
+                    <li>Customer churn de 12% devido a problemas técnicos</li>
+                    <li>Time de desenvolvimento desorganizado, sem processos definidos</li>
+                    <li>Cada desenvolvedor trabalha de forma independente, sem code review</li>
+                </ul>
+                <br>
+                <strong>Como consultor de qualidade de software, elabore um plano de ação para essa empresa contemplando:</strong>
+                <br><br>
+                a) Qual nível de maturidade (CMMI ou MPS.BR) a empresa provavelmente está e por quê?<br>
+                b) Quais os 3 primeiros processos/práticas que você implementaria e a justificativa de cada um?<br>
+                c) Como você mediria o sucesso dessas implementações (métricas)?
+                <br><br>
+                <em>Sua resposta deve ser objetiva, técnica e baseada nos conceitos estudados. Extensão esperada: 15-20 linhas.</em>
+            </div>
+            <div class="essay-answer">
+                <div class="essay-lines">
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 10 - DISSERTATIVA -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 10</span>
+                <span class="question-type">Dissertativa | 1,2 pontos</span>
+            </div>
+            <div class="question-text">
+                A ISO/IEC 12207 define diversos processos organizados em grupos (Técnicos, Organizacionais, Gerenciais e de Acordo). 
+                <br><br>
+                <strong>Explique:</strong>
+                <br><br>
+                a) Qual é a diferença fundamental entre os Processos Técnicos e os Processos Gerenciais? Dê 2 exemplos de cada.<br>
+                b) Por que é importante que uma organização implemente processos de TODOS os grupos, e não apenas os Processos Técnicos?<br>
+                c) Dê um exemplo prático de como a falta de Processos Organizacionais pode impactar negativamente um projeto de software.
+                <br><br>
+                <em>Sua resposta deve demonstrar compreensão dos conceitos e capacidade de aplicação prática. Extensão esperada: 12-15 linhas.</em>
+            </div>
+            <div class="essay-answer">
+                <div class="essay-lines">
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Centro Universitário Filadélfia - UniFil</strong></p>
+            <p>Disciplina: Qualidade de Software | Professor: Tiago | 2026</p>
+            <p style="margin-top: 20px; font-style: italic;">Boa prova! 🚀</p>
+        </div>
+    </div>
+</body>
+</html>
