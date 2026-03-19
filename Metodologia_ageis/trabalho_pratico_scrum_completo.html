@@ -1,0 +1,1467 @@
+<!doctype html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Trabalho Prático - Framework Scrum Completo | UniFil</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            :root {
+                --unifil-orange: #ff8c00;
+                --unifil-dark: #4a4a4a;
+                --unifil-light: #f5f5f5;
+                --scrum-blue: #2196f3;
+            }
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                padding: 40px 20px;
+                line-height: 1.6;
+            }
+            .container {
+                max-width: 1000px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+                overflow: hidden;
+            }
+            .header {
+                background: linear-gradient(
+                    135deg,
+                    var(--unifil-orange) 0%,
+                    #ff6b35 100%
+                );
+                color: white;
+                padding: 50px 40px;
+                text-align: center;
+            }
+            .header h1 {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+            }
+            .header p {
+                font-size: 1.2rem;
+                opacity: 0.95;
+            }
+            .content {
+                padding: 50px 40px;
+            }
+            .section {
+                margin-bottom: 50px;
+            }
+            .section h2 {
+                color: var(--unifil-orange);
+                font-size: 2rem;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 3px solid var(--unifil-orange);
+            }
+            .section h3 {
+                color: var(--scrum-blue);
+                font-size: 1.5rem;
+                margin-top: 30px;
+                margin-bottom: 15px;
+            }
+            .section h4 {
+                color: var(--unifil-dark);
+                font-size: 1.2rem;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+            .info-box {
+                background: #e3f2fd;
+                border-left: 5px solid var(--scrum-blue);
+                padding: 25px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .warning-box {
+                background: #fff3e0;
+                border-left: 5px solid #ff9800;
+                padding: 25px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .success-box {
+                background: #e8f5e9;
+                border-left: 5px solid #4caf50;
+                padding: 25px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .example-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .example-item {
+                background: var(--unifil-light);
+                padding: 20px;
+                border-radius: 10px;
+                border: 2px solid #ddd;
+                transition: all 0.3s ease;
+            }
+            .example-item:hover {
+                border-color: var(--unifil-orange);
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(255, 140, 0, 0.2);
+            }
+            .example-item h4 {
+                color: var(--unifil-orange);
+                margin-bottom: 10px;
+            }
+            .deliverable {
+                background: white;
+                border: 2px solid var(--scrum-blue);
+                padding: 25px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .deliverable h4 {
+                color: var(--scrum-blue);
+                margin-bottom: 15px;
+            }
+            .deliverable ul {
+                margin-left: 25px;
+            }
+            .deliverable ul li {
+                margin: 10px 0;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+            table th {
+                background: var(--unifil-orange);
+                color: white;
+                padding: 15px;
+                text-align: left;
+                font-size: 1.1rem;
+            }
+            table td {
+                padding: 15px;
+                border-bottom: 1px solid #ddd;
+            }
+            table tr:hover {
+                background: var(--unifil-light);
+            }
+            .checklist {
+                list-style: none;
+                margin: 15px 0;
+            }
+            .checklist li {
+                padding: 10px 0;
+                padding-left: 30px;
+                position: relative;
+            }
+            .checklist li::before {
+                content: "□";
+                position: absolute;
+                left: 0;
+                font-size: 1.5rem;
+                color: var(--scrum-blue);
+            }
+            .footer {
+                background: var(--unifil-dark);
+                color: white;
+                padding: 30px 40px;
+                text-align: center;
+            }
+            @media print {
+                body {
+                    background: white;
+                    padding: 0;
+                }
+                .container {
+                    box-shadow: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>📋 Trabalho Prático</h1>
+                <p>Framework Scrum Completo - Simulação de Sprint</p>
+                <p style="margin-top: 15px; font-size: 1rem">
+                    Gerenciamento de Projetos - Ferramentas para Metodologias
+                    Ágeis
+                </p>
+                <p style="font-size: 1rem">
+                    Prof. Tiago Galvão | UniFil | 2026
+                </p>
+            </div>
+
+            <div class="content">
+                <!-- SEÇÃO 1: INTRODUÇÃO -->
+                <div class="section">
+                    <h2>🎯 1. Introdução e Objetivos</h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 20px">
+                        Este trabalho tem como objetivo aplicar
+                        <strong>todo o framework Scrum</strong> aprendido em
+                        aula em um projeto real desenvolvido em grupo. Vocês
+                        irão simular pelo menos
+                        <strong>1 Sprint completa</strong>, aplicando todos os
+                        papéis, eventos e artefatos do Scrum.
+                    </p>
+
+                    <div class="info-box">
+                        <h4>🎓 Objetivos de Aprendizagem</h4>
+                        <ul style="margin-left: 25px; margin-top: 10px">
+                            <li>
+                                Aplicar os <strong>3 papéis</strong> do Scrum
+                                (Product Owner, Scrum Master, Developers)
+                            </li>
+                            <li>
+                                Executar os <strong>5 eventos</strong> do Scrum
+                                (Sprint, Planning, Daily, Review, Retrospective)
+                            </li>
+                            <li>
+                                Criar e manter os
+                                <strong>3 artefatos</strong> (Product Backlog,
+                                Sprint Backlog, Incremento)
+                            </li>
+                            <li>
+                                Coletar e analisar
+                                <strong>métricas ágeis</strong> (Velocity,
+                                Burndown, Lead Time)
+                            </li>
+                            <li>Trabalhar em equipe auto-organizada</li>
+                            <li>Entregar incremento funcional de valor</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning-box">
+                        <h4>⚠️ Importante</h4>
+                        <p>
+                            <strong>Este trabalho é prático e hands-on!</strong>
+                            Não é apenas documentação teórica. Vocês precisam
+                            realmente <strong>executar</strong> uma Sprint,
+                            desenvolver algo funcional, fazer reuniões reais
+                            (mesmo que virtuais), e entregar um incremento que
+                            demonstre valor.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 2: FORMAÇÃO DA EQUIPE -->
+                <div class="section">
+                    <h2>👥 2. Formação da Equipe</h2>
+
+                    <h3>2.1 Composição</h3>
+                    <ul style="margin-left: 25px; font-size: 1.05rem">
+                        <li>
+                            <strong>Tamanho:</strong> 4 a 5 pessoas por equipe
+                        </li>
+                        <li>
+                            <strong>Definição de papéis:</strong> Cada equipe
+                            deve ter 1 PO, 1 SM, e 2-3 Developers
+                        </li>
+                        <li>
+                            <strong>Rotação:</strong> Opcional - vocês podem
+                            rotacionar papéis em Sprints futuras
+                        </li>
+                    </ul>
+
+                    <h3>2.2 Responsabilidades por Papel</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Papel</th>
+                                <th>Responsável no Trabalho</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Product Owner (PO)</strong></td>
+                                <td>
+                                    • Criar e priorizar Product Backlog<br />
+                                    • Definir Sprint Goal<br />
+                                    • Aceitar ou recusar incremento<br />
+                                    • Representar stakeholders
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Scrum Master (SM)</strong></td>
+                                <td>
+                                    • Facilitar todos os eventos<br />
+                                    • Remover impedimentos<br />
+                                    • Atualizar métricas (Burndown)<br />
+                                    • Garantir aderência ao Scrum
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Developers</strong></td>
+                                <td>
+                                    • Estimar User Stories<br />
+                                    • Desenvolver incremento<br />
+                                    • Auto-organizar trabalho<br />
+                                    • Garantir qualidade (testes, code review)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 1: Composição da Equipe</h4>
+                        <p>
+                            <strong>Documento:</strong> Lista de membros com
+                            papéis definidos
+                        </p>
+                        <ul>
+                            <li>Nome completo de cada membro</li>
+                            <li>Papel no Scrum (PO, SM, ou Developer)</li>
+                            <li>
+                                Contato (e-mail ou WhatsApp para coordenação)
+                            </li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 25/03/2026 (em
+                            aula)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 3: ESCOLHA DO PROJETO -->
+                <div class="section">
+                    <h2>💡 3. Escolha do Projeto</h2>
+
+                    <h3>3.1 Critérios para o Projeto</h3>
+                    <div class="success-box">
+                        <h4>✅ O projeto deve:</h4>
+                        <ul style="margin-left: 25px; margin-top: 10px">
+                            <li>
+                                Ser <strong>factível</strong> de desenvolver em
+                                2 semanas (1 Sprint)
+                            </li>
+                            <li>
+                                Ter <strong>valor claro</strong> (resolver
+                                problema real ou hipotético)
+                            </li>
+                            <li>
+                                Permitir
+                                <strong>incremento funcional</strong> (algo
+                                demonstrável)
+                            </li>
+                            <li>
+                                Ser <strong>divisível</strong> em User Stories
+                                pequenas
+                            </li>
+                            <li>Engajar todos os membros da equipe</li>
+                        </ul>
+                    </div>
+
+                    <h3>3.2 Exemplos de Tipos de Projetos</h3>
+                    <p style="margin-bottom: 20px">
+                        Escolha <strong>UM</strong> dos tipos abaixo (ou sugira
+                        outro com aprovação do professor):
+                    </p>
+
+                    <div class="example-list">
+                        <div class="example-item">
+                            <h4>📱 App Mobile</h4>
+                            <p>
+                                Aplicativo mobile simples (React Native,
+                                Flutter, ou web app responsivo)
+                            </p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> App de lista de tarefas,
+                                controle financeiro pessoal, agenda de estudos
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🌐 Sistema Web</h4>
+                            <p>
+                                Aplicação web (HTML/CSS/JS + backend simples ou
+                                Firebase)
+                            </p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> Sistema de reserva de
+                                salas, catálogo de produtos, blog com CMS
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🎮 Game/Gamificação</h4>
+                            <p>Jogo simples ou sistema gamificado</p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> Quiz interativo, jogo da
+                                memória, sistema de pontos/badges
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🤖 Chatbot/Automação</h4>
+                            <p>Bot ou sistema de automação</p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> Chatbot FAQ, bot de
+                                notificações, scraper de dados
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>📊 Dashboard/Analytics</h4>
+                            <p>Painel de visualização de dados</p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> Dashboard COVID, análise de
+                                vendas, métricas pessoais
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🛒 E-commerce</h4>
+                            <p>Loja virtual simples</p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> Catálogo de produtos,
+                                carrinho, checkout simulado
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>📚 Sistema Educacional</h4>
+                            <p>Plataforma de ensino/aprendizado</p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> Quiz de estudos,
+                                flashcards, sistema de notas
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🏥 Saúde/Bem-estar</h4>
+                            <p>App de saúde ou fitness</p>
+                            <p
+                                style="
+                                    margin-top: 10px;
+                                    font-size: 0.9rem;
+                                    color: #666;
+                                "
+                            >
+                                <strong>Ex:</strong> Rastreador de água, diário
+                                alimentar, treinos
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 2: Definição do Projeto</h4>
+                        <p>
+                            <strong>Documento:</strong> Proposta do projeto (1-2
+                            páginas)
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Nome do projeto:</strong> Título
+                                descritivo
+                            </li>
+                            <li><strong>Tipo:</strong> Qual categoria acima</li>
+                            <li>
+                                <strong>Problema/Oportunidade:</strong> O que o
+                                projeto resolve?
+                            </li>
+                            <li>
+                                <strong>Objetivo:</strong> O que vocês querem
+                                alcançar?
+                            </li>
+                            <li>
+                                <strong>Público-alvo:</strong> Quem vai usar?
+                            </li>
+                            <li>
+                                <strong>Tecnologias:</strong> Stack técnico
+                                (linguagens, frameworks, ferramentas)
+                            </li>
+                            <li>
+                                <strong>Product Goal:</strong> Visão de longo
+                                prazo do produto
+                            </li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 25/03/2026 (em
+                            aula)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 4: PRODUCT BACKLOG -->
+                <div class="section">
+                    <h2>📋 4. Product Backlog Inicial</h2>
+
+                    <h3>4.1 Criação do Backlog</h3>
+                    <p style="margin-bottom: 15px">
+                        O Product Owner deve criar um Product Backlog inicial
+                        com <strong>15 a 20 User Stories</strong> priorizadas.
+                    </p>
+
+                    <div class="info-box">
+                        <h4>📝 Formato de User Story</h4>
+                        <p style="margin-top: 10px">
+                            <strong>Como</strong> [papel/usuário],<br />
+                            <strong>Eu quero</strong> [funcionalidade],<br />
+                            <strong>Para</strong> [benefício/valor]
+                        </p>
+
+                        <p style="margin-top: 15px">
+                            <strong>Exemplo:</strong><br />
+                            Como <em>estudante</em>,<br />
+                            Eu quero <em>criar flashcards de estudo</em>,<br />
+                            Para <em>memorizar conteúdos para provas</em>
+                        </p>
+                    </div>
+
+                    <h3>4.2 Critérios INVEST</h3>
+                    <p>Cada User Story deve seguir INVEST:</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Letra</th>
+                                <th>Critério</th>
+                                <th>O que significa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>I</strong></td>
+                                <td>Independent</td>
+                                <td>Independente de outras histórias</td>
+                            </tr>
+                            <tr>
+                                <td><strong>N</strong></td>
+                                <td>Negotiable</td>
+                                <td>Detalhes podem ser discutidos</td>
+                            </tr>
+                            <tr>
+                                <td><strong>V</strong></td>
+                                <td>Valuable</td>
+                                <td>Entrega valor ao usuário</td>
+                            </tr>
+                            <tr>
+                                <td><strong>E</strong></td>
+                                <td>Estimable</td>
+                                <td>Pode ser estimada pelo time</td>
+                            </tr>
+                            <tr>
+                                <td><strong>S</strong></td>
+                                <td>Small</td>
+                                <td>
+                                    Pequena o suficiente para caber em Sprint
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>T</strong></td>
+                                <td>Testable</td>
+                                <td>Tem critérios de aceitação claros</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>4.3 Estrutura de Cada Item do Backlog</h3>
+                    <p>Para cada User Story, incluir:</p>
+                    <ul style="margin-left: 25px; margin-top: 10px">
+                        <li>
+                            <strong>ID:</strong> Número único (US-001, US-002,
+                            etc)
+                        </li>
+                        <li><strong>Título:</strong> Nome descritivo</li>
+                        <li>
+                            <strong>User Story:</strong> Formato "Como... Eu
+                            quero... Para..."
+                        </li>
+                        <li>
+                            <strong>Prioridade:</strong> Alta, Média ou Baixa
+                            (ordenar por valor!)
+                        </li>
+                        <li>
+                            <strong>Estimativa:</strong> Story Points
+                            (Fibonacci: 1, 2, 3, 5, 8, 13)
+                        </li>
+                        <li>
+                            <strong>Critérios de Aceitação:</strong> Checklist
+                            de quando está "Done"
+                        </li>
+                    </ul>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 3: Product Backlog Inicial</h4>
+                        <p>
+                            <strong>Documento:</strong> Planilha ou documento
+                            com 15-20 User Stories
+                        </p>
+                        <ul>
+                            <li>Todas as stories no formato correto</li>
+                            <li>
+                                Ordenadas por prioridade (mais valiosas no topo)
+                            </li>
+                            <li>Com estimativas em Story Points</li>
+                            <li>Critérios de aceitação para as top 5</li>
+                            <li>Definition of Ready aplicada</li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 25/03/2026
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 5: SPRINT PLANNING -->
+                <div class="section">
+                    <h2>🎯 5. Sprint Planning</h2>
+
+                    <h3>5.1 Definições da Sprint</h3>
+                    <ul style="margin-left: 25px; font-size: 1.05rem">
+                        <li>
+                            <strong>Duração da Sprint:</strong> 2 semanas (10
+                            dias úteis)
+                        </li>
+                        <li>
+                            <strong>Período:</strong> 25/03 a 07/04 (exemplo -
+                            ajustar conforme necessário)
+                        </li>
+                        <li>
+                            <strong>Capacidade:</strong> Baseada em
+                            disponibilidade do time
+                        </li>
+                    </ul>
+
+                    <h3>5.2 Sprint Planning - O QUÊ?</h3>
+                    <div class="checklist">
+                        <li>PO apresenta top items do Product Backlog</li>
+                        <li>Time discute e esclarece dúvidas</li>
+                        <li>
+                            Time define <strong>Sprint Goal</strong> (meta única
+                            e coerente)
+                        </li>
+                        <li>Time seleciona User Stories para a Sprint</li>
+                        <li>
+                            Usar Velocity (se houver histórico) ou capacidade
+                            estimada
+                        </li>
+                    </div>
+
+                    <h3>5.3 Sprint Planning - COMO?</h3>
+                    <div class="checklist">
+                        <li>
+                            Quebrar cada User Story em
+                            <strong>tarefas técnicas</strong>
+                        </li>
+                        <li>Estimar tarefas em horas (opcional)</li>
+                        <li>Identificar dependências técnicas</li>
+                        <li>Criar <strong>Sprint Backlog</strong></li>
+                        <li>Todos comprometidos com Sprint Goal</li>
+                    </div>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 4: Sprint Planning</h4>
+                        <p><strong>Documentos:</strong></p>
+                        <ul>
+                            <li>
+                                <strong>Sprint Goal:</strong> Frase clara do que
+                                será alcançado
+                            </li>
+                            <li>
+                                <strong>Sprint Backlog:</strong> User Stories
+                                selecionadas + tarefas
+                            </li>
+                            <li>
+                                <strong>Estimativa inicial:</strong> Total de
+                                Story Points planejados
+                            </li>
+                            <li>
+                                <strong>Evidência da reunião:</strong>
+                                Foto/print do planning (pode ser virtual)
+                            </li>
+                            <li>
+                                <strong>Quadro Kanban:</strong> Setup inicial
+                                (To Do, Doing, Done + WIP limits)
+                            </li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 25/03/2026 (após
+                            planning)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 6: EXECUÇÃO DA SPRINT -->
+                <div class="section">
+                    <h2>⚡ 6. Execução da Sprint e Daily Scrum</h2>
+
+                    <h3>6.1 Daily Scrum</h3>
+                    <p style="margin-bottom: 15px">
+                        Realizar <strong>Daily Scrum</strong> todos os dias (ou
+                        pelo menos 3x por semana se time for remoto).
+                    </p>
+
+                    <div class="info-box">
+                        <h4>⏱️ Formato do Daily</h4>
+                        <ul style="margin-left: 25px; margin-top: 10px">
+                            <li><strong>Duração:</strong> Máximo 15 minutos</li>
+                            <li>
+                                <strong>Horário:</strong> Mesmo horário todos os
+                                dias
+                            </li>
+                            <li>
+                                <strong>3 Perguntas:</strong>
+                                <ul style="margin-left: 20px; margin-top: 5px">
+                                    <li>O que fiz ontem?</li>
+                                    <li>O que farei hoje?</li>
+                                    <li>Há algum impedimento?</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Scrum Master:</strong> Atualiza Burndown
+                                após Daily
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h3>6.2 Gestão do Sprint Backlog</h3>
+                    <div class="checklist">
+                        <li>Atualizar status das tarefas diariamente</li>
+                        <li>Mover cards no quadro Kanban</li>
+                        <li>Registrar impedimentos</li>
+                        <li>SM trabalha para remover bloqueios</li>
+                        <li>Time colabora e se auto-organiza</li>
+                    </div>
+
+                    <h3>6.3 Desenvolvimento do Incremento</h3>
+                    <p>Durante a Sprint, o time deve:</p>
+                    <ul style="margin-left: 25px; margin-top: 10px">
+                        <li>Desenvolver código funcional</li>
+                        <li>Fazer testes (unitários, integração)</li>
+                        <li>Code review entre membros</li>
+                        <li>Integração contínua (commits frequentes)</li>
+                        <li>Documentar decisões técnicas importantes</li>
+                    </ul>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 5: Evidências de Execução</h4>
+                        <p><strong>Documentos e evidências:</strong></p>
+                        <ul>
+                            <li>
+                                <strong>Registro de Dailys:</strong> Ata
+                                resumida de pelo menos 5 Dailys
+                                <ul style="margin-left: 20px; margin-top: 5px">
+                                    <li>Data, participantes</li>
+                                    <li>Resumo do que cada um falou</li>
+                                    <li>Impedimentos identificados</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Burndown Chart:</strong> Atualizado
+                                diariamente (gráfico)
+                            </li>
+                            <li>
+                                <strong>Quadro Kanban:</strong> Prints do quadro
+                                em 3 momentos (início, meio, fim da Sprint)
+                            </li>
+                            <li>
+                                <strong>Impediments Log:</strong> Lista de
+                                impedimentos e como foram resolvidos
+                            </li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 07/04/2026 (fim da
+                            Sprint)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 7: SPRINT REVIEW -->
+                <div class="section">
+                    <h2>🎉 7. Sprint Review</h2>
+
+                    <h3>7.1 Preparação</h3>
+                    <div class="warning-box">
+                        <h4>⚠️ Importante</h4>
+                        <p>
+                            <strong>Sprint Review NÃO é PowerPoint!</strong> É
+                            demonstração ao vivo do incremento funcional.
+                        </p>
+                        <p style="margin-top: 10px">
+                            Preparem o ambiente com antecedência. Testem tudo
+                            antes!
+                        </p>
+                    </div>
+
+                    <h3>7.2 Estrutura da Review (15 minutos por equipe)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Etapa</th>
+                                <th>Tempo</th>
+                                <th>Atividade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Abertura</td>
+                                <td>2 min</td>
+                                <td>
+                                    PO recapitula Sprint Goal e o que foi
+                                    planejado
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Demo</td>
+                                <td>8 min</td>
+                                <td>
+                                    Developers demonstram incremento FUNCIONANDO
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Discussão</td>
+                                <td>4 min</td>
+                                <td>Feedback, perguntas, próximos passos</td>
+                            </tr>
+                            <tr>
+                                <td>Encerramento</td>
+                                <td>1 min</td>
+                                <td>
+                                    Agradecimentos e próxima Sprint (se houver)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>7.3 O Que Demonstrar</h3>
+                    <div class="checklist">
+                        <li>
+                            Apenas User Stories
+                            <strong>"Done"</strong> (completas!)
+                        </li>
+                        <li>Software funcionando (não slides!)</li>
+                        <li>Valor de negócio entregue</li>
+                        <li>Funcionalidades do ponto de vista do usuário</li>
+                        <li>
+                            Se algo não ficou pronto, explicar por quê (sem
+                            drama!)
+                        </li>
+                    </div>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 6: Sprint Review</h4>
+                        <p>
+                            <strong>Apresentação em aula + documentos:</strong>
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Demo ao vivo:</strong> 15 minutos de
+                                apresentação
+                            </li>
+                            <li>
+                                <strong>Incremento funcional:</strong> Software
+                                rodando (link, repo, ou executável)
+                            </li>
+                            <li>
+                                <strong>Resumo da Sprint:</strong>
+                                <ul style="margin-left: 20px; margin-top: 5px">
+                                    <li>Sprint Goal</li>
+                                    <li>
+                                        User Stories planejadas vs completadas
+                                    </li>
+                                    <li>Velocity alcançado</li>
+                                    <li>Principais desafios</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Feedback recebido:</strong> Notas do que
+                                stakeholders (colegas/professor) comentaram
+                            </li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 07/04/2026
+                            (apresentação em aula)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 8: SPRINT RETROSPECTIVE -->
+                <div class="section">
+                    <h2>🔄 8. Sprint Retrospective</h2>
+
+                    <h3>8.1 Objetivo</h3>
+                    <p style="margin-bottom: 15px">
+                        Inspecionar como foi a Sprint em termos de
+                        <strong>pessoas, processos e ferramentas</strong>, e
+                        definir melhorias concretas.
+                    </p>
+
+                    <div class="info-box">
+                        <h4>🎯 Prime Directive</h4>
+                        <p style="margin-top: 10px; font-style: italic">
+                            "Independentemente do que descobrirmos, entendemos e
+                            realmente acreditamos que todos fizeram o melhor
+                            trabalho possível, dado o que sabiam na época, suas
+                            habilidades e capacidades, os recursos disponíveis e
+                            a situação em questão."
+                        </p>
+                    </div>
+
+                    <h3>8.2 Técnica Sugerida: Start-Stop-Continue</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Pergunta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Start</strong> (Começar)</td>
+                                <td>O que devemos COMEÇAR a fazer?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Stop</strong> (Parar)</td>
+                                <td>O que devemos PARAR de fazer?</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Continue</strong> (Continuar)</td>
+                                <td>O que devemos CONTINUAR fazendo?</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>8.3 Estrutura da Retro (1 hora)</h3>
+                    <div class="checklist">
+                        <li>
+                            <strong>Set the Stage (5 min):</strong> Check-in,
+                            criar ambiente seguro
+                        </li>
+                        <li>
+                            <strong>Gather Data (15 min):</strong> O que
+                            aconteceu? Linha do tempo, fatos
+                        </li>
+                        <li>
+                            <strong>Generate Insights (20 min):</strong> Por que
+                            aconteceu? Causas raiz
+                        </li>
+                        <li>
+                            <strong>Decide What to Do (15 min):</strong> Ações
+                            concretas (máximo 3!)
+                        </li>
+                        <li>
+                            <strong>Close (5 min):</strong> Apreciações,
+                            próximos passos
+                        </li>
+                    </div>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 7: Sprint Retrospective</h4>
+                        <p>
+                            <strong>Documento:</strong> Relatório da
+                            Retrospectiva
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Participantes:</strong> Quem estava
+                                presente
+                            </li>
+                            <li>
+                                <strong>Start-Stop-Continue:</strong> Lista de
+                                itens em cada categoria
+                            </li>
+                            <li>
+                                <strong>Ações de Melhoria:</strong> 1 a 3 ações
+                                concretas
+                                <ul style="margin-left: 20px; margin-top: 5px">
+                                    <li>O que fazer?</li>
+                                    <li>Quem é responsável?</li>
+                                    <li>Quando implementar?</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Aprendizados:</strong> Principais
+                                insights do time
+                            </li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 08/04/2026
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 9: MÉTRICAS -->
+                <div class="section">
+                    <h2>📊 9. Métricas Ágeis</h2>
+
+                    <h3>9.1 Métricas Obrigatórias</h3>
+                    <p>
+                        Cada equipe deve coletar e analisar as seguintes
+                        métricas:
+                    </p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Como Calcular</th>
+                                <th>Para Quê</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Velocity</strong></td>
+                                <td>
+                                    Total de Story Points completados na Sprint
+                                </td>
+                                <td>Capacidade do time, planejamento futuro</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Burndown Chart</strong></td>
+                                <td>
+                                    Gráfico de Story Points restantes por dia
+                                </td>
+                                <td>Acompanhar progresso diário</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Lead Time</strong></td>
+                                <td>
+                                    Tempo desde criação até Done de cada story
+                                </td>
+                                <td>Tempo de entrega ao cliente</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cycle Time</strong></td>
+                                <td>Tempo desde "In Progress" até Done</td>
+                                <td>Eficiência de execução</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>9.2 Análise das Métricas</h3>
+                    <p>Para cada métrica, responder:</p>
+                    <ul style="margin-left: 25px; margin-top: 10px">
+                        <li>Qual foi o valor obtido?</li>
+                        <li>O que isso indica sobre o processo do time?</li>
+                        <li>Houve alguma anomalia ou surpresa?</li>
+                        <li>Como podemos melhorar esse número?</li>
+                    </ul>
+
+                    <div class="deliverable">
+                        <h4>📦 Entrega 8: Relatório de Métricas</h4>
+                        <p>
+                            <strong>Documento:</strong> Análise de métricas da
+                            Sprint
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Velocity:</strong> Valor e interpretação
+                            </li>
+                            <li>
+                                <strong>Burndown Chart:</strong> Gráfico com
+                                análise (estava no caminho? Por quê?)
+                            </li>
+                            <li>
+                                <strong>Lead Time médio:</strong> Cálculo e
+                                análise
+                            </li>
+                            <li>
+                                <strong>Cycle Time médio:</strong> Cálculo e
+                                análise
+                            </li>
+                            <li>
+                                <strong>Conclusões:</strong> O que as métricas
+                                revelam sobre o processo?
+                            </li>
+                            <li>
+                                <strong>Ações:</strong> Como usar esses dados
+                                para melhorar?
+                            </li>
+                        </ul>
+                        <p style="margin-top: 10px">
+                            <strong>Data de entrega:</strong> 08/04/2026
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 10: CRITÉRIOS DE AVALIAÇÃO -->
+                <div class="section">
+                    <h2>✅ 10. Critérios de Avaliação</h2>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Critério</th>
+                                <th>Peso</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Incremento Funcional</strong></td>
+                                <td>25%</td>
+                                <td>
+                                    Qualidade do software entregue,
+                                    funcionalidades working, valor demonstrado
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Aplicação do Scrum</strong></td>
+                                <td>25%</td>
+                                <td>
+                                    Execução correta dos papéis, eventos e
+                                    artefatos. Evidências de práticas
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Product Backlog</strong></td>
+                                <td>10%</td>
+                                <td>
+                                    Qualidade das User Stories (INVEST),
+                                    priorização, critérios de aceitação
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Métricas e Melhoria</strong></td>
+                                <td>15%</td>
+                                <td>
+                                    Coleta de métricas, análise, uso de dados
+                                    para decisões, Retrospective
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Apresentação (Review)</strong></td>
+                                <td>15%</td>
+                                <td>
+                                    Clareza, organização, demonstração efetiva,
+                                    gestão do tempo
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Documentação</strong></td>
+                                <td>10%</td>
+                                <td>
+                                    Completude, organização, evidências (prints,
+                                    atas, registros)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="success-box" style="margin-top: 30px">
+                        <h4>🌟 Critérios de Excelência (Nota 10)</h4>
+                        <ul style="margin-left: 25px; margin-top: 10px">
+                            <li>
+                                Incremento funcional de alta qualidade,
+                                impressionante
+                            </li>
+                            <li>
+                                Scrum aplicado com maestria (todos eventos
+                                executados corretamente)
+                            </li>
+                            <li>
+                                Métricas bem coletadas e usadas para decisões
+                                reais
+                            </li>
+                            <li>
+                                Melhoria contínua demonstrada (Retrospective com
+                                ações concretas)
+                            </li>
+                            <li>Apresentação profissional e engajadora</li>
+                            <li>Documentação impecável e bem organizada</li>
+                            <li>Colaboração exemplar entre membros</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 11: CRONOGRAMA -->
+                <div class="section">
+                    <h2>📅 11. Cronograma de Entregas</h2>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Entrega</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>25/03</strong></td>
+                                <td>Entrega 1 + 2</td>
+                                <td>
+                                    Composição da equipe + Definição do projeto
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>25/03</strong></td>
+                                <td>Entrega 3 + 4</td>
+                                <td>Product Backlog + Sprint Planning</td>
+                            </tr>
+                            <tr>
+                                <td><strong>25/03 - 07/04</strong></td>
+                                <td>Execução</td>
+                                <td>
+                                    Sprint em andamento (Dailys,
+                                    desenvolvimento)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>07/04</strong></td>
+                                <td>Entrega 5 + 6</td>
+                                <td>
+                                    Evidências de execução + Sprint Review
+                                    (apresentação)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>08/04</strong></td>
+                                <td>Entrega 7 + 8</td>
+                                <td>
+                                    Sprint Retrospective + Relatório de Métricas
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="warning-box">
+                        <h4>⚠️ Prazos São Importantes!</h4>
+                        <p>
+                            Entregas atrasadas sofrerão desconto de 10% por dia
+                            de atraso (máximo 3 dias).<br />
+                            Após 3 dias, a entrega não será aceita e pontuação
+                            será zero naquele critério.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 12: DICAS -->
+                <div class="section">
+                    <h2>💡 12. Dicas para Sucesso</h2>
+
+                    <div class="example-list">
+                        <div class="example-item">
+                            <h4>🎯 Comece Simples</h4>
+                            <p>
+                                Escolha projeto simples mas interessante. Melhor
+                                entregar MVP funcional que projeto ambicioso
+                                incompleto!
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>📋 User Stories Pequenas</h4>
+                            <p>
+                                Quebrem histórias grandes! Idealmente cada story
+                                deve ser completável em 1-2 dias.
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🤝 Colaboração Real</h4>
+                            <p>
+                                Façam reuniões reais (presenciais ou virtuais).
+                                Documentem com prints/fotos!
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>📊 Meçam Desde Início</h4>
+                            <p>
+                                Não deixem métricas para última hora. Coletem
+                                dados diariamente!
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🔄 Daily de Verdade</h4>
+                            <p>
+                                15 minutos, todo dia, mesmo horário. Se remoto,
+                                use WhatsApp/Discord mas seja consistente!
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>✅ Definition of Done</h4>
+                            <p>
+                                Definam DoD clara desde início. Código funcional
+                                + testado + documentado mínimo.
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>🎭 Demo Impressionante</h4>
+                            <p>
+                                Ensaiem a Sprint Review! Testem tudo antes. Demo
+                                ao vivo, não PowerPoint!
+                            </p>
+                        </div>
+
+                        <div class="example-item">
+                            <h4>📸 Evidências</h4>
+                            <p>
+                                Tirem prints do quadro Kanban, reuniões,
+                                commits. Evidências contam pontos!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 13: RECURSOS -->
+                <div class="section">
+                    <h2>🛠️ 13. Ferramentas Sugeridas</h2>
+
+                    <h3>Gestão do Backlog e Sprint</h3>
+                    <ul style="margin-left: 25px; margin-top: 10px">
+                        <li>
+                            <strong>Jira</strong> (gratuito até 10 usuários) -
+                            Recomendado!
+                        </li>
+                        <li>
+                            <strong>Trello</strong> (gratuito) - Simples e
+                            visual
+                        </li>
+                        <li><strong>Notion</strong> (gratuito) - Flexível</li>
+                        <li>
+                            <strong>Google Sheets</strong> - Para backlog
+                            simples
+                        </li>
+                    </ul>
+
+                    <h3>Comunicação e Dailys</h3>
+                    <ul style="margin-left: 25px; margin-top: 10px">
+                        <li>
+                            <strong>WhatsApp/Telegram</strong> - Dailys
+                            assíncronos
+                        </li>
+                        <li>
+                            <strong>Discord/Teams</strong> - Calls e
+                            compartilhamento
+                        </li>
+                        <li>
+                            <strong>Slack</strong> - Organização profissional
+                        </li>
+                    </ul>
+
+                    <h3>Desenvolvimento</h3>
+                    <ul style="margin-left: 25px; margin-top: 10px">
+                        <li>
+                            <strong>GitHub/GitLab</strong> - Controle de versão
+                            (obrigatório!)
+                        </li>
+                        <li><strong>VS Code</strong> - IDE recomendado</li>
+                        <li>
+                            <strong>Firebase/Supabase</strong> - Backend rápido
+                        </li>
+                    </ul>
+
+                    <h3>Métricas e Gráficos</h3>
+                    <ul style="margin-left: 25px; margin-top: 10px">
+                        <li>
+                            <strong>Jira Reports</strong> - Burndown automático
+                        </li>
+                        <li>
+                            <strong>Google Sheets</strong> - Gráficos manuais
+                        </li>
+                        <li><strong>Excel</strong> - Planilhas e charts</li>
+                    </ul>
+                </div>
+
+                <!-- SEÇÃO 14: CONTATO -->
+                <div class="section">
+                    <h2>📞 14. Dúvidas e Suporte</h2>
+
+                    <div class="info-box">
+                        <h4>Como tirar dúvidas?</h4>
+                        <ul style="margin-left: 25px; margin-top: 10px">
+                            <li>
+                                <strong>Em aula:</strong> Perguntem durante as
+                                aulas práticas
+                            </li>
+                            <li>
+                                <strong>E-mail:</strong>
+                                professor.tiago@unifil.br
+                            </li>
+                            <li>
+                                <strong>Horário de atendimento:</strong> Terças
+                                e Quartas, 30min antes/depois da aula
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="success-box">
+                        <h4>✨ Lembrete Final</h4>
+                        <p>
+                            <strong
+                                >Este trabalho é sobre PRATICAR Scrum, não
+                                apenas documentar teoria!</strong
+                            >
+                        </p>
+                        <p style="margin-top: 10px">Foquem em:</p>
+                        <ul style="margin-left: 25px; margin-top: 10px">
+                            <li>✅ Entregar valor real</li>
+                            <li>✅ Colaborar intensamente</li>
+                            <li>✅ Melhorar continuamente</li>
+                            <li>✅ Aprender fazendo</li>
+                            <li>✅ Se divertir! 🎉</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p style="font-size: 1.2rem; margin-bottom: 10px">
+                    <strong>Bom trabalho a todos! 🚀</strong>
+                </p>
+                <p>
+                    Gerenciamento de Projetos - Ferramentas para Metodologias
+                    Ágeis
+                </p>
+                <p>
+                    Prof. Tiago Galvão | Centro Universitário Filadélfia
+                    (UniFil) | 2026
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
