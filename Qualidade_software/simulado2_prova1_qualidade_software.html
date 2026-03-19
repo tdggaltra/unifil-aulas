@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado 2 - Prova 1 - Qualidade de Software | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #9C27B0;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            color: #9C27B0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #4A4A4A;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6B6B6B;
+            font-size: 1.1rem;
+        }
+
+        .info-box {
+            background: #F3E5F5;
+            border-left: 4px solid #9C27B0;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #9C27B0;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .info-item strong {
+            margin-right: 8px;
+            color: #4A4A4A;
+        }
+
+        .student-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 40px;
+        }
+
+        .student-info p {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #4A4A4A;
+        }
+
+        .student-info input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .instructions {
+            background: #FFF9C4;
+            border-left: 4px solid #FBC02D;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            color: #F57F17;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .question-block {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #fafafa;
+            border-radius: 8px;
+            border-left: 4px solid #9C27B0;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            background: #9C27B0;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .question-type {
+            background: #4A4A4A;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .context-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+        }
+
+        .options {
+            margin-top: 20px;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: #9C27B0;
+            background: #F3E5F5;
+        }
+
+        .option-letter {
+            background: #4A4A4A;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex: 1;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .essay-answer {
+            margin-top: 20px;
+        }
+
+        .essay-lines {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: white;
+            min-height: 200px;
+        }
+
+        .essay-line {
+            border-bottom: 1px solid #e0e0e0;
+            height: 30px;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #6B6B6B;
+        }
+
+        .gabarito-note {
+            background: #E8F5E9;
+            border: 2px solid #4CAF50;
+            padding: 20px;
+            margin-top: 40px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .gabarito-note h3 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+        }
+
+        .gabarito-note p {
+            color: #1B5E20;
+            font-size: 1.1rem;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .question-block {
+                page-break-inside: avoid;
+            }
+
+            .gabarito-note {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">UniFil - SIMULADO 2</div>
+            <h1>Simulado 2 - Prova 1 - Qualidade de Software</h1>
+            <p>Preparação para Avaliação Intermediária | Aulas 1-7</p>
+        </div>
+
+        <!-- INFO BOX -->
+        <div class="info-box">
+            <h3>📋 Informações do Simulado</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Objetivo:</strong> Treino adicional para prova
+                </div>
+                <div class="info-item">
+                    <strong>Tempo sugerido:</strong> 90 minutos
+                </div>
+                <div class="info-item">
+                    <strong>Total de questões:</strong> 10
+                </div>
+                <div class="info-item">
+                    <strong>Gabarito:</strong> Arquivo separado
+                </div>
+                <div class="info-item">
+                    <strong>Múltipla escolha:</strong> 8 questões (0,8 cada)
+                </div>
+                <div class="info-item">
+                    <strong>Dissertativas:</strong> 2 questões (1,2 cada)
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDENT INFO -->
+        <div class="student-info">
+            <p><strong>Nome do aluno(a):</strong></p>
+            <input type="text" placeholder="Seu nome completo">
+            
+            <p style="margin-top: 15px;"><strong>Data de realização:</strong></p>
+            <input type="text" placeholder="DD/MM/AAAA">
+        </div>
+
+        <!-- INSTRUCTIONS -->
+        <div class="instructions">
+            <h3>📖 Instruções para o Simulado</h3>
+            <ul>
+                <li><strong>Este é o segundo simulado:</strong> Questões completamente novas para treino adicional</li>
+                <li>Simule condições reais: ambiente silencioso, 90 minutos, sem consulta</li>
+                <li>Responda todas as questões antes de consultar o gabarito</li>
+                <li><strong>Gabarito em arquivo separado:</strong> Não consulte até terminar!</li>
+                <li>Compare este simulado com o Simulado 1 para identificar evolução</li>
+                <li>Revise os conceitos das questões com dúvida</li>
+                <li>Bom treino! 💪</li>
+            </ul>
+        </div>
+
+        <!-- QUESTÃO 1 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 1</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa de desenvolvimento está analisando seus custos do último ano. O controller apresentou os seguintes dados ao CEO:
+            </div>
+            <div class="context-box">
+                <strong>Análise de Custos Anuais 2025:</strong><br>
+                • Salários time QA (testes, auditorias): R$540.000<br>
+                • Ferramentas de CI/CD e automação: R$120.000<br>
+                • Treinamentos em qualidade: R$80.000<br>
+                • Horas de code review: R$200.000<br>
+                • Retrabalho por defeitos internos: R$380.000<br>
+                • Recalls e patches emergenciais: R$450.000<br>
+                • Processos judiciais por falhas: R$890.000<br>
+                • Perda de contratos por qualidade: R$1.200.000
+            </div>
+            <div class="question-text" style="margin-top: 20px;">
+                Aplicando o modelo de Custos da Qualidade (Prevenção, Avaliação, Falha Interna, Falha Externa), qual é o percentual de Custos de Falha Externa em relação ao total?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">12% (apenas recalls e patches)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">23% (recalls + processos judiciais)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">35% (todos os custos de falha)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">66% (recalls + processos + perda contratos = R$2.540.000 de R$3.860.000 total)</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">100% (todos os custos listados são de falha externa)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 2 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 2</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Durante uma apresentação sobre modelos de maturidade, um desenvolvedor questionou: "Se o CMMI tem 5 níveis e o MPS.BR tem 7 níveis, isso significa que o MPS.BR é mais completo ou mais exigente?"
+                <br><br>
+                Qual explicação está CORRETA sobre a diferença no número de níveis?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">MPS.BR é mais exigente porque tem mais níveis para alcançar.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">MPS.BR possui 7 níveis para permitir evolução mais GRANULAR e INCREMENTAL, adequada a PMEs com orçamentos menores. Não é "mais exigente", apenas divide a jornada em passos menores.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Os 7 níveis do MPS.BR são equivalentes aos 5 do CMMI em dificuldade, apenas com nomes diferentes.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">MPS.BR tem 2 níveis extras que o CMMI não possui, tornando-o superior.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Não há diferença significativa; ambos medem a mesma coisa da mesma forma.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 3 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 3</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma organização está avaliando seu nível de maturidade segundo o CMMI. Durante a avaliação, foram identificadas as seguintes características:
+            </div>
+            <div class="context-box">
+                <strong>Observações da Avaliação:</strong><br>
+                • Alguns projetos seguem processos bem definidos, outros são totalmente ad hoc<br>
+                • Existe gestão de requisitos, mas aplicada inconsistentemente<br>
+                • Planejamento de projetos é feito, mas cada gerente usa seu próprio template<br>
+                • Não há processo organizacional padrão; cada projeto "reinventa a roda"<br>
+                • Métricas são coletadas em alguns projetos, mas não há base histórica organizacional<br>
+                • Sucesso depende muito de "heróis" individuais
+            </div>
+            <div class="question-text" style="margin-top: 20px;">
+                Em qual nível de maturidade CMMI a organização se encontra?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Nível 1 (Inicial) - processos ad hoc e imprevisíveis, sucesso depende de indivíduos, não há padronização organizacional</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Nível 2 (Gerenciado) - possui processos gerenciados por projeto</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Nível 3 (Definido) - possui processos organizacionais padronizados</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Entre Nível 1 e 2 - em transição mas ainda não consolidado</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Nível 4 (Gerenciado Quantitativamente) - coleta métricas em alguns projetos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 4 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 4</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa está implementando processos da ISO/IEC 12207 e criou os seguintes times:
+            </div>
+            <div class="context-box">
+                <strong>Time Alpha:</strong> Responsável por codificação, testes unitários, integração e deployment<br>
+                <strong>Time Beta:</strong> Responsável por definir políticas de qualidade, padrões de codificação e estratégia de testes organizacional<br>
+                <strong>Time Gamma:</strong> Responsável por planejamento de sprints, controle de escopo e cronograma<br>
+                <strong>Time Delta:</strong> Responsável por negociação com clientes e gestão de contratos
+            </div>
+            <div class="question-text" style="margin-top: 20px;">
+                Segundo a ISO/IEC 12207, classifique corretamente cada time nos grupos de processos:
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Alpha: Técnicos | Beta: Organizacionais | Gamma: Gerenciais | Delta: Acordo</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Alpha: Gerenciais | Beta: Técnicos | Gamma: Organizacionais | Delta: Acordo</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Alpha: Técnicos | Beta: Técnicos | Gamma: Técnicos | Delta: Organizacionais</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Alpha: Acordo | Beta: Gerenciais | Gamma: Organizacionais | Delta: Técnicos</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Todos os times executam processos de todos os grupos simultaneamente</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 5 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 5</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma startup passou de 10 para 80 funcionários em 18 meses. O CTO relata: "Antes, todos conversavam e sabiam o que fazer. Agora há caos: cada time trabalha diferente, não conseguimos estimar prazos, clientes reclamam de bugs. Precisamos urgentemente de processos."
+                <br><br>
+                Qual seria a estratégia de evolução de maturidade MAIS ADEQUADA para esta situação?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Contratar consultoria para implementar CMMI Nível 5 imediatamente, garantindo qualidade máxima.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Não fazer nada; startups devem priorizar velocidade sobre processos.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Focar em alcançar MPS.BR Nível G (ou CMMI Nível 2) em 6-9 meses: implementar Gerência de Projetos e Requisitos básicos, criar processos mínimos comuns a todos os times, começar a coletar métricas. Evolução incremental.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Implementar ISO 9001 primeiro, depois pensar em modelos específicos de software.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Contratar mais desenvolvedores para compensar a falta de processos.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 6 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 6</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Em uma auditoria de qualidade, foram analisados os processos de uma empresa certificada MPS.BR Nível D. A auditora verificou a presença dos seguintes processos:
+            </div>
+            <div class="context-box">
+                <strong>Processos Implementados:</strong><br>
+                ✓ Gerência de Projetos (GPR)<br>
+                ✓ Gerência de Requisitos (GRE)<br>
+                ✓ Aquisição (AQU)<br>
+                ✓ Gerência de Configuração (GCO)<br>
+                ✓ Garantia da Qualidade (GQA)<br>
+                ✓ Medição (MED)<br>
+                ✓ Avaliação e Melhoria do Processo Organizacional (AMP)<br>
+                ✓ Definição do Processo Organizacional (DFP)<br>
+                ✗ Gerência de Riscos (GRI) - NÃO IMPLEMENTADO
+            </div>
+            <div class="question-text" style="margin-top: 20px;">
+                Qual é o problema identificado?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Não há problema; Gerência de Riscos é opcional no MPS.BR.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">A empresa não pode ter certificação Nível D sem Gerência de Riscos (GRI), pois GRI é processo obrigatório do Nível D no MPS.BR.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Gerência de Riscos só é necessária a partir do Nível C.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Está tudo correto; a lista apresentada contempla todos os processos do Nível D.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Gerência de Riscos pertence ao CMMI, não ao MPS.BR.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 7 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 7</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Um líder técnico argumenta: "Nosso código funciona perfeitamente. Temos 0% de code coverage, nenhuma documentação, cada desenvolvedor usa um padrão diferente, mas não temos bugs em produção há 3 meses. Por que investir em qualidade interna?"
+                <br><br>
+                Qual contra-argumento, baseado em conceitos de qualidade de software, é MAIS SÓLIDO?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Se não há bugs em produção, realmente não há necessidade de investir em qualidade interna.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Qualidade interna (manutenibilidade, testabilidade) é um seguro para o futuro. Ausência temporária de bugs não garante sustentabilidade. Quando precisar adicionar features ou corrigir um bug futuro, código sem testes/documentação/padrões será muito mais caro e arriscado de modificar. Débito técnico cresce exponencialmente.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Code coverage é irrelevante; apenas bugs em produção importam.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Documentação é perda de tempo; código auto-explicativo é suficiente.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Padrões de código são subjetivos e não afetam qualidade do produto.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 8 -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 8</span>
+                <span class="question-type">Múltipla Escolha | 0,8 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa está escolhendo entre duas propostas de evolução de maturidade:
+            </div>
+            <div class="context-box">
+                <strong>Proposta X:</strong> "Vamos implementar TODOS os 24 processos do MPS.BR em 12 meses e fazer avaliação direto no Nível A (equivalente CMMI 5). Custo: R$400.000."<br><br>
+                <strong>Proposta Y:</strong> "Vamos implementar gradualmente: G (6 meses) → F (6 meses) → E (12 meses). Total 24 meses para Nível E. Custo: R$180.000."
+            </div>
+            <div class="question-text" style="margin-top: 20px;">
+                Considerando boas práticas de implementação de modelos de maturidade, qual proposta é MAIS ADEQUADA e por quê?
+            </div>
+            <div class="options">
+                <div class="option">
+                    <span class="option-letter">A</span>
+                    <span class="option-text">Proposta X, pois é mais rápida e alcança o nível máximo imediatamente.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">B</span>
+                    <span class="option-text">Proposta Y, pois evolução de maturidade deve ser INCREMENTAL e SUSTENTÁVEL. Pular níveis é arriscado e raramente funciona. Cada nível deve ser consolidado antes de avançar. Custo menor e prazo realista indicam abordagem mais sólida.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">C</span>
+                    <span class="option-text">Proposta X, pois custo maior indica melhor qualidade de consultoria.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">D</span>
+                    <span class="option-text">Ambas são equivalentes; apenas diferem no prazo de implementação.</span>
+                </div>
+                <div class="option">
+                    <span class="option-letter">E</span>
+                    <span class="option-text">Nenhuma das duas; empresa deve desenvolver próprio modelo sem consultoria.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 9 - DISSERTATIVA -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 9</span>
+                <span class="question-type">Dissertativa | 1,2 pontos</span>
+            </div>
+            <div class="question-text">
+                Uma empresa de desenvolvimento de sistemas médicos (área crítica, regulamentada pela ANVISA) está estruturando seus processos pela primeira vez. O board questiona: "Por que precisamos de processos tão robustos? Não seria burocracia excessiva?"
+                <br><br>
+                <strong>Como consultor de qualidade, elabore uma argumentação técnica respondendo:</strong>
+                <br><br>
+                a) Explique POR QUE sistemas críticos (saúde, aviação, financeiro) exigem processos mais rigorosos que um aplicativo comum de e-commerce. Cite pelo menos 3 razões fundamentadas.<br>
+                b) Proponha qual nível de maturidade seria adequado para esta empresa no contexto de software médico e JUSTIFIQUE tecnicamente.<br>
+                c) Liste 5 processos da ISO/IEC 12207 que seriam ESSENCIAIS para software médico, explicando brevemente o papel de cada um.<br>
+                d) Como demonstrar o ROI (retorno sobre investimento) desses processos para o board?
+                <br><br>
+                <em>Sua resposta deve ser técnica, bem fundamentada e demonstrar compreensão profunda de qualidade em contextos críticos. Extensão esperada: 20-25 linhas.</em>
+            </div>
+            <div class="essay-answer">
+                <div class="essay-lines">
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUESTÃO 10 - DISSERTATIVA -->
+        <div class="question-block">
+            <div class="question-header">
+                <span class="question-number">Questão 10</span>
+                <span class="question-type">Dissertativa | 1,2 pontos</span>
+            </div>
+            <div class="question-text">
+                Analise o seguinte caso real:
+            </div>
+            <div class="context-box">
+                <strong>Empresa XYZ - Software House (100 funcionários):</strong><br>
+                • 2020: Sem processos formais, Nível CMMI 1 estimado<br>
+                • 2021: Investiu R$150.000 em processos, alcançou MPS.BR Nível F<br>
+                • 2022: Investiu R$80.000 adicional, alcançou MPS.BR Nível D<br>
+                • 2023: Investiu R$50.000 manutenção, manteve Nível D<br><br>
+                <strong>Resultados Mensurados:</strong><br>
+                • 2020: 120 bugs/mês produção, 18% turnover, velocity média 22 SP<br>
+                • 2023: 15 bugs/mês produção, 5% turnover, velocity média 42 SP<br>
+                • 2020: Perdia 30% propostas por falta de certificação<br>
+                • 2023: Ganhou 3 contratos grandes (R$2.5M) por ter MPS.BR
+            </div>
+            <div class="question-text" style="margin-top: 20px;">
+                <strong>Com base neste caso, responda:</strong>
+                <br><br>
+                a) Calcule o ROI da implementação de processos considerando: investimento total, redução de custos operacionais e novos contratos ganhos.<br>
+                b) Explique tecnicamente COMO a evolução de maturidade impactou positivamente velocity (de 22 para 42 SP). Qual a relação entre processos e produtividade?<br>
+                c) A empresa deveria continuar evoluindo para Nível C/B ou estabilizar no Nível D? Justifique com análise custo-benefício.<br>
+                d) Que métricas adicionais você recomendaria coletar para avaliar continuamente o sucesso da implementação de processos?
+                <br><br>
+                <em>Demonstre raciocínio analítico, cálculos quando aplicável e compreensão da relação entre maturidade e resultados de negócio. Extensão esperada: 18-22 linhas.</em>
+            </div>
+            <div class="essay-answer">
+                <div class="essay-lines">
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                    <div class="essay-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTA SOBRE GABARITO -->
+        <div class="gabarito-note">
+            <h3>📄 Gabarito será Disponibilizado Separadamente</h3>
+            <p><strong>Arquivo:</strong> gabarito_simulado2</p>
+            <p style="margin-top: 10px;">
+                ⚠️ <strong>IMPORTANTE:</strong> Responda todas as questões ANTES de consultar o gabarito!<br>
+                O gabarito possui explicações detalhadas de cada resposta.
+            </p>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Centro Universitário Filadélfia - UniFil</strong></p>
+            <p>Disciplina: Qualidade de Software | Professor: Tiago | 2026</p>
+            <p style="margin-top: 20px; font-style: italic;">Continue praticando para alcançar excelência! 📚</p>
+            <p style="margin-top: 10px; color: #9C27B0; font-weight: bold;">
+                Simulado 2 de 2 - Compare seus resultados com o Simulado 1!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

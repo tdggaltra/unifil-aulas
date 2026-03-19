@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabarito Simulado 2 - Qualidade de Software | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            color: #4CAF50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #4A4A4A;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6B6B6B;
+            font-size: 1.1rem;
+        }
+
+        .warning-box {
+            background: #FFF3E0;
+            border: 3px solid #FF9800;
+            padding: 25px;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .warning-box h3 {
+            color: #E65100;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .warning-box p {
+            color: #E65100;
+            font-size: 1.2rem;
+            line-height: 1.8;
+        }
+
+        .gabarito-item {
+            background: white;
+            border: 2px solid #4CAF50;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.1);
+        }
+
+        .gabarito-item h3 {
+            color: #2E7D32;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .correct-answer {
+            background: #E8F5E9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 700;
+            color: #1B5E20;
+            font-size: 1.3rem;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .explanation {
+            line-height: 1.8;
+            color: #424242;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+
+        .explanation strong {
+            color: #2E7D32;
+        }
+
+        .calculation-box {
+            background: #F5F5F5;
+            border-left: 4px solid #9C27B0;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .key-concepts {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .key-concepts h4 {
+            color: #1565C0;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #6B6B6B;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .gabarito-item {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">✅ GABARITO</div>
+            <h1>Gabarito Simulado 2 - Prova 1</h1>
+            <p>Qualidade de Software | Respostas Comentadas</p>
+        </div>
+
+        <!-- WARNING -->
+        <div class="warning-box">
+            <h3>⚠️ ATENÇÃO!</h3>
+            <p>
+                Este gabarito deve ser consultado APENAS APÓS<br>
+                você ter respondido TODAS as questões do Simulado 2!<br><br>
+                <strong>Use as explicações para entender os conceitos,<br>
+                não apenas para decorar as respostas.</strong>
+            </p>
+        </div>
+
+        <!-- GABARITO QUESTÃO 1 -->
+        <div class="gabarito-item">
+            <h3>Questão 1 - Custos da Qualidade</h3>
+            <div class="correct-answer">✓ Resposta Correta: D</div>
+            <div class="explanation">
+                <strong>Cálculo e Classificação:</strong><br><br>
+                
+                <div class="calculation-box">
+<strong>Custos de PREVENÇÃO (evitar defeitos):</strong>
+• Treinamentos: R$80.000
+• Code review: R$200.000
+Subtotal Prevenção: R$280.000
+
+<strong>Custos de AVALIAÇÃO (detectar defeitos):</strong>
+• Salários QA (testes, auditorias): R$540.000
+• Ferramentas CI/CD: R$120.000
+Subtotal Avaliação: R$660.000
+
+<strong>Custos de FALHA INTERNA (antes da entrega):</strong>
+• Retrabalho por defeitos internos: R$380.000
+Subtotal Falha Interna: R$380.000
+
+<strong>Custos de FALHA EXTERNA (após entrega ao cliente):</strong>
+• Recalls e patches emergenciais: R$450.000
+• Processos judiciais: R$890.000
+• Perda de contratos: R$1.200.000
+Subtotal Falha Externa: R$2.540.000
+
+<strong>TOTAL GERAL:</strong> R$3.860.000
+
+<strong>Percentual Falha Externa:</strong>
+R$2.540.000 / R$3.860.000 = 65,8% ≈ 66%
+                </div>
+
+                <strong>Análise:</strong> 66% dos custos totais são de Falha Externa - o tipo mais caro e prejudicial! Isso demonstra que a empresa está "apagando incêndios" após defeitos chegarem aos clientes, ao invés de preveni-los. Idealmente, custos deveriam se concentrar em Prevenção (menor custo total).
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Conceito-Chave:</h4>
+                Modelo de Custos da Qualidade tem 4 categorias:<br>
+                1. <strong>Prevenção:</strong> Evitar defeitos (treinamento, processos, ferramentas)<br>
+                2. <strong>Avaliação:</strong> Detectar defeitos (testes, auditorias, QA)<br>
+                3. <strong>Falha Interna:</strong> Corrigir antes da entrega (retrabalho, debugging)<br>
+                4. <strong>Falha Externa:</strong> Corrigir após entrega (recalls, suporte, perda clientes)<br><br>
+                <strong>Regra de ouro:</strong> Quanto mais investir em Prevenção, menos gasta com Falhas!
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 2 -->
+        <div class="gabarito-item">
+            <h3>Questão 2 - CMMI vs MPS.BR: Número de Níveis</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Explicação:</strong><br><br>
+                
+                O MPS.BR possui 7 níveis (G, F, E, D, C, B, A) enquanto o CMMI possui 5 níveis (1, 2, 3, 4, 5). Isso NÃO significa que um é "mais exigente" que o outro. A diferença é estratégica:<br><br>
+
+                <strong>Vantagem dos 7 níveis do MPS.BR:</strong><br>
+                • <strong>Granularidade:</strong> Permite passos menores e incrementais<br>
+                • <strong>Investimento gradual:</strong> PMEs com orçamentos limitados podem evoluir em etapas menores<br>
+                • <strong>ROI mais rápido:</strong> Alcançar Nível G (6 meses, ~R$40k) é mais viável que Nível 2 CMMI (12 meses, ~R$120k)<br>
+                • <strong>Motivação:</strong> Certificações mais frequentes mantêm equipe engajada<br><br>
+
+                <strong>Mapeamento aproximado:</strong><br>
+                • MPS.BR G,F ≈ CMMI 2<br>
+                • MPS.BR E,D,C ≈ CMMI 3<br>
+                • MPS.BR B ≈ CMMI 4<br>
+                • MPS.BR A ≈ CMMI 5<br><br>
+
+                A granularidade do MPS.BR foi pensada especificamente para a realidade brasileira de PMEs.
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 3 -->
+        <div class="gabarito-item">
+            <h3>Questão 3 - Identificação de Nível CMMI</h3>
+            <div class="correct-answer">✓ Resposta Correta: A (Nível 1 - Inicial)</div>
+            <div class="explanation">
+                <strong>Análise das Evidências:</strong><br><br>
+                
+                <strong>Características que indicam Nível 1:</strong><br>
+                ✓ Processos ad hoc e inconsistentes (alguns projetos sim, outros não)<br>
+                ✓ Não há processos organizacionais padronizados (cada gerente usa seu template)<br>
+                ✓ Sucesso depende de "heróis" individuais (não é repetível)<br>
+                ✓ Cada projeto "reinventa a roda" (não há reutilização)<br>
+                ✓ Gestão de requisitos inconsistente<br><br>
+
+                <strong>Por que NÃO é Nível 2:</strong><br>
+                Para ser Nível 2 (Gerenciado), a empresa precisaria ter processos de Gerência de Projetos e Gerência de Requisitos implementados CONSISTENTEMENTE em TODOS os projetos. A descrição deixa claro que isso NÃO ocorre - há inconsistência.<br><br>
+
+                <strong>Diagnóstico:</strong> Organização em estágio inicial/caótico. Processos existem mas não são institucionalizados. Resultados imprevisíveis. Primeiro passo: padronizar processos básicos para alcançar Nível 2.
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Diferenças Críticas CMMI 1 vs 2:</h4>
+                <strong>Nível 1:</strong> Processos ad hoc, caóticos, dependem de indivíduos<br>
+                <strong>Nível 2:</strong> Processos gerenciados POR PROJETO de forma disciplinada e repetível<br><br>
+                Palavra-chave Nível 2: <strong>DISCIPLINA</strong> (fazer sempre, não às vezes)
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 4 -->
+        <div class="gabarito-item">
+            <h3>Questão 4 - Grupos de Processos ISO/IEC 12207</h3>
+            <div class="correct-answer">✓ Resposta Correta: A</div>
+            <div class="explanation">
+                <strong>Classificação Correta:</strong><br><br>
+                
+                <strong>Time Alpha - Processos TÉCNICOS:</strong><br>
+                Codificação, testes unitários, integração, deployment são atividades que CONSTROEM o produto. Processos Técnicos transformam requisitos em software executável.<br><br>
+
+                <strong>Time Beta - Processos ORGANIZACIONAIS:</strong><br>
+                Definir políticas, padrões e estratégias a NÍVEL ORGANIZACIONAL (não projeto específico) é responsabilidade dos Processos Organizacionais. Estabelecem a infraestrutura e cultura de processos da empresa.<br><br>
+
+                <strong>Time Gamma - Processos GERENCIAIS:</strong><br>
+                Planejamento de sprints, controle de escopo e cronograma são atividades de GESTÃO do projeto. Processos Gerenciais garantem que o projeto seja executado conforme planejado.<br><br>
+
+                <strong>Time Delta - Processos de ACORDO:</strong><br>
+                Negociação com clientes e gestão de contratos são Processos de Acordo. Estabelecem e mantêm acordos entre organização e clientes/fornecedores.
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Resumo dos 4 Grupos ISO/IEC 12207:</h4>
+                <strong>TÉCNICOS:</strong> Constroem o produto (design, código, teste)<br>
+                <strong>ORGANIZACIONAIS:</strong> Estabelecem infraestrutura de processos<br>
+                <strong>GERENCIAIS:</strong> Gerenciam a execução do projeto<br>
+                <strong>ACORDO:</strong> Gerenciam relacionamentos cliente/fornecedor<br><br>
+                Todos os 4 grupos são necessários para qualidade holística!
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 5 -->
+        <div class="gabarito-item">
+            <h3>Questão 5 - Estratégia de Evolução para Startup</h3>
+            <div class="correct-answer">✓ Resposta Correta: C</div>
+            <div class="explanation">
+                <strong>Análise do Contexto:</strong><br><br>
+                
+                Startup que cresceu 8x (10→80 pessoas) em 18 meses está enfrentando problemas clássicos de crescimento acelerado: caos organizacional, falta de processos, bugs, dificuldade de estimativa.<br><br>
+
+                <strong>Por que a estratégia C é a mais adequada:</strong><br><br>
+
+                1. <strong>Realismo:</strong> MPS.BR Nível G (ou CMMI 2) em 6-9 meses é alcançável e traz benefícios imediatos<br>
+                2. <strong>Priorização:</strong> Foca nos processos mais críticos primeiro (Gerência de Projetos + Requisitos)<br>
+                3. <strong>ROI rápido:</strong> Processos básicos já reduzem caos e melhoram previsibilidade<br>
+                4. <strong>Custo adequado:</strong> ~R$40-60k é viável para startup (vs R$400k+ para níveis altos)<br>
+                5. <strong>Evolução incremental:</strong> Depois de consolidar Nível G, pode evoluir para F, E, etc.<br><br>
+
+                <strong>Por que as outras opções são inadequadas:</strong><br>
+                • A: CMMI Nível 5 direto é irreal e caro (R$500k+, 36+ meses)<br>
+                • B: Ignorar processos levará ao colapso com crescimento contínuo<br>
+                • D: ISO 9001 é genérica, não específica para software<br>
+                • E: Mais pessoas sem processos = mais caos
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 6 -->
+        <div class="gabarito-item">
+            <h3>Questão 6 - Processos Obrigatórios MPS.BR Nível D</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Análise:</strong><br><br>
+                
+                O MPS.BR Nível D inclui TODOS os processos dos níveis anteriores (G, F, E) MAIS os processos específicos do Nível D:<br><br>
+
+                <strong>Processos do Nível D:</strong><br>
+                • Verificação (VER)<br>
+                • Validação (VAL)<br>
+                • Projeto e Construção do Produto (PCP)<br>
+                • Integração do Produto (ITP)<br>
+                • Desenvolvimento de Requisitos (DRE)<br>
+                • <strong>Gerência de Riscos (GRI)</strong> ← FALTANDO!<br><br>
+
+                Como a empresa NÃO possui Gerência de Riscos (GRI), ela não atende aos requisitos completos do Nível D. GRI é OBRIGATÓRIO no MPS.BR Nível D.<br><br>
+
+                <strong>Impacto:</strong> Em uma reavaliação, a empresa seria rebaixada ou não receberia/renovaria a certificação Nível D sem implementar GRI.
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Importante sobre Níveis MPS.BR:</h4>
+                Cada nível INCLUI todos os processos dos níveis anteriores + processos novos.<br>
+                Não é possível "pular" processos. Certificação exige conformidade com 100% dos processos do nível.
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 7 -->
+        <div class="gabarito-item">
+            <h3>Questão 7 - Qualidade Interna vs Débito Técnico</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Análise do Argumento:</strong><br><br>
+                
+                O líder técnico comete um erro clássico: confundir <strong>ausência temporária de bugs</strong> com <strong>qualidade sustentável</strong>.<br><br>
+
+                <strong>Por que o contra-argumento B está correto:</strong><br><br>
+
+                1. <strong>Débito Técnico é Insidioso:</strong><br>
+                   Código sem testes/documentação/padrões funciona HOJE, mas acumula débito que cobra juros exponenciais no futuro.<br><br>
+
+                2. <strong>Quando o Débito se Manifesta:</strong><br>
+                   • Adicionar nova feature: leva 3x mais tempo por medo de quebrar algo<br>
+                   • Onboarding: novo dev leva semanas para entender código sem documentação<br>
+                   • Bug aparece: sem testes, cada correção pode introduzir 2 novos bugs<br>
+                   • Turnover: quando "herói" que conhece o código sai, conhecimento se perde<br><br>
+
+                3. <strong>Custo Exponencial:</strong><br>
+                   Refatorar código legado custa 10-100x mais do que escrever com qualidade desde o início.<br><br>
+
+                4. <strong>Manutenibilidade é Qualidade Interna:</strong><br>
+                   ISO/IEC 25010 define que características internas (manutenibilidade, testabilidade) são fundamentais para sustentabilidade do software a longo prazo.
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 8 -->
+        <div class="gabarito-item">
+            <h3>Questão 8 - Evolução Incremental vs Big Bang</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Análise Comparativa:</strong><br><br>
+                
+                <strong>Proposta X (Big Bang) - PROBLEMÁTICA:</strong><br>
+                • Implementar 24 processos simultaneamente em 12 meses é irrealista<br>
+                • Pular direto para Nível A viola princípio de maturidade gradual<br>
+                • Custo R$400k sem ROI comprovado é arriscado<br>
+                • Taxa de fracasso de projetos "big bang": >70%<br>
+                • Equipe não terá tempo de internalizar processos<br><br>
+
+                <strong>Proposta Y (Incremental) - RECOMENDADA:</strong><br>
+                • Evolução gradual permite CONSOLIDAÇÃO de cada nível antes de avançar<br>
+                • G (6 meses) → time aprende processos básicos<br>
+                • F (6 meses) → adiciona processos complementares sobre base sólida<br>
+                • E (12 meses) → amadurece processos organizacionais<br>
+                • Custo 55% menor (R$180k vs R$400k)<br>
+                • ROI incremental: benefícios começam em 6 meses, não em 12<br>
+                • Alinhado com boas práticas de implementação de maturidade<br><br>
+
+                <strong>Conceito-Chave:</strong> Maturidade organizacional não é comprada, é CULTIVADA. Processos precisam ser internalizados, não apenas documentados.
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Princípio Fundamental de Maturidade:</h4>
+                <strong>Maturidade = Mudança Cultural, não Certificação</strong><br><br>
+                Implementação bem-sucedida requer:<br>
+                1. Tempo para mudança de comportamento<br>
+                2. Consolidação de cada nível antes de avançar<br>
+                3. Suporte da liderança<br>
+                4. Treinamento contínuo<br>
+                5. Evolução incremental
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 9 -->
+        <div class="gabarito-item">
+            <h3>Questão 9 - Software Médico (Dissertativa)</h3>
+            <div class="correct-answer">✓ Pontos-chave esperados:</div>
+            <div class="explanation">
+                <strong>a) Por que sistemas críticos exigem processos mais rigorosos:</strong><br><br>
+
+                1. <strong>Consequências de falhas são CATASTRÓFICAS:</strong><br>
+                   • Software médico: falha pode causar morte de pacientes<br>
+                   • Software aviação: falha pode causar acidente com centenas de mortos<br>
+                   • Software financeiro: falha pode causar perdas de milhões/bilhões<br>
+                   Contraste: bug em e-commerce causa inconveniência, não morte.<br><br>
+
+                2. <strong>Conformidade REGULATÓRIA obrigatória:</strong><br>
+                   • ANVISA exige certificação específica para software médico (RDC 185)<br>
+                   • Auditorias governamentais rigorosas<br>
+                   • Responsabilidade civil e criminal em caso de falhas<br>
+                   E-commerce não tem regulação específica de software.<br><br>
+
+                3. <strong>Rastreabilidade e Evidências:</strong><br>
+                   • Sistemas críticos precisam PROVAR que cada requisito foi testado<br>
+                   • Documentação completa para auditorias e investigações<br>
+                   • Matriz rastreabilidade requisito→design→código→teste<br><br>
+
+                <strong>b) Nível de maturidade adequado:</strong><br><br>
+
+                Recomendação: <strong>MPS.BR Nível D ou CMMI Nível 3 (mínimo)</strong><br><br>
+
+                Justificativa técnica:<br>
+                • Nível D/3 possui processos de Verificação, Validação e Desenvolvimento de Requisitos - essenciais para rastreabilidade<br>
+                • Gerência de Riscos (obrigatória no Nível D) é crítica para software médico<br>
+                • Processos organizacionais padronizados garantem consistência<br>
+                • Muitas certificadoras internacionais (FDA, CE Mark) exigem equivalência a CMMI 3+<br><br>
+
+                <strong>c) 5 processos ISO/IEC 12207 essenciais:</strong><br><br>
+
+                1. <strong>Desenvolvimento de Requisitos:</strong> Capturar requisitos funcionais e de segurança de forma completa e rastreável<br>
+                2. <strong>Verificação:</strong> Confirmar que cada artefato atende seus requisitos através de revisões e testes<br>
+                3. <strong>Validação:</strong> Confirmar que o produto final atende necessidades do usuário/paciente<br>
+                4. <strong>Gerência de Riscos:</strong> Identificar, avaliar e mitigar riscos clínicos e técnicos (obrigatório ANVISA)<br>
+                5. <strong>Gerência de Configuração:</strong> Controle rigoroso de versões, mudanças e releases (rastreabilidade regulatória)<br><br>
+
+                <strong>d) Demonstrar ROI para o board:</strong><br><br>
+
+                <div class="calculation-box">
+<strong>Investimento:</strong> R$200k implementação processos
+
+<strong>Evita custos:</strong>
+• Multas ANVISA por não conformidade: R$50k-500k
+• Recalls de produtos: R$1M-5M
+• Processos judiciais: R$500k-20M por morte
+• Perda certificação/mercado: R$5M-50M
+
+<strong>Habilita receita:</strong>
+• Certificação permite vender: mercado R$2B/ano Brasil
+• Contratos hospitais públicos (licitações): R$10M+
+• Exportação (FDA, CE): mercado global R$50B
+
+<strong>ROI Conservador:</strong>
+Investimento R$200k → Evita R$1M+ riscos + Habilita R$5M+ receita
+ROI = 2,500% em 24 meses
+                </div>
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 10 -->
+        <div class="gabarito-item">
+            <h3>Questão 10 - Análise ROI Caso Real (Dissertativa)</h3>
+            <div class="correct-answer">✓ Pontos-chave esperados:</div>
+            <div class="explanation">
+                <strong>a) Cálculo ROI da implementação:</strong><br><br>
+
+                <div class="calculation-box">
+<strong>INVESTIMENTO TOTAL (2021-2023):</strong>
+R$150k (2021) + R$80k (2022) + R$50k (2023) = R$280.000
+
+<strong>BENEFÍCIOS - Redução Custos Operacionais:</strong>
+• Bugs: 120→15/mês = 105 bugs/mês evitados
+  Assumindo R$500/bug correção: 105 × R$500 × 36 meses = R$1.890.000
+  
+• Turnover: 18%→5% = 13 pontos percentuais
+  100 funcionários × 13% = 13 pessoas/ano evitadas
+  Custo substituição ~R$50k/pessoa: 13 × R$50k × 3 anos = R$1.950.000
+  
+• Velocity: 22→42 SP (+91% produtividade)
+  Mesma entrega com ~metade do tempo = economia ~R$2.000.000
+
+<strong>BENEFÍCIOS - Nova Receita:</strong>
+• 3 contratos ganhos por ter MPS.BR: R$2.500.000
+
+<strong>TOTAL BENEFÍCIOS:</strong> R$8.340.000
+
+<strong>ROI = (Benefícios - Investimento) / Investimento × 100</strong>
+ROI = (R$8.340.000 - R$280.000) / R$280.000 × 100
+ROI = 2.878% em 3 anos ou ~960%/ano
+
+<strong>Payback:</strong> < 4 meses (investimento se pagou rapidamente)
+                </div>
+
+                <strong>b) Como maturidade impactou velocity:</strong><br><br>
+
+                Velocity aumentou de 22 para 42 SP (+91%) porque:<br><br>
+
+                1. <strong>Redução de Retrabalho:</strong> Menos bugs = menos tempo corrigindo, mais tempo criando<br>
+                2. <strong>Processos Padronizados:</strong> Todos sabem "como fazer", reduz tempo de decisão/debate<br>
+                3. <strong>Gerência de Requisitos:</strong> Requisitos claros = menos refação por mal-entendido<br>
+                4. <strong>Base de Conhecimento:</strong> Documentação e padrões reduzem curva aprendizado<br>
+                5. <strong>Automação:</strong> CI/CD e testes automatizados economizam horas manuais<br>
+                6. <strong>Foco:</strong> Com processos claros, devs gastam mais tempo codificando, menos "apagando incêndio"<br><br>
+
+                Relação: <strong>Processos → Redução Desperdício → Aumento Produtividade Efetiva</strong><br><br>
+
+                <strong>c) Continuar para Nível C/B ou estabilizar em D?</strong><br><br>
+
+                <strong>Recomendação: ESTABILIZAR no Nível D por 12-18 meses, depois avaliar C/B</strong><br><br>
+
+                Justificativa:<br>
+                • Empresa já alcançou benefícios significativos (ROI 2.878%)<br>
+                • Consolidar processos do Nível D garante sustentabilidade<br>
+                • Mercado reconhece Nível D (≈CMMI 3) como madura<br>
+                • Níveis C/B têm retorno marginal decrescente para PMEs<br>
+                • Investimento adicional (R$100k+ para C) pode não justificar ROI no curto prazo<br><br>
+
+                Exceções para buscar C/B:<br>
+                • Cliente grande exige CMMI 4+ (raro)<br>
+                • Empresa quer exportar para mercados que exigem níveis altos<br>
+                • Concorrência tem níveis superiores e empresa está perdendo contratos<br><br>
+
+                <strong>d) Métricas adicionais recomendadas:</strong><br><br>
+
+                1. <strong>Lead Time:</strong> Tempo requisito→produção (medir agilidade)<br>
+                2. <strong>Customer Satisfaction (CSAT/NPS):</strong> Feedback direto de clientes<br>
+                3. <strong>Code Coverage:</strong> % código coberto por testes (meta >80%)<br>
+                4. <strong>Technical Debt Ratio:</strong> Custo estimado refatoração vs custo desenvolvimento<br>
+                5. <strong>Mean Time to Recovery (MTTR):</strong> Tempo médio resolver incidentes<br>
+                6. <strong>Deployment Frequency:</strong> Quantos deploys/mês (agilidade)<br>
+                7. <strong>Employee Satisfaction:</strong> Satisfação interna do time dev<br>
+                8. <strong>Rework Rate:</strong> % trabalho que precisa ser refeito<br>
+                9. <strong>Requirements Volatility:</strong> Taxa mudança requisitos (estabilidade)<br>
+                10. <strong>Escaped Defects:</strong> Bugs que passaram QA e chegaram produção
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Centro Universitário Filadélfia - UniFil</strong></p>
+            <p>Disciplina: Qualidade de Software | Professor: Tiago | 2026</p>
+            <p style="margin-top: 20px; color: #4CAF50; font-weight: bold;">
+                Use este gabarito para aprender, não apenas para conferir respostas!
+            </p>
+            <p style="margin-top: 10px; font-style: italic;">
+                Revise os conceitos das questões que errou antes da prova real! 📚
+            </p>
+        </div>
+    </div>
+</body>
+</html>

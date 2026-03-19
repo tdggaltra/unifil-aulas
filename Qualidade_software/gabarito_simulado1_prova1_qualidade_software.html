@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado Prova 1 - Qualidade de Software | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            color: #2196F3;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #4A4A4A;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6B6B6B;
+            font-size: 1.1rem;
+        }
+
+        .info-box {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #2196F3;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .info-item strong {
+            margin-right: 8px;
+            color: #4A4A4A;
+        }
+
+        .student-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 40px;
+        }
+
+        .student-info p {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #4A4A4A;
+        }
+
+        .student-info input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .instructions {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            color: #FF9800;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .question-block {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #fafafa;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            background: #2196F3;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .question-type {
+            background: #4A4A4A;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .context-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+        }
+
+        .options {
+            margin-top: 20px;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: #2196F3;
+            background: #E3F2FD;
+        }
+
+        .option-letter {
+            background: #4A4A4A;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex: 1;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .essay-answer {
+            margin-top: 20px;
+        }
+
+        .essay-lines {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: white;
+            min-height: 200px;
+        }
+
+        .essay-line {
+            border-bottom: 1px solid #e0e0e0;
+            height: 30px;
+            margin-bottom: 5px;
+        }
+
+        .gabarito-section {
+            margin-top: 60px;
+            padding: 40px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            border: 3px dashed #4CAF50;
+        }
+
+        .gabarito-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .gabarito-header h2 {
+            color: #4CAF50;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .gabarito-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .gabarito-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .gabarito-item h4 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .correct-answer {
+            background: #E8F5E9;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: 700;
+            color: #2E7D32;
+        }
+
+        .explanation {
+            line-height: 1.7;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #6B6B6B;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .question-block {
+                page-break-inside: avoid;
+            }
+
+            .gabarito-section {
+                page-break-before: always;
+            }
+        }
+    </style>
+
+
+        <div style="page-break-before: always;"></div>
+
+        <!-- GABARITO SECTION -->
+        <div class="gabarito-section">
+            <div class="gabarito-header">
+                <h2>✅ Gabarito Comentado - Simulado 1</h2>
+                <p>Confira suas respostas e compreenda os conceitos</p>
+            </div>
+
+            <!-- Gabarito Q1 -->
+            <div class="gabarito-item">
+                <h4>Questão 1</h4>
+                <div class="correct-answer">✓ Resposta Correta: A</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> A ISO/IEC 25010 define que qualidade interna (características internas do código como manutenibilidade, testabilidade) afeta diretamente a qualidade externa (características percebidas pelo usuário como confiabilidade, desempenho). Código mal estruturado gera mais bugs, dificulta correções, aumenta tempo de desenvolvimento de novas features e eleva custos. A alternativa A corretamente explica essa relação causal.
+                </div>
+            </div>
+
+            <!-- Gabarito Q2 -->
+            <div class="gabarito-item">
+                <h4>Questão 2</h4>
+                <div class="correct-answer">✓ Resposta Correta: B</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> A principal diferença entre CMMI Nível 3 (Definido) e Nível 4 (Gerenciado Quantitativamente) é a adoção de controle estatístico de processos. No Nível 4, a organização estabelece objetivos quantitativos, coleta métricas, define baselines de desempenho e usa controle estatístico (gráficos de controle, análise de variação) para gerenciar processos de forma previsível.
+                </div>
+            </div>
+
+            <!-- Gabarito Q3 -->
+            <div class="gabarito-item">
+                <h4>Questão 3</h4>
+                <div class="correct-answer">✓ Resposta Correta: B</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> Para empresas brasileiras de médio porte que atuam principalmente no mercado nacional, o MPS.BR é a escolha mais adequada porque: (1) Foi desenhado especificamente para PMEs brasileiras, (2) Custos significativamente menores que CMMI, (3) Reconhecido em licitações governamentais brasileiras, (4) Possui equivalência de níveis com CMMI (Nível C ≈ CMMI 3). O custo 53% menor (R$85k vs R$180k) torna o ROI muito mais atrativo.
+                </div>
+            </div>
+
+            <!-- Gabarito Q4 -->
+            <div class="gabarito-item">
+                <h4>Questão 4</h4>
+                <div class="correct-answer">✓ Resposta Correta: B</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> No MPS.BR, o Nível E adiciona os processos de: Treinamento (TRE), Adaptação do Processo para Gerência de Projeto (ADP) e Avaliação e Melhoria do Processo Organizacional (AMP). Estes processos focam em institucionalizar processos organizacionais e começar ciclos de melhoria contínua.
+                </div>
+            </div>
+
+            <!-- Gabarito Q5 -->
+            <div class="gabarito-item">
+                <h4>Questão 5</h4>
+                <div class="correct-answer">✓ Resposta Correta: B</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> Segundo a ISO/IEC 12207, o processo de Garantia da Qualidade (Quality Assurance) tem como objetivo assegurar objetivamente que processos e produtos aderem a requisitos, padrões e procedimentos aplicáveis. Isso é feito através de auditorias, revisões e avaliações independentes. QA NÃO é responsável por executar testes (isso é Verificação/Validação), mas sim por assegurar que os processos estão sendo seguidos corretamente.
+                </div>
+            </div>
+
+            <!-- Gabarito Q6 -->
+            <div class="gabarito-item">
+                <h4>Questão 6</h4>
+                <div class="correct-answer">✓ Resposta Correta: C</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> Custos de Falha Externa são aqueles relacionados a defeitos descobertos APÓS a entrega ao cliente: bugs em produção (R$180k) + perda de clientes (R$250k) = R$430.000. Refatoração é custo de falha INTERNA (descoberto antes da entrega). Treinamento, code review e testes são custos de PREVENÇÃO. Auditorias são custos de AVALIAÇÃO.
+                </div>
+            </div>
+
+            <!-- Gabarito Q7 -->
+            <div class="gabarito-item">
+                <h4>Questão 7</h4>
+                <div class="correct-answer">✓ Resposta Correta: B</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> Os dados mostram clara correlação entre maturidade e resultados: Empresa C (CMMI 3) tem 90% menos bugs que Empresa A (80→8), 90% mais velocity (20→38 SP) e turnover 4x menor (15%→4%). Isso evidencia que investir em qualidade não apenas reduz defeitos, mas AUMENTA produtividade sustentável, refutando o mito de que qualidade reduz velocidade.
+                </div>
+            </div>
+
+            <!-- Gabarito Q8 -->
+            <div class="gabarito-item">
+                <h4>Questão 8</h4>
+                <div class="correct-answer">✓ Resposta Correta: C</div>
+                <div class="explanation">
+                    <strong>Explicação:</strong> A ISO/IEC 12207 organiza processos em 4 grupos (Técnicos, Organizacionais, Gerenciais, Acordo) que são complementares e interdependentes. Implementar apenas um grupo cria desequilíbrios: processos técnicos sem gestão geram caos; gestão sem processos organizacionais impede padronização; falta de processos de acordo dificulta relacionamento com clientes/fornecedores. A qualidade holística do ciclo de vida requer todos os grupos trabalhando de forma integrada.
+                </div>
+            </div>
+
+            <!-- Gabarito Q9 -->
+            <div class="gabarito-item">
+                <h4>Questão 9 (Dissertativa)</h4>
+                <div class="correct-answer">✓ Pontos-chave esperados na resposta:</div>
+                <div class="explanation">
+                    <strong>a) Nível atual:</strong> CMMI Nível 1 (Inicial/Ad hoc). Evidências: processos inconsistentes entre squads, sem métricas, sem ambiente staging, builds quebram frequentemente, documentação inexistente.<br><br>
+                    
+                    <strong>b) Nível-alvo 12 meses:</strong> CMMI Nível 2 (Gerenciado). Justificativa: É realista e traz benefícios significativos. Pular para Nível 3 em 12 meses seria arriscado para empresa de 120 pessoas sem processos básicos.<br><br>
+                    
+                    <strong>c) 4 ações prioritárias:</strong><br>
+                    1. Implementar CI/CD com quality gates (prevenir builds quebrados)<br>
+                    2. Criar processo de Gerência de Configuração (ambientes staging/produção separados)<br>
+                    3. Estabelecer processo de Gerência de Projetos básico comum a todos os squads (padronização mínima)<br>
+                    4. Implementar coleta de métricas básicas (build success rate, lead time, bug rate)<br><br>
+                    
+                    <strong>d) Medição do progresso:</strong><br>
+                    • % commits que passam em CI (meta >95%)<br>
+                    • Redução atraso releases (meta <1 semana)<br>
+                    • % squads seguindo processo padronizado (meta 100%)<br>
+                    • Cobertura métricas (meta: 10+ métricas coletadas sistematicamente)
+                </div>
+            </div>
+
+            <!-- Gabarito Q10 -->
+            <div class="gabarito-item">
+                <h4>Questão 10 (Dissertativa)</h4>
+                <div class="correct-answer">✓ Pontos-chave esperados na resposta:</div>
+                <div class="explanation">
+                    <strong>a) 3 diferenças estruturais:</strong><br>
+                    1. Níveis: CMMI tem 5 níveis, MPS.BR tem 7 (mais granular)<br>
+                    2. Áreas de processo: CMMI 22 PAs, MPS.BR 24 processos<br>
+                    3. Abordagem: CMMI staged ou continuous, MPS.BR apenas staged<br><br>
+                    
+                    <strong>b) 2 vantagens MPS.BR para PMEs brasileiras:</strong><br>
+                    1. Custo: 50-70% mais barato que CMMI (R$50-100k vs R$150-300k)<br>
+                    2. Granularidade: 7 níveis permitem evolução incremental menor, adequada a orçamentos limitados. Empresas pequenas podem alcançar Nível G com investimento menor.<br><br>
+                    
+                    <strong>c) Quando optar por CMMI:</strong><br>
+                    • Contratos internacionais que exigem CMMI explicitamente<br>
+                    • Empresa já grande (>500 funcionários) com orçamento para investimento maior<br>
+                    • Mercado específico (defesa, aeroespacial) onde CMMI é padrão<br>
+                    • Já possui CMMI e custo de migração não se justifica<br><br>
+                    
+                    <strong>d) Mapeamento entre modelos:</strong><br>
+                    Sim, é possível ter ambos. Mapeamento aproximado:<br>
+                    • MPS.BR G,F ≈ CMMI 2<br>
+                    • MPS.BR E,D,C ≈ CMMI 3<br>
+                    • MPS.BR B ≈ CMMI 4<br>
+                    • MPS.BR A ≈ CMMI 5<br>
+                    Empresas podem usar MPS.BR internamente e traduzir para CMMI em propostas internacionais.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Centro Universitário Filadélfia - UniFil</strong></p>
+            <p>Disciplina: Qualidade de Software | Professor: Tiago | 2026</p>
+            <p style="margin-top: 20px; font-style: italic;">Use este simulado como ferramenta de aprendizado! 📚</p>
+            <p style="margin-top: 10px; color: #4CAF50; font-weight: bold;">
+                Identifique suas dificuldades e revise os conceitos antes da prova real!
+            </p>
+        </div>
+    </div>
+</body>
+</html>
