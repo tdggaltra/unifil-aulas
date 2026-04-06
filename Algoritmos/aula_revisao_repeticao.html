@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula de Revisão - Estruturas de Repetição | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #2a2a2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 30px 50px; color: white;
+            position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -20px; left: 0; right: 0; height: 40px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.8rem; margin-bottom: 10px; font-weight: 600; }
+        .slide-header p  { font-size: 1.1rem; opacity: 0.95; }
+
+        .slide-body { flex: 1; padding: 60px 50px 40px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        .two-column   { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 30px 0; }
+        .three-column { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin: 30px 0; }
+
+        .content-box {
+            background: var(--unifil-light); padding: 30px;
+            border-radius: 15px; border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 15px; font-size: 1.4rem; }
+        .content-box p  { font-size: 1.05rem; line-height: 1.7; }
+        .content-box ul { list-style: none; padding-left: 0; }
+        .content-box li { padding: 8px 0 8px 30px; position: relative; font-size: 1.05rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; font-size: 1.2rem; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 30px; border-radius: 15px; margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .highlight-box p  { font-size: 1.1rem; line-height: 1.7; }
+        .highlight-box ul { list-style: none; padding: 0; }
+        .highlight-box li { padding: 8px 0; font-size: 1.05rem; line-height: 1.6; }
+
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+        .example-card p  { font-size: 1.05rem; line-height: 1.7; margin-bottom: 8px; }
+
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.88rem; overflow-x: auto;
+            margin: 15px 0; line-height: 1.65; white-space: pre;
+        }
+        .code-block .keyword  { color: #c678dd; font-weight: 600; }
+        .code-block .function { color: #61afef; }
+        .code-block .string   { color: #98c379; }
+        .code-block .comment  { color: #5c6370; font-style: italic; }
+        .code-block .number   { color: #d19a66; }
+        .code-block .operator { color: #FF8C00; font-weight: 600; }
+
+        .big-idea {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            color: white; padding: 35px 40px; border-radius: 20px;
+            font-size: 1.6rem; font-weight: 600; text-align: center;
+            margin: 30px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(74,144,226,0.3);
+        }
+
+        .success-box {
+            background: #e8f5e9; border: 3px solid #4caf50;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .success-box h3 { color: #2e7d32; margin-bottom: 15px; font-size: 1.3rem; }
+        .success-box p  { font-size: 1.05rem; line-height: 1.7; color: #1b5e20; }
+        .success-box ul { list-style: none; padding: 0; }
+        .success-box li { padding: 5px 0; font-size: 1rem; line-height: 1.6; color: #1b5e20; }
+
+        .warning-box {
+            background: #ffebee; border: 3px solid #f44336;
+            border-radius: 15px; padding: 25px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .warning-box h3 { color: #c62828; margin-bottom: 15px; font-size: 1.3rem; }
+        .warning-box p  { font-size: 1.05rem; line-height: 1.6; color: #b71c1c; }
+
+        .stat-card {
+            text-align: center; padding: 25px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 3rem; font-weight: 700; color: var(--unifil-orange); display: block; margin-bottom: 10px; }
+        .stat-card .label  { font-size: 1.1rem; color: var(--unifil-gray); font-weight: 500; }
+
+        .comparison-table {
+            width: 100%; border-collapse: collapse; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .comparison-table th {
+            background: var(--unifil-orange); color: white;
+            padding: 15px; text-align: left; font-size: 1.1rem;
+        }
+        .comparison-table td {
+            padding: 15px; border-bottom: 1px solid #ddd;
+            font-size: 1rem; line-height: 1.6;
+        }
+        .comparison-table tr:hover { background: var(--unifil-light); }
+
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 20px; align-items: center;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 30px; border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .nav-button {
+            background: var(--unifil-orange);
+            color: white; border: none;
+            padding: 12px 25px; border-radius: 25px;
+            cursor: pointer; font-size: 1rem; font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .nav-button:hover:not(:disabled) { background: var(--unifil-accent); transform: translateY(-2px); }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .slide-counter {
+            font-size: 1rem; font-weight: 600;
+            color: var(--unifil-dark); min-width: 80px; text-align: center;
+        }
+
+        .progress-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 5px;
+            background: rgba(255,255,255,0.2);
+        }
+        .progress-fill {
+            height: 100%; background: var(--unifil-orange);
+            transition: width 0.3s ease; width: 0%;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .problem-box {
+            background: #fff9e6; border: 2px solid #ffb74d;
+            padding: 25px; border-radius: 12px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .problem-box h4 { color: #e65100; margin-bottom: 12px; font-size: 1.3rem; }
+        .problem-box .question { font-size: 1.05rem; line-height: 1.7; margin-bottom: 15px; font-weight: 500; }
+        .problem-box .solution { background: white; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .problem-box .solution h5 { color: #2e7d32; margin-bottom: 10px; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+
+<div class="presentation">
+
+    <!-- ══════════════════════════ SLIDE 1 — TÍTULO ══════════════ -->
+    <div class="slide active">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h1>🔁 Revisão: Estruturas de Repetição</h1>
+                <p>Problemas Resolvidos e Explicados | UniFil</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Vamos revisar TUDO sobre while, do-while e for com 10+ problemas resolvidos!
+                </div>
+
+                <div class="three-column" style="margin-top:40px;">
+                    <div class="stat-card">
+                        <span class="number">10+</span>
+                        <span class="label">Problemas Resolvidos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="number">3</span>
+                        <span class="label">Estruturas de Repetição</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="number">100%</span>
+                        <span class="label">Código Funcional</span>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:40px;">
+                    <div class="content-box">
+                        <h3>📋 O que vamos revisar?</h3>
+                        <ul>
+                            <li>Estrutura <strong>while</strong> — quando NÃO sabemos quantas vezes</li>
+                            <li>Estrutura <strong>do-while</strong> — executar PELO MENOS uma vez</li>
+                            <li>Estrutura <strong>for</strong> — quando sabemos quantas iterações</li>
+                            <li>Combinações e casos práticos</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🎯 Objetivos desta aula</h3>
+                        <ul>
+                            <li>Resolver problemas REAIS passo a passo</li>
+                            <li>Ver código COMPLETO em Portugol</li>
+                            <li>Entender quando usar cada estrutura</li>
+                            <li>Praticar trace (execução manual)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:30px;">
+                    <h3>💡 Dica de Ouro</h3>
+                    <p>
+                        Antes de programar, pergunte: <strong>"Eu SEI quantas vezes vai repetir?"</strong>
+                        Se SIM → for. Se NÃO → while ou do-while.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 2 — PROBLEMA 1: WHILE ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Problema 1: Soma até digitar 0 (while)</h2>
+                <p>Sentinela: loop controlado por valor especial</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Enunciado</h4>
+                    <p class="question">
+                        Escreva um programa que leia números inteiros do usuário e some todos eles.
+                        O programa deve parar quando o usuário digitar 0 (zero).
+                        Ao final, mostre a soma total.
+                    </p>
+
+                    <div class="solution">
+                        <h5>✅ Solução em Portugol</h5>
+                        <div class="code-block"><span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> numero, soma = <span class="number">0</span>
+        
+        <span class="comment">// Ler primeiro número</span>
+        <span class="function">escreva</span>(<span class="string">"Digite um número (0 para sair): "</span>)
+        <span class="function">leia</span>(numero)
+        
+        <span class="comment">// Loop enquanto não digitar 0</span>
+        <span class="keyword">enquanto</span> (numero != <span class="number">0</span>) {
+            soma = soma + numero
+            <span class="function">escreva</span>(<span class="string">"Digite outro número (0 para sair): "</span>)
+            <span class="function">leia</span>(numero)
+        }
+        
+        <span class="function">escreva</span>(<span class="string">"Soma total: "</span>, soma, <span class="string">"\n"</span>)
+    }
+}</div>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>🔍 Por que while?</h3>
+                        <ul>
+                            <li>NÃO sabemos quantos números serão digitados</li>
+                            <li>Depende do usuário digitar 0</li>
+                            <li>Pode executar 0 vezes (se digitar 0 logo)</li>
+                            <li>Padrão: <strong>sentinela</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="success-box">
+                        <h3>📊 Trace (exemplo)</h3>
+                        <p><strong>Entrada:</strong> 10, 20, 30, 0</p>
+                        <ul>
+                            <li>Iteração 1: numero=10, soma=0+10=10</li>
+                            <li>Iteração 2: numero=20, soma=10+20=30</li>
+                            <li>Iteração 3: numero=30, soma=30+30=60</li>
+                            <li>numero=0 → loop termina</li>
+                            <li><strong>Saída: 60</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top:20px;">
+                    <h3>⚠️ Erro Comum</h3>
+                    <p>
+                        Esquecer de ler o número DENTRO do loop! Se não ler novamente,
+                        o loop fica infinito porque numero nunca muda.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 3 — PROBLEMA 2: DO-WHILE ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Problema 2: Validação de Senha (do-while)</h2>
+                <p>Execução garantida pelo menos uma vez</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Enunciado</h4>
+                    <p class="question">
+                        Crie um programa que peça ao usuário para digitar a senha correta.
+                        A senha é "1234". O programa deve continuar pedindo até o usuário acertar.
+                        Ao acertar, mostre "Acesso liberado!".
+                    </p>
+
+                    <div class="solution">
+                        <h5>✅ Solução em Portugol</h5>
+                        <div class="code-block"><span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> senha, senhaCorreta = <span class="number">1234</span>
+        
+        <span class="keyword">faca</span> {
+            <span class="function">escreva</span>(<span class="string">"Digite a senha: "</span>)
+            <span class="function">leia</span>(senha)
+            
+            <span class="keyword">se</span> (senha != senhaCorreta) {
+                <span class="function">escreva</span>(<span class="string">"Senha incorreta! Tente novamente.\n"</span>)
+            }
+        } <span class="keyword">enquanto</span> (senha != senhaCorreta)
+        
+        <span class="function">escreva</span>(<span class="string">"Acesso liberado!\n"</span>)
+    }
+}</div>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>🔍 Por que do-while?</h3>
+                        <ul>
+                            <li>DEVE pedir senha PELO MENOS uma vez</li>
+                            <li>Teste da condição é no FINAL</li>
+                            <li>Ideal para validações</li>
+                            <li>Garante execução mínima</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🆚 while vs do-while</h3>
+                        <ul>
+                            <li><strong>while:</strong> testa ANTES → pode não executar</li>
+                            <li><strong>do-while:</strong> testa DEPOIS → executa 1x no mínimo</li>
+                            <li>Use do-while para menus e validações</li>
+                            <li>Use while para sentinelas</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="success-box" style="margin-top:20px;">
+                    <h3>✅ Quando usar do-while</h3>
+                    <ul>
+                        <li>Menus de opções (mostrar pelo menos 1x)</li>
+                        <li>Validação de entrada (pedir pelo menos 1x)</li>
+                        <li>Jogos (jogar pelo menos 1 rodada)</li>
+                        <li>Confirmações (perguntar pelo menos 1x)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 4 — PROBLEMA 3: FOR ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Problema 3: Tabuada Completa (for)</h2>
+                <p>Quantidade de iterações conhecida</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Enunciado</h4>
+                    <p class="question">
+                        Leia um número do usuário e mostre a tabuada completa desse número,
+                        de 1 até 10. Formato: "5 x 1 = 5", "5 x 2 = 10", etc.
+                    </p>
+
+                    <div class="solution">
+                        <h5>✅ Solução em Portugol</h5>
+                        <div class="code-block"><span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> numero
+        
+        <span class="function">escreva</span>(<span class="string">"Digite um número: "</span>)
+        <span class="function">leia</span>(numero)
+        
+        <span class="function">escreva</span>(<span class="string">"\nTabuada do "</span>, numero, <span class="string">":\n"</span>)
+        
+        <span class="keyword">para</span> (<span class="keyword">inteiro</span> i = <span class="number">1</span>; i <= <span class="number">10</span>; i++) {
+            <span class="function">escreva</span>(numero, <span class="string">" x "</span>, i, <span class="string">" = "</span>, numero * i, <span class="string">"\n"</span>)
+        }
+    }
+}</div>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>🔍 Por que for?</h3>
+                        <ul>
+                            <li>Sabemos EXATAMENTE: 10 iterações</li>
+                            <li>Contador cresce de 1 em 1</li>
+                            <li>Início, fim e incremento claros</li>
+                            <li>Padrão perfeito para for</li>
+                        </ul>
+                    </div>
+
+                    <div class="success-box">
+                        <h3>📊 Exemplo de Saída</h3>
+                        <p><strong>Entrada:</strong> 5</p>
+                        <p style="margin-top:10px; font-family: 'Courier New'; font-size:0.95rem;">
+                            5 x 1 = 5<br>
+                            5 x 2 = 10<br>
+                            5 x 3 = 15<br>
+                            ...<br>
+                            5 x 10 = 50
+                        </p>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:20px;">
+                    <h3>🎯 Estrutura do for</h3>
+                    <p>
+                        <strong>for (inicialização; condição; incremento)</strong><br>
+                        • Inicialização: executada 1 vez no início<br>
+                        • Condição: testada antes de cada iteração<br>
+                        • Incremento: executado após cada iteração
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 5 — PROBLEMA 4: FATORIAL ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Problema 4: Fatorial (for)</h2>
+                <p>Multiplicação acumulada</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Enunciado</h4>
+                    <p class="question">
+                        Calcule o fatorial de um número N. Fatorial: N! = N × (N-1) × (N-2) × ... × 1.
+                        Exemplo: 5! = 5 × 4 × 3 × 2 × 1 = 120
+                    </p>
+
+                    <div class="solution">
+                        <h5>✅ Solução em Portugol</h5>
+                        <div class="code-block"><span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> numero, fatorial = <span class="number">1</span>
+        
+        <span class="function">escreva</span>(<span class="string">"Digite um número: "</span>)
+        <span class="function">leia</span>(numero)
+        
+        <span class="comment">// Multiplicar de N até 1</span>
+        <span class="keyword">para</span> (<span class="keyword">inteiro</span> i = numero; i >= <span class="number">1</span>; i--) {
+            fatorial = fatorial * i
+        }
+        
+        <span class="function">escreva</span>(numero, <span class="string">"! = "</span>, fatorial, <span class="string">"\n"</span>)
+    }
+}</div>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>🔍 Conceitos-chave</h3>
+                        <ul>
+                            <li><strong>Acumulador multiplicativo:</strong> começa em 1</li>
+                            <li><strong>Decremento:</strong> i-- (de N até 1)</li>
+                            <li>IMPORTANTE: inicializar fatorial = 1</li>
+                            <li>Se iniciar em 0, resultado sempre 0!</li>
+                        </ul>
+                    </div>
+
+                    <div class="success-box">
+                        <h3>📊 Trace: 5!</h3>
+                        <ul>
+                            <li>Início: fatorial = 1</li>
+                            <li>i=5: fatorial = 1 × 5 = 5</li>
+                            <li>i=4: fatorial = 5 × 4 = 20</li>
+                            <li>i=3: fatorial = 20 × 3 = 60</li>
+                            <li>i=2: fatorial = 60 × 2 = 120</li>
+                            <li>i=1: fatorial = 120 × 1 = 120</li>
+                            <li><strong>Resultado: 120 ✓</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top:20px;">
+                    <h3>⚠️ Erro Comum</h3>
+                    <p>
+                        Inicializar o acumulador com 0 em vez de 1. Para multiplicação,
+                        sempre inicialize com 1, não 0!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 6 — PROBLEMA 5: FIBONACCI ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Problema 5: Sequência de Fibonacci (for)</h2>
+                <p>Dois acumuladores trabalhando juntos</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Enunciado</h4>
+                    <p class="question">
+                        Mostre os primeiros N termos da sequência de Fibonacci.
+                        Fibonacci: cada termo é a soma dos dois anteriores. Começa com 0 e 1.
+                        Exemplo (5 termos): 0, 1, 1, 2, 3
+                    </p>
+
+                    <div class="solution">
+                        <h5>✅ Solução em Portugol</h5>
+                        <div class="code-block"><span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> n, a = <span class="number">0</span>, b = <span class="number">1</span>, proximo
+        
+        <span class="function">escreva</span>(<span class="string">"Quantos termos? "</span>)
+        <span class="function">leia</span>(n)
+        
+        <span class="function">escreva</span>(<span class="string">"Fibonacci: "</span>)
+        
+        <span class="keyword">para</span> (<span class="keyword">inteiro</span> i = <span class="number">1</span>; i <= n; i++) {
+            <span class="function">escreva</span>(a, <span class="string">" "</span>)
+            
+            <span class="comment">// Calcular próximo termo</span>
+            proximo = a + b
+            a = b
+            b = proximo
+        }
+        
+        <span class="function">escreva</span>(<span class="string">"\n"</span>)
+    }
+}</div>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>🔍 Lógica do Fibonacci</h3>
+                        <ul>
+                            <li>Dois acumuladores: <strong>a</strong> e <strong>b</strong></li>
+                            <li>Mostrar <strong>a</strong>, depois "avançar"</li>
+                            <li>proximo = a + b</li>
+                            <li>a recebe b, b recebe proximo</li>
+                        </ul>
+                    </div>
+
+                    <div class="success-box">
+                        <h3>📊 Trace: 5 termos</h3>
+                        <ul>
+                            <li>i=1: mostra a=0, próx=0+1=1, a=1, b=1</li>
+                            <li>i=2: mostra a=1, próx=1+1=2, a=1, b=2</li>
+                            <li>i=3: mostra a=1, próx=1+2=3, a=2, b=3</li>
+                            <li>i=4: mostra a=2, próx=2+3=5, a=3, b=5</li>
+                            <li>i=5: mostra a=3</li>
+                            <li><strong>Saída: 0 1 1 2 3</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:20px;">
+                    <h3>💡 Padrão Comum</h3>
+                    <p>
+                        Sequências que dependem de termos anteriores sempre usam acumuladores.
+                        No Fibonacci: precisamos de 2 acumuladores (termo atual e anterior).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 7 — PROBLEMA 6: NÚMERO PRIMO ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Problema 6: Verificar Número Primo (for + flag)</h2>
+                <p>Decisão dentro de repetição</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Enunciado</h4>
+                    <p class="question">
+                        Verifique se um número N é primo. Número primo: divisível apenas por 1 e ele mesmo.
+                        Exemplo: 7 é primo (divisores: 1 e 7). 6 não é primo (divisores: 1, 2, 3, 6).
+                    </p>
+
+                    <div class="solution">
+                        <h5>✅ Solução em Portugol</h5>
+                        <div class="code-block"><span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> numero
+        <span class="keyword">logico</span> primo = <span class="keyword">verdadeiro</span>
+        
+        <span class="function">escreva</span>(<span class="string">"Digite um número: "</span>)
+        <span class="function">leia</span>(numero)
+        
+        <span class="comment">// Números menores que 2 não são primos</span>
+        <span class="keyword">se</span> (numero < <span class="number">2</span>) {
+            primo = <span class="keyword">falso</span>
+        } <span class="keyword">senao</span> {
+            <span class="comment">// Testar divisibilidade de 2 até numero-1</span>
+            <span class="keyword">para</span> (<span class="keyword">inteiro</span> i = <span class="number">2</span>; i < numero; i++) {
+                <span class="keyword">se</span> (numero % i == <span class="number">0</span>) {
+                    primo = <span class="keyword">falso</span>
+                    <span class="keyword">pare</span>  <span class="comment">// Encontrou divisor, pode parar</span>
+                }
+            }
+        }
+        
+        <span class="keyword">se</span> (primo) {
+            <span class="function">escreva</span>(numero, <span class="string">" é primo\n"</span>)
+        } <span class="keyword">senao</span> {
+            <span class="function">escreva</span>(numero, <span class="string">" não é primo\n"</span>)
+        }
+    }
+}</div>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:25px;">
+                    <div class="content-box">
+                        <h3>🔍 Conceitos-chave</h3>
+                        <ul>
+                            <li><strong>Flag:</strong> variável booleana (primo)</li>
+                            <li>Começa verdadeiro (otimista)</li>
+                            <li>Se encontrar divisor → muda para falso</li>
+                            <li><strong>pare:</strong> otimização (sai do loop)</li>
+                        </ul>
+                    </div>
+
+                    <div class="success-box">
+                        <h3>✅ Exemplos</h3>
+                        <ul>
+                            <li><strong>N=7:</strong> testa 2,3,4,5,6 → nenhum divide → PRIMO</li>
+                            <li><strong>N=6:</strong> testa 2 → 6%2=0 → divide → NÃO PRIMO</li>
+                            <li><strong>N=2:</strong> não entra no loop → PRIMO</li>
+                            <li><strong>N=1:</strong> menor que 2 → NÃO PRIMO</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:20px;">
+                    <h3>💡 Padrão: Flag (Bandeira)</h3>
+                    <p>
+                        Use uma variável lógica para "lembrar" se algo aconteceu dentro do loop.
+                        Muito útil quando você precisa testar várias condições!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 8 — PROBLEMA 7: MENU COMPLETO ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Problema 7: Menu Interativo (do-while + switch)</h2>
+                <p>Programa completo no Portugol Web Studio</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Enunciado</h4>
+                    <p class="question">
+                        Crie uma calculadora com menu: 1-Somar, 2-Subtrair, 3-Multiplicar, 4-Dividir, 0-Sair.
+                        O menu deve aparecer repetidamente até o usuário escolher sair (0).
+                    </p>
+
+                    <div class="solution">
+                        <h5>✅ Solução COMPLETA em Portugol (copie e teste!)</h5>
+                        <div class="code-block"><span class="keyword">programa</span>
+{
+    <span class="keyword">funcao</span> <span class="function">inicio</span>()
+    {
+        <span class="keyword">inteiro</span> opcao
+        <span class="keyword">real</span> a, b, resultado
+        
+        <span class="keyword">faca</span> {
+            <span class="comment">// Mostrar menu</span>
+            <span class="function">escreva</span>(<span class="string">"\n╔════════════════════════╗\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"║   CALCULADORA v1.0   ║\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"╚════════════════════════╝\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"1 - Somar\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"2 - Subtrair\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"3 - Multiplicar\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"4 - Dividir\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"0 - Sair\n"</span>)
+            <span class="function">escreva</span>(<span class="string">"Escolha: "</span>)
+            <span class="function">leia</span>(opcao)
+            
+            <span class="comment">// Processar escolha</span>
+            <span class="keyword">se</span> (opcao >= <span class="number">1</span> <span class="operator">e</span> opcao <= <span class="number">4</span>) {
+                <span class="function">escreva</span>(<span class="string">"Digite dois números: "</span>)
+                <span class="function">leia</span>(a)
+                <span class="function">leia</span>(b)
+                
+                <span class="keyword">escolha</span> (opcao) {
+                    <span class="keyword">caso</span> <span class="number">1</span>:
+                        resultado = a + b
+                        <span class="function">escreva</span>(<span class="string">"\nResultado: "</span>, a, <span class="string">" + "</span>, b, <span class="string">" = "</span>, resultado, <span class="string">"\n"</span>)
+                        <span class="keyword">pare</span>
+                    <span class="keyword">caso</span> <span class="number">2</span>:
+                        resultado = a - b
+                        <span class="function">escreva</span>(<span class="string">"\nResultado: "</span>, a, <span class="string">" - "</span>, b, <span class="string">" = "</span>, resultado, <span class="string">"\n"</span>)
+                        <span class="keyword">pare</span>
+                    <span class="keyword">caso</span> <span class="number">3</span>:
+                        resultado = a * b
+                        <span class="function">escreva</span>(<span class="string">"\nResultado: "</span>, a, <span class="string">" × "</span>, b, <span class="string">" = "</span>, resultado, <span class="string">"\n"</span>)
+                        <span class="keyword">pare</span>
+                    <span class="keyword">caso</span> <span class="number">4</span>:
+                        <span class="keyword">se</span> (b != <span class="number">0</span>) {
+                            resultado = a / b
+                            <span class="function">escreva</span>(<span class="string">"\nResultado: "</span>, a, <span class="string">" ÷ "</span>, b, <span class="string">" = "</span>, resultado, <span class="string">"\n"</span>)
+                        } <span class="keyword">senao</span> {
+                            <span class="function">escreva</span>(<span class="string">"\n⚠️  ERRO: Divisão por zero!\n"</span>)
+                        }
+                        <span class="keyword">pare</span>
+                }
+            } <span class="keyword">senao</span> <span class="keyword">se</span> (opcao != <span class="number">0</span>) {
+                <span class="function">escreva</span>(<span class="string">"\n⚠️  Opção inválida!\n"</span>)
+            }
+            
+        } <span class="keyword">enquanto</span> (opcao != <span class="number">0</span>)
+        
+        <span class="function">escreva</span>(<span class="string">"\n👋 Até logo!\n"</span>)
+    }
+}</div>
+                    </div>
+                </div>
+
+                <div class="success-box" style="margin-top:25px;">
+                    <h3>✅ Teste no Portugol Web Studio!</h3>
+                    <p>
+                        <strong>1.</strong> Acesse: <a href="https://portugol-webstudio.cubos.io" target="_blank" style="color:#2e7d32;">portugol-webstudio.cubos.io</a><br>
+                        <strong>2.</strong> Cole o código acima<br>
+                        <strong>3.</strong> Clique em "Executar"<br>
+                        <strong>4.</strong> Teste todas as operações!
+                    </p>
+                </div>
+
+                <div class="highlight-box" style="margin-top:20px;">
+                    <h3>🎯 Conceitos Aplicados</h3>
+                    <p>
+                        ✓ do-while (menu repetitivo)<br>
+                        ✓ escolha/caso (switch-case)<br>
+                        ✓ Validação (divisão por zero)<br>
+                        ✓ Formatação (visual profissional)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 9 — COMPARAÇÃO ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📊 Comparação: Quando Usar Cada Estrutura</h2>
+                <p>Guia de decisão rápida</p>
+            </div>
+            <div class="slide-body">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Situação</th>
+                            <th>Estrutura</th>
+                            <th>Exemplo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Sei EXATAMENTE quantas vezes</strong></td>
+                            <td><span style="color:var(--unifil-orange);font-weight:bold;">for</span></td>
+                            <td>Tabuada (1 a 10), Listar vetor[10]</td>
+                        </tr>
+                        <tr>
+                            <td><strong>NÃO sei quantas vezes (sentinela)</strong></td>
+                            <td><span style="color:var(--unifil-orange);font-weight:bold;">while</span></td>
+                            <td>Ler até digitar 0, Jogo até acertar</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Executar PELO MENOS 1 vez</strong></td>
+                            <td><span style="color:var(--unifil-orange);font-weight:bold;">do-while</span></td>
+                            <td>Menu, Validação de senha</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Contador crescente/decrescente</strong></td>
+                            <td><span style="color:var(--unifil-orange);font-weight:bold;">for</span></td>
+                            <td>1 a 100, 10 a 1, Pares de 0 a N</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Baseado em condição complexa</strong></td>
+                            <td><span style="color:var(--unifil-orange);font-weight:bold;">while</span></td>
+                            <td>Enquanto (x>10 e y<5), Algoritmos</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="two-column" style="margin-top:30px;">
+                    <div class="content-box">
+                        <h3>✅ Use FOR quando:</h3>
+                        <ul>
+                            <li>Sabe o número exato de iterações</li>
+                            <li>Tem contador com início e fim claros</li>
+                            <li>Percorrer arrays/vetores</li>
+                            <li>Gerar sequências numéricas</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>✅ Use WHILE quando:</h3>
+                        <ul>
+                            <li>Condição depende de entrada do usuário</li>
+                            <li>Usar valor sentinela (0, -1, "sair")</li>
+                            <li>Algoritmos (Euclides, busca)</li>
+                            <li>Pode NÃO executar nenhuma vez</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>✅ Use DO-WHILE quando:</h3>
+                        <ul>
+                            <li>Menu de opções</li>
+                            <li>Validação de entrada</li>
+                            <li>Jogos (jogar pelo menos 1 rodada)</li>
+                            <li>Confirmações (perguntar sempre 1x)</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning-box">
+                        <h3>⚠️ Evite Loop Infinito!</h3>
+                        <p>
+                            Sempre garanta que a condição do loop eventualmente se torne falsa.
+                            Em while/do-while: modifique a variável da condição DENTRO do loop!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 10 — MAIS PROBLEMAS ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔹 Mais Problemas Resolvidos</h2>
+                <p>Pratique estes exemplos!</p>
+            </div>
+            <div class="slide-body">
+                <div class="problem-box">
+                    <h4>📝 Problema 8: Contar Pares de 1 a N</h4>
+                    <p class="question">Leia N. Conte quantos números pares existem de 1 até N.</p>
+                    <div class="solution">
+                        <h5>✅ Solução</h5>
+                        <div class="code-block"><span class="keyword">inteiro</span> n, contador = <span class="number">0</span>
+<span class="function">leia</span>(n)
+<span class="keyword">para</span> (<span class="keyword">inteiro</span> i = <span class="number">1</span>; i <= n; i++) {
+    <span class="keyword">se</span> (i % <span class="number">2</span> == <span class="number">0</span>) {
+        contador++
+    }
+}
+<span class="function">escreva</span>(<span class="string">"Pares: "</span>, contador)</div>
+                    </div>
+                </div>
+
+                <div class="problem-box">
+                    <h4>📝 Problema 9: Soma de Pares e Ímpares Separados</h4>
+                    <p class="question">Leia 10 números. Calcule a soma dos pares e a soma dos ímpares separadamente.</p>
+                    <div class="solution">
+                        <h5>✅ Solução</h5>
+                        <div class="code-block"><span class="keyword">inteiro</span> numero, somaPares = <span class="number">0</span>, somaImpares = <span class="number">0</span>
+
+<span class="keyword">para</span> (<span class="keyword">inteiro</span> i = <span class="number">1</span>; i <= <span class="number">10</span>; i++) {
+    <span class="function">escreva</span>(<span class="string">"Número "</span>, i, <span class="string">": "</span>)
+    <span class="function">leia</span>(numero)
+    
+    <span class="keyword">se</span> (numero % <span class="number">2</span> == <span class="number">0</span>) {
+        somaPares += numero
+    } <span class="keyword">senao</span> {
+        somaImpares += numero
+    }
+}
+
+<span class="function">escreva</span>(<span class="string">"Soma pares: "</span>, somaPares, <span class="string">"\n"</span>)
+<span class="function">escreva</span>(<span class="string">"Soma ímpares: "</span>, somaImpares, <span class="string">"\n"</span>)</div>
+                    </div>
+                </div>
+
+                <div class="problem-box">
+                    <h4>📝 Problema 10: Jogo de Adivinhação</h4>
+                    <p class="question">Número secreto = 42. Usuário tenta adivinhar. Dê dicas "maior" ou "menor".</p>
+                    <div class="solution">
+                        <h5>✅ Solução</h5>
+                        <div class="code-block"><span class="keyword">inteiro</span> secreto = <span class="number">42</span>, palpite, tentativas = <span class="number">0</span>
+
+<span class="function">escreva</span>(<span class="string">"Adivinhe o número (1-100): "</span>)
+
+<span class="keyword">faca</span> {
+    <span class="function">leia</span>(palpite)
+    tentativas++
+    
+    <span class="keyword">se</span> (palpite < secreto) {
+        <span class="function">escreva</span>(<span class="string">"Muito baixo! Tente: "</span>)
+    } <span class="keyword">senao</span> <span class="keyword">se</span> (palpite > secreto) {
+        <span class="function">escreva</span>(<span class="string">"Muito alto! Tente: "</span>)
+    }
+} <span class="keyword">enquanto</span> (palpite != secreto)
+
+<span class="function">escreva</span>(<span class="string">"🎉 Acertou em "</span>, tentativas, <span class="string">" tentativas!\n"</span>)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 11 — EXERCÍCIOS ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💪 Exercícios para Praticar</h2>
+                <p>Resolva no Portugol Web Studio!</p>
+            </div>
+            <div class="slide-body">
+                <div class="example-card">
+                    <h4>📌 Exercício 1: Média de N Notas</h4>
+                    <p>
+                        Leia um número N. Depois leia N notas. Calcule e mostre a média.
+                        Use <strong>for</strong> para ler as notas e acumular a soma.
+                    </p>
+                </div>
+
+                <div class="example-card">
+                    <h4>📌 Exercício 2: Contagem Regressiva</h4>
+                    <p>
+                        Leia um número N. Faça uma contagem regressiva de N até 0.
+                        Ao final, mostre "FOGO!". Use <strong>for</strong> com decremento.
+                    </p>
+                </div>
+
+                <div class="example-card">
+                    <h4>📌 Exercício 3: Potência (a^b)</h4>
+                    <p>
+                        Leia dois números: base e expoente. Calcule base^expoente SEM usar função pronta.
+                        Use <strong>for</strong> e multiplicação acumulada.
+                    </p>
+                </div>
+
+                <div class="example-card">
+                    <h4>📌 Exercício 4: Números Primos de 1 a 100</h4>
+                    <p>
+                        Mostre TODOS os números primos de 1 a 100.
+                        Use <strong>for</strong> aninhado: externo para números, interno para testar divisibilidade.
+                    </p>
+                </div>
+
+                <div class="example-card">
+                    <h4>📌 Exercício 5: Validar Nota (0-10)</h4>
+                    <p>
+                        Peça uma nota. Se não estiver entre 0 e 10, peça novamente até o usuário digitar válido.
+                        Use <strong>do-while</strong> para validação.
+                    </p>
+                </div>
+
+                <div class="highlight-box" style="margin-top:30px;">
+                    <h3>🎯 Desafio Final</h3>
+                    <p>
+                        Crie um programa completo que seja um <strong>"Sistema de Notas"</strong>:<br>
+                        • Menu com do-while: 1-Adicionar nota, 2-Ver média, 3-Ver maior/menor, 0-Sair<br>
+                        • Armazene até 10 notas<br>
+                        • Calcule média, maior e menor nota<br>
+                        • Use for para percorrer as notas
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════ SLIDE 12 — RESUMO ══════════════ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🎯 Resumo da Revisão</h2>
+                <p>Estruturas de Repetição — você está preparado!</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Você revisou 10+ problemas e está pronto para qualquer desafio de repetição! 🏆
+                </div>
+
+                <div class="three-column" style="margin-top:40px;">
+                    <div class="content-box">
+                        <h3>✅ Problemas Resolvidos</h3>
+                        <ul>
+                            <li>Soma com sentinela (while)</li>
+                            <li>Validação senha (do-while)</li>
+                            <li>Tabuada (for)</li>
+                            <li>Fatorial (for)</li>
+                            <li>Fibonacci (for)</li>
+                            <li>Número primo (for + flag)</li>
+                            <li>Calculadora menu (do-while)</li>
+                            <li>Contar pares (for)</li>
+                            <li>Soma separada (for)</li>
+                            <li>Jogo adivinhação (do-while)</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🎯 Conceitos Dominados</h3>
+                        <ul>
+                            <li><strong>while:</strong> sentinela, condição no início</li>
+                            <li><strong>do-while:</strong> menu, validação, mínimo 1x</li>
+                            <li><strong>for:</strong> contador, quantidade conhecida</li>
+                            <li>Acumuladores (soma, multiplicação)</li>
+                            <li>Flags (variáveis lógicas)</li>
+                            <li>Trace manual</li>
+                            <li>Combinação com decisão</li>
+                        </ul>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>🔥 Próximos Passos</h3>
+                        <ul>
+                            <li>Pratique os exercícios propostos</li>
+                            <li>Teste no Portugol Web Studio</li>
+                            <li>Crie variações dos problemas</li>
+                            <li>Próxima aula: <strong>Vetores!</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="two-column" style="margin-top:30px;">
+                    <div class="success-box">
+                        <h3>✅ Checklist de Domínio</h3>
+                        <ul>
+                            <li>☑️ Sei quando usar for, while, do-while</li>
+                            <li>☑️ Entendo acumuladores e contadores</li>
+                            <li>☑️ Sei fazer trace manual</li>
+                            <li>☑️ Combino repetição com decisão</li>
+                            <li>☑️ Evito loops infinitos</li>
+                            <li>☑️ Uso flags quando necessário</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>📚 Para Casa</h3>
+                        <ul>
+                            <li style="padding:8px 0;">Resolver PELO MENOS 3 exercícios propostos</li>
+                            <li style="padding:8px 0;">Testar a calculadora no Portugol Web Studio</li>
+                            <li style="padding:8px 0;">Criar 1 problema próprio e resolver</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-top:40px; color:var(--unifil-gray);">
+                    <p style="font-size:1.4rem; font-weight:600;">Excelente revisão! 🎓</p>
+                    <p style="font-size:1.1rem; margin-top:10px;">Continue praticando!</p>
+                    <p style="font-size:0.95rem; margin-top:20px; font-style:italic;">
+                        "A repetição é a mãe da aprendizagem!" 🔁
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+        <span class="slide-counter" id="slideCounter">1 / 12</span>
+        <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        document.getElementById('progressBar').style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box,.example-card,.highlight-box,.big-idea,.stat-card,' +
+            '.comparison-table,.warning-box,.success-box,.problem-box'
+        );
+        animated.forEach((el, i) => {
+            el.style.animation = 'none'; el.style.opacity = '0';
+            setTimeout(() => { el.style.animation = `fadeInUp 0.5s ease-out ${i * 0.07}s forwards`; }, 10);
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1);
+    });
+
+    showSlide(0);
+</script>
+
+</body>
+</html>
