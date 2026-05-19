@@ -11,14 +11,14 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --orange:      #FF8C00;
-            --orange-glow: #FF8C0033;
-            --dark:        #111114;
-            --card:        #22222A;
-            --border:      #2E2E3A;
-            --text:        #E8E8F0;
-            --muted:       #888899;
-            --white:       #FFFFFF;
+            --orange:     #FF8C00;
+            --orange-glow:#FF8C0033;
+            --dark:       #111114;
+            --card:       #22222A;
+            --border:     #2E2E3A;
+            --text:       #E8E8F0;
+            --muted:      #888899;
+            --white:      #FFFFFF;
         }
 
         html { scroll-behavior: smooth; }
@@ -33,12 +33,14 @@
 
         body::before {
             content: '';
-            position: fixed; inset: 0;
+            position: fixed;
+            inset: 0;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-            pointer-events: none; z-index: 0;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        /* ── HEADER ── */
+        /* HEADER */
         header {
             position: relative;
             padding: 60px 40px 50px;
@@ -46,194 +48,308 @@
             border-bottom: 1px solid var(--border);
             overflow: hidden;
         }
+
         header::before {
             content: '';
-            position: absolute; top: -120px; left: 50%;
+            position: absolute;
+            top: -120px; left: 50%;
             transform: translateX(-50%);
             width: 600px; height: 300px;
             background: radial-gradient(ellipse, var(--orange-glow) 0%, transparent 70%);
             pointer-events: none;
         }
+
         .header-badge {
             display: inline-block;
             background: var(--orange-glow);
             border: 1px solid var(--orange);
             color: var(--orange);
-            font-size: 0.72rem; font-weight: 600;
-            letter-spacing: 0.15em; text-transform: uppercase;
-            padding: 6px 16px; border-radius: 100px; margin-bottom: 24px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 24px;
         }
+
         header h1 {
             font-size: clamp(2rem, 5vw, 3.6rem);
-            font-weight: 800; line-height: 1.1;
-            color: var(--white); margin-bottom: 12px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: var(--white);
+            margin-bottom: 12px;
         }
+
         header h1 span { color: var(--orange); }
+
         .header-sub {
-            font-size: 1rem; color: var(--muted); font-weight: 300;
-            max-width: 520px; margin: 0 auto 32px; line-height: 1.6;
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: 300;
+            max-width: 520px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
         }
+
         .header-meta {
-            display: flex; justify-content: center;
-            gap: 32px; flex-wrap: wrap;
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
         }
+
         .meta-pill {
-            display: flex; align-items: center;
-            gap: 8px; font-size: 0.82rem; color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--muted);
         }
+
         .meta-pill .dot {
             width: 6px; height: 6px;
-            background: var(--orange); border-radius: 50%;
+            background: var(--orange);
+            border-radius: 50%;
         }
 
-        /* ── SEARCH ── */
+        /* SEARCH */
         .search-wrap {
-            max-width: 560px; margin: 40px auto 0; padding: 0 20px;
+            max-width: 560px;
+            margin: 40px auto 0;
+            padding: 0 20px;
         }
+
         .search-box { position: relative; }
+
         .search-box input {
-            width: 100%; background: var(--card);
-            border: 1px solid var(--border); border-radius: 12px;
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 14px 20px 14px 48px;
-            font-family: 'Sora', sans-serif; font-size: 0.9rem;
-            color: var(--text); outline: none; transition: border-color 0.2s;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
         }
+
         .search-box input:focus { border-color: var(--orange); }
         .search-box input::placeholder { color: var(--muted); }
+
         .search-icon {
-            position: absolute; left: 16px; top: 50%;
-            transform: translateY(-50%); color: var(--muted);
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
         }
 
-        /* ── MAIN ── */
+        /* MAIN */
         main {
-            max-width: 1200px; margin: 0 auto;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 60px 24px 80px;
         }
 
-        /* ── DISCIPLINE ── */
+        /* DISCIPLINE SECTION */
         .discipline {
-            margin-bottom: 64px; opacity: 0;
+            margin-bottom: 64px;
+            opacity: 0;
             transform: translateY(24px);
             animation: fadeUp 0.5s forwards;
         }
-        .discipline:nth-child(1) { animation-delay: 0.05s; }
-        .discipline:nth-child(2) { animation-delay: 0.12s; }
-        .discipline:nth-child(3) { animation-delay: 0.19s; }
-        .discipline:nth-child(4) { animation-delay: 0.26s; }
-        .discipline:nth-child(5) { animation-delay: 0.33s; }
 
-        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        .discipline:nth-child(1) { animation-delay: 0.05s; }
+        .discipline:nth-child(2) { animation-delay: 0.15s; }
+        .discipline:nth-child(3) { animation-delay: 0.25s; }
+        .discipline:nth-child(4) { animation-delay: 0.35s; }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .discipline-header {
-            display: flex; align-items: center; gap: 16px;
-            margin-bottom: 20px; padding-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
             border-bottom: 1px solid var(--border);
         }
+
         .disc-icon {
-            width: 44px; height: 44px; border-radius: 10px;
-            background: var(--orange-glow); border: 1px solid var(--orange);
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; flex-shrink: 0;
-        }
-        .disc-info h2 {
-            font-size: 1.05rem; font-weight: 700;
-            color: var(--white); line-height: 1.3;
-        }
-        .disc-info p {
-            font-size: 0.76rem; color: var(--muted); margin-top: 3px;
-        }
-        .disc-meta {
-            margin-left: auto;
-            display: flex; flex-direction: column;
-            align-items: flex-end; gap: 4px; flex-shrink: 0;
-        }
-        .disc-count {
-            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-            color: var(--orange); background: var(--orange-glow);
-            border: 1px solid var(--orange); border-radius: 6px; padding: 4px 10px;
-        }
-        .disc-carga {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.67rem; color: var(--muted);
+            font-size: 1.3rem;
+            flex-shrink: 0;
         }
 
-        /* ── LESSON GRID ── */
+        .disc-info h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.3;
+        }
+
+        .disc-info p {
+            font-size: 0.76rem;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .disc-meta {
+            margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .disc-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--orange);
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
+
+        .disc-carga {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.67rem;
+            color: var(--muted);
+        }
+
+        /* LESSON GRID */
         .lessons-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
             gap: 14px;
         }
+
         .lesson-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 18px;
-            text-decoration: none; color: var(--text);
-            display: flex; align-items: flex-start; gap: 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
             transition: border-color 0.2s, background 0.2s, transform 0.2s;
-            position: relative; overflow: hidden;
+            position: relative;
+            overflow: hidden;
         }
+
         .lesson-card::before {
             content: '';
-            position: absolute; inset: 0;
+            position: absolute;
+            inset: 0;
             background: linear-gradient(135deg, var(--orange-glow), transparent 60%);
-            opacity: 0; transition: opacity 0.3s;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
+
         .lesson-card:hover {
             border-color: var(--orange);
-            background: #26262E; transform: translateY(-2px);
+            background: #26262E;
+            transform: translateY(-2px);
         }
+
         .lesson-card:hover::before { opacity: 1; }
+
         .lesson-num {
-            font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
-            color: var(--orange); background: var(--orange-glow);
-            border: 1px solid var(--orange); border-radius: 6px;
-            padding: 3px 8px; flex-shrink: 0; margin-top: 2px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--orange);
+            background: var(--orange-glow);
+            border: 1px solid var(--orange);
+            border-radius: 6px;
+            padding: 3px 8px;
+            flex-shrink: 0;
+            margin-top: 2px;
             white-space: nowrap;
         }
+
         .lesson-info {
-            position: relative; z-index: 1; flex: 1; min-width: 0;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            min-width: 0;
         }
+
         .lesson-title {
-            font-size: 0.87rem; font-weight: 600;
-            color: var(--white); line-height: 1.3; margin-bottom: 4px;
+            font-size: 0.87rem;
+            font-weight: 600;
+            color: var(--white);
+            line-height: 1.3;
+            margin-bottom: 4px;
         }
+
         .lesson-desc {
-            font-size: 0.73rem; color: var(--muted); line-height: 1.4;
+            font-size: 0.73rem;
+            color: var(--muted);
+            line-height: 1.4;
             overflow: hidden;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
+
         .lesson-arrow {
-            margin-left: auto; color: var(--muted); font-size: 1rem;
+            margin-left: auto;
+            color: var(--muted);
+            font-size: 1rem;
             transition: color 0.2s, transform 0.2s;
             position: relative; z-index: 1;
-            flex-shrink: 0; align-self: center;
-        }
-        .lesson-card:hover .lesson-arrow {
-            color: var(--orange); transform: translateX(3px);
-        }
-        .lesson-card.soon {
-            opacity: 0.35; pointer-events: none;
-        }
-        .lesson-card.soon .lesson-num {
-            color: var(--muted); background: transparent; border-color: var(--border);
+            flex-shrink: 0;
+            align-self: center;
         }
 
-        /* ── EMPTY STATE ── */
-        .empty-state {
-            text-align: center; padding: 60px 20px;
-            color: var(--muted); display: none;
+        .lesson-card:hover .lesson-arrow {
+            color: var(--orange);
+            transform: translateX(3px);
         }
+
+        .lesson-card.soon {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .lesson-card.soon .lesson-num {
+            color: var(--muted);
+            background: transparent;
+            border-color: var(--border);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            display: none;
+        }
+
         .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
 
-        /* ── FOOTER ── */
+        /* FOOTER */
         footer {
             border-top: 1px solid var(--border);
-            padding: 32px 24px; text-align: center;
+            padding: 32px 24px;
+            text-align: center;
         }
+
         footer p { font-size: 0.8rem; color: var(--muted); line-height: 1.7; }
         footer span { color: var(--orange); }
 
-        .discipline.hidden  { display: none; }
+        .discipline.hidden { display: none; }
         .lesson-card.hidden { display: none; }
 
         @media (max-width: 600px) {
@@ -265,126 +381,7 @@
 <main>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
-    <!--  1. Tópicos em Álgebra Linear                               -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <section class="discipline" data-disc="algebra">
-        <div class="discipline-header">
-            <div class="disc-icon">📐</div>
-            <div class="disc-info">
-                <h2>Tópicos em Álgebra Linear</h2>
-                <p>Determinantes, Matriz Inversa, Transformações Lineares, Autovalores e Diagonalização · Ter</p>
-            </div>
-            <div class="disc-meta">
-                <span class="disc-count" id="count-algebra">—</span>
-                <span class="disc-carga">33h · 11 aulas</span>
-            </div>
-        </div>
-        <div class="lessons-grid">
-
-            <a class="lesson-card" href="Algebra_Linear/aula01_topicos_algebra_linear.html" target="_blank">
-                <span class="lesson-num">01</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Determinantes I</div>
-                    <div class="lesson-desc">Definição, propriedades, Regra de Sarrus e primeiros exemplos em matrizes 2×2 e 3×3</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card" href="Algebra_Linear/aula02_determinantes_II_cramer.html" target="_blank">
-                <span class="lesson-num">02</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Determinantes II + Regra de Cramer</div>
-                    <div class="lesson-desc">Teorema de Laplace, cofatores, matrizes triangulares e resolução de sistemas via Cramer</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card" href="Algebra_Linear/aula03_matriz_inversa.html" target="_blank">
-                <span class="lesson-num">03</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Matriz Inversa</div>
-                    <div class="lesson-desc">Adjunta, A⁻¹ = adj(A)/det(A), propriedades e Método de Gauss-Jordan com exemplos completos</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card" href="Algebra_Linear/aula04_transformacoes_lineares_I.html" target="_blank">
-                <span class="lesson-num">04</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Transformações Lineares I</div>
-                    <div class="lesson-desc">Definição, representação matricial, núcleo, imagem, rotação, reflexão e projeção no plano</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card soon" href="#" target="_blank">
-                <span class="lesson-num">05</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Transformações Lineares II</div>
-                    <div class="lesson-desc">Mudança de base, matriz de mudança P, representação em bases diferentes e matrizes semelhantes</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card soon" href="#" target="_blank">
-                <span class="lesson-num">A1</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Avaliação 1</div>
-                    <div class="lesson-desc">Determinantes, Matriz Inversa e Transformações Lineares — blocos 1 e 2</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card soon" href="#" target="_blank">
-                <span class="lesson-num">07</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Autovalores e Autovetores I</div>
-                    <div class="lesson-desc">Equação característica, polinômio característico, cálculo de autovalores e autovetores</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card soon" href="#" target="_blank">
-                <span class="lesson-num">08</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Autovalores e Autovetores II</div>
-                    <div class="lesson-desc">Espaços próprios, multiplicidade algébrica e geométrica, propriedades e aplicações</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card soon" href="#" target="_blank">
-                <span class="lesson-num">09</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Diagonalização I</div>
-                    <div class="lesson-desc">Condições de diagonalização, A = PDP⁻¹, construção das matrizes P e D</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card soon" href="#" target="_blank">
-                <span class="lesson-num">10</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Diagonalização II</div>
-                    <div class="lesson-desc">Diagonalização ortogonal, matrizes simétricas, Teorema Espectral</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-            <a class="lesson-card soon" href="#" target="_blank">
-                <span class="lesson-num">A2</span>
-                <div class="lesson-info">
-                    <div class="lesson-title">Aplicações + Avaliação 2</div>
-                    <div class="lesson-desc">Aplicações em Engenharia Civil — matrizes de rigidez, vibrações e estados estacionários</div>
-                </div>
-                <span class="lesson-arrow">→</span>
-            </a>
-
-        </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════════ -->
-    <!--  2. Desenvolvimento de Aplicativos Móveis — API REST        -->
+    <!--  1. Desenvolvimento de Aplicativos Móveis — API REST        -->
     <!-- ═══════════════════════════════════════════════════════════ -->
     <section class="discipline" data-disc="mobile">
         <div class="discipline-header">
@@ -418,7 +415,7 @@
             <a class="lesson-card" href="API_rest/aula03_get_endpoints.html" target="_blank">
                 <span class="lesson-num">03</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Endpoints GET</div>
+                    <div class="lesson-title">Endpoints</div>
                     <div class="lesson-desc">Implementação de Endpoints GET</div>
                 </div>
                 <span class="lesson-arrow">→</span>
@@ -458,7 +455,7 @@
             <a class="lesson-card" href="API_rest/aula08_crud_completo_queries.html" target="_blank">
                 <span class="lesson-num">08</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">CRUD Completo</div>
+                    <div class="lesson-title">CRUD</div>
                     <div class="lesson-desc">CRUD Completo + Queries Avançadas</div>
                 </div>
                 <span class="lesson-arrow">→</span>
@@ -466,7 +463,7 @@
             <a class="lesson-card" href="API_rest/aula09_relacionamentos_joins.html" target="_blank">
                 <span class="lesson-num">09</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Relacionamentos e JOINs</div>
+                    <div class="lesson-title">Relacionamentos</div>
                     <div class="lesson-desc">Relacionamentos e JOINs</div>
                 </div>
                 <span class="lesson-arrow">→</span>
@@ -491,7 +488,7 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
-    <!--  3. Gerenciamento de Projetos — Metodologias Ágeis          -->
+    <!--  2. Gerenciamento de Projetos — Metodologias Ágeis          -->
     <!-- ═══════════════════════════════════════════════════════════ -->
     <section class="discipline" data-disc="gerenciamento">
         <div class="discipline-header">
@@ -550,7 +547,7 @@
                 <span class="lesson-num">06</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Scrum Master</div>
-                    <div class="lesson-desc">Servant Leadership = Liderar SERVINDO, não comandando!</div>
+                    <div class="lesson-desc">Servant Leadership = Liderar SERVINDO, não comandando! 👑→🙏</div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
@@ -621,7 +618,7 @@
             <a class="lesson-card" href="Metodologia_ageis/aula14_quadro_kanban_wip.html" target="_blank">
                 <span class="lesson-num">14</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Quadro Kanban e WIP Limits</div>
+                    <div class="lesson-title">Quadro Kanban</div>
                     <div class="lesson-desc">Como Criar e Otimizar Seu Sistema Kanban</div>
                 </div>
                 <span class="lesson-arrow">→</span>
@@ -630,7 +627,7 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
-    <!--  4. Lógica de Programação e Algoritmos                      -->
+    <!--  3. Lógica de Programação e Algoritmos                      -->
     <!-- ═══════════════════════════════════════════════════════════ -->
     <section class="discipline" data-disc="logica">
         <div class="discipline-header">
@@ -693,7 +690,7 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Algoritmos/aula07_estruturas_decisao (1).html" target="_blank">
+            <a class="lesson-card" href="Algoritmos/aula07_estruturas_decisao (1).html" target="_blank"> 
                 <span class="lesson-num">07</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Estruturas de Decisão</div>
@@ -712,15 +709,15 @@
             <a class="lesson-card" href="Algoritmos/aula09_enquanto_while.html" target="_blank">
                 <span class="lesson-num">09</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Estruturas de Repetição — while</div>
+                    <div class="lesson-title">Estruturas de Repetição</div>
                     <div class="lesson-desc">Laço ENQUANTO (while)</div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Algoritmos/aula10_faca_enquanto_do_while.html" target="_blank">
+             <a class="lesson-card" href="Algoritmos/aula10_faca_enquanto_do_while.html" target="_blank">
                 <span class="lesson-num">10</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Estruturas de Repetição — do-while</div>
+                    <div class="lesson-title">Estruturas de Repetição</div>
                     <div class="lesson-desc">Laço FAÇA ENQUANTO (do-while)</div>
                 </div>
                 <span class="lesson-arrow">→</span>
@@ -728,7 +725,7 @@
             <a class="lesson-card" href="Algoritmos/aula11_para_for.html" target="_blank">
                 <span class="lesson-num">11</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Estruturas de Repetição — for</div>
+                    <div class="lesson-title">Estruturas de Repetição</div>
                     <div class="lesson-desc">Laço PARA (for)</div>
                 </div>
                 <span class="lesson-arrow">→</span>
@@ -737,7 +734,7 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
-    <!--  5. Qualidade de Software — MPS.BR / ISO 12207 / PDCA       -->
+    <!--  4. Qualidade de Software — MPS.BR / ISO 12207 / PDCA       -->
     <!-- ═══════════════════════════════════════════════════════════ -->
     <section class="discipline" data-disc="qualidade">
         <div class="discipline-header">
@@ -764,7 +761,7 @@
                 <span class="lesson-num">02</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Custos da Qualidade e ROI</div>
-                    <div class="lesson-desc">"Qualidade não custa. É de graça. O que custa é a falta de qualidade."</div>
+                    <div class="lesson-desc">"Qualidade não custa. É de graça.<br>O que custa é a falta de qualidade."<br></div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
@@ -772,7 +769,9 @@
                 <span class="lesson-num">03</span>
                 <div class="lesson-info">
                     <div class="lesson-title">MR-MPS-SW — Estrutura e Níveis (G a A)</div>
-                    <div class="lesson-desc">O modelo brasileiro de melhoria de processos</div>
+                    <div class="lesson-desc">Bem-vindo ao MPS.BR!<br>
+                        O modelo brasileiro de melhoria de processos 🚀
+                    </div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
@@ -780,11 +779,11 @@
                 <span class="lesson-num">04</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Nível G: GPR e GRE — Processos Iniciais</div>
-                    <div class="lesson-desc">O primeiro passo na jornada de melhoria!</div>
+                    <div class="lesson-desc">O primeiro passo na jornada de melhoria! 🚀</div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula05_niveis_f_e.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula05_niveis_f_e.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">05</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Gerência de Projetos (GPR)</div>
@@ -792,7 +791,7 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula06_nivel_d_dre_des_val.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula06_nivel_d_dre_des_val.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">06</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Engenharia de Requisitos (GRE / DRE)</div>
@@ -800,7 +799,7 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula07_niveis_c_b_a.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula07_niveis_c_b_a.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">07</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Níveis C, B e A do MPS.BR</div>
@@ -808,7 +807,7 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula08_revisao_prova.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula08_revisao_prova.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">08</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Revisão de Conteúdo</div>
@@ -816,23 +815,23 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula09_iso_12207_parte1.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula09_iso_12207_parte1.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">09</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">ISO-12207 — Parte 1</div>
+                    <div class="lesson-title">ISO-12207</div>
                     <div class="lesson-desc">O Padrão Internacional para Processos de Software!</div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula10_iso_12207_parte2.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula10_iso_12207_parte2.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">10</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">ISO-12207 — Parte 2</div>
+                    <div class="lesson-title">ISO-12207</div>
                     <div class="lesson-desc">Completando o Framework!</div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula11_mr_mps_rh.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula11_mr_mps_rh.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">11</span>
                 <div class="lesson-info">
                     <div class="lesson-title">MR-MPS-SW — Processos de Apoio: RH</div>
@@ -840,7 +839,7 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula12_ciclo_pdca_parte1.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula12_ciclo_pdca_parte1.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">12</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Ciclo PDCA — Parte 1</div>
@@ -848,7 +847,7 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/aula13_ciclo_pdca_parte2.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/aula13_ciclo_pdca_parte2.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">13</span>
                 <div class="lesson-info">
                     <div class="lesson-title">Ciclo PDCA — Parte 2</div>
@@ -856,19 +855,19 @@
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/simulado1_prova1_qualidade_software.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/simulado1_prova1_qualidade_software.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">Hands on!</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Simulado 1 — Prova 1</div>
-                    <div class="lesson-desc">Referente às aulas 01 a 08</div>
+                    <div class="lesson-title">Simulado 1 - Prova 1</div>
+                    <div class="lesson-desc">Referente as aulas 01 a 08</div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
-            <a class="lesson-card" href="Qualidade_software/simulado2_prova1_qualidade_software.html" target="_blank">
+            <a class="lesson-card" href="Qualidade_software/simulado2_prova1_qualidade_software.html" target="_blank" tabindex="-1">
                 <span class="lesson-num">Hands on!</span>
                 <div class="lesson-info">
-                    <div class="lesson-title">Simulado 2 — Prova 1</div>
-                    <div class="lesson-desc">Referente às aulas 01 a 08</div>
+                    <div class="lesson-title">Simulado 2 - Prova 1</div>
+                    <div class="lesson-desc">Referente as aulas 01 a 08</div>
                 </div>
                 <span class="lesson-arrow">→</span>
             </a>
@@ -885,7 +884,7 @@
 <footer>
     <p>
         <span>Prof. Tiago Dutra Galvão</span> — Centro Universitário Filadélfia (UniFil) · Londrina, Paraná<br>
-        Engenharia Civil · Engenharia de Software · Ciência da Computação · 2026
+        Engenharia de Software · Ciência da Computação · 2026
     </p>
 </footer>
 

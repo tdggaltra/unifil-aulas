@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gabarito Prova 1 - Qualidade de Software | UniFil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 4px solid #d32f2f;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            color: #d32f2f;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            color: #4A4A4A;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6B6B6B;
+            font-size: 1.1rem;
+        }
+
+        .confidential-box {
+            background: #ffebee;
+            border: 4px solid #d32f2f;
+            padding: 30px;
+            margin-bottom: 40px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .confidential-box h3 {
+            color: #b71c1c;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .confidential-box p {
+            color: #c62828;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            font-weight: 600;
+        }
+
+        .grading-table {
+            background: #e8f5e9;
+            border: 2px solid #4CAF50;
+            padding: 25px;
+            margin-bottom: 40px;
+            border-radius: 10px;
+        }
+
+        .grading-table h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .grading-table table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .grading-table th {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.1rem;
+        }
+
+        .grading-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #c8e6c9;
+            font-size: 1.05rem;
+        }
+
+        .grading-table tr:hover {
+            background: #f1f8e9;
+        }
+
+        .gabarito-item {
+            background: white;
+            border: 2px solid #4CAF50;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.1);
+        }
+
+        .gabarito-item h3 {
+            color: #2E7D32;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .correct-answer {
+            background: #E8F5E9;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 700;
+            color: #1B5E20;
+            font-size: 1.3rem;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .explanation {
+            line-height: 1.8;
+            color: #424242;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+
+        .explanation strong {
+            color: #2E7D32;
+        }
+
+        .key-concepts {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .key-concepts h4 {
+            color: #1565C0;
+            margin-bottom: 10px;
+        }
+
+        .rubric-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .rubric-box h4 {
+            color: #e65100;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .rubric-item {
+            padding: 10px 0;
+            border-bottom: 1px dashed #ffcc80;
+        }
+
+        .rubric-item:last-child {
+            border-bottom: none;
+        }
+
+        .points {
+            color: #ff6f00;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #6B6B6B;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .gabarito-item {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">🔒 GABARITO OFICIAL</div>
+            <h1>Gabarito Prova 1 - Qualidade de Software</h1>
+            <p>Avaliação Intermediária | Aulas 1-7</p>
+        </div>
+
+        <!-- CONFIDENTIAL BOX -->
+        <div class="confidential-box">
+            <h3>⚠️ USO EXCLUSIVO DO PROFESSOR</h3>
+            <p>
+                Este gabarito contém as respostas oficiais da Prova 1<br>
+                e NÃO deve ser compartilhado com os alunos antes da avaliação.<br><br>
+                <strong>CONFIDENCIAL - NÃO DISTRIBUIR</strong>
+            </p>
+        </div>
+
+        <!-- GRADING TABLE -->
+        <div class="grading-table">
+            <h3>📊 Tabela de Correção Rápida</h3>
+            <table>
+                <tr>
+                    <th>Questão</th>
+                    <th>Tipo</th>
+                    <th>Resposta Correta</th>
+                    <th>Pontos</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>B</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>A</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>B</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>B</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>A</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>B</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>B</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Múltipla Escolha</td>
+                    <td><strong>C</strong></td>
+                    <td>0,8</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>Dissertativa</td>
+                    <td>Ver rubrica detalhada</td>
+                    <td>1,2</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>Dissertativa</td>
+                    <td>Ver rubrica detalhada</td>
+                    <td>1,2</td>
+                </tr>
+                <tr style="background: #c8e6c9; font-weight: bold;">
+                    <td colspan="3">TOTAL</td>
+                    <td>10,0</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- GABARITO QUESTÃO 1 -->
+        <div class="gabarito-item">
+            <h3>Questão 1 - Custo da Qualidade (Prevenção vs Correção)</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Texto da Alternativa Correta:</strong><br>
+                "Segundo estudos, corrigir um bug em produção custa de 10x a 100x mais do que preveni-lo durante o desenvolvimento, além de impactar negativamente a reputação da empresa."<br><br>
+
+                <strong>Por que está correta:</strong><br>
+                Esta alternativa apresenta o argumento mais sólido baseado em dados empíricos da engenharia de software:<br><br>
+
+                1. <strong>Custo Exponencial de Correção:</strong><br>
+                   • Bug detectado em design: custo 1x<br>
+                   • Bug detectado em codificação: custo 5x<br>
+                   • Bug detectado em testes: custo 10x<br>
+                   • Bug em produção: custo 10x-100x<br>
+                   Esta relação é documentada em múltiplos estudos (Boehm, IBM, etc.)<br><br>
+
+                2. <strong>Custos Além do Fix:</strong><br>
+                   Bug em produção inclui:<br>
+                   • Tempo para reproduzir e diagnosticar<br>
+                   • Deploy emergencial (interrompe outras atividades)<br>
+                   • Suporte ao cliente (horas de SAC)<br>
+                   • Perda de confiança/reputação (churn)<br>
+                   • Possível perda de contratos<br><br>
+
+                3. <strong>Impacto na Reputação:</strong><br>
+                   Clientes insatisfeitos geram:<br>
+                   • Reviews negativas (cada uma afasta ~22 clientes potenciais)<br>
+                   • Cancelamentos (LTV perdido)<br>
+                   • Custo de reconquista (5-25x mais caro que retenção)<br><br>
+
+                <strong>Por que as outras estão erradas:</strong><br>
+                • A: Afirma que prevenção é sempre maior - FALSO. Prevenção é mais barato.<br>
+                • C: Qualidade não é "tendência" - tem ROI comprovado.<br>
+                • D: Startups sofrem MAIS com bugs (recursos limitados, reputação frágil).<br>
+                • E: Custos de falha externa (churn) são os MAIS ALTOS.
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Conceito-Chave: Modelo de Custos da Qualidade</h4>
+                <strong>4 Categorias de Custos:</strong><br>
+                1. <strong>Prevenção:</strong> Evitar defeitos (treinamento, processos) - MENOR CUSTO<br>
+                2. <strong>Avaliação:</strong> Detectar defeitos (testes, auditorias)<br>
+                3. <strong>Falha Interna:</strong> Corrigir antes da entrega (retrabalho)<br>
+                4. <strong>Falha Externa:</strong> Corrigir após entrega (recalls, churn) - MAIOR CUSTO<br><br>
+                <strong>Regra 1-10-100:</strong> R$1 prevenir = R$10 testar = R$100 corrigir em produção
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 2 -->
+        <div class="gabarito-item">
+            <h3>Questão 2 - CMMI Nível 2 vs Nível 3</h3>
+            <div class="correct-answer">✓ Resposta Correta: A</div>
+            <div class="explanation">
+                <strong>Texto da Alternativa Correta:</strong><br>
+                "No Nível 2, os processos são definidos apenas para projetos individuais; no Nível 3, há processos organizacionais padronizados e reutilizáveis para TODOS os projetos."<br><br>
+
+                <strong>Explicação Detalhada:</strong><br><br>
+
+                <strong>CMMI Nível 2 (Gerenciado):</strong><br>
+                • Processos são gerenciados POR PROJETO<br>
+                • Cada projeto pode ter variações do processo<br>
+                • Foco: DISCIPLINA - fazer o básico sempre<br>
+                • Resultado: Projetos são previsíveis e repetíveis<br>
+                • Exemplo: Projeto A usa Scrum com 2 semanas, Projeto B usa Scrum com 1 semana<br><br>
+
+                <strong>CMMI Nível 3 (Definido):</strong><br>
+                • Processos são definidos a NÍVEL ORGANIZACIONAL<br>
+                • Existe um processo padrão da organização<br>
+                • Projetos ADAPTAM o processo padrão (tailoring)<br>
+                • Foco: PADRONIZAÇÃO - todos partem da mesma base<br>
+                • Resultado: Consistência entre projetos, reutilização de aprendizados<br>
+                • Exemplo: Organização tem processo Scrum padrão, projetos fazem tailoring baseado nele<br><br>
+
+                <strong>Diferença Fundamental:</strong><br>
+                • Nível 2: "Cada projeto define seus processos (com disciplina)"<br>
+                • Nível 3: "Organização define processos, projetos adaptam"<br><br>
+
+                <strong>Implicações Práticas:</strong><br>
+                • Nível 3 permite ASSET ORGANIZACIONAL de processos<br>
+                • Novos projetos não começam do zero<br>
+                • Métricas e lições aprendidas são compartilhadas<br>
+                • Treinamento é padronizado
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Diferença-Chave: Nível 2 vs 3</h4>
+                <strong>Nível 2:</strong> Processos gerenciados POR PROJETO (disciplina)<br>
+                <strong>Nível 3:</strong> Processos ORGANIZACIONAIS padronizados (consistência)<br><br>
+                Analogia: Nível 2 = Cada restaurante tem suas receitas; Nível 3 = Rede McDonald's com receitas corporativas
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 3 -->
+        <div class="gabarito-item">
+            <h3>Questão 3 - MPS.BR para PMEs Brasileiras</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Texto da Alternativa Correta:</strong><br>
+                "MPS.BR, pois foi desenvolvido especificamente para a realidade brasileira, possui custos mais acessíveis que o CMMI e é reconhecido nacionalmente, sendo ideal para PMEs."<br><br>
+
+                <strong>Análise do Contexto:</strong><br>
+                • Empresa: 45 pessoas (PME)<br>
+                • Mercado: principalmente Brasil<br>
+                • Objetivo: licitações governamentais<br>
+                • Restrição: custo acessível<br><br>
+
+                <strong>Por que MPS.BR é a melhor opção:</strong><br><br>
+
+                1. <strong>Custo:</strong><br>
+                   • MPS.BR Nível C: R$85.000 (53% mais barato)<br>
+                   • CMMI Nível 3: R$180.000<br>
+                   • Para PME de 45 pessoas, diferença de R$95k é significativa<br><br>
+
+                2. <strong>Desenvolvido para PMEs Brasileiras:</strong><br>
+                   • SOFTEX criou MPS.BR em 2003 especificamente para realidade nacional<br>
+                   • Considera limitações de orçamento e tamanho típicas de PMEs<br>
+                   • Documentação e suporte em português<br>
+                   • Casos de sucesso abundantes no Brasil<br><br>
+
+                3. <strong>Reconhecimento em Licitações:</strong><br>
+                   • MPS.BR é AMPLAMENTE aceito em editais governamentais brasileiros<br>
+                   • Banco do Brasil, Caixa, Petrobras, órgãos federais reconhecem<br>
+                   • Equivalência com CMMI é estabelecida (Nível C ≈ CMMI 3)<br><br>
+
+                4. <strong>Granularidade Adequada:</strong><br>
+                   • 7 níveis permitem evolução em passos menores<br>
+                   • PME pode começar em G (R$40k) e evoluir gradualmente<br>
+                   • ROI mais rápido com certificações intermediárias<br><br>
+
+                5. <strong>Prazo:</strong><br>
+                   • 15 meses é realista para Nível C<br>
+                   • CMMI 3 em 18 meses também é viável, mas mais arriscado
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 4 -->
+        <div class="gabarito-item">
+            <h3>Questão 4 - MPS.BR Nível G → F: Processos Adicionais</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Texto da Alternativa Correta:</strong><br>
+                "Aquisição (AQU), Gerência de Configuração (GCO), Garantia da Qualidade (GQA), Medição (MED) e Gerência de Portfólio de Projetos (GPP)"<br><br>
+
+                <strong>Estrutura MPS.BR - Revisão:</strong><br><br>
+
+                <strong>Nível G (2 processos):</strong><br>
+                • Gerência de Projetos (GPR)<br>
+                • Gerência de Requisitos (GRE)<br><br>
+
+                <strong>Nível F ADICIONA (5 processos novos):</strong><br>
+                1. <strong>Aquisição (AQU):</strong> Gerenciar aquisição de produtos/serviços<br>
+                2. <strong>Gerência de Configuração (GCO):</strong> Controle de versões, baselines<br>
+                3. <strong>Garantia da Qualidade (GQA):</strong> Auditorias, conformidade com processos<br>
+                4. <strong>Medição (MED):</strong> Coletar e analisar métricas<br>
+                5. <strong>Gerência de Portfólio de Projetos (GPP):</strong> Gestão carteira de projetos<br><br>
+
+                <strong>Total Nível F: 7 processos (2 do G + 5 novos)</strong><br><br>
+
+                <strong>Lógica dos Processos do Nível F:</strong><br>
+                Após estabelecer gestão básica (G), o Nível F adiciona:<br>
+                • <strong>Controle:</strong> GCO (versões), GQA (qualidade)<br>
+                • <strong>Dados:</strong> MED (métricas para decisões)<br>
+                • <strong>Gestão organizacional:</strong> GPP (múltiplos projetos), AQU (terceiros)<br><br>
+
+                <strong>Por que as outras estão erradas:</strong><br>
+                • A: GCO sozinho é incompleto<br>
+                • C: MED e ADR não são suficientes; ADR nem é do Nível F<br>
+                • D: Implementar todos 24 de uma vez viola incrementalidade<br>
+                • E: VAL e VER são do Nível D, não F
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 5 -->
+        <div class="gabarito-item">
+            <h3>Questão 5 - ISO/IEC 12207: Grupos de Processos</h3>
+            <div class="correct-answer">✓ Resposta Correta: A (I-A, II-B, III-C, IV-D)</div>
+            <div class="explanation">
+                <strong>Mapeamento Correto:</strong><br><br>
+
+                <strong>I. Codificação e testes unitários → A) Processos TÉCNICOS</strong><br>
+                Justificativa: Atividades que CONSTROEM o produto. Processos Técnicos transformam requisitos em software executável. Codificação e testes unitários são atividades de implementação.<br><br>
+
+                <strong>II. Definição de políticas e estratégias organizacionais → B) Processos ORGANIZACIONAIS</strong><br>
+                Justificativa: Estabelecer políticas e estratégias a NÍVEL ORGANIZACIONAL (não projeto específico) é responsabilidade dos Processos Organizacionais. Eles criam a infraestrutura de processos da empresa.<br><br>
+
+                <strong>III. Planejamento e controle do cronograma do projeto → C) Processos GERENCIAIS</strong><br>
+                Justificativa: Planejar e controlar cronograma são atividades de GESTÃO do projeto. Processos Gerenciais garantem que o projeto seja executado dentro de prazo, escopo e orçamento.<br><br>
+
+                <strong>IV. Negociação de contratos com clientes → D) Processos de ACORDO</strong><br>
+                Justificativa: Negociar e gerenciar contratos é responsabilidade dos Processos de Acordo. Eles estabelecem e mantêm acordos entre organização e clientes/fornecedores.<br><br>
+
+                <strong>Resumo dos 4 Grupos:</strong><br>
+                • <strong>TÉCNICOS:</strong> O QUE fazer (construir o produto)<br>
+                • <strong>ORGANIZACIONAIS:</strong> ESTRUTURA de como fazer (políticas, infraestrutura)<br>
+                • <strong>GERENCIAIS:</strong> CONTROLE de como está sendo feito (gestão projeto)<br>
+                • <strong>ACORDO:</strong> RELACIONAMENTOS externos (clientes, fornecedores)
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 4 Grupos ISO/IEC 12207 - Analogia</h4>
+                Imagine uma empresa de construção civil:<br>
+                • <strong>TÉCNICOS:</strong> Pedreiros, eletricistas (constroem)<br>
+                • <strong>ORGANIZACIONAIS:</strong> Normas ABNT, políticas segurança (estrutura)<br>
+                • <strong>GERENCIAIS:</strong> Engenheiro coordenador (gerencia obra)<br>
+                • <strong>ACORDO:</strong> Contratos com clientes e fornecedores<br><br>
+                Todos são necessários para obra de qualidade!
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 6 -->
+        <div class="gabarito-item">
+            <h3>Questão 6 - Métricas de Qualidade: Refutação</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Texto da Alternativa Correta:</strong><br>
+                "Estudos mostram que equipes que investem em qualidade (testes, code review, métricas) têm 40% menos bugs em produção, 60% menos retrabalho e entregam features 25% mais rápido no médio prazo, pois evitam débito técnico."<br><br>
+
+                <strong>Por que esta alternativa é a refutação mais completa:</strong><br><br>
+
+                1. <strong>Baseada em Dados Empíricos:</strong><br>
+                   Cita estudos reais com números específicos, não opiniões:<br>
+                   • 40% menos bugs<br>
+                   • 60% menos retrabalho<br>
+                   • 25% mais velocidade<br><br>
+
+                2. <strong>Aborda o Paradoxo Aparente:</strong><br>
+                   Desenvolvedor sênior argumenta que "qualidade atrasa".<br>
+                   Resposta mostra que qualidade ACELERA no médio prazo.<br>
+                   Investe tempo agora → economiza MUITO mais depois<br><br>
+
+                3. <strong>Explica o Mecanismo (Débito Técnico):</strong><br>
+                   Não só apresenta dados, mas explica POR QUÊ funciona:<br>
+                   • Sem qualidade: débito técnico acumula<br>
+                   • Débito técnico: cada mudança fica mais lenta e arriscada<br>
+                   • Com qualidade: código limpo permite velocidade sustentável<br><br>
+
+                4. <strong>Cobre Múltiplas Dimensões:</strong><br>
+                   • Qualidade (bugs)<br>
+                   • Eficiência (retrabalho)<br>
+                   • Velocidade (delivery)<br><br>
+
+                <strong>Evidências de Estudos Reais:</strong><br>
+                • State of DevOps Report (Google/DORA): times com alta qualidade deployam 200x mais vezes<br>
+                • IBM: código com >80% coverage tem 70% menos defeitos<br>
+                • Microsoft: code review encontra 60% bugs antes de produção
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 7 -->
+        <div class="gabarito-item">
+            <h3>Questão 7 - Roadmap MPS.BR: Sequência Adequada</h3>
+            <div class="correct-answer">✓ Resposta Correta: B</div>
+            <div class="explanation">
+                <strong>Texto da Alternativa Correta:</strong><br>
+                "G → F → E → D → C (implementação gradual e incremental, consolidando cada nível antes de avançar)"<br><br>
+
+                <strong>Por que esta é a sequência mais adequada:</strong><br><br>
+
+                1. <strong>Princípio de Incrementalidade:</strong><br>
+                   Modelos de maturidade baseiam-se em evolução GRADUAL:<br>
+                   • Cada nível constrói sobre o anterior<br>
+                   • Processos são internalizados progressivamente<br>
+                   • Mudança cultural leva tempo<br><br>
+
+                2. <strong>Consolidação é Crucial:</strong><br>
+                   Avançar sem consolidar = construir casa sem alicerce:<br>
+                   • Nível G (6 meses): aprender processos básicos<br>
+                   • Nível F (6 meses): adicionar sobre base sólida<br>
+                   • Nível E (12 meses): amadurecer processos<br>
+                   • Nível D (12 meses): adicionar processos técnicos<br>
+                   • Nível C (12 meses): refinamento<br>
+                   Total: 48 meses (4 anos) - realista<br><br>
+
+                3. <strong>ROI Incremental:</strong><br>
+                   • Benefícios começam a aparecer em cada nível<br>
+                   • Empresa vê resultados durante jornada, não só no final<br>
+                   • Mantém motivação e investimento justificado<br><br>
+
+                4. <strong>Gestão de Risco:</strong><br>
+                   • Pular níveis = alto risco de fracasso<br>
+                   • Evolução gradual permite correção de curso<br>
+                   • Falhar em nível baixo é menos custoso<br><br>
+
+                <strong>Por que as outras estão erradas:</strong><br>
+                • A: G→A direto viola toda filosofia de maturidade<br>
+                • C: G→C em 24 meses pula E,D,F - muito arriscado<br>
+                • D: Ignorar intermediários = base fraca<br>
+                • E: Sequência IMPORTA - cada nível tem pré-requisitos
+            </div>
+
+            <div class="key-concepts">
+                <h4>💡 Tempo Típico por Nível MPS.BR</h4>
+                • <strong>G:</strong> 6-9 meses (básico)<br>
+                • <strong>F:</strong> 6-9 meses adicionais<br>
+                • <strong>E:</strong> 12-15 meses adicionais<br>
+                • <strong>D:</strong> 12-18 meses adicionais<br>
+                • <strong>C:</strong> 12-18 meses adicionais<br>
+                • <strong>B:</strong> 18-24 meses adicionais<br>
+                • <strong>A:</strong> 24+ meses adicionais<br><br>
+                <strong>G→C:</strong> Mínimo 3-4 anos de forma sustentável
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 8 -->
+        <div class="gabarito-item">
+            <h3>Questão 8 - Identificação de Nível CMMI</h3>
+            <div class="correct-answer">✓ Resposta Correta: C (Nível 3 - Definido)</div>
+            <div class="explanation">
+                <strong>Texto da Alternativa Correta:</strong><br>
+                "Nível 3 (Definido) - porque possui processos organizacionais padronizados, documentados e seguidos consistentemente em todos os projetos"<br><br>
+
+                <strong>Análise das Evidências Fornecidas:</strong><br><br>
+
+                <strong>Evidências que indicam Nível 3:</strong><br>
+                ✓ "Processos bem documentados" → Característico Nível 3<br>
+                ✓ "Seguidos consistentemente em TODOS os projetos" → Padronização organizacional = Nível 3<br>
+                ✓ "Utiliza métricas para controle de processo" → Já coleta dados (comum no 3)<br>
+                ✓ "Base histórica de dados de projetos anteriores" → Asset organizacional = Nível 3<br><br>
+
+                <strong>Por que NÃO é Nível 2:</strong><br>
+                Nível 2 teria processos gerenciados POR PROJETO (cada projeto com variações).<br>
+                Descrição diz "consistentemente em TODOS os projetos" = ORGANIZACIONAL = Nível 3<br><br>
+
+                <strong>Por que NÃO é Nível 4:</strong><br>
+                Nível 4 requer:<br>
+                • Controle ESTATÍSTICO de processos (não apenas "métricas")<br>
+                • Objetivos quantitativos estabelecidos<br>
+                • Análise de variação e limites de controle<br>
+                • Previsibilidade quantitativa<br>
+                Descrição não menciona controle estatístico, apenas "utiliza métricas"<br><br>
+
+                <strong>Diferença Sutil mas Importante:</strong><br>
+                • <strong>Nível 3:</strong> Coleta métricas para entender processos<br>
+                • <strong>Nível 4:</strong> Usa métricas para CONTROLE ESTATÍSTICO de processos<br><br>
+
+                <strong>Palavras-chave que indicam Nível 3:</strong><br>
+                • "Organizacional"<br>
+                • "Padronizado"<br>
+                • "Todos os projetos"<br>
+                • "Consistentemente"<br>
+                • "Documentado"
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 9 -->
+        <div class="gabarito-item">
+            <h3>Questão 9 - Caso E-commerce (Dissertativa - 1,2 pontos)</h3>
+            <div class="correct-answer">✓ Rubrica de Avaliação</div>
+
+            <div class="rubric-box">
+                <h4>Critérios de Correção:</h4>
+
+                <div class="rubric-item">
+                    <strong>a) Identificação do nível de maturidade (0,3 pontos):</strong><br>
+                    <span class="points">0,3:</span> Identifica corretamente como Nível 1/Inicial (CMMI) ou sem classificação (MPS.BR) E justifica com evidências<br>
+                    <span class="points">0,2:</span> Identifica nível mas justificativa incompleta<br>
+                    <span class="points">0,1:</span> Identifica nível mas sem justificar<br>
+                    <span class="points">0,0:</span> Identifica nível errado ou não responde
+                </div>
+
+                <div class="rubric-item">
+                    <strong>b) 3 processos/práticas prioritários (0,6 pontos - 0,2 cada):</strong><br>
+                    Cada processo deve ter nome + justificativa coerente<br>
+                    <span class="points">0,2:</span> Processo adequado + justificativa técnica sólida<br>
+                    <span class="points">0,1:</span> Processo adequado mas justificativa fraca<br>
+                    <span class="points">0,0:</span> Processo inadequado ou sem justificar
+                </div>
+
+                <div class="rubric-item">
+                    <strong>c) Métricas de sucesso (0,3 pontos):</strong><br>
+                    <span class="points">0,3:</span> 3+ métricas específicas e mensuráveis<br>
+                    <span class="points">0,2:</span> 2 métricas adequadas<br>
+                    <span class="points">0,1:</span> 1 métrica ou métricas genéricas<br>
+                    <span class="points">0,0:</span> Não apresenta métricas
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Resposta Modelo/Esperada:</strong><br><br>
+
+                <strong>a) Nível de Maturidade:</strong><br>
+                A empresa está no <strong>CMMI Nível 1 (Inicial/Caótico)</strong>.<br><br>
+
+                <strong>Evidências:</strong><br>
+                • Bug rate alto (45/mês) indica falta de processos de qualidade<br>
+                • Tempo correção 5 dias = processos reativos, não preventivos<br>
+                • 12% churn por problemas técnicos = falhas recorrentes<br>
+                • "Time desorganizado, sem processos definidos" = ad hoc<br>
+                • "Cada dev trabalha independente" = não há padronização<br>
+                • Sem code review = falta processo de verificação<br><br>
+
+                <strong>b) 3 Primeiros Processos/Práticas:</strong><br><br>
+
+                <strong>1. Gerência de Requisitos (GRE):</strong><br>
+                <strong>Justificativa:</strong> Muitos bugs vêm de requisitos mal compreendidos. Implementar rastreabilidade requisito→código→teste garante que todos entendem o que construir. Reduz retrabalho por mal-entendido.<br><br>
+
+                <strong>2. Gerência de Configuração (GCO) + Code Review:</strong><br>
+                <strong>Justificativa:</strong> Code review obrigatório (pelo menos 1 aprovação) antes de merge. Catch bugs antes de produção. Estudos mostram que code review encontra 60% dos defeitos. Também promove compartilhamento conhecimento entre devs independentes.<br><br>
+
+                <strong>3. Testes Automatizados + CI/CD:</strong><br>
+                <strong>Justificativa:</strong> Automatizar testes (unit + integration) e criar pipeline CI/CD impede que código com falhas chegue a produção. Quality gate: só deploy se tests passam. Reduz drasticamente bug rate e tempo de correção (detecta bugs em minutos, não dias).<br><br>
+
+                <strong>c) Métricas de Sucesso:</strong><br>
+                • <strong>Bug Rate:</strong> 45 bugs/mês → meta <15 bugs/mês em 6 meses<br>
+                • <strong>Tempo Médio Correção:</strong> 5 dias → meta <2 dias<br>
+                • <strong>Customer Churn:</strong> 12% → meta <6%<br>
+                • <strong>Code Coverage:</strong> 0% atual → meta >70%<br>
+                • <strong>Deployment Frequency:</strong> Atual ad hoc → meta 2x/semana consistente<br>
+                • <strong>% Commits com Review:</strong> 0% → meta 100%
+            </div>
+        </div>
+
+        <!-- GABARITO QUESTÃO 10 -->
+        <div class="gabarito-item">
+            <h3>Questão 10 - ISO/IEC 12207 Grupos (Dissertativa - 1,2 pontos)</h3>
+            <div class="correct-answer">✓ Rubrica de Avaliação</div>
+
+            <div class="rubric-box">
+                <h4>Critérios de Correção:</h4>
+
+                <div class="rubric-item">
+                    <strong>a) Diferença Técnicos vs Gerenciais + 2 exemplos cada (0,4 pontos):</strong><br>
+                    <span class="points">0,4:</span> Diferença clara + 2 exemplos corretos de cada<br>
+                    <span class="points">0,3:</span> Diferença boa mas exemplos incompletos<br>
+                    <span class="points">0,2:</span> Diferença superficial ou poucos exemplos<br>
+                    <span class="points">0,1:</span> Resposta confusa ou exemplos errados
+                </div>
+
+                <div class="rubric-item">
+                    <strong>b) Importância de todos os grupos (0,4 pontos):</strong><br>
+                    <span class="points">0,4:</span> Explica claramente por que todos são necessários com argumentos sólidos<br>
+                    <span class="points">0,3:</span> Explicação boa mas não completa<br>
+                    <span class="points">0,2:</span> Explicação superficial<br>
+                    <span class="points">0,1:</span> Resposta vaga
+                </div>
+
+                <div class="rubric-item">
+                    <strong>c) Exemplo prático falta de Proc. Organizacionais (0,4 pontos):</strong><br>
+                    <span class="points">0,4:</span> Exemplo concreto + impacto negativo claro<br>
+                    <span class="points">0,3:</span> Exemplo bom mas impacto não muito claro<br>
+                    <span class="points">0,2:</span> Exemplo genérico<br>
+                    <span class="points">0,1:</span> Exemplo inadequado
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>Resposta Modelo/Esperada:</strong><br><br>
+
+                <strong>a) Diferença Fundamental e Exemplos:</strong><br><br>
+
+                <strong>PROCESSOS TÉCNICOS:</strong><br>
+                <strong>Definição:</strong> Transformam requisitos em produto de software. São atividades de CONSTRUÇÃO.<br>
+                <strong>Exemplos:</strong><br>
+                1. <strong>Implementação:</strong> Codificação, testes unitários, integração<br>
+                2. <strong>Verificação:</strong> Revisões técnicas, testes de sistema<br><br>
+
+                <strong>PROCESSOS GERENCIAIS:</strong><br>
+                <strong>Definição:</strong> Gerenciam a EXECUÇÃO do projeto. Garantem que trabalho seja feito dentro de prazo, escopo e orçamento.<br>
+                <strong>Exemplos:</strong><br>
+                1. <strong>Planejamento de Projeto:</strong> Definir cronograma, orçamento, recursos<br>
+                2. <strong>Controle de Projeto:</strong> Monitorar progresso, desvios, tomar ações corretivas<br><br>
+
+                <strong>Diferença essencial:</strong> Técnicos FAZEM o produto; Gerenciais CONTROLAM como está sendo feito.<br><br>
+
+                <strong>b) Por que TODOS os grupos são importantes:</strong><br><br>
+
+                A ISO/IEC 12207 organiza processos em 4 grupos COMPLEMENTARES e INTERDEPENDENTES:<br><br>
+
+                1. <strong>Sem Processos TÉCNICOS:</strong> Não há produto! Gestão sem execução = planejamento vazio<br><br>
+
+                2. <strong>Sem Processos GERENCIAIS:</strong> Execução caótica. Projeto sem controle estoura prazo/custo, não atende escopo<br><br>
+
+                3. <strong>Sem Processos ORGANIZACIONAIS:</strong> Cada projeto reinventa roda. Sem padrões, políticas, infraestrutura. Conhecimento não é institucionalizado. Alta dependência de indivíduos<br><br>
+
+                4. <strong>Sem Processos de ACORDO:</strong> Relacionamento com clientes/fornecedores mal gerenciado. Expectativas não alinhadas. Contratos problemáticos<br><br>
+
+                <strong>Analogia:</strong> Como construir casa:<br>
+                • TÉCNICOS: Pedreiros constroem<br>
+                • GERENCIAIS: Engenheiro controla obra<br>
+                • ORGANIZACIONAIS: Normas técnicas, políticas segurança<br>
+                • ACORDO: Contratos com cliente e fornecedores<br>
+                Falta qualquer um = obra com problemas!<br><br>
+
+                <strong>c) Exemplo prático - Falta de Processos Organizacionais:</strong><br><br>
+
+                <strong>Cenário:</strong><br>
+                Empresa de software com 80 desenvolvedores, 8 times. Não possui processos organizacionais definidos - cada time define seus próprios processos.<br><br>
+
+                <strong>Impactos Negativos:</strong><br><br>
+
+                1. <strong>Inconsistência:</strong><br>
+                   • Time A usa Scrum 2 semanas, Time B usa Kanban, Time C não usa nada<br>
+                   • Reporting diferente para gerência (impossível comparar)<br>
+                   • Métricas incompatíveis entre times<br><br>
+
+                2. <strong>Desperdício:</strong><br>
+                   • Cada time gasta tempo definindo processos do zero<br>
+                   • Soluções não são compartilhadas<br>
+                   • Time D resolve problema que Time A já resolveu há 6 meses<br><br>
+
+                3. <strong>Mobilidade Prejudicada:</strong><br>
+                   • Desenvolvedor muda de time = precisa reaprender "como trabalhar"<br>
+                   • Curva aprendizado alta a cada mudança<br>
+                   • Dificulta balanceamento de carga entre times<br><br>
+
+                4. <strong>Qualidade Inconsistente:</strong><br>
+                   • Time A tem code review rigoroso, Time B não tem<br>
+                   • Produtos entregues têm qualidade muito diferente<br>
+                   • Clientes percebem inconsistência<br><br>
+
+                <strong>Solução:</strong> Implementar Processos Organizacionais:<br>
+                • Definir processo padrão organizacional (ex: Scrum 2 semanas)<br>
+                • Estabelecer políticas de qualidade (code review obrigatório)<br>
+                • Criar infraestrutura comum (ferramentas, templates)<br>
+                • Permitir tailoring controlado por times
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Centro Universitário Filadélfia - UniFil</strong></p>
+            <p>Disciplina: Qualidade de Software | Professor: Tiago | 2026</p>
+            <p style="margin-top: 20px; color: #d32f2f; font-weight: bold;">
+                🔒 GABARITO OFICIAL - USO EXCLUSIVO DO PROFESSOR
+            </p>
+            <p style="margin-top: 10px; font-style: italic;">
+                Utilize as rubricas para correção consistente e justa! ✅
+            </p>
+        </div>
+    </div>
+</body>
+</html>

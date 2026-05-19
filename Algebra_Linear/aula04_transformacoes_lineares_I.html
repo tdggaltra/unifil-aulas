@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 04 – Transformações Lineares I | Tópicos em Álgebra Linear</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --orange:#FF8C00; --accent:#FF6B35;
+            --dark:#1e1e2e;   --light:#f5f5f5;
+            --white:#ffffff;  --green:#27ae60;
+            --blue:#2980b9;   --red:#e74c3c;
+            --yellow:#f39c12; --purple:#8e44ad;
+            --code-bg:#1a1a2e;
+        }
+        ::-webkit-scrollbar{width:6px;height:6px;}
+        ::-webkit-scrollbar-track{background:#1e1e2e;}
+        ::-webkit-scrollbar-thumb{background:var(--orange);border-radius:3px;}
+
+        body{
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,var(--dark) 0%,#12121e 100%);
+            overflow:hidden; color:var(--dark);
+        }
+
+        .katex{font-size:1.05em;}
+        .katex-display{margin:.35em 0 !important;overflow-x:auto;}
+
+        /* ── CALC BLOCK ── */
+        .calc-block{
+            background:#f6f6fa;
+            border-left:5px solid var(--orange);
+            border-radius:10px;
+            padding:14px 20px;
+            line-height:2.2;
+            font-size:.94rem;
+            overflow-x:auto;
+        }
+        .calc-block p{margin:0;}
+        .calc-block.green{border-color:var(--green);background:#eafaf1;}
+        .calc-block.blue {border-color:var(--blue); background:#e8f4fd;}
+
+        /* ── SLIDE SYSTEM ── */
+        .presentation{width:100vw;height:100vh;position:relative;}
+        .slide{
+            width:100%;height:100%;
+            position:absolute;top:0;left:0;
+            display:none;opacity:0;
+            transform:translateX(60px);
+            transition:opacity .5s ease,transform .5s ease;
+        }
+        .slide.active{display:flex;opacity:1;transform:translateX(0);}
+        .slide-content{
+            background:var(--white);
+            width:92%;max-width:1280px;height:88%;
+            margin:auto;border-radius:20px;
+            box-shadow:0 24px 70px rgba(0,0,0,.5);
+            display:flex;flex-direction:column;overflow:hidden;
+        }
+
+        /* ── HEADER ── */
+        .slide-header{
+            background:linear-gradient(135deg,var(--orange) 0%,var(--accent) 100%);
+            padding:22px 48px 28px;color:white;
+            position:relative;flex-shrink:0;
+        }
+        .slide-header::after{
+            content:'';position:absolute;bottom:-18px;left:0;right:0;height:36px;
+            background:linear-gradient(135deg,var(--orange),var(--accent));
+            clip-path:polygon(0 0,100% 0,100% 100%,0 0);z-index:1;
+        }
+        .slide-header h2{font-size:1.6rem;font-weight:600;margin-top:4px;}
+        .slide-header p{font-size:1rem;opacity:.9;margin-top:4px;}
+        .slide-header .tag{
+            display:inline-block;
+            background:rgba(255,255,255,.25);
+            border:1px solid rgba(255,255,255,.4);
+            border-radius:20px;padding:3px 14px;
+            font-size:.82rem;margin-bottom:6px;
+        }
+
+        /* ── BODY ── */
+        .slide-body{
+            padding:42px 48px 24px;flex:1;
+            overflow-y:auto;display:flex;
+            flex-direction:column;gap:14px;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeInUp{
+            from{opacity:0;transform:translateY(22px);}
+            to{opacity:1;transform:translateY(0);}
+        }
+        .anim{opacity:0;}
+        .slide.active .anim{animation:fadeInUp .5s ease forwards;}
+        .slide.active .d1{animation-delay:.08s;}
+        .slide.active .d2{animation-delay:.18s;}
+        .slide.active .d3{animation-delay:.28s;}
+        .slide.active .d4{animation-delay:.38s;}
+        .slide.active .d5{animation-delay:.48s;}
+
+        /* ── UTILITIES ── */
+        .hi {color:var(--orange);font-weight:700;}
+        .grn{color:var(--green); font-weight:700;}
+        .red{color:var(--red);   font-weight:700;}
+        .blu{color:var(--blue);  font-weight:700;}
+        .pur{color:var(--purple);font-weight:700;}
+
+        /* ── BOXES ── */
+        .box{background:#fff8f0;border-left:5px solid var(--orange);border-radius:10px;padding:15px 20px;font-size:.97rem;line-height:1.75;}
+        .box.blue  {background:#e8f4fd;border-color:var(--blue);}
+        .box.green {background:#eafaf1;border-color:var(--green);}
+        .box.red   {background:#fdf2f2;border-color:var(--red);}
+        .box.yellow{background:#fef9e7;border-color:var(--yellow);}
+        .box.purple{background:#f5eef8;border-color:var(--purple);}
+
+        /* ── CARDS ── */
+        .cards{display:flex;gap:14px;flex-wrap:wrap;}
+        .card{
+            flex:1;min-width:180px;background:var(--light);
+            border-radius:14px;padding:16px 14px;
+            border-top:4px solid var(--orange);
+            box-shadow:0 4px 14px rgba(0,0,0,.07);
+            font-size:.92rem;line-height:1.65;
+        }
+        .card h4{color:var(--orange);font-size:.98rem;margin-bottom:7px;}
+        .card.blue  {border-color:var(--blue);}   .card.blue h4  {color:var(--blue);}
+        .card.green {border-color:var(--green);}  .card.green h4 {color:var(--green);}
+        .card.red   {border-color:var(--red);}    .card.red h4   {color:var(--red);}
+        .card.yellow{border-color:var(--yellow);} .card.yellow h4{color:var(--yellow);}
+        .card.purple{border-color:var(--purple);} .card.purple h4{color:var(--purple);}
+
+        /* ── LAYOUTS ── */
+        .two-col  {display:grid;grid-template-columns:1fr 1fr;    gap:18px;}
+        .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+        .four-col {display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+
+        /* ── STEPS ── */
+        .steps{counter-reset:step;display:flex;flex-direction:column;gap:10px;}
+        .step{counter-increment:step;display:flex;align-items:flex-start;gap:13px;font-size:.94rem;line-height:1.7;}
+        .step::before{
+            content:counter(step);
+            background:var(--orange);color:white;
+            width:27px;height:27px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:.84rem;
+            flex-shrink:0;margin-top:2px;
+        }
+
+        /* ── FORMULA (dark) ── */
+        .formula{
+            background:linear-gradient(135deg,#1a1a2e,#2a2a3e);
+            border:2px solid var(--orange);
+            border-radius:14px;padding:18px 24px;
+            text-align:center;color:#f0f0ff;
+        }
+        .formula .title{color:var(--orange);font-size:.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:700;}
+        .formula .katex{color:#f0f0ff;}
+        .formula.blue {border-color:var(--blue);} .formula.blue .title {color:#7fb3d3;}
+        .formula.green{border-color:var(--green);}.formula.green .title{color:#7dcea0;}
+        .formula.purple{border-color:var(--purple);}.formula.purple .title{color:#c39bd3;}
+
+        /* ── GEO PANEL (visualização geométrica) ── */
+        .geo-panel{
+            background:var(--code-bg);
+            border-radius:12px;padding:16px;
+            display:flex;align-items:center;justify-content:center;
+            min-height:160px;
+        }
+
+        /* ── TABLE ── */
+        .tbl{width:100%;border-collapse:collapse;font-size:.92rem;}
+        .tbl th{background:var(--orange);color:white;padding:10px 14px;text-align:left;}
+        .tbl td{padding:8px 14px;border-bottom:1px solid #eee;vertical-align:middle;}
+        .tbl tr:nth-child(even) td{background:#fdf6ec;}
+        .tbl tr:hover td{background:#fff0d0;}
+
+        /* ── LISTS ── */
+        ul.custom{list-style:none;padding:0;}
+        ul.custom li{padding:5px 0 5px 28px;position:relative;font-size:.94rem;line-height:1.65;}
+        ul.custom li::before{content:'▸';position:absolute;left:0;color:var(--orange);top:7px;}
+        ul.custom li.check::before{content:'✓';color:var(--green);}
+        ul.custom li.key::before  {content:'▸';color:var(--orange);font-weight:700;}
+        ul.custom li.warn::before {content:'▲';color:var(--yellow);font-weight:700;}
+        ul.custom li.red-x::before{content:'✗';color:var(--red);}
+
+        /* ── SECTION TITLE ── */
+        .section-title{display:flex;align-items:center;gap:10px;font-size:1.05rem;font-weight:700;color:var(--dark);}
+        .section-title::before{content:'';width:6px;height:22px;background:var(--orange);border-radius:3px;}
+        .divider{height:2px;background:linear-gradient(90deg,var(--orange),transparent);border-radius:2px;}
+
+        /* ── TRANSFORMAÇÃO INLINE DEMO ── */
+        .trans-demo{
+            display:flex;align-items:center;gap:10px;
+            background:var(--code-bg);
+            border-radius:10px;padding:14px 18px;
+            font-size:.93rem;color:#e0e0f0;
+            overflow-x:auto;
+        }
+        .trans-arrow{color:var(--orange);font-size:1.4rem;font-weight:700;flex-shrink:0;}
+
+        /* ── COVER ── */
+        .cover .slide-content{
+            background:linear-gradient(155deg,#1e1e2e 0%,#2d1a00 60%,#1e1e2e 100%);
+            justify-content:center;align-items:center;text-align:center;
+            position:relative;overflow:hidden;
+        }
+        .cover .slide-content::before{content:'';position:absolute;top:-80px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,140,0,.18) 0%,transparent 70%);}
+        .cover .slide-content::after{content:'';position:absolute;bottom:-60px;left:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,53,.14) 0%,transparent 70%);}
+        .cover-inner{z-index:2;padding:40px;}
+        .cover-badge{background:rgba(255,140,0,.2);border:1px solid rgba(255,140,0,.5);color:var(--orange);border-radius:30px;padding:6px 22px;font-size:.9rem;letter-spacing:1px;display:inline-block;margin-bottom:24px;}
+        .cover h1{font-size:3rem;font-weight:800;color:white;line-height:1.2;margin-bottom:12px;}
+        .cover h1 span{color:var(--orange);}
+        .cover h2{font-size:1.5rem;color:rgba(255,255,255,.75);font-weight:400;margin-bottom:32px;}
+        .cover-meta{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;}
+        .cover-meta-item{color:rgba(255,255,255,.6);font-size:.92rem;}
+        .cover-meta-item strong{color:var(--orange);display:block;font-size:1rem;}
+
+        /* ── NAV ── */
+        .progress-bar{position:fixed;bottom:0;left:0;height:4px;background:linear-gradient(90deg,var(--orange),var(--accent));transition:width .4s ease;z-index:100;}
+        .slide-counter{position:fixed;bottom:14px;right:20px;color:rgba(255,255,255,.55);font-size:.82rem;font-family:'Courier New',monospace;z-index:100;}
+        .slide-counter span{color:var(--orange);font-weight:700;}
+        .nav-btn{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,140,0,.18);border:1px solid rgba(255,140,0,.4);color:var(--orange);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:background .2s;z-index:100;user-select:none;}
+        .nav-btn:hover{background:rgba(255,140,0,.35);}
+        #btn-prev{left:14px;} #btn-next{right:14px;}
+    </style>
+</head>
+<body>
+<div class="presentation">
+
+<!-- ══════ SLIDE 1 — CAPA ══════ -->
+<div class="slide cover active" id="slide-1">
+    <div class="slide-content">
+        <div class="cover-inner">
+            <div class="cover-badge anim d1">📐 Ensino Superior · Engenharia</div>
+            <h1 class="anim d2">Tópicos em<br><span>Álgebra Linear</span></h1>
+            <h2 class="anim d3">Aula 04 · Transformações Lineares I</h2>
+            <div class="cover-meta anim d4">
+                <div class="cover-meta-item"><strong>📅 Data</strong>19 de maio de 2026</div>
+                <div class="cover-meta-item"><strong>⏱ Carga</strong>3 horas-aula</div>
+                <div class="cover-meta-item"><strong>📚 Bloco</strong>2 de 5 · Transformações</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 2 — GABARITO TAREFA AULA 03 ══════ -->
+<div class="slide" id="slide-2">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Revisão · Aula 03</div>
+            <h2>Gabarito — Tarefa de Matriz Inversa</h2>
+            <p>Dois métodos, dois exemplos, resultados verificados</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div>
+                    <div class="section-title">(a) \(A=\begin{bmatrix}1&2\\3&7\end{bmatrix}\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>\(\det(A)=1\cdot7-2\cdot3={\color{#FF8C00}1}\)</p>
+                        <p><strong>Via Adjunta:</strong> \(\text{adj}(A)=\begin{bmatrix}7&-2\\-3&1\end{bmatrix}\)</p>
+                        <p>$$A^{-1}=\frac{1}{1}\begin{bmatrix}7&-2\\-3&1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}7&-2\\-3&1\end{bmatrix}}$$</p>
+                        <p><strong>Via Gauss-Jordan:</strong></p>
+                        <p>$$\left[\begin{array}{cc|cc}1&2&1&0\\3&7&0&1\end{array}\right]\xrightarrow{R_2-3R_1}\left[\begin{array}{cc|cc}1&2&1&0\\0&1&-3&1\end{array}\right]\xrightarrow{R_1-2R_2}\left[\begin{array}{cc|cc}1&0&7&-2\\0&1&-3&1\end{array}\right]$$</p>
+                        <p>Verif.: \(A\cdot A^{-1}=\begin{bmatrix}1(7)+2(-3)&\cdots\\3(7)+7(-3)&\cdots\end{bmatrix}=\begin{bmatrix}1&0\\0&1\end{bmatrix}\) ✓</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">(b) \(B=\begin{bmatrix}1&0&1\\0&1&1\\1&1&0\end{bmatrix}\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>\(\det(B)=1(0-1)-0+1(0-1)={\color{#FF8C00}{-2}}\)</p>
+                        <p><strong>Via Gauss-Jordan (resumido):</strong></p>
+                        <p>\([B\mid I]\xrightarrow{\text{operações}}\left[I\mid B^{-1}\right]\)</p>
+                        <p>$$B^{-1}=\frac{1}{-2}\begin{bmatrix}-1&1&-1\\1&-1&-1\\-1&-1&1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}\frac{1}{2}&-\frac{1}{2}&\frac{1}{2}\\-\frac{1}{2}&\frac{1}{2}&\frac{1}{2}\\\frac{1}{2}&\frac{1}{2}&-\frac{1}{2}\end{bmatrix}}$$</p>
+                        <p>Verif.: \(B\cdot B^{-1}=I\) ✓</p>
+                    </div>
+                </div>
+            </div>
+            <div class="box blue anim d2">
+                🎯 <strong>Hoje abrimos o Bloco 2:</strong> <span class="blu">Transformações Lineares</span> — o conceito que conecta álgebra e geometria. Toda matriz \(A\) define uma transformação; toda transformação linear pode ser representada por uma matriz. Esta é a ponte central da disciplina.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 3 — DEFINIÇÃO ══════ -->
+<div class="slide" id="slide-3">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Transformações Lineares</div>
+            <h2>Definição de Transformação Linear</h2>
+            <p>A condição que separa transformações lineares de todas as outras</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Definição</div>
+                \(T: V \to W\) é <strong>linear</strong> se e somente se para todos \(\mathbf{u},\mathbf{v}\in V\) e todo escalar \(\alpha\):
+                $$T(\mathbf{u}+\mathbf{v}) = T(\mathbf{u})+T(\mathbf{v}) \qquad \text{(aditividade)}$$
+                $$T(\alpha\,\mathbf{u}) = \alpha\,T(\mathbf{u}) \qquad \text{(homogeneidade)}$$
+                <div style="font-size:.88rem;color:#aaa;margin-top:8px;">Equivalentemente: \(T(\alpha\mathbf{u}+\beta\mathbf{v})=\alpha T(\mathbf{u})+\beta T(\mathbf{v})\) para todos \(\alpha,\beta\in\mathbb{R}\)</div>
+            </div>
+            <div class="two-col anim d2">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div class="box green">
+                        <strong>Consequência imediata:</strong> toda transformação linear leva o vetor nulo ao vetor nulo:
+                        $$T(\mathbf{0})=T(0\cdot\mathbf{u})=0\cdot T(\mathbf{u})=\mathbf{0}$$
+                        Se \(T(\mathbf{0})\neq\mathbf{0}\), a transformação <strong>não é linear</strong> — verificação rápida!
+                    </div>
+                    <div class="box yellow">
+                        <strong>Interpretação geométrica:</strong> uma transformação linear <em>preserva combinações lineares</em> — linhas retas viram linhas retas, a origem fica fixa, e paralelismo é mantido.
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div class="card green">
+                        <h4>Exemplos LINEARES</h4>
+                        Rotação · Reflexão · Projeção · Dilatação · Cisalhamento · Qualquer \(T(\mathbf{x})=A\mathbf{x}\)
+                    </div>
+                    <div class="card red">
+                        <h4>Exemplos NÃO LINEARES</h4>
+                        Translação \(T(\mathbf{x})=\mathbf{x}+\mathbf{b}\) (\(\mathbf{b}\neq\mathbf{0}\)) · \(T(x)=x^2\) · \(T(\mathbf{x})=|\mathbf{x}|\) · qualquer \(T\) com \(T(\mathbf{0})\neq\mathbf{0}\)
+                    </div>
+                    <div class="card blue">
+                        <h4>Domínio e Contradomínio</h4>
+                        \(T:\mathbb{R}^n\to\mathbb{R}^m\) transforma vetores de \(\mathbb{R}^n\) em vetores de \(\mathbb{R}^m\). Não é necessário \(n=m\)!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 4 — VERIFICANDO LINEARIDADE ══════ -->
+<div class="slide" id="slide-4">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Transformações Lineares</div>
+            <h2>Verificando Linearidade — Exemplos e Contra-exemplos</h2>
+            <p>Como provar que uma transformação é (ou não é) linear</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <!-- EXEMPLO LINEAR -->
+                <div>
+                    <div class="section-title">Exemplo 1 — \(T:\mathbb{R}^2\to\mathbb{R}^2\), \(T(x,y)=(2x+y,\;x-3y)\) &nbsp;<span class="grn">LINEAR</span></div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>Sejam \(\mathbf{u}=(x_1,y_1)\) e \(\mathbf{v}=(x_2,y_2)\):</p>
+                        <p>\(T(\mathbf{u}+\mathbf{v})=T(x_1{+}x_2,\,y_1{+}y_2)\)</p>
+                        <p>\(\quad=(2(x_1{+}x_2)+(y_1{+}y_2),\;(x_1{+}x_2)-3(y_1{+}y_2))\)</p>
+                        <p>\(\quad=(2x_1{+}y_1,\,x_1{-}3y_1)+(2x_2{+}y_2,\,x_2{-}3y_2)\)</p>
+                        <p>\(\quad=T(\mathbf{u})+T(\mathbf{v})\) ✓</p>
+                        <p>\(T(\alpha\mathbf{u})=T(\alpha x_1,\alpha y_1)=(2\alpha x_1{+}\alpha y_1,\,\alpha x_1{-}3\alpha y_1)\)</p>
+                        <p>\(\quad=\alpha(2x_1{+}y_1,\,x_1{-}3y_1)=\alpha T(\mathbf{u})\) ✓</p>
+                        <p>Forma matricial: \(T(\mathbf{x})=\begin{bmatrix}2&1\\1&-3\end{bmatrix}\mathbf{x}\)</p>
+                    </div>
+                </div>
+                <!-- CONTRA-EXEMPLO -->
+                <div>
+                    <div class="section-title">Exemplo 2 — \(T(x,y)=(x+1,\;2y)\) &nbsp;<span class="red">NÃO LINEAR</span></div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p><strong>Teste rápido:</strong> \(T(\mathbf{0})=T(0,0)=(0+1,\,0)=(1,0)\neq\mathbf{0}\)</p>
+                        <p>Isso já basta para concluir: <span class="red">não é linear.</span></p>
+                        <p style="margin-top:8px;"><strong>Confirmação — falha na aditividade:</strong></p>
+                        <p>\(T(\mathbf{u}+\mathbf{v})=(x_1{+}x_2{+}1,\,2y_1{+}2y_2)\)</p>
+                        <p>\(T(\mathbf{u})+T(\mathbf{v})=(x_1{+}1{+}x_2{+}1,\,2y_1{+}2y_2)\)</p>
+                        <p>\(\quad=(x_1{+}x_2{+}2,\,2y_1{+}2y_2)\)</p>
+                        <p>\(T(\mathbf{u}+\mathbf{v})\neq T(\mathbf{u})+T(\mathbf{v})\) <span class="red">✗</span></p>
+                    </div>
+                    <div class="box yellow" style="margin-top:10px;">
+                        <strong>Atenção — Translações:</strong> \(T(\mathbf{x})=A\mathbf{x}+\mathbf{b}\) com \(\mathbf{b}\neq\mathbf{0}\) é uma <em>transformação afim</em>, não linear. Em computação gráfica, usa-se coordenadas homogêneas para tratar translações com matrizes.
+                    </div>
+                </div>
+            </div>
+            <div class="box anim d2">
+                <strong>Roteiro de verificação:</strong> (1) verifique \(T(\mathbf{0})=\mathbf{0}\) — se falhar, encerre; (2) verifique aditividade; (3) verifique homogeneidade. Se as três condições forem satisfeitas, \(T\) é linear.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 5 — REPRESENTAÇÃO MATRICIAL ══════ -->
+<div class="slide" id="slide-5">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Transformações Lineares</div>
+            <h2>Representação Matricial</h2>
+            <p>Toda transformação linear \(T:\mathbb{R}^n\to\mathbb{R}^m\) tem uma matriz \(A_{m\times n}\) associada</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Teorema da Representação Matricial</div>
+                Se \(T:\mathbb{R}^n\to\mathbb{R}^m\) é linear, existe uma única matriz \(A\in\mathbb{R}^{m\times n}\) tal que
+                $$T(\mathbf{x}) = A\mathbf{x} \quad \text{para todo } \mathbf{x}\in\mathbb{R}^n$$
+                <div style="font-size:.9rem;color:#aaa;margin-top:8px;">As colunas de \(A\) são as imagens dos vetores da base canônica: \(A = \bigl[T(\mathbf{e}_1)\;\big|\;T(\mathbf{e}_2)\;\big|\;\cdots\;\big|\;T(\mathbf{e}_n)\bigr]\)</div>
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Como construir a matriz de \(T\)</div>
+                    <div class="steps" style="margin-top:10px;">
+                        <div class="step"><div>Aplique \(T\) a cada vetor da <strong>base canônica</strong> \(\mathbf{e}_1,\mathbf{e}_2,\ldots,\mathbf{e}_n\) de \(\mathbb{R}^n\).</div></div>
+                        <div class="step"><div>Cada resultado \(T(\mathbf{e}_j)\) é um vetor em \(\mathbb{R}^m\) — use-o como a <strong>coluna \(j\)</strong> de \(A\).</div></div>
+                        <div class="step"><div>A matriz \(A=[T(\mathbf{e}_1)\mid T(\mathbf{e}_2)\mid\cdots\mid T(\mathbf{e}_n)]\) representa completamente \(T\).</div></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Exemplo</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>\(T:\mathbb{R}^2\to\mathbb{R}^3\), \(T(x,y)=(x+y,\;2x,\;x-y)\)</p>
+                        <p>\(T(\mathbf{e}_1)=T(1,0)=(1,\,2,\,1)\) → col. 1</p>
+                        <p>\(T(\mathbf{e}_2)=T(0,1)=(1,\,0,\,-1)\) → col. 2</p>
+                        <p>$$A=\begin{bmatrix}1&1\\2&0\\1&-1\end{bmatrix}\in\mathbb{R}^{3\times2}$$</p>
+                        <p>Verificação: \(A\begin{bmatrix}x\\y\end{bmatrix}=\begin{bmatrix}x+y\\2x\\x-y\end{bmatrix}\) ✓</p>
+                    </div>
+                </div>
+            </div>
+            <div class="box blue anim d3">
+                <strong>Implicação fundamental:</strong> estudar transformações lineares é <em>equivalente</em> a estudar matrizes. Toda propriedade geométrica da transformação (rotação, reflexão, compressão...) está codificada na estrutura algébrica de \(A\). As colunas de \(A\) revelam como \(T\) deforma o espaço.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 6 — NÚCLEO E IMAGEM ══════ -->
+<div class="slide" id="slide-6">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Transformações Lineares</div>
+            <h2>Núcleo e Imagem</h2>
+            <p>Os dois subespaços fundamentais de qualquer transformação linear</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div class="formula">
+                    <div class="title">Núcleo (Kernel)</div>
+                    $$\ker(T) = \{\,\mathbf{x}\in\mathbb{R}^n \mid T(\mathbf{x})=\mathbf{0}\,\}$$
+                    <div style="font-size:.88rem;color:#aaa;margin-top:6px;">todos os vetores que \(T\) "aniquila"</div>
+                </div>
+                <div class="formula blue">
+                    <div class="title">Imagem (Range)</div>
+                    $$\text{Im}(T) = \{\,T(\mathbf{x}) \mid \mathbf{x}\in\mathbb{R}^n\,\}$$
+                    <div style="font-size:.88rem;color:#aaa;margin-top:6px;">todos os vetores que \(T\) consegue produzir</div>
+                </div>
+            </div>
+            <div class="box anim d2">
+                <strong>Teorema da Dimensão (Nullity-Rank):</strong>
+                $$\dim(\ker T) + \dim(\text{Im}\,T) = n \qquad \text{onde } n = \dim(\text{domínio})$$
+                Em termos matriciais: \(\;\text{nulidade}(A) + \text{posto}(A) = n\) (número de colunas de \(A\)).
+            </div>
+            <div class="two-col anim d3">
+                <div>
+                    <div class="section-title">Exemplo — \(T:\mathbb{R}^3\to\mathbb{R}^2\), \(A=\begin{bmatrix}1&1&0\\0&1&1\end{bmatrix}\)</div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p><strong>Núcleo:</strong> resolva \(A\mathbf{x}=\mathbf{0}\):</p>
+                        <p>\(x_1+x_2=0\) e \(x_2+x_3=0\)</p>
+                        <p>Da 2ª eq.: \(x_2=-x_3\). Da 1ª: \(x_1=-x_2=x_3\).</p>
+                        <p>Parametrize com \(t=x_3\): \(\mathbf{x}=t(1,-1,1)\)</p>
+                        <p>$$\ker(T)=\text{span}\left\{\begin{bmatrix}1\\-1\\1\end{bmatrix}\right\},\quad\dim(\ker T)=1$$</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title" style="visibility:hidden;">.</div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p><strong>Imagem:</strong> colunas linearmente independentes de \(A\):</p>
+                        <p>\(\text{posto}(A)=2\) (linhas LI)</p>
+                        <p>$$\text{Im}(T)=\text{span}\left\{\begin{bmatrix}1\\0\end{bmatrix},\begin{bmatrix}1\\1\end{bmatrix}\right\}=\mathbb{R}^2$$</p>
+                        <p><strong>Verificação do Teorema:</strong></p>
+                        <p>\(\dim(\ker T)+\dim(\text{Im}\,T)=1+2=3=n\) ✓</p>
+                    </div>
+                    <div class="box green" style="margin-top:10px;">
+                        <strong>T é sobrejetora</strong> pois \(\text{Im}(T)=\mathbb{R}^2\), mas <strong>não injetora</strong> pois \(\ker(T)\neq\{\mathbf{0}\}\).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 7 — INJETIVIDADE E SOBREJETIVIDADE ══════ -->
+<div class="slide" id="slide-7">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Transformações Lineares</div>
+            <h2>Injetividade, Sobrejetividade e Bijetividade</h2>
+            <p>Classificando transformações lineares pelo núcleo e pela imagem</p>
+        </div>
+        <div class="slide-body">
+            <div class="three-col anim d1">
+                <div class="formula" style="padding:16px;">
+                    <div class="title">Injetora (1-1)</div>
+                    $$T(\mathbf{u})=T(\mathbf{v})\Rightarrow\mathbf{u}=\mathbf{v}$$
+                    <div style="font-size:.85rem;color:#aaa;margin-top:8px;">equivalente a \(\ker(T)=\{\mathbf{0}\}\)</div>
+                </div>
+                <div class="formula blue" style="padding:16px;">
+                    <div class="title">Sobrejetora (sobre)</div>
+                    $$\text{Im}(T)=W$$
+                    <div style="font-size:.85rem;color:#aaa;margin-top:8px;">todo vetor do contradomínio é atingido</div>
+                </div>
+                <div class="formula green" style="padding:16px;">
+                    <div class="title">Bijetora (isomorfismo)</div>
+                    $$\text{injetora} + \text{sobrejetora}$$
+                    <div style="font-size:.85rem;color:#aaa;margin-top:8px;">\(T^{-1}\) existe e também é linear</div>
+                </div>
+            </div>
+            <div class="anim d2">
+                <table class="tbl">
+                    <thead><tr><th>Condição</th><th>Núcleo</th><th>Posto</th><th>Relação \(n,\,m\)</th><th>Exemplo</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="grn">Injetora</span></td>
+                            <td>\(\ker(T)=\{\mathbf{0}\}\), \(\dim=0\)</td>
+                            <td>\(\text{posto}=n\)</td>
+                            <td>Necessário \(m\geq n\)</td>
+                            <td>\(T:\mathbb{R}^2\to\mathbb{R}^3\) com posto 2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="blu">Sobrejetora</span></td>
+                            <td>qualquer</td>
+                            <td>\(\text{posto}=m\)</td>
+                            <td>Necessário \(n\geq m\)</td>
+                            <td>\(T:\mathbb{R}^3\to\mathbb{R}^2\) com posto 2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="hi">Bijetora</span></td>
+                            <td>\(\ker(T)=\{\mathbf{0}\}\)</td>
+                            <td>\(\text{posto}=n=m\)</td>
+                            <td>\(n=m\) e \(\det(A)\neq0\)</td>
+                            <td>Rotação em \(\mathbb{R}^2\)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="red">Nenhuma</span></td>
+                            <td>\(\ker(T)\neq\{\mathbf{0}\}\)</td>
+                            <td>\(\text{posto}<\min(n,m)\)</td>
+                            <td>qualquer</td>
+                            <td>Projeção: \(T(x,y)=(x,0)\)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="box yellow anim d3">
+                <strong>Conexão com a Aula 03:</strong> \(T(\mathbf{x})=A\mathbf{x}\) é bijetora \(\;\Leftrightarrow\;\det(A)\neq0\;\Leftrightarrow\;A^{-1}\) existe. Ou seja: calcular \(A^{-1}\) é exatamente encontrar \(T^{-1}\)!
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 8 — TRANSFORMAÇÕES NO PLANO ══════ -->
+<div class="slide" id="slide-8">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Transformações no Plano</div>
+            <h2>Transformações Lineares Fundamentais em \(\mathbb{R}^2\)</h2>
+            <p>Rotação, reflexão, projeção e dilatação — matrizes e interpretação geométrica</p>
+        </div>
+        <div class="slide-body">
+            <div class="four-col anim d1">
+                <div class="card">
+                    <h4>Rotação por \(\theta\)</h4>
+                    $$R_\theta=\begin{bmatrix}\cos\theta&-\!\sin\theta\\\sin\theta&\cos\theta\end{bmatrix}$$
+                    <div style="margin-top:6px;font-size:.85rem;">Gira todo vetor em \(\theta\) graus em torno da origem, sentido anti-horário. \(\det(R_\theta)=1\).</div>
+                </div>
+                <div class="card blue">
+                    <h4>Reflexão</h4>
+                    $$F_x=\begin{bmatrix}1&0\\0&-1\end{bmatrix}$$
+                    $$F_y=\begin{bmatrix}-1&0\\0&1\end{bmatrix}$$
+                    $$F_{y=x}=\begin{bmatrix}0&1\\1&0\end{bmatrix}$$
+                    <div style="margin-top:6px;font-size:.85rem;">\(\det=-1\) em todas as reflexões.</div>
+                </div>
+                <div class="card green">
+                    <h4>Projeção Ortogonal</h4>
+                    $$P_x=\begin{bmatrix}1&0\\0&0\end{bmatrix}$$
+                    $$P_y=\begin{bmatrix}0&0\\0&1\end{bmatrix}$$
+                    <div style="margin-top:6px;font-size:.85rem;">Idempotente: \(P^2=P\). \(\det=0\) — singular, não invertível.</div>
+                </div>
+                <div class="card yellow">
+                    <h4>Dilatação / Compressão</h4>
+                    $$D_{k_1,k_2}=\begin{bmatrix}k_1&0\\0&k_2\end{bmatrix}$$
+                    <div style="margin-top:6px;font-size:.85rem;">Escala eixo \(x\) por \(k_1\) e eixo \(y\) por \(k_2\). \(\det=k_1k_2\).</div>
+                </div>
+            </div>
+            <div class="two-col anim d2">
+                <div class="box">
+                    <strong>Rotações especiais:</strong>
+                    $$R_{90°}=\begin{bmatrix}0&-1\\1&0\end{bmatrix},\quad R_{180°}=\begin{bmatrix}-1&0\\0&-1\end{bmatrix}$$
+                    $$R_{45°}=\frac{\sqrt{2}}{2}\begin{bmatrix}1&-1\\1&1\end{bmatrix}$$
+                    Propriedade de composição: \(R_\alpha\cdot R_\beta = R_{\alpha+\beta}\)
+                </div>
+                <div class="box blue">
+                    <strong>Cisalhamento (shear):</strong>
+                    $$S_h=\begin{bmatrix}1&h\\0&1\end{bmatrix}\quad \text{(horizontal)}, \qquad S_v=\begin{bmatrix}1&0\\v&1\end{bmatrix}\quad\text{(vertical)}$$
+                    Mantém a área: \(\det(S)=1\). Deforma paralelogramos em paralelogramos.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 9 — EXEMPLOS DE ROTAÇÃO ══════ -->
+<div class="slide" id="slide-9">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Rotação</div>
+            <h2>Rotação — Exemplos Completos</h2>
+            <p>Calculando imagens e verificando propriedades</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                <strong>Problema:</strong> aplique \(R_{90°}\) e \(R_{45°}\) ao vetor \(\mathbf{v}=\begin{bmatrix}1\\0\end{bmatrix}\) e ao vetor \(\mathbf{w}=\begin{bmatrix}1\\1\end{bmatrix}\).
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Rotação por \(90°\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>$$R_{90°}=\begin{bmatrix}0&-1\\1&0\end{bmatrix}$$</p>
+                        <p>\(R_{90°}\mathbf{v}=\begin{bmatrix}0&-1\\1&0\end{bmatrix}\begin{bmatrix}1\\0\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}0\\1\end{bmatrix}}\)</p>
+                        <p>→ \((1,0)\) vira \((0,1)\): eixo \(x\) vai para eixo \(y\) ✓</p>
+                        <p style="margin-top:6px;">\(R_{90°}\mathbf{w}=\begin{bmatrix}0&-1\\1&0\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}-1\\1\end{bmatrix}}\)</p>
+                        <p>→ \((1,1)\) vira \((-1,1)\): módulo preservado! \(\|\mathbf{w}\|=\|R_{90°}\mathbf{w}\|=\sqrt{2}\) ✓</p>
+                    </div>
+                    <div class="box green" style="margin-top:10px;">
+                        <strong>Propriedade:</strong> rotações preservam comprimentos e ângulos — são <em>transformações isométricas</em>. Isso reflete \(R^T R = I\), ou seja, \(R^{-1}=R^T\).
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Rotação por \(45°\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>$$R_{45°}=\frac{\sqrt{2}}{2}\begin{bmatrix}1&-1\\1&1\end{bmatrix}$$</p>
+                        <p>\(R_{45°}\mathbf{v}=\frac{\sqrt{2}}{2}\begin{bmatrix}1\\1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}\frac{\sqrt{2}}{2}\\\frac{\sqrt{2}}{2}\end{bmatrix}}\)</p>
+                        <p>→ \((1,0)\) vira \((\cos45°,\,\sin45°)\) ✓</p>
+                        <p style="margin-top:6px;">\(R_{45°}\mathbf{w}=\frac{\sqrt{2}}{2}\begin{bmatrix}0\\2\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}0\\\sqrt{2}\end{bmatrix}}\)</p>
+                        <p>→ \((1,1)\) vira \((0,\sqrt{2})\): agora sobre o eixo \(y\) ✓</p>
+                    </div>
+                    <div class="box blue" style="margin-top:10px;">
+                        <strong>Composição:</strong> \(R_{45°}\cdot R_{45°}=R_{90°}\)
+                        $$\frac{\sqrt{2}}{2}\begin{bmatrix}1&-1\\1&1\end{bmatrix}\cdot\frac{\sqrt{2}}{2}\begin{bmatrix}1&-1\\1&1\end{bmatrix}=\begin{bmatrix}0&-1\\1&0\end{bmatrix}=R_{90°}\;\checkmark$$
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 10 — EXEMPLOS DE REFLEXÃO E PROJEÇÃO ══════ -->
+<div class="slide" id="slide-10">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Reflexão e Projeção</div>
+            <h2>Reflexão e Projeção — Exemplos e Propriedades</h2>
+            <p>Comportamento geométrico e consequências algébricas</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <!-- REFLEXÃO -->
+                <div>
+                    <div class="section-title">Reflexão sobre \(y=x\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>$$F_{y=x}=\begin{bmatrix}0&1\\1&0\end{bmatrix}$$</p>
+                        <p>Aplique ao ponto \(P=(3,1)\):</p>
+                        <p>$$F_{y=x}\begin{bmatrix}3\\1\end{bmatrix}=\begin{bmatrix}0\cdot3+1\cdot1\\1\cdot3+0\cdot1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}1\\3\end{bmatrix}}$$</p>
+                        <p>→ \((3,1)\) vira \((1,3)\): as coordenadas se trocam ✓</p>
+                        <p style="margin-top:8px;"><strong>Involutiva:</strong> \(F_{y=x}^2=I\)</p>
+                        <p>$$\begin{bmatrix}0&1\\1&0\end{bmatrix}^2=\begin{bmatrix}1&0\\0&1\end{bmatrix}=I\;\checkmark$$</p>
+                        <p><strong>Reflexão é sua própria inversa:</strong> \(F^{-1}=F\)</p>
+                        <p>\(\det(F_{y=x})=-1\) → inverte orientação</p>
+                    </div>
+                </div>
+                <!-- PROJEÇÃO -->
+                <div>
+                    <div class="section-title">Projeção sobre o eixo \(x\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>$$P_x=\begin{bmatrix}1&0\\0&0\end{bmatrix}$$</p>
+                        <p>Aplique ao ponto \(Q=(3,4)\):</p>
+                        <p>$$P_x\begin{bmatrix}3\\4\end{bmatrix}=\begin{bmatrix}3\\0\end{bmatrix}$$</p>
+                        <p>→ "projeta" para o eixo \(x\), zerando a componente \(y\) ✓</p>
+                        <p style="margin-top:8px;"><strong>Idempotente:</strong> \(P_x^2=P_x\)</p>
+                        <p>$$\begin{bmatrix}1&0\\0&0\end{bmatrix}^2=\begin{bmatrix}1&0\\0&0\end{bmatrix}=P_x\;\checkmark$$</p>
+                        <p>"Projetar duas vezes = projetar uma vez."</p>
+                        <p>\(\det(P_x)=0\) → singular, não invertível</p>
+                    </div>
+                    <div class="box yellow" style="margin-top:10px;">
+                        <strong>Núcleo da projeção:</strong> \(\ker(P_x)=\text{span}\bigl\{\begin{bmatrix}0\\1\end{bmatrix}\bigr\}\) — todos os pontos sobre o eixo \(y\) são aniquilados.
+                    </div>
+                </div>
+            </div>
+            <div class="cards anim d2">
+                <div class="card"><h4>Reflexão — propriedades</h4>\(F^2=I\) · \(F^{-1}=F\) · \(\det=-1\) · preserva comprimentos, inverte orientação</div>
+                <div class="card green"><h4>Projeção — propriedades</h4>\(P^2=P\) · não invertível · \(\det=0\) · reduz dimensão · \(\ker\neq\{\mathbf{0}\}\)</div>
+                <div class="card blue"><h4>Rotação — propriedades</h4>\(R^{-1}=R^T\) · \(\det=+1\) · preserva comprimentos <em>e</em> orientação · bijetora</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 11 — COMPOSIÇÃO DE TRANSFORMAÇÕES ══════ -->
+<div class="slide" id="slide-11">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Composição</div>
+            <h2>Composição de Transformações Lineares</h2>
+            <p>A composição corresponde à multiplicação de matrizes — com atenção à ordem!</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Composição</div>
+                Se \(T_1:\mathbb{R}^n\to\mathbb{R}^m\) tem matriz \(A\) e \(T_2:\mathbb{R}^m\to\mathbb{R}^p\) tem matriz \(B\), então:
+                $$(T_2\circ T_1)(\mathbf{x}) = T_2(T_1(\mathbf{x})) = BA\mathbf{x}$$
+                <div style="font-size:.88rem;color:#aaa;margin-top:6px;">A ordem das matrizes é <strong>inversa</strong> à ordem de leitura: "primeiro \(T_1\), depois \(T_2\)" → matriz \(BA\)</div>
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Exemplo — Reflexão depois de Rotação</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>Aplique: primeiro rotacionar \(90°\), depois refletir sobre \(y=x\).</p>
+                        <p>$$R_{90°}=\begin{bmatrix}0&-1\\1&0\end{bmatrix},\quad F_{y=x}=\begin{bmatrix}0&1\\1&0\end{bmatrix}$$</p>
+                        <p>Matriz composta \(=F_{y=x}\cdot R_{90°}\):</p>
+                        <p>$$\begin{bmatrix}0&1\\1&0\end{bmatrix}\begin{bmatrix}0&-1\\1&0\end{bmatrix}=\begin{bmatrix}1&0\\0&-1\end{bmatrix}=F_x$$</p>
+                        <p>→ Reflexão(90°) = Reflexão sobre o eixo \(x\)!</p>
+                        <p style="margin-top:8px;">Se invertêssemos a ordem: \(R_{90°}\cdot F_{y=x}\):</p>
+                        <p>$$\begin{bmatrix}0&-1\\1&0\end{bmatrix}\begin{bmatrix}0&1\\1&0\end{bmatrix}=\begin{bmatrix}-1&0\\0&1\end{bmatrix}=F_y$$</p>
+                        <p><span class="red">Resultado diferente!</span> Composição não é comutativa.</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="box">
+                        <strong>Por que a ordem importa?</strong><br>
+                        Ao compor \(T_2\circ T_1\), primeiro transformamos o espaço com \(T_1\), e depois \(T_2\) age sobre o espaço já deformado. Inverter a ordem significa deformar em sequência diferente — geometricamente distinto.
+                    </div>
+                    <div class="box green">
+                        <strong>Exceção — quando comuta:</strong><br>
+                        Rotações comutam entre si: \(R_\alpha R_\beta = R_\beta R_\alpha = R_{\alpha+\beta}\).<br>
+                        Qualquer transformação comuta com a identidade e com seu próprio inverso.
+                    </div>
+                    <div class="box blue">
+                        <strong>Determinante da composição:</strong>
+                        $$\det(BA)=\det(B)\cdot\det(A)$$
+                        A composição de duas rotações tem \(\det=1\cdot1=1\). A composição de duas reflexões também tem \(\det=(-1)(-1)=1\) — é uma rotação!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 12 — RESUMO + PRÓXIMA AULA ══════ -->
+<div class="slide" id="slide-12">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Encerramento</div>
+            <h2>Resumo da Aula 04</h2>
+            <p>O que aprendemos hoje — e o que vem a seguir</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div>
+                    <div class="section-title">Conquistas de Hoje ✅</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="check">Definição de TL: aditividade + homogeneidade</li>
+                        <li class="check">Teste rápido: \(T(\mathbf{0})=\mathbf{0}\) é condição necessária</li>
+                        <li class="check">Verificação de linearidade com exemplos e contra-exemplos</li>
+                        <li class="check">Representação matricial: \(T(\mathbf{x})=A\mathbf{x}\), colunas = imagens da base</li>
+                        <li class="check">Núcleo \(\ker(T)\) e Imagem \(\text{Im}(T)\)</li>
+                        <li class="check">Teorema da Dimensão: \(\dim\ker+\dim\text{Im}=n\)</li>
+                        <li class="check">Injetora · Sobrejetora · Bijetora — critérios via núcleo/posto</li>
+                        <li class="check">Rotação, Reflexão, Projeção, Dilatação, Cisalhamento</li>
+                        <li class="check">Composição: \(T_2\circ T_1\leftrightarrow BA\) — ordem invertida</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="section-title">Próxima Aula — 26/05 📅</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="key">Transformações Lineares II</li>
+                        <li class="key">Mudança de base — matriz de mudança \(P\)</li>
+                        <li class="key">Transformações em bases diferentes: \([T]_\mathcal{B}=P^{-1}AP\)</li>
+                        <li class="key">Matrizes semelhantes e invariantes</li>
+                        <li class="key">Diagonalização antecipada: motivação via TL</li>
+                    </ul>
+                    <div class="box" style="margin-top:14px;">
+                        📚 <strong>Tarefa:</strong><br>
+                        (a) Determine a matriz de \(T:\mathbb{R}^2\to\mathbb{R}^2\), \(T(x,y)=(3x-y,\;2x+y)\). Calcule \(T(2,1)\) diretamente e via matriz.<br>
+                        (b) Para \(T(x,y)=(x+y,\;2x-y,\;x)\), determine \(\ker(T)\) e \(\text{Im}(T)\) e verifique o Teorema da Dimensão.
+                    </div>
+                </div>
+            </div>
+            <div class="box green anim d2" style="text-align:center;">
+                🎯 <strong>Conexão central do curso:</strong> <em>toda</em> matriz é uma transformação linear e <em>toda</em> transformação linear tem uma matriz. Autovalores e autovetores (Bloco 3) são exatamente os vetores que uma transformação apenas escala — sem rotacionar.
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="progress-bar" id="progress"></div>
+<div class="slide-counter">Slide <span id="cur">1</span> / <span id="tot"></span></div>
+<div class="nav-btn" id="btn-prev">&#8592;</div>
+<div class="nav-btn" id="btn-next">&#8594;</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const total  = slides.length;
+    let   cur    = 0;
+    document.getElementById('tot').textContent = total;
+
+    function goTo(n) {
+        slides[cur].classList.remove('active');
+        cur = (n + total) % total;
+        slides[cur].classList.add('active');
+        document.getElementById('cur').textContent = cur + 1;
+        document.getElementById('progress').style.width = ((cur+1)/total*100) + '%';
+    }
+    document.getElementById('btn-next').addEventListener('click', () => goTo(cur+1));
+    document.getElementById('btn-prev').addEventListener('click', () => goTo(cur-1));
+    document.addEventListener('keydown', e => {
+        if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') goTo(cur+1);
+        if (e.key==='ArrowLeft' ||e.key==='ArrowUp')                  goTo(cur-1);
+    });
+    let tx=0;
+    document.addEventListener('touchstart', e => tx=e.touches[0].clientX);
+    document.addEventListener('touchend',   e => {
+        const dx=e.changedTouches[0].clientX-tx;
+        if(Math.abs(dx)>40) goTo(cur+(dx<0?1:-1));
+    });
+    document.getElementById('progress').style.width = (1/total*100)+'%';
+
+    // ── KaTeX — quatro delimitadores ──
+    renderMathInElement(document.body, {
+        delimiters: [
+            { left: '$$',  right: '$$',  display: true  },
+            { left: '\\[', right: '\\]', display: true  },
+            { left: '$',   right: '$',   display: false },
+            { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+    });
+</script>
+</body>
+</html>

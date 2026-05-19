@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 01 – Apresentação + Determinantes I | Tópicos em Álgebra Linear</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --orange: #FF8C00;
+            --accent: #FF6B35;
+            --dark:   #1e1e2e;
+            --panel:  #2a2a3e;
+            --light:  #f5f5f5;
+            --gray:   #6B6B6B;
+            --white:  #ffffff;
+            --green:  #27ae60;
+            --blue:   #2980b9;
+            --red:    #e74c3c;
+            --yellow: #f39c12;
+            --code-bg:#1a1a2e;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e1e2e; }
+        ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 3px; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, #12121e 100%);
+            overflow: hidden;
+            color: var(--dark);
+        }
+
+        /* ── PRESENTATION WRAPPER ── */
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        /* ── SLIDES ── */
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(60px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .slide.active {
+            display: flex; opacity: 1; transform: translateX(0);
+        }
+        .slide-content {
+            background: var(--white);
+            width: 92%; max-width: 1280px; height: 88%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        .slide-header {
+            background: linear-gradient(135deg, var(--orange) 0%, var(--accent) 100%);
+            padding: 22px 48px 28px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -18px; left: 0; right: 0; height: 36px;
+            background: linear-gradient(135deg, var(--orange), var(--accent));
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+            z-index: 1;
+        }
+        .slide-header h1 { font-size: 2.2rem; font-weight: 700; }
+        .slide-header h2 { font-size: 1.6rem; font-weight: 600; margin-top: 4px; }
+        .slide-header p  { font-size: 1rem; opacity: 0.9; margin-top: 4px; }
+        .slide-header .tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 20px;
+            padding: 3px 14px;
+            font-size: 0.82rem;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── BODY ── */
+        .slide-body {
+            padding: 42px 48px 24px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .anim { opacity: 0; }
+        .slide.active .anim { animation: fadeInUp 0.5s ease forwards; }
+        .slide.active .d1 { animation-delay: 0.08s; }
+        .slide.active .d2 { animation-delay: 0.18s; }
+        .slide.active .d3 { animation-delay: 0.28s; }
+        .slide.active .d4 { animation-delay: 0.38s; }
+        .slide.active .d5 { animation-delay: 0.48s; }
+        .slide.active .d6 { animation-delay: 0.58s; }
+
+        /* ── UTILITY CLASSES ── */
+        .big  { font-size: 1.25rem; font-weight: 600; color: var(--dark); }
+        .hi   { color: var(--orange); font-weight: 700; }
+        .grn  { color: var(--green);  font-weight: 700; }
+        .red  { color: var(--red);    font-weight: 700; }
+        .yel  { color: var(--yellow); font-weight: 700; }
+        .blu  { color: var(--blue);   font-weight: 700; }
+
+        /* ── BOXES ── */
+        .box {
+            background: #fff8f0;
+            border-left: 5px solid var(--orange);
+            border-radius: 10px;
+            padding: 18px 22px;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        .box.blue  { background: #e8f4fd; border-color: var(--blue); }
+        .box.green { background: #eafaf1; border-color: var(--green); }
+        .box.red   { background: #fdf2f2; border-color: var(--red); }
+        .box.dark  { background: var(--panel); border-color: var(--orange); color: #eee; }
+
+        /* ── CARDS ── */
+        .cards { display: flex; gap: 16px; flex-wrap: wrap; }
+        .card {
+            flex: 1; min-width: 200px;
+            background: var(--light);
+            border-radius: 14px;
+            padding: 20px 18px;
+            border-top: 4px solid var(--orange);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+            font-size: 0.95rem;
+            line-height: 1.65;
+        }
+        .card h4 { color: var(--orange); font-size: 1.05rem; margin-bottom: 8px; }
+        .card.blue  { border-color: var(--blue); }
+        .card.blue h4 { color: var(--blue); }
+        .card.green { border-color: var(--green); }
+        .card.green h4 { color: var(--green); }
+        .card.red   { border-color: var(--red); }
+        .card.red   h4 { color: var(--red); }
+
+        /* ── TWO / THREE COL ── */
+        .two-col   { display: grid; grid-template-columns: 1fr 1fr;     gap: 18px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+        /* ── TABLE ── */
+        .tbl { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+        .tbl th { background: var(--orange); color: white; padding: 10px 14px; text-align: left; }
+        .tbl td { padding: 9px 14px; border-bottom: 1px solid #eee; }
+        .tbl tr:nth-child(even) td { background: #fdf6ec; }
+        .tbl tr:hover td { background: #fff0d0; }
+
+        /* ── MATH / FORMULA ── */
+        .math-block {
+            background: var(--code-bg);
+            color: #e8e8f0;
+            border-radius: 12px;
+            padding: 22px 28px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.05rem;
+            line-height: 2;
+            overflow-x: auto;
+            border-left: 5px solid var(--orange);
+        }
+        .math-block .hi  { color: #ffb347; }
+        .math-block .grn { color: #7dcea0; }
+        .math-block .blu { color: #7fb3d3; }
+        .math-block .red { color: #f1948a; }
+
+        /* ── MATRIX ── */
+        .matrix-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .matrix {
+            display: inline-flex;
+            flex-direction: column;
+            border-left: 3px solid var(--orange);
+            border-right: 3px solid var(--orange);
+            padding: 8px 14px;
+            background: var(--code-bg);
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e0e0f0;
+            font-size: 0.95rem;
+            line-height: 1.9;
+        }
+        .matrix-row { display: flex; gap: 18px; }
+        .matrix-row span { min-width: 28px; text-align: right; }
+        .matrix-label {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--orange);
+        }
+
+        /* ── LIST ── */
+        ul.custom { list-style: none; padding: 0; }
+        ul.custom li { padding: 6px 0 6px 28px; position: relative; font-size: 0.97rem; line-height: 1.6; }
+        ul.custom li::before { content: '▸'; position: absolute; left: 0; color: var(--orange); font-size: 0.9rem; top: 8px; }
+        ul.custom li.check::before { content: '✓'; color: var(--green); }
+        ul.custom li.warn ::before { content: '⚠'; color: var(--yellow); }
+        ul.custom li.key  ::before { content: '🔑'; }
+
+        /* ── STEP ── */
+        .steps { counter-reset: step; display: flex; flex-direction: column; gap: 10px; }
+        .step { counter-increment: step; display: flex; align-items: flex-start; gap: 14px; font-size: 0.97rem; line-height: 1.6; }
+        .step::before {
+            content: counter(step);
+            background: var(--orange);
+            color: white;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem;
+            flex-shrink: 0; margin-top: 2px;
+        }
+
+        /* ── SARRUS DIAGRAM ── */
+        .sarrus {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 20px 24px;
+            color: #e0e0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 2.2;
+            border-left: 5px solid var(--orange);
+        }
+        .s-pos { color: #7dcea0; font-weight: 700; }
+        .s-neg { color: #f1948a; font-weight: 700; }
+
+        /* ── HIGHLIGHT BADGE ── */
+        .badge {
+            display: inline-block;
+            background: var(--orange);
+            color: white;
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            vertical-align: middle;
+        }
+        .badge.blue  { background: var(--blue); }
+        .badge.green { background: var(--green); }
+        .badge.red   { background: var(--red); }
+
+        /* ── FORMULA CARD ── */
+        .formula {
+            background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+            border: 2px solid var(--orange);
+            border-radius: 14px;
+            padding: 18px 24px;
+            text-align: center;
+            color: #f0f0ff;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            line-height: 2;
+        }
+        .formula .title { color: var(--orange); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif; font-weight: 700; }
+
+        /* ── COVER SLIDE (slide 1) ── */
+        .cover .slide-content {
+            background: linear-gradient(155deg, #1e1e2e 0%, #2d1a00 60%, #1e1e2e 100%);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cover .slide-content::before {
+            content: '';
+            position: absolute; top: -80px; right: -80px;
+            width: 340px; height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,140,0,0.18) 0%, transparent 70%);
+        }
+        .cover .slide-content::after {
+            content: '';
+            position: absolute; bottom: -60px; left: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,107,53,0.14) 0%, transparent 70%);
+        }
+        .cover-inner { z-index: 2; padding: 40px; }
+        .cover-badge {
+            background: rgba(255,140,0,0.2);
+            border: 1px solid rgba(255,140,0,0.5);
+            color: var(--orange);
+            border-radius: 30px;
+            padding: 6px 22px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+        .cover h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+        .cover h1 span { color: var(--orange); }
+        .cover h2 {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.75);
+            font-weight: 400;
+            margin-bottom: 32px;
+        }
+        .cover-meta {
+            display: flex; gap: 28px; justify-content: center;
+            flex-wrap: wrap;
+        }
+        .cover-meta-item {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.92rem;
+        }
+        .cover-meta-item strong { color: var(--orange); display: block; font-size: 1rem; }
+
+        /* ── PROGRESS BAR ── */
+        .progress-bar {
+            position: fixed; bottom: 0; left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--orange), var(--accent));
+            transition: width 0.4s ease;
+            z-index: 100;
+        }
+
+        /* ── COUNTER ── */
+        .slide-counter {
+            position: fixed; bottom: 14px; right: 20px;
+            color: rgba(255,255,255,0.55);
+            font-size: 0.82rem;
+            font-family: 'Courier New', monospace;
+            z-index: 100;
+        }
+        .slide-counter span { color: var(--orange); font-weight: 700; }
+
+        /* ── NAV BUTTONS ── */
+        .nav-btn {
+            position: fixed;
+            top: 50%; transform: translateY(-50%);
+            background: rgba(255,140,0,0.18);
+            border: 1px solid rgba(255,140,0,0.4);
+            color: var(--orange);
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem;
+            transition: background 0.2s;
+            z-index: 100;
+            user-select: none;
+        }
+        .nav-btn:hover { background: rgba(255,140,0,0.35); }
+        #btn-prev { left: 14px; }
+        #btn-next { right: 14px; }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.2rem; font-weight: 700; color: var(--dark);
+            margin-bottom: 4px;
+        }
+        .section-title::before {
+            content: '';
+            width: 6px; height: 24px;
+            background: var(--orange);
+            border-radius: 3px;
+        }
+
+        /* ── DIVIDER ── */
+        .divider { height: 2px; background: linear-gradient(90deg, var(--orange), transparent); border-radius: 2px; margin: 4px 0; }
+    </style>
+</head>
+<body>
+<div class="presentation">
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 1 — CAPA
+    ══════════════════════════════════════════════ -->
+    <div class="slide cover active" id="slide-1">
+        <div class="slide-content">
+            <div class="cover-inner">
+                <div class="cover-badge anim d1">📐 Ensino Superior · Engenharia</div>
+                <h1 class="anim d2">Tópicos em<br><span>Álgebra Linear</span></h1>
+                <h2 class="anim d3">Aula 01 · Apresentação da Disciplina + Determinantes I</h2>
+                <div class="cover-meta anim d4">
+                    <div class="cover-meta-item"><strong>📅 Data</strong>28 de abril de 2026</div>
+                    <div class="cover-meta-item"><strong>⏱ Carga</strong>3 horas-aula</div>
+                    <div class="cover-meta-item"><strong>📚 Bloco</strong>1 de 5 · Determinantes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 2 — EMENTA DA DISCIPLINA
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-2">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Apresentação</div>
+                <h2>Ementa da Disciplina</h2>
+                <p>O que você vai aprender neste semestre</p>
+            </div>
+            <div class="slide-body">
+                <div class="section-title anim d1">Tópicos em Álgebra Linear</div>
+                <div class="box anim d2">
+                    Determinante e Matriz Inversa · Transformações Lineares · Autovalores e Autovetores · Diagonalização de Operadores · <span class="hi">Aplicações na Engenharia Civil</span>
+                </div>
+                <div class="cards anim d3">
+                    <div class="card">
+                        <h4>🔢 Bloco 1</h4>
+                        Determinantes e Matriz Inversa<br>
+                        <small>Aulas 01–03</small>
+                    </div>
+                    <div class="card blue">
+                        <h4>🔀 Bloco 2</h4>
+                        Transformações Lineares<br>
+                        <small>Aulas 04–05</small>
+                    </div>
+                    <div class="card green">
+                        <h4>λ Bloco 3</h4>
+                        Autovalores e Autovetores<br>
+                        <small>Aulas 07–08</small>
+                    </div>
+                    <div class="card red">
+                        <h4>📊 Bloco 4</h4>
+                        Diagonalização de Operadores<br>
+                        <small>Aulas 09–10</small>
+                    </div>
+                </div>
+                <div class="box green anim d4">
+                    🏗️ <strong>Bloco 5 · Aplicações na Engenharia Civil:</strong> análise de deformações, modos de vibração estrutural, tensores de tensão — unindo teoria e prática profissional.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 3 — CRONOGRAMA & AVALIAÇÃO
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-3">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Planejamento</div>
+                <h2>Cronograma e Avaliação</h2>
+                <p>Terças-feiras · 28/04 a 07/07/2026 · 11 aulas de 3h</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col anim d1">
+                    <table class="tbl">
+                        <thead><tr><th>Aula</th><th>Data</th><th>Tema</th></tr></thead>
+                        <tbody>
+                            <tr><td>01</td><td>28/04</td><td>Apresentação + Determinantes I</td></tr>
+                            <tr><td>02</td><td>05/05</td><td>Determinantes II + Cramer</td></tr>
+                            <tr><td>03</td><td>12/05</td><td>Matriz Inversa</td></tr>
+                            <tr><td>04</td><td>19/05</td><td>Transformações Lineares I</td></tr>
+                            <tr><td>05</td><td>26/05</td><td>Transformações Lineares II</td></tr>
+                            <tr><td><span class="badge red">A1</span></td><td>02/06</td><td>Avaliação 1</td></tr>
+                            <tr><td>07</td><td>09/06</td><td>Autovalores e Autovetores I</td></tr>
+                            <tr><td>08</td><td>16/06</td><td>Autovalores e Autovetores II</td></tr>
+                            <tr><td>09</td><td>23/06</td><td>Diagonalização I</td></tr>
+                            <tr><td>10</td><td>30/06</td><td>Diagonalização II</td></tr>
+                            <tr><td><span class="badge red">A2</span></td><td>07/07</td><td>Aplicações + Avaliação 2</td></tr>
+                        </tbody>
+                    </table>
+                    <div style="display:flex;flex-direction:column;gap:14px;">
+                        <div class="box anim d2">
+                            <strong class="hi">📋 Avaliação 1</strong> — 02/06/2026<br>
+                            Blocos 1 e 2: Determinantes, Matriz Inversa e Transformações Lineares.
+                        </div>
+                        <div class="box anim d3">
+                            <strong class="hi">📋 Avaliação 2</strong> — 07/07/2026<br>
+                            Blocos 3, 4 e 5: Autovalores, Diagonalização e Aplicações em Engenharia Civil.<br>
+                            Pode incluir trabalho em grupo ou apresentação.
+                        </div>
+                        <div class="box green anim d4">
+                            💡 <strong>Dica:</strong> Revise álgebra matricial e sistemas lineares previamente — serão pré-requisitos constantes ao longo do curso.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 4 — REVISÃO: MATRIZES
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-4">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Revisão</div>
+                <h2>Matrizes — Conceitos Fundamentais</h2>
+                <p>Base para o estudo de determinantes</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col anim d1">
+                    <div>
+                        <div class="section-title">Notação e Terminologia</div>
+                        <div class="box" style="margin-top:10px;">
+                            Uma <span class="hi">matriz A m×n</span> é uma tabela retangular com <em>m</em> linhas e <em>n</em> colunas. O elemento da linha <em>i</em>, coluna <em>j</em> é denotado <span class="hi">a<sub>ij</sub></span>.
+                        </div>
+                        <ul class="custom" style="margin-top:12px;">
+                            <li><span class="hi">Matriz quadrada:</span> m = n — base para determinantes</li>
+                            <li><span class="hi">Matriz identidade I:</span> diagonal principal = 1, demais = 0</li>
+                            <li><span class="hi">Matriz transposta A<sup>T</sup>:</span> linhas e colunas trocadas</li>
+                            <li><span class="hi">Matriz nula:</span> todos os elementos iguais a zero</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="section-title">Exemplo — Matriz 3×3</div>
+                        <div class="math-block" style="margin-top:10px;text-align:center;">
+                            <div class="matrix-wrap" style="justify-content:center;">
+                                <span class="matrix-label">A =</span>
+                                <div class="matrix">
+                                    <div class="matrix-row"><span class="hi">2</span><span>-1</span><span class="grn">3</span></div>
+                                    <div class="matrix-row"><span>0</span><span class="hi">4</span><span>-2</span></div>
+                                    <div class="matrix-row"><span class="grn">1</span><span>5</span><span class="hi">-3</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box blue" style="margin-top:14px;">
+                            📌 <strong>Lembrete:</strong> a diagonal principal contém os elementos <span class="blu">a<sub>11</sub>, a<sub>22</sub>, a<sub>33</sub></span> (em laranja na matriz acima).
+                        </div>
+                    </div>
+                </div>
+                <div class="box anim d2" style="margin-top:4px;">
+                    ⚙️ <strong>Operações que você já conhece:</strong> soma de matrizes, produto por escalar, produto matricial AB — e suas propriedades (associativa, distributiva). O determinante estende esse arsenal!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 5 — DEFINIÇÃO DE DETERMINANTE
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-5">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Bloco 1 · Determinantes</div>
+                <h2>O que é o Determinante?</h2>
+                <p>Definição intuitiva e formal para matrizes de ordem 1, 2 e 3</p>
+            </div>
+            <div class="slide-body">
+                <div class="box anim d1">
+                    O <span class="hi">determinante</span> é um <em>escalar</em> associado a toda matriz quadrada A, denotado <span class="hi">det(A)</span> ou <span class="hi">|A|</span>. Geometricamente, representa a <strong>área (2D) ou o volume (3D) do paralelepípedo</strong> formado pelos vetores-coluna da matriz — com sinal que indica a orientação.
+                </div>
+                <div class="three-col anim d2">
+                    <div class="formula">
+                        <div class="title">Ordem 1</div>
+                        det([a]) = <span style="color:var(--orange);">a</span>
+                    </div>
+                    <div class="formula">
+                        <div class="title">Ordem 2</div>
+                        |<span style="color:#7dcea0;">a  b</span>|<br>
+                        |<span style="color:#7fb3d3;">c  d</span>|  = <span style="color:var(--orange);">ad − bc</span>
+                    </div>
+                    <div class="formula">
+                        <div class="title">Ordem 3</div>
+                        Regra de Sarrus<br>
+                        <span style="color:var(--orange);">(próximo slide)</span>
+                    </div>
+                </div>
+                <div class="two-col anim d3">
+                    <div>
+                        <div class="section-title">Exemplo — Ordem 2</div>
+                        <div class="math-block" style="margin-top:8px;">
+                            A = [<span class="hi">3</span>  <span class="red">2</span>]<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;[<span class="blu">1</span>  <span class="grn">4</span>]<br><br>
+                            det(A) = <span class="hi">3</span>·<span class="grn">4</span> − <span class="red">2</span>·<span class="blu">1</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 12 − 2 = <span class="hi">10</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="section-title">Interpretação Geométrica</div>
+                        <ul class="custom" style="margin-top:8px;">
+                            <li>det(A) = 0 → vetores-coluna são <span class="red">linearmente dependentes</span></li>
+                            <li>det(A) ≠ 0 → A é <span class="grn">invertível</span> (não-singular)</li>
+                            <li>|det(A)| = área do paralelogramo (2D)</li>
+                            <li>Sinal negativo = orientação invertida</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 6 — PROPRIEDADES FUNDAMENTAIS
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-6">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Bloco 1 · Determinantes</div>
+                <h2>Propriedades Fundamentais</h2>
+                <p>Ferramentas para simplificar o cálculo de qualquer determinante</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col anim d1">
+                    <ul class="custom">
+                        <li class="check"><strong>P1 — Identidade:</strong> det(I) = 1</li>
+                        <li class="check"><strong>P2 — Troca de linhas:</strong> trocar duas linhas muda o sinal do determinante</li>
+                        <li class="check"><strong>P3 — Múltiplo escalar:</strong> multiplicar uma linha por k multiplica det por k</li>
+                        <li class="check"><strong>P4 — Linearidade:</strong> somar múltiplo de uma linha a outra <span class="grn">não altera</span> det</li>
+                        <li class="check"><strong>P5 — Linha nula:</strong> se uma linha (ou coluna) é toda zero → det = 0</li>
+                        <li class="check"><strong>P6 — Linhas iguais:</strong> se duas linhas são iguais → det = 0</li>
+                    </ul>
+                    <ul class="custom">
+                        <li class="check"><strong>P7 — Produto:</strong> det(AB) = det(A)·det(B)</li>
+                        <li class="check"><strong>P8 — Transposta:</strong> det(A<sup>T</sup>) = det(A)</li>
+                        <li class="check"><strong>P9 — Inversa:</strong> det(A<sup>−1</sup>) = 1/det(A)</li>
+                        <li class="check"><strong>P10 — Triangular:</strong> det = <span class="hi">produto dos elementos da diagonal principal</span></li>
+                        <li class="warn"><strong>Atenção:</strong> det(A + B) ≠ det(A) + det(B) em geral!</li>
+                    </ul>
+                </div>
+                <div class="divider anim d2"></div>
+                <div class="box anim d3">
+                    🏆 <strong>Propriedade mais usada na prática (P10):</strong> em matrizes <span class="hi">triangulares superiores ou inferiores</span>, o determinante é simplesmente o produto dos elementos da diagonal. A eliminação gaussiana explora isso!
+                </div>
+                <div class="formula anim d4" style="max-width:480px;margin:0 auto;">
+                    <div class="title">P10 — Matriz Triangular</div>
+                    det(A) = a<sub>11</sub> · a<sub>22</sub> · a<sub>33</sub> · … · a<sub>nn</sub>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 7 — REGRA DE SARRUS
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-7">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Bloco 1 · Determinantes</div>
+                <h2>Regra de Sarrus — Ordem 3</h2>
+                <p>Método mnemônico para calcular det de matrizes 3×3</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col anim d1">
+                    <div>
+                        <div class="section-title">A Fórmula</div>
+                        <div class="sarrus" style="margin-top:10px;">
+det(A) =<br>
+<span class="s-pos">+ a₁₁·a₂₂·a₃₃</span><br>
+<span class="s-pos">+ a₁₂·a₂₃·a₃₁</span><br>
+<span class="s-pos">+ a₁₃·a₂₁·a₃₂</span><br>
+<span class="s-neg">− a₁₃·a₂₂·a₃₁</span><br>
+<span class="s-neg">− a₁₁·a₂₃·a₃₂</span><br>
+<span class="s-neg">− a₁₂·a₂₁·a₃₃</span>
+                        </div>
+                        <div class="box" style="margin-top:12px;">
+                            💡 <strong>Mnemônico:</strong> repita as duas primeiras colunas à direita da matriz. As <span class="grn">3 diagonais principais</span> são positivas; as <span class="red">3 diagonais secundárias</span> são negativas.
+                        </div>
+                    </div>
+                    <div>
+                        <div class="section-title">Exemplo Resolvido</div>
+                        <div class="math-block" style="margin-top:10px;">
+A = [<span class="hi">1</span>  <span class="hi">2</span>  <span class="hi">3</span>]
+    [<span class="grn">4</span>  <span class="grn">5</span>  <span class="grn">6</span>]
+    [<span class="blu">7</span>  <span class="blu">8</span>  <span class="blu">9</span>]
+
+<span class="s-pos">+ (1·5·9)</span> = +45
+<span class="s-pos">+ (2·6·7)</span> = +84
+<span class="s-pos">+ (3·4·8)</span> = +96
+<span class="s-neg">− (3·5·7)</span> = −105
+<span class="s-neg">− (1·6·8)</span> = −48
+<span class="s-neg">− (2·4·9)</span> = −72
+
+det = 45+84+96−105−48−72
+    = <span class="hi">0</span>
+                        </div>
+                        <div class="box red" style="margin-top:10px;">
+                            ⚠️ det = 0 → as linhas são <strong>linearmente dependentes</strong> (perceba que L3 = L1 + L2... não exatamente, mas a matriz é singular neste caso!)
+                        </div>
+                    </div>
+                </div>
+                <div class="box blue anim d2" style="margin-top:4px;">
+                    🔖 <strong>Atenção:</strong> a Regra de Sarrus é válida <em>apenas para matrizes 3×3</em>. Para ordens maiores, usa-se o <span class="blu">Teorema de Laplace</span> (desenvolvimento por cofatores) — tema da próxima aula.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 8 — EXEMPLO PRÁTICO COMPLETO
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-8">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Prática</div>
+                <h2>Exemplo Prático — Passo a Passo</h2>
+                <p>Calculando det(A) de uma matriz 3×3 com Sarrus</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col anim d1">
+                    <div>
+                        <div class="section-title">Dado o problema</div>
+                        <div class="math-block" style="margin-top:10px;text-align:center;">
+                            <div class="matrix-wrap" style="justify-content:center;">
+                                <span class="matrix-label">A =</span>
+                                <div class="matrix">
+                                    <div class="matrix-row"><span class="hi">2</span><span class="red">3</span><span>-1</span></div>
+                                    <div class="matrix-row"><span>1</span><span class="hi">-2</span><span class="grn">4</span></div>
+                                    <div class="matrix-row"><span class="grn">-3</span><span>1</span><span class="hi">2</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box" style="margin-top:14px;">
+                            Calcule det(A) usando a Regra de Sarrus.
+                        </div>
+                    </div>
+                    <div>
+                        <div class="section-title">Resolução</div>
+                        <div class="steps" style="margin-top:10px;">
+                            <div class="step">
+                                <div><strong>Diagonais principais (+)</strong><br>
+                                    (2)(−2)(2) = −8<br>
+                                    (3)(4)(−3) = −36<br>
+                                    (−1)(1)(1) = −1<br>
+                                    <span class="grn">Soma: −45</span>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div><strong>Diagonais secundárias (−)</strong><br>
+                                    (−1)(−2)(−3) = −6<br>
+                                    (2)(4)(1) = +8<br>
+                                    (3)(1)(2) = +6<br>
+                                    <span class="red">Soma: +8 → −8</span>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div><strong>Resultado Final</strong><br>
+                                    det(A) = (−45) − (8) = <span class="hi">−53</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="box green anim d2">
+                    ✅ <strong>Verificação:</strong> det(A) = −53 ≠ 0, portanto a matriz A é <span class="grn">invertível</span>. Isso significa que o sistema linear Ax = b admite solução única para qualquer vetor b.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 9 — CONEXÃO: DET E SISTEMAS LINEARES
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-9">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Conexão Teórica</div>
+                <h2>Determinante e Sistemas Lineares</h2>
+                <p>Por que o determinante importa para a engenharia?</p>
+            </div>
+            <div class="slide-body">
+                <div class="box anim d1">
+                    Um sistema <span class="hi">Ax = b</span> admite <strong>solução única</strong> se e somente se <span class="hi">det(A) ≠ 0</span>. Esse fato conecta diretamente o determinante à existência e unicidade de soluções — algo central na análise estrutural.
+                </div>
+                <div class="three-col anim d2">
+                    <div class="card green">
+                        <h4>det(A) ≠ 0</h4>
+                        Sistema possui <strong>solução única</strong>. A é invertível. Os vetores-coluna são LI.
+                    </div>
+                    <div class="card red">
+                        <h4>det(A) = 0</h4>
+                        Sistema <strong>sem solução ou com infinitas</strong> soluções. A é singular. Vetores-coluna são LD.
+                    </div>
+                    <div class="card blue">
+                        <h4>Teorema de Cramer</h4>
+                        Se det(A) ≠ 0, a solução do sistema é:<br>
+                        x<sub>i</sub> = det(A<sub>i</sub>) / det(A)
+                    </div>
+                </div>
+                <div class="two-col anim d3">
+                    <div class="box">
+                        🏗️ <strong>Engenharia Civil:</strong> ao resolver sistemas de equações de equilíbrio de estruturas (MEF, treliças), o determinante da matriz de rigidez indica se a estrutura é <span class="hi">estaticamente determinada</span>.
+                    </div>
+                    <div class="box blue">
+                        📐 <strong>Próximas aulas:</strong> vamos expandir esse cálculo para ordens maiores com o Teorema de Laplace e depois entender como calcular a Matriz Inversa via determinantes.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SLIDE 10 — RESUMO & PRÓXIMA AULA
+    ══════════════════════════════════════════════ -->
+    <div class="slide" id="slide-10">
+        <div class="slide-content">
+            <div class="slide-header">
+                <div class="tag">Encerramento</div>
+                <h2>Resumo da Aula 01</h2>
+                <p>O que aprendemos hoje — e o que vem a seguir</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col anim d1">
+                    <div>
+                        <div class="section-title">Conquistas de Hoje ✅</div>
+                        <ul class="custom" style="margin-top:10px;">
+                            <li class="check">Visão geral da disciplina e cronograma</li>
+                            <li class="check">Revisão de matrizes e notação</li>
+                            <li class="check">Definição de determinante (ord. 1, 2, 3)</li>
+                            <li class="check">10 propriedades fundamentais</li>
+                            <li class="check">Regra de Sarrus com exemplo completo</li>
+                            <li class="check">Conexão: det × invertibilidade × sistemas lineares</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="section-title">Próxima Aula — 05/05 📅</div>
+                        <ul class="custom" style="margin-top:10px;">
+                            <li class="key">Teorema de Laplace (desenvolvimento por cofatores)</li>
+                            <li class="key">Determinante de matrizes triangulares</li>
+                            <li class="key">Regra de Cramer — resolução de sistemas</li>
+                            <li class="key">Exemplos e exercícios de fixação</li>
+                        </ul>
+                        <div class="box" style="margin-top:14px;">
+                            📚 <strong>Tarefa:</strong> calcule os determinantes das matrizes abaixo e classifique como invertível ou singular:<br>
+                            A = [3, 1; 6, 2] &nbsp;·&nbsp; B = [1, 2, 0; 3, -1, 2; 2, 4, 1]
+                        </div>
+                    </div>
+                </div>
+                <div class="box green anim d2" style="text-align:center;font-size:1.05rem;">
+                    🎯 <strong>Objetivo do semestre:</strong> ao final do curso você será capaz de aplicar determinantes, transformações lineares, autovalores e diagonalização para modelar e resolver problemas reais de engenharia estrutural.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /presentation -->
+
+<!-- ── PROGRESS BAR & COUNTER & BUTTONS ── -->
+<div class="progress-bar" id="progress"></div>
+<div class="slide-counter">Slide <span id="cur">1</span> / <span id="tot"></span></div>
+<div class="nav-btn" id="btn-prev">&#8592;</div>
+<div class="nav-btn" id="btn-next">&#8594;</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const total  = slides.length;
+    let   cur    = 0;
+
+    document.getElementById('tot').textContent = total;
+
+    function goTo(n) {
+        slides[cur].classList.remove('active');
+        cur = (n + total) % total;
+        slides[cur].classList.add('active');
+        document.getElementById('cur').textContent = cur + 1;
+        document.getElementById('progress').style.width = ((cur + 1) / total * 100) + '%';
+    }
+
+    document.getElementById('btn-next').addEventListener('click', () => goTo(cur + 1));
+    document.getElementById('btn-prev').addEventListener('click', () => goTo(cur - 1));
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown'  || e.key === ' ') goTo(cur + 1);
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                      goTo(cur - 1);
+    });
+
+    // Touch swipe
+    let tx = 0;
+    document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+    document.addEventListener('touchend',   e => {
+        const dx = e.changedTouches[0].clientX - tx;
+        if (Math.abs(dx) > 40) goTo(cur + (dx < 0 ? 1 : -1));
+    });
+
+    // Init progress
+    document.getElementById('progress').style.width = (1 / total * 100) + '%';
+</script>
+</body>
+</html>

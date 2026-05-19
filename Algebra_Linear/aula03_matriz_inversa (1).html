@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 03 – Matriz Inversa | Tópicos em Álgebra Linear</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --orange:#FF8C00; --accent:#FF6B35;
+            --dark:#1e1e2e;   --panel:#2a2a3e;
+            --light:#f5f5f5;  --white:#ffffff;
+            --green:#27ae60;  --blue:#2980b9;
+            --red:#e74c3c;    --yellow:#f39c12;
+            --code-bg:#1a1a2e;
+        }
+        ::-webkit-scrollbar{width:6px;height:6px;}
+        ::-webkit-scrollbar-track{background:#1e1e2e;}
+        ::-webkit-scrollbar-thumb{background:var(--orange);border-radius:3px;}
+
+        body{
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,var(--dark) 0%,#12121e 100%);
+            overflow:hidden; color:var(--dark);
+        }
+
+        /* ── KaTeX ── */
+        .katex{font-size:1.05em;}
+        .katex-display{margin:.35em 0 !important; overflow-x:auto;}
+
+        /* ── CALC BLOCK ── */
+        .calc-block{
+            background:#f6f6fa;
+            border-left:5px solid var(--orange);
+            border-radius:10px;
+            padding:14px 20px;
+            line-height:2.3;
+            font-size:.95rem;
+            overflow-x:auto;
+        }
+        .calc-block p{margin:0;}
+        .s-pos{color:var(--green);font-weight:700;}
+        .s-neg{color:var(--red);font-weight:700;}
+
+        /* ── AUGMENTED MATRIX STEPS ── */
+        .aug-steps{display:flex;flex-direction:column;gap:10px;}
+        .aug-step{
+            background:#f6f6fa;
+            border-radius:10px;
+            padding:12px 18px;
+            border-left:4px solid var(--orange);
+            overflow-x:auto;
+        }
+        .aug-step .op{
+            font-size:.82rem;
+            color:var(--orange);
+            font-weight:700;
+            margin-bottom:4px;
+            font-family:'Courier New',monospace;
+        }
+        .aug-step.done{border-color:var(--green);}
+        .aug-step.done .op{color:var(--green);}
+
+        /* ── SLIDE SYSTEM ── */
+        .presentation{width:100vw;height:100vh;position:relative;}
+        .slide{
+            width:100%;height:100%;
+            position:absolute;top:0;left:0;
+            display:none;opacity:0;
+            transform:translateX(60px);
+            transition:opacity .5s ease,transform .5s ease;
+        }
+        .slide.active{display:flex;opacity:1;transform:translateX(0);}
+        .slide-content{
+            background:var(--white);
+            width:92%;max-width:1280px;height:88%;
+            margin:auto;
+            border-radius:20px;
+            box-shadow:0 24px 70px rgba(0,0,0,.5);
+            display:flex;flex-direction:column;
+            overflow:hidden;
+        }
+
+        /* ── HEADER ── */
+        .slide-header{
+            background:linear-gradient(135deg,var(--orange) 0%,var(--accent) 100%);
+            padding:22px 48px 28px;
+            color:white; position:relative; flex-shrink:0;
+        }
+        .slide-header::after{
+            content:'';
+            position:absolute;bottom:-18px;left:0;right:0;height:36px;
+            background:linear-gradient(135deg,var(--orange),var(--accent));
+            clip-path:polygon(0 0,100% 0,100% 100%,0 0);z-index:1;
+        }
+        .slide-header h2{font-size:1.6rem;font-weight:600;margin-top:4px;}
+        .slide-header p{font-size:1rem;opacity:.9;margin-top:4px;}
+        .slide-header .tag{
+            display:inline-block;
+            background:rgba(255,255,255,.25);
+            border:1px solid rgba(255,255,255,.4);
+            border-radius:20px;
+            padding:3px 14px;font-size:.82rem;margin-bottom:6px;
+        }
+
+        /* ── BODY ── */
+        .slide-body{
+            padding:42px 48px 24px;flex:1;
+            overflow-y:auto;display:flex;
+            flex-direction:column;gap:14px;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeInUp{
+            from{opacity:0;transform:translateY(22px);}
+            to{opacity:1;transform:translateY(0);}
+        }
+        .anim{opacity:0;}
+        .slide.active .anim{animation:fadeInUp .5s ease forwards;}
+        .slide.active .d1{animation-delay:.08s;}
+        .slide.active .d2{animation-delay:.18s;}
+        .slide.active .d3{animation-delay:.28s;}
+        .slide.active .d4{animation-delay:.38s;}
+        .slide.active .d5{animation-delay:.48s;}
+
+        /* ── UTILITIES ── */
+        .hi {color:var(--orange);font-weight:700;}
+        .grn{color:var(--green);font-weight:700;}
+        .red{color:var(--red);font-weight:700;}
+        .blu{color:var(--blue);font-weight:700;}
+
+        /* ── BOXES ── */
+        .box{background:#fff8f0;border-left:5px solid var(--orange);border-radius:10px;padding:15px 20px;font-size:.97rem;line-height:1.75;}
+        .box.blue  {background:#e8f4fd;border-color:var(--blue);}
+        .box.green {background:#eafaf1;border-color:var(--green);}
+        .box.red   {background:#fdf2f2;border-color:var(--red);}
+        .box.yellow{background:#fef9e7;border-color:var(--yellow);}
+
+        /* ── CARDS ── */
+        .cards{display:flex;gap:14px;flex-wrap:wrap;}
+        .card{
+            flex:1;min-width:180px;background:var(--light);
+            border-radius:14px;padding:16px 14px;
+            border-top:4px solid var(--orange);
+            box-shadow:0 4px 14px rgba(0,0,0,.07);
+            font-size:.92rem;line-height:1.65;
+        }
+        .card h4{color:var(--orange);font-size:.98rem;margin-bottom:7px;}
+        .card.blue  {border-color:var(--blue);}   .card.blue h4  {color:var(--blue);}
+        .card.green {border-color:var(--green);}  .card.green h4 {color:var(--green);}
+        .card.red   {border-color:var(--red);}    .card.red h4   {color:var(--red);}
+        .card.yellow{border-color:var(--yellow);} .card.yellow h4{color:var(--yellow);}
+
+        /* ── LAYOUTS ── */
+        .two-col  {display:grid;grid-template-columns:1fr 1fr;    gap:18px;}
+        .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+        /* ── TABLE ── */
+        .tbl{width:100%;border-collapse:collapse;font-size:.92rem;}
+        .tbl th{background:var(--orange);color:white;padding:10px 14px;text-align:left;}
+        .tbl td{padding:8px 14px;border-bottom:1px solid #eee;}
+        .tbl tr:nth-child(even) td{background:#fdf6ec;}
+        .tbl tr:hover td{background:#fff0d0;}
+
+        /* ── STEPS ── */
+        .steps{counter-reset:step;display:flex;flex-direction:column;gap:10px;}
+        .step{counter-increment:step;display:flex;align-items:flex-start;gap:13px;font-size:.94rem;line-height:1.7;}
+        .step::before{
+            content:counter(step);
+            background:var(--orange);color:white;
+            width:27px;height:27px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:.84rem;
+            flex-shrink:0;margin-top:2px;
+        }
+
+        /* ── FORMULA (dark) ── */
+        .formula{
+            background:linear-gradient(135deg,#1a1a2e,#2a2a3e);
+            border:2px solid var(--orange);
+            border-radius:14px;padding:18px 24px;
+            text-align:center;color:#f0f0ff;
+        }
+        .formula .title{color:var(--orange);font-size:.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:700;}
+        .formula .katex{color:#f0f0ff;}
+        .formula.blue{border-color:var(--blue);}
+        .formula.blue .title{color:#7fb3d3;}
+        .formula.green{border-color:var(--green);}
+        .formula.green .title{color:#7dcea0;}
+
+        /* ── LISTS ── */
+        ul.custom{list-style:none;padding:0;}
+        ul.custom li{padding:5px 0 5px 28px;position:relative;font-size:.94rem;line-height:1.65;}
+        ul.custom li::before{content:'▸';position:absolute;left:0;color:var(--orange);top:7px;}
+        ul.custom li.check::before{content:'✓'; color:var(--green);}
+        ul.custom li.key::before  {content:'▸'; color:var(--orange); font-weight:700;}
+        ul.custom li.warn::before {content:'▲'; color:var(--yellow); font-weight:700;}
+
+        /* ── SECTION TITLE ── */
+        .section-title{display:flex;align-items:center;gap:10px;font-size:1.05rem;font-weight:700;color:var(--dark);}
+        .section-title::before{content:'';width:6px;height:22px;background:var(--orange);border-radius:3px;}
+        .divider{height:2px;background:linear-gradient(90deg,var(--orange),transparent);border-radius:2px;}
+
+        /* ── COVER ── */
+        .cover .slide-content{
+            background:linear-gradient(155deg,#1e1e2e 0%,#2d1a00 60%,#1e1e2e 100%);
+            justify-content:center;align-items:center;text-align:center;
+            position:relative;overflow:hidden;
+        }
+        .cover .slide-content::before{content:'';position:absolute;top:-80px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,140,0,.18) 0%,transparent 70%);}
+        .cover .slide-content::after{content:'';position:absolute;bottom:-60px;left:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,53,.14) 0%,transparent 70%);}
+        .cover-inner{z-index:2;padding:40px;}
+        .cover-badge{background:rgba(255,140,0,.2);border:1px solid rgba(255,140,0,.5);color:var(--orange);border-radius:30px;padding:6px 22px;font-size:.9rem;letter-spacing:1px;display:inline-block;margin-bottom:24px;}
+        .cover h1{font-size:3rem;font-weight:800;color:white;line-height:1.2;margin-bottom:12px;}
+        .cover h1 span{color:var(--orange);}
+        .cover h2{font-size:1.5rem;color:rgba(255,255,255,.75);font-weight:400;margin-bottom:32px;}
+        .cover-meta{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;}
+        .cover-meta-item{color:rgba(255,255,255,.6);font-size:.92rem;}
+        .cover-meta-item strong{color:var(--orange);display:block;font-size:1rem;}
+
+        /* ── PROGRESS / NAV ── */
+        .progress-bar{position:fixed;bottom:0;left:0;height:4px;background:linear-gradient(90deg,var(--orange),var(--accent));transition:width .4s ease;z-index:100;}
+        .slide-counter{position:fixed;bottom:14px;right:20px;color:rgba(255,255,255,.55);font-size:.82rem;font-family:'Courier New',monospace;z-index:100;}
+        .slide-counter span{color:var(--orange);font-weight:700;}
+        .nav-btn{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,140,0,.18);border:1px solid rgba(255,140,0,.4);color:var(--orange);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:background .2s;z-index:100;user-select:none;}
+        .nav-btn:hover{background:rgba(255,140,0,.35);}
+        #btn-prev{left:14px;} #btn-next{right:14px;}
+    </style>
+</head>
+<body>
+<div class="presentation">
+
+<!-- ══════ SLIDE 1 — CAPA ══════ -->
+<div class="slide cover active" id="slide-1">
+    <div class="slide-content">
+        <div class="cover-inner">
+            <div class="cover-badge anim d1">📐 Ensino Superior · Engenharia</div>
+            <h1 class="anim d2">Tópicos em<br><span>Álgebra Linear</span></h1>
+            <h2 class="anim d3">Aula 03 · Matriz Inversa</h2>
+            <div class="cover-meta anim d4">
+                <div class="cover-meta-item"><strong>📅 Data</strong>12 de maio de 2026</div>
+                <div class="cover-meta-item"><strong>⏱ Carga</strong>3 horas-aula</div>
+                <div class="cover-meta-item"><strong>📚 Bloco</strong>1 de 5 · Determinantes</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 2 — REVISÃO + GABARITO ══════ -->
+<div class="slide" id="slide-2">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Revisão · Aula 02</div>
+            <h2>Recapitulando — Gabarito da Tarefa de Cramer</h2>
+            <p>Verificando os resultados antes de avançar</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div>
+                    <div class="section-title">(a) Sistema \(2\times2\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>\(3x+2y=7 \;;\; x-y=1\)</p>
+                        <p>$$A=\begin{bmatrix}3&2\\1&-1\end{bmatrix},\quad \mathbf{b}=\begin{bmatrix}7\\1\end{bmatrix}$$</p>
+                        <p>\(\det(A)=3(-1)-2(1)={\color{#FF8C00}{-5}}\)</p>
+                        <p>$$A_1=\begin{bmatrix}{\color{#FF8C00}7}&2\\{\color{#FF8C00}1}&-1\end{bmatrix}\Rightarrow\det(A_1)=-7-2=-9$$</p>
+                        <p>$$A_2=\begin{bmatrix}3&{\color{#FF8C00}7}\\1&{\color{#FF8C00}1}\end{bmatrix}\Rightarrow\det(A_2)=3-7=-4$$</p>
+                        <p>\(x=\dfrac{-9}{-5}={\color{#FF8C00}\dfrac{9}{5}},\quad y=\dfrac{-4}{-5}={\color{#FF8C00}\dfrac{4}{5}}\)</p>
+                        <p>✓ \(3\cdot\tfrac{9}{5}+2\cdot\tfrac{4}{5}=\tfrac{27+8}{5}=7\) ✓</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">(b) Sistema \(3\times3\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>\(x+y+z=0\;;\;x-y+z=2\;;\;x+y-z=4\)</p>
+                        <p>$$A=\begin{bmatrix}1&1&1\\1&-1&1\\1&1&-1\end{bmatrix},\quad \mathbf{b}=\begin{bmatrix}0\\2\\4\end{bmatrix}$$</p>
+                        <p>\(\det(A)={\color{#FF8C00}4}\)</p>
+                        <p>\(\det(A_1)=12\Rightarrow x=\dfrac{12}{4}={\color{#FF8C00}3}\)</p>
+                        <p>\(\det(A_2)=-4\Rightarrow y=\dfrac{-4}{4}={\color{#FF8C00}-1}\)</p>
+                        <p>\(\det(A_3)=-8\Rightarrow z=\dfrac{-8}{4}={\color{#FF8C00}-2}\)</p>
+                        <p>✓ \(3+(-1)+(-2)=0\) · \(3-(-1)+(-2)=2\) · \(3+(-1)-(-2)=4\) ✓</p>
+                    </div>
+                </div>
+            </div>
+            <div class="box blue anim d2">
+                🎯 <strong>Hoje:</strong> usaremos o <span class="blu">determinante</span> de uma nova forma — para construir a <span class="blu">Matriz Inversa</span> \(A^{-1}\). Dois métodos: via <strong>Adjunta</strong> (analítico, ótimo para \(n\leq3\)) e via <strong>Gauss-Jordan</strong> (eficiente para qualquer \(n\)).
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 3 — DEFINIÇÃO E EXISTÊNCIA ══════ -->
+<div class="slide" id="slide-3">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 1 · Matriz Inversa</div>
+            <h2>Definição e Existência de \(A^{-1}\)</h2>
+            <p>Quando uma matriz quadrada admite inversa?</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Definição — Matriz Inversa</div>
+                $$A^{-1} \text{ é a única matriz tal que } \quad A\,A^{-1} = A^{-1}\!A = I$$
+                <div style="font-size:.88rem;color:#aaa;margin-top:6px;">onde \(I\) é a matriz identidade de mesma ordem</div>
+            </div>
+            <div class="two-col anim d2">
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="box green">
+                        <strong>\(A\) é <em>invertível</em> (ou não-singular) se e somente se:</strong>
+                        $$\det(A) \neq 0$$
+                        Nesse caso, \(A^{-1}\) existe e é <strong>única</strong>.
+                    </div>
+                    <div class="box red">
+                        <strong>\(A\) é <em>singular</em> (não-invertível) quando:</strong>
+                        $$\det(A) = 0$$
+                        Linhas/colunas são linearmente dependentes — não existe \(A^{-1}\).
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="card blue">
+                        <h4>📋 Condições Equivalentes</h4>
+                        As seguintes afirmações são todas equivalentes:<br>
+                        · \(\det(A)\neq0\) &nbsp;· \(A^{-1}\) existe<br>
+                        · Colunas de \(A\) são LI<br>
+                        · \(Ax=b\) tem solução única para todo \(\mathbf{b}\)<br>
+                        · \(A\) tem posto completo: \(\text{rank}(A)=n\)
+                    </div>
+                    <div class="card yellow">
+                        <h4>⚠️ Caso \(2\times2\) — Fórmula Direta</h4>
+                        Para \(A=\begin{bmatrix}a&b\\c&d\end{bmatrix}\):
+                        $$A^{-1}=\dfrac{1}{ad-bc}\begin{bmatrix}d&-b\\-c&a\end{bmatrix}$$
+                        Troca a diagonal, nega a anti-diagonal!
+                    </div>
+                </div>
+            </div>
+            <div class="box anim d3">
+                🏗️ <strong>Por que \(A^{-1}\) importa na engenharia?</strong> Se \(A\) representa a matriz de rigidez de uma estrutura, \(A^{-1}\) representa a <em>flexibilidade</em>: a solução \(x = A^{-1}b\) fornece os deslocamentos causados pela carga \(b\). Calcular \(A^{-1}\) uma única vez permite resolver \(Ax=b\) para múltiplos vetores \(b\) com custo mínimo.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 4 — ADJUNTA ══════ -->
+<div class="slide" id="slide-4">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 1 · Matriz Inversa</div>
+            <h2>Matriz dos Cofatores e Adjunta</h2>
+            <p>Os ingredientes da fórmula \(A^{-1} = \frac{1}{\det(A)}\,\text{adj}(A)\)</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div class="box">
+                    <strong class="hi">Matriz dos Cofatores \(\mathcal{C}\)</strong><br><br>
+                    É a matriz \(n\times n\) cujo elemento na posição \((i,j)\) é o cofator \(C_{ij}\) de \(A\):
+                    $$\mathcal{C} = \begin{bmatrix} C_{11} & C_{12} & \cdots & C_{1n} \\ C_{21} & C_{22} & \cdots & C_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ C_{n1} & C_{n2} & \cdots & C_{nn} \end{bmatrix}$$
+                </div>
+                <div class="box blue">
+                    <strong class="blu">Matriz Adjunta \(\text{adj}(A)\)</strong><br><br>
+                    É a <strong>transposta</strong> da matriz dos cofatores:
+                    $$\text{adj}(A) = \mathcal{C}^{T}$$
+                    Ou seja: o elemento \((i,j)\) de \(\text{adj}(A)\) é \(C_{ji}\) — cofator com índices trocados!
+                    <br><br>
+                    <strong>Fórmula da Inversa:</strong>
+                    $$A^{-1} = \dfrac{1}{\det(A)}\,\text{adj}(A)$$
+                </div>
+            </div>
+            <div class="box yellow anim d2">
+                💡 <strong>Por que transpor?</strong> O Teorema de Laplace garante que \(A\cdot\mathcal{C}^T = \det(A)\cdot I\). Dividindo por \(\det(A)\), obtemos \(A\cdot\tfrac{1}{\det(A)}\mathcal{C}^T = I\), logo \(A^{-1}=\tfrac{1}{\det(A)}\mathcal{C}^T\).
+            </div>
+            <div class="three-col anim d3">
+                <div class="card">
+                    <h4>📐 Passo 1</h4>
+                    Calcule \(\det(A)\). Se \(\det(A)=0\), pare — \(A^{-1}\) não existe.
+                </div>
+                <div class="card blue">
+                    <h4>📐 Passo 2</h4>
+                    Calcule todos os \(n^2\) cofatores \(C_{ij}=(-1)^{i+j}M_{ij}\) e monte a matriz \(\mathcal{C}\).
+                </div>
+                <div class="card green">
+                    <h4>📐 Passo 3</h4>
+                    Transponha: \(\text{adj}(A)=\mathcal{C}^T\). Divida por \(\det(A)\): \(A^{-1}=\tfrac{1}{\det(A)}\text{adj}(A)\).
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 5 — FÓRMULA + EXEMPLO 2×2 ══════ -->
+<div class="slide" id="slide-5">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Adjunta</div>
+            <h2>Inversa via Adjunta — Exemplo \(2\times2\)</h2>
+            <p>Fórmula fechada e verificação completa</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Calcule \(M^{-1}\) sendo \(M = \begin{bmatrix}3&1\\2&1\end{bmatrix}\).
+            </div>
+            <div class="two-col anim d2">
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Calcule \(\det(M)\):</strong>
+                            $$\det(M) = 3\cdot1 - 1\cdot2 = 3 - 2 = {\color{#FF8C00}1}$$
+                            \(\det(M)\neq0\) → <span class="grn">inversível!</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Calcule os 4 cofatores:</strong>
+                            \[C_{11}=(+1)\cdot1=1,\quad C_{12}=(-1)\cdot2=-2\]
+                            \[C_{21}=(-1)\cdot1=-1,\quad C_{22}=(+1)\cdot3=3\]
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Monte \(\mathcal{C}\) e calcule \(\text{adj}(M)=\mathcal{C}^T\):</strong>
+                            $$\mathcal{C}=\begin{bmatrix}1&-2\\-1&3\end{bmatrix} \;\Rightarrow\; \text{adj}(M)=\begin{bmatrix}1&-1\\-2&3\end{bmatrix}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Aplique a fórmula:</strong>
+                            $$M^{-1}=\dfrac{1}{1}\begin{bmatrix}1&-1\\-2&3\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}1&-1\\-2&3\end{bmatrix}}$$
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Verificação: \(M\cdot M^{-1}=I\)?</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>$$\begin{bmatrix}3&1\\2&1\end{bmatrix}\begin{bmatrix}1&-1\\-2&3\end{bmatrix}$$</p>
+                        <p>\(r_1c_1: 3(1)+1(-2)=3-2={\color{#27ae60}1}\)</p>
+                        <p>\(r_1c_2: 3(-1)+1(3)=-3+3={\color{#27ae60}0}\)</p>
+                        <p>\(r_2c_1: 2(1)+1(-2)=2-2={\color{#27ae60}0}\)</p>
+                        <p>\(r_2c_2: 2(-1)+1(3)=-2+3={\color{#27ae60}1}\)</p>
+                        <p>$$M\cdot M^{-1}=\begin{bmatrix}1&0\\0&1\end{bmatrix}=I \;\checkmark$$</p>
+                    </div>
+                    <div class="box yellow" style="margin-top:12px;">
+                        💡 <strong>Caso \(2\times2\) — atalho:</strong> para \(A=\begin{bmatrix}a&b\\c&d\end{bmatrix}\), a adjunta é simplesmente \(\begin{bmatrix}d&-b\\-c&a\end{bmatrix}\) — troca a diagonal e nega a anti-diagonal!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 6 — INVERSA 3×3 VIA ADJUNTA ══════ -->
+<div class="slide" id="slide-6">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Adjunta</div>
+            <h2>Inversa via Adjunta — Exemplo \(3\times3\) Completo</h2>
+            <p>Todos os 9 cofatores, adjunta e resultado verificado</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Calcule \(A^{-1}\) sendo
+                \(A = \begin{bmatrix}2&-1&0\\-1&2&-1\\0&-1&2\end{bmatrix}\)
+                (matriz de rigidez de treliça — simétrica e tridiagonal).
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Passo 1 — \(\det(A)\)</div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p><span class="s-pos">(+):</span> \(2(2)(2)+(-1)(-1)(0)+0(-1)(-1)=8+0+0=8\)</p>
+                        <p><span class="s-neg">(−):</span> \(0(2)(0)+2(-1)(-1)+(-1)(-1)(2)=0+2+2=4\)</p>
+                        <p>\(\det(A)=8-4={\color{#FF8C00}4}\)</p>
+                    </div>
+                    <div class="section-title" style="margin-top:12px;">Passo 2 — Os 9 Cofatores</div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p>\(C_{11}=+\begin{vmatrix}2&-1\\-1&2\end{vmatrix}=4-1={\color{#FF8C00}3}\)</p>
+                        <p>\(C_{12}=-\begin{vmatrix}-1&-1\\0&2\end{vmatrix}=-(-2-0)={\color{#FF8C00}2}\)</p>
+                        <p>\(C_{13}=+\begin{vmatrix}-1&2\\0&-1\end{vmatrix}=1-0={\color{#FF8C00}1}\)</p>
+                        <p>\(C_{21}=-\begin{vmatrix}-1&0\\-1&2\end{vmatrix}=-(-2-0)={\color{#FF8C00}2}\)</p>
+                        <p>\(C_{22}=+\begin{vmatrix}2&0\\0&2\end{vmatrix}=4-0={\color{#FF8C00}4}\)</p>
+                        <p>\(C_{23}=-\begin{vmatrix}2&-1\\0&-1\end{vmatrix}=-(-2-0)={\color{#FF8C00}2}\)</p>
+                        <p>\(C_{31}=+\begin{vmatrix}-1&0\\2&-1\end{vmatrix}=1-0={\color{#FF8C00}1}\)</p>
+                        <p>\(C_{32}=-\begin{vmatrix}2&0\\-1&-1\end{vmatrix}=-(-2-0)={\color{#FF8C00}2}\)</p>
+                        <p>\(C_{33}=+\begin{vmatrix}2&-1\\-1&2\end{vmatrix}=4-1={\color{#FF8C00}3}\)</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Passo 3 — Adjunta e Inversa</div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p>$$\mathcal{C}=\begin{bmatrix}3&2&1\\2&4&2\\1&2&3\end{bmatrix}$$</p>
+                        <p>Como \(A\) é <strong>simétrica</strong>, \(\mathcal{C}\) também é simétrica,<br>e portanto \(\text{adj}(A)=\mathcal{C}^T=\mathcal{C}\):</p>
+                        <p>$$\text{adj}(A)=\begin{bmatrix}3&2&1\\2&4&2\\1&2&3\end{bmatrix}$$</p>
+                        <p>$${\color{#FF8C00}A^{-1}}=\dfrac{1}{4}\begin{bmatrix}3&2&1\\2&4&2\\1&2&3\end{bmatrix}$$</p>
+                    </div>
+                    <div class="box green" style="margin-top:12px;">
+                        ✅ <strong>Verificação rápida (linha 1):</strong><br>
+                        \(\begin{bmatrix}2&-1&0\end{bmatrix}\cdot\tfrac{1}{4}\begin{bmatrix}3\\2\\1\end{bmatrix}=\tfrac{6-2+0}{4}=1\) ✓<br>
+                        \(\begin{bmatrix}2&-1&0\end{bmatrix}\cdot\tfrac{1}{4}\begin{bmatrix}2\\4\\2\end{bmatrix}=\tfrac{4-4+0}{4}=0\) ✓
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 7 — PROPRIEDADES ══════ -->
+<div class="slide" id="slide-7">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 1 · Matriz Inversa</div>
+            <h2>Propriedades da Matriz Inversa</h2>
+            <p>Ferramentas essenciais para manipulação algébrica</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <ul class="custom">
+                    <li class="check"><strong>P1 — Involução:</strong> \((A^{-1})^{-1}=A\) — inversa da inversa é a própria \(A\)</li>
+                    <li class="check"><strong>P2 — Produto:</strong> \((AB)^{-1}=B^{-1}A^{-1}\) — <em>ordem invertida!</em></li>
+                    <li class="check"><strong>P3 — Transposta:</strong> \((A^T)^{-1}=(A^{-1})^T\) — operações comutam</li>
+                    <li class="check"><strong>P4 — Escalar:</strong> \((\lambda A)^{-1}=\tfrac{1}{\lambda}A^{-1}\) para \(\lambda\neq0\)</li>
+                    <li class="check"><strong>P5 — Potência:</strong> \((A^n)^{-1}=(A^{-1})^n\)</li>
+                </ul>
+                <ul class="custom">
+                    <li class="check"><strong>P6 — Determinante:</strong> \(\det(A^{-1})=\dfrac{1}{\det(A)}\)</li>
+                    <li class="check"><strong>P7 — Identidade:</strong> \(I^{-1}=I\)</li>
+                    <li class="check"><strong>P8 — Diagonal:</strong> diagonal invertível \(\Leftrightarrow\) todos os \(a_{ii}\neq0\); a inversa tem \(1/a_{ii}\) na diagonal</li>
+                    <li class="warn"><strong>Atenção P2:</strong> \((AB)^{-1}\neq A^{-1}B^{-1}\) em geral — multiplicação de matrizes não é comutativa!</li>
+                </ul>
+            </div>
+            <div class="divider anim d2"></div>
+            <div class="two-col anim d3">
+                <div class="box">
+                    <strong>Demonstração de P2 — \((AB)^{-1}=B^{-1}A^{-1}\):</strong><br><br>
+                    Basta verificar que \(AB\cdot B^{-1}A^{-1}=I\):<br>
+                    \(AB\cdot B^{-1}A^{-1}=A(BB^{-1})A^{-1}=A\cdot I\cdot A^{-1}=AA^{-1}=I\) \(\blacksquare\)
+                </div>
+                <div class="box blue">
+                    🏗️ <strong>Aplicação de P2 em Engenharia:</strong> se a transformação global de uma estrutura é \(K=K_1K_2\), então a flexibilidade global é \(K^{-1}=K_2^{-1}K_1^{-1}\). A ordem importa — a sequência de transformações se inverte!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 8 — MÉTODO DE GAUSS-JORDAN ══════ -->
+<div class="slide" id="slide-8">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 1 · Matriz Inversa</div>
+            <h2>Método de Gauss-Jordan</h2>
+            <p>Algoritmo eficiente via operações elementares de linha</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Ideia Central</div>
+                $$\big[\,A \;\big|\; I\,\big] \;\xrightarrow{\text{operações de linha}}\; \big[\,I \;\big|\; A^{-1}\,\big]$$
+                <div style="font-size:.9rem;color:#aaa;margin-top:6px;">se \(A\) for singular, a forma escalonada terá uma linha nula — e \(A^{-1}\) não existe</div>
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Operações Elementares Permitidas</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="check"><strong>Troca:</strong> \(R_i \leftrightarrow R_j\) — permuta duas linhas</li>
+                        <li class="check"><strong>Escala:</strong> \(R_i \leftarrow \lambda R_i\) — multiplica linha por \(\lambda\neq0\)</li>
+                        <li class="check"><strong>Combinação:</strong> \(R_i \leftarrow R_i + \lambda R_j\) — soma múltiplo de outra linha</li>
+                    </ul>
+                    <div class="box yellow" style="margin-top:12px;">
+                        💡 Cada operação de linha corresponde a <em>multiplicar \(A\) à esquerda</em> por uma matriz elementar \(E\). Como aplicamos as mesmas operações ao lado \(I\), no final obtemos \(E_k\cdots E_1\cdot A=I\) e \(E_k\cdots E_1\cdot I=A^{-1}\).
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Algoritmo Passo a Passo</div>
+                    <div class="steps" style="margin-top:10px;">
+                        <div class="step"><div>Monte a <strong>matriz aumentada</strong> \([A\mid I]\) com \(n\) linhas e \(2n\) colunas.</div></div>
+                        <div class="step"><div>Aplique <strong>eliminação direta</strong> (Gauss): reduza o lado esquerdo a forma triangular superior usando os três tipos de operações de linha.</div></div>
+                        <div class="step"><div>Aplique <strong>eliminação reversa</strong> (Jordan): elimine os elementos acima dos pivôs, reduzindo o lado esquerdo à identidade \(I\).</div></div>
+                        <div class="step"><div>O lado direito agora contém \(A^{-1}\). <strong>Verifique</strong> com \(A\cdot A^{-1}=I\).</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 9 — EXEMPLO GAUSS-JORDAN ══════ -->
+<div class="slide" id="slide-9">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Gauss-Jordan</div>
+            <h2>Gauss-Jordan — Exemplo \(3\times3\) Completo</h2>
+            <p>Cálculo linha a linha de cada operação elementar</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1" style="gap:14px;">
+
+                <!-- COLUNA ESQUERDA — operações + cálculos -->
+                <div style="display:flex;flex-direction:column;gap:10px;">
+
+                    <div class="box" style="padding:12px 16px;">
+                        Calcule \(Q^{-1}\) sendo \(Q=\begin{bmatrix}1&1&1\\1&2&1\\1&1&2\end{bmatrix}\). &nbsp; \(\det(Q)=1\neq0\) — invertível. Monte \([Q\mid I]\):
+                        $$\left[\begin{array}{ccc|ccc}1&1&1&1&0&0\\1&2&1&0&1&0\\1&1&2&0&0&1\end{array}\right]$$
+                    </div>
+
+                    <!-- PASSO 1 -->
+                    <div class="aug-step">
+                        <div class="op">Passo 1 — Zerar coluna 1 abaixo do pivô (1,1)</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;font-size:.88rem;">
+                            <div class="calc-block" style="padding:10px 14px;line-height:2;">
+                                <p><strong>\(R_2 \leftarrow R_2 - R_1\)</strong></p>
+                                <p>\([1,2,1\mid 0,1,0]\)</p>
+                                <p>\(-\;[1,1,1\mid 1,0,0]\)</p>
+                                <p>\(=\;{\color{#FF8C00}[0,1,0\mid{-1},1,0]}\)</p>
+                            </div>
+                            <div class="calc-block" style="padding:10px 14px;line-height:2;">
+                                <p><strong>\(R_3 \leftarrow R_3 - R_1\)</strong></p>
+                                <p>\([1,1,2\mid 0,0,1]\)</p>
+                                <p>\(-\;[1,1,1\mid 1,0,0]\)</p>
+                                <p>\(=\;{\color{#FF8C00}[0,0,1\mid{-1},0,1]}\)</p>
+                            </div>
+                        </div>
+                        $$\left[\begin{array}{ccc|ccc}1&1&1&1&0&0\\{\color{#FF8C00}0}&{\color{#FF8C00}1}&{\color{#FF8C00}0}&{\color{#FF8C00}-1}&{\color{#FF8C00}1}&{\color{#FF8C00}0}\\{\color{#FF8C00}0}&{\color{#FF8C00}0}&{\color{#FF8C00}1}&{\color{#FF8C00}-1}&{\color{#FF8C00}0}&{\color{#FF8C00}1}\end{array}\right]$$
+                        <div style="font-size:.82rem;color:#555;margin-top:4px;">
+                            Pivôs de \(R_2\) e \(R_3\) já são 1 — partimos direto para a eliminação reversa (Jordan).
+                        </div>
+                    </div>
+
+                    <!-- PASSO 2 -->
+                    <div class="aug-step">
+                        <div class="op">Passo 2 — Eliminar coluna 2 na linha 1 (Jordan)</div>
+                        <div style="margin-top:6px;font-size:.88rem;">
+                            <div class="calc-block" style="padding:10px 14px;line-height:2;">
+                                <p><strong>\(R_1 \leftarrow R_1 - R_2\)</strong> &nbsp; (o elemento \((1,2)=1\) deve virar 0)</p>
+                                <p>\([1,1,1\mid 1,0,0]\)</p>
+                                <p>\(-\;[0,1,0\mid{-1},1,0]\)</p>
+                                <p>\(=\;{\color{#FF8C00}[1,0,1\mid 2,-1,0]}\)</p>
+                            </div>
+                        </div>
+                        $$\left[\begin{array}{ccc|ccc}{\color{#FF8C00}1}&{\color{#FF8C00}0}&{\color{#FF8C00}1}&{\color{#FF8C00}2}&{\color{#FF8C00}-1}&{\color{#FF8C00}0}\\0&1&0&-1&1&0\\0&0&1&-1&0&1\end{array}\right]$$
+                    </div>
+
+                    <!-- PASSO 3 -->
+                    <div class="aug-step done">
+                        <div class="op">Passo 3 — Eliminar coluna 3 na linha 1 → PRONTO ✓</div>
+                        <div style="margin-top:6px;font-size:.88rem;">
+                            <div class="calc-block" style="padding:10px 14px;line-height:2;border-color:var(--green);">
+                                <p><strong>\(R_1 \leftarrow R_1 - R_3\)</strong> &nbsp; (o elemento \((1,3)=1\) deve virar 0)</p>
+                                <p>\([1,0,1\mid 2,-1,0]\)</p>
+                                <p>\(-\;[0,0,1\mid{-1},0,1]\)</p>
+                                <p>\(=\;{\color{#27ae60}[1,0,0\mid 3,-1,-1]}\)</p>
+                            </div>
+                        </div>
+                        $$\left[\begin{array}{ccc|ccc}{\color{#27ae60}1}&{\color{#27ae60}0}&{\color{#27ae60}0}&{\color{#27ae60}3}&{\color{#27ae60}-1}&{\color{#27ae60}-1}\\0&1&0&-1&1&0\\0&0&1&-1&0&1\end{array}\right]$$
+                    </div>
+                </div>
+
+                <!-- COLUNA DIREITA — resultado + verificação -->
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="section-title">Resultado</div>
+                    <div class="calc-block">
+                        <p>Lado direito da matriz final = \(Q^{-1}\):</p>
+                        <p>$$Q^{-1}=\begin{bmatrix}{\color{#FF8C00}3}&{\color{#FF8C00}-1}&{\color{#FF8C00}-1}\\{\color{#FF8C00}-1}&{\color{#FF8C00}1}&{\color{#FF8C00}0}\\{\color{#FF8C00}-1}&{\color{#FF8C00}0}&{\color{#FF8C00}1}\end{bmatrix}$$</p>
+                    </div>
+
+                    <div class="section-title">Verificação \(Q\cdot Q^{-1}=I\)</div>
+                    <div class="calc-block">
+                        <p>\(R_1\cdot C_1:\; 1(3)+1(-1)+1(-1)={\color{#27ae60}1}\) ✓</p>
+                        <p>\(R_1\cdot C_2:\; 1(-1)+1(1)+1(0)={\color{#27ae60}0}\) ✓</p>
+                        <p>\(R_2\cdot C_1:\; 1(3)+2(-1)+1(-1)={\color{#27ae60}0}\) ✓</p>
+                        <p>\(R_2\cdot C_2:\; 1(-1)+2(1)+1(0)={\color{#27ae60}1}\) ✓</p>
+                        <p>\(R_3\cdot C_3:\; 1(-1)+1(0)+2(1)={\color{#27ae60}1}\) ✓</p>
+                    </div>
+
+                    <div class="box yellow">
+                        <strong>Por que só 3 operações?</strong><br>
+                        Os pivôs de \(R_2\) e \(R_3\) já eram <strong>1</strong> após o Passo 1 — nenhuma escalonamento foi necessário. Isso aconteceu porque \(\det(Q)=1\) e a estrutura de \(Q\) é conveniente. Em matrizes gerais haverá mais passos e possivelmente divisões.
+                    </div>
+
+                    <div class="box blue">
+                        <strong>Regra geral de contagem:</strong><br>
+                        Para uma \(n\times n\), o Gauss-Jordan precisa de no máximo:<br>
+                        \(\tfrac{n(n-1)}{2}\) operações de eliminação direta +<br>
+                        \(\tfrac{n(n-1)}{2}\) de eliminação reversa = \(n(n-1)\) no total.<br>
+                        Para \(n=3\): no máximo <strong>6 operações</strong> — aqui usamos apenas 3.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 10 — COMPARAÇÃO ADJUNTA vs GAUSS-JORDAN ══════ -->
+<div class="slide" id="slide-10">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Análise Comparativa</div>
+            <h2>Adjunta vs Gauss-Jordan</h2>
+            <p>Quando cada método é a escolha certa?</p>
+        </div>
+        <div class="slide-body">
+            <div class="anim d1">
+                <table class="tbl">
+                    <thead><tr><th>Critério</th><th>Via Adjunta (\(\mathcal{C}^T\))</th><th>Gauss-Jordan (\([A\mid I]\))</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Custo computacional</strong></td><td><span class="red">\(\mathcal{O}(n!)\) — exponencial</span></td><td><span class="grn">\(\mathcal{O}(n^3)\) — polinomial</span></td></tr>
+                        <tr><td><strong>Tamanho ideal</strong></td><td>\(n\leq3\) (máximo \(n=4\))</td><td>Qualquer \(n\) — padrão industrial</td></tr>
+                        <tr><td><strong>Resultado</strong></td><td>Fórmula analítica explícita</td><td>Numérico (pode acumular erros)</td></tr>
+                        <tr><td><strong>Singularidade</strong></td><td>Requer calcular \(\det(A)\) antes</td><td>Detectada naturalmente na pivotação</td></tr>
+                        <tr><td><strong>Fórmula simbólica</strong></td><td><span class="grn">Sim — ideal para análise paramétrica</span></td><td>Não — gera números, não símbolos</td></tr>
+                        <tr><td><strong>Uso em engenharia</strong></td><td>Teoria, matrizes \(2\times2\) e \(3\times3\)</td><td>Software numérico, MEF, sistemas grandes</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="two-col anim d2">
+                <div class="box green">
+                    🏆 <strong>Adjunta brilha quando:</strong> você quer \(A^{-1}\) como <em>expressão simbólica</em> em função dos parâmetros de \(A\). Essencial para entender como a inversa varia com mudanças na estrutura — análise de sensibilidade em projetos.
+                </div>
+                <div class="box blue">
+                    🏗️ <strong>Gauss-Jordan domina quando:</strong> \(n\geq4\), a matriz tem coeficientes numéricos específicos, ou você está implementando código (Python/NumPy usa LU, que é uma variante). Para \(n=3\) com entradas limpas, ambos funcionam bem.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 11 — APLICAÇÃO: Ax=b VIA INVERSÃO ══════ -->
+<div class="slide" id="slide-11">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Aplicação · Engenharia</div>
+            <h2>Resolvendo \(Ax=b\) via Matriz Inversa</h2>
+            <p>Quando vale a pena calcular \(A^{-1}\) para resolver sistemas?</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Solução via Inversão</div>
+                $$Ax=b \;\Rightarrow\; A^{-1}Ax = A^{-1}b \;\Rightarrow\; {\color{#FF8C00}x = A^{-1}b}$$
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Exemplo Prático</div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p>Usando \(A=\begin{bmatrix}2&-1&0\\-1&2&-1\\0&-1&2\end{bmatrix}\) da Aula 03,</p>
+                        <p>resolva \(Ax=\begin{bmatrix}1\\0\\1\end{bmatrix}\).</p>
+                        <p style="margin-top:8px;">\(A^{-1}=\dfrac{1}{4}\begin{bmatrix}3&2&1\\2&4&2\\1&2&3\end{bmatrix}\) (calculado antes)</p>
+                        <p>$$x=A^{-1}b=\dfrac{1}{4}\begin{bmatrix}3&2&1\\2&4&2\\1&2&3\end{bmatrix}\begin{bmatrix}1\\0\\1\end{bmatrix}$$</p>
+                        <p>\(x_1=\tfrac{3(1)+2(0)+1(1)}{4}=\tfrac{4}{4}={\color{#FF8C00}1}\)</p>
+                        <p>\(x_2=\tfrac{2(1)+4(0)+2(1)}{4}=\tfrac{4}{4}={\color{#FF8C00}1}\)</p>
+                        <p>\(x_3=\tfrac{1(1)+2(0)+3(1)}{4}=\tfrac{4}{4}={\color{#FF8C00}1}\)</p>
+                        <p>Verificação: \(A\begin{bmatrix}1\\1\\1\end{bmatrix}=\begin{bmatrix}2-1+0\\-1+2-1\\0-1+2\end{bmatrix}=\begin{bmatrix}1\\0\\1\end{bmatrix}\) ✓</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="card green">
+                        <h4>✅ Vantagem — Múltiplos Vetores \(\mathbf{b}\)</h4>
+                        Se o sistema \(Ax=b\) precisa ser resolvido para <strong>muitos vetores \(\mathbf{b}\)</strong> diferentes (ex.: diferentes condições de carga), calcular \(A^{-1}\) uma única vez e reutilizá-la é muito eficiente: cada nova solução custa apenas \(\mathcal{O}(n^2)\).
+                    </div>
+                    <div class="card red">
+                        <h4>⚠️ Desvantagem — Custo Inicial</h4>
+                        Para um único vetor \(\mathbf{b}\), <em>Gauss diretamente</em> é mais eficiente do que calcular \(A^{-1}\) e depois multiplicar. Calcular \(A^{-1}\) só compensa se houver múltiplos sistemas a resolver.
+                    </div>
+                    <div class="card blue">
+                        <h4>🏗️ Matrizes de Flexibilidade</h4>
+                        Na Mecânica Estrutural, \(A^{-1}\) é a <strong>matriz de flexibilidade</strong>: cada coluna \(j\) de \(A^{-1}\) representa os deslocamentos causados por uma força unitária aplicada no nó \(j\).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 12 — RESUMO + PRÓXIMA AULA ══════ -->
+<div class="slide" id="slide-12">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Encerramento</div>
+            <h2>Resumo da Aula 03</h2>
+            <p>O que aprendemos hoje — e o que vem a seguir</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div>
+                    <div class="section-title">Conquistas de Hoje ✅</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="check">Definição de \(A^{-1}\): \(AA^{-1}=A^{-1}A=I\)</li>
+                        <li class="check">Existência: \(A^{-1}\) existe \(\Leftrightarrow\;\det(A)\neq0\)</li>
+                        <li class="check">Fórmula \(2\times2\) direta</li>
+                        <li class="check">Matriz dos cofatores \(\mathcal{C}\) e adjunta \(\text{adj}(A)=\mathcal{C}^T\)</li>
+                        <li class="check">\(A^{-1}=\tfrac{1}{\det(A)}\,\text{adj}(A)\) — exemplo \(3\times3\) completo</li>
+                        <li class="check">8 propriedades de \(A^{-1}\), incluindo \((AB)^{-1}=B^{-1}A^{-1}\)</li>
+                        <li class="check">Gauss-Jordan: \([A\mid I]\to[I\mid A^{-1}]\) — exemplo completo</li>
+                        <li class="check">Aplicação: \(x=A^{-1}b\) e matrizes de flexibilidade</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="section-title">Próxima Aula — 19/05 📅</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="key">Bloco 2 — Transformações Lineares</li>
+                        <li class="key">Definição: \(T:V\to W\) linear \(\Leftrightarrow\; T(\alpha u+\beta v)=\alpha T(u)+\beta T(v)\)</li>
+                        <li class="key">Núcleo \(\ker(T)\) e imagem \(\text{Im}(T)\)</li>
+                        <li class="key">Representação matricial de transformações</li>
+                        <li class="key">Rotação, reflexão, projeção, dilatação no plano</li>
+                    </ul>
+                    <div class="box" style="margin-top:14px;">
+                        📚 <strong>Tarefa:</strong> calcule \(A^{-1}\) pelos dois métodos e compare:<br>
+                        \(A=\begin{bmatrix}1&2\\3&7\end{bmatrix}\) &nbsp;·&nbsp;
+                        \(B=\begin{bmatrix}1&0&1\\0&1&1\\1&1&0\end{bmatrix}\)
+                    </div>
+                </div>
+            </div>
+            <div class="box green anim d2" style="text-align:center;">
+                🎯 <strong>Bloco 1 concluído:</strong> Determinantes (Aulas 01–02) + Matriz Inversa (Aula 03) — o núcleo algébrico está completo. A partir de agora passamos para o mundo das <strong>Transformações Lineares</strong>, onde esses conceitos ganham interpretação geométrica profunda.
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="progress-bar" id="progress"></div>
+<div class="slide-counter">Slide <span id="cur">1</span> / <span id="tot"></span></div>
+<div class="nav-btn" id="btn-prev">&#8592;</div>
+<div class="nav-btn" id="btn-next">&#8594;</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const total  = slides.length;
+    let   cur    = 0;
+    document.getElementById('tot').textContent = total;
+
+    function goTo(n) {
+        slides[cur].classList.remove('active');
+        cur = (n + total) % total;
+        slides[cur].classList.add('active');
+        document.getElementById('cur').textContent = cur + 1;
+        document.getElementById('progress').style.width = ((cur+1)/total*100) + '%';
+    }
+    document.getElementById('btn-next').addEventListener('click', () => goTo(cur+1));
+    document.getElementById('btn-prev').addEventListener('click', () => goTo(cur-1));
+    document.addEventListener('keydown', e => {
+        if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') goTo(cur+1);
+        if (e.key==='ArrowLeft' ||e.key==='ArrowUp')                  goTo(cur-1);
+    });
+    let tx=0;
+    document.addEventListener('touchstart', e => tx=e.touches[0].clientX);
+    document.addEventListener('touchend',   e => {
+        const dx=e.changedTouches[0].clientX-tx;
+        if(Math.abs(dx)>40) goTo(cur+(dx<0?1:-1));
+    });
+    document.getElementById('progress').style.width = (1/total*100)+'%';
+
+    // ── KaTeX — quatro delimitadores ──
+    renderMathInElement(document.body, {
+        delimiters: [
+            { left: '$$',  right: '$$',  display: true  },
+            { left: '\\[', right: '\\]', display: true  },
+            { left: '$',   right: '$',   display: false },
+            { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+    });
+</script>
+</body>
+</html>

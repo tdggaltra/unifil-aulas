@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 02 – Determinantes II + Regra de Cramer | Tópicos em Álgebra Linear</title>
+
+    <!-- KaTeX — tipografia matemática profissional -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --orange: #FF8C00;
+            --accent: #FF6B35;
+            --dark:   #1e1e2e;
+            --panel:  #2a2a3e;
+            --light:  #f5f5f5;
+            --white:  #ffffff;
+            --green:  #27ae60;
+            --blue:   #2980b9;
+            --red:    #e74c3c;
+            --yellow: #f39c12;
+            --code-bg:#1a1a2e;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1e1e2e; }
+        ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 3px; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, #12121e 100%);
+            overflow: hidden;
+            color: var(--dark);
+        }
+
+        /* ── KATEX ── */
+        .katex { font-size: 1.05em; }
+        .katex-display { margin: 0.35em 0 !important; overflow-x: auto; }
+
+        /* ── CALC BLOCK — substitui math-block ── */
+        .calc-block {
+            background: #f6f6fa;
+            border-left: 5px solid var(--orange);
+            border-radius: 10px;
+            padding: 14px 20px;
+            line-height: 2.3;
+            font-size: 0.95rem;
+            overflow-x: auto;
+        }
+        .calc-block p { margin: 0; }
+        .s-pos { color: var(--green); font-weight: 700; }
+        .s-neg { color: var(--red);   font-weight: 700; }
+
+        /* ── SLIDE SYSTEM ── */
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(60px);
+            transition: opacity .5s ease, transform .5s ease;
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide-content {
+            background: var(--white);
+            width: 92%; max-width: 1280px; height: 88%;
+            margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 24px 70px rgba(0,0,0,.5);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        .slide-header {
+            background: linear-gradient(135deg, var(--orange) 0%, var(--accent) 100%);
+            padding: 22px 48px 28px;
+            color: white;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: '';
+            position: absolute; bottom: -18px; left: 0; right: 0; height: 36px;
+            background: linear-gradient(135deg, var(--orange), var(--accent));
+            clip-path: polygon(0 0,100% 0,100% 100%,0 0);
+            z-index: 1;
+        }
+        .slide-header h2 { font-size: 1.6rem; font-weight: 600; margin-top: 4px; }
+        .slide-header p  { font-size: 1rem; opacity: .9; margin-top: 4px; }
+        .slide-header .tag {
+            display: inline-block;
+            background: rgba(255,255,255,.25);
+            border: 1px solid rgba(255,255,255,.4);
+            border-radius: 20px;
+            padding: 3px 14px;
+            font-size: .82rem;
+            margin-bottom: 6px;
+        }
+
+        /* ── BODY ── */
+        .slide-body {
+            padding: 42px 48px 24px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeInUp {
+            from { opacity:0; transform:translateY(22px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .anim { opacity: 0; }
+        .slide.active .anim { animation: fadeInUp .5s ease forwards; }
+        .slide.active .d1 { animation-delay:.08s; }
+        .slide.active .d2 { animation-delay:.18s; }
+        .slide.active .d3 { animation-delay:.28s; }
+        .slide.active .d4 { animation-delay:.38s; }
+        .slide.active .d5 { animation-delay:.48s; }
+
+        /* ── UTILITIES ── */
+        .hi  { color: var(--orange); font-weight:700; }
+        .grn { color: var(--green);  font-weight:700; }
+        .red { color: var(--red);    font-weight:700; }
+        .blu { color: var(--blue);   font-weight:700; }
+
+        /* ── BOXES ── */
+        .box {
+            background: #fff8f0;
+            border-left: 5px solid var(--orange);
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: .97rem;
+            line-height: 1.75;
+        }
+        .box.blue   { background:#e8f4fd; border-color:var(--blue); }
+        .box.green  { background:#eafaf1; border-color:var(--green); }
+        .box.red    { background:#fdf2f2; border-color:var(--red); }
+        .box.yellow { background:#fef9e7; border-color:var(--yellow); }
+
+        /* ── CARDS ── */
+        .cards { display:flex; gap:14px; flex-wrap:wrap; }
+        .card {
+            flex:1; min-width:180px;
+            background:var(--light);
+            border-radius:14px;
+            padding:16px 14px;
+            border-top:4px solid var(--orange);
+            box-shadow:0 4px 14px rgba(0,0,0,.07);
+            font-size:.92rem;
+            line-height:1.65;
+        }
+        .card h4 { color:var(--orange); font-size:.98rem; margin-bottom:7px; }
+        .card.blue   { border-color:var(--blue); }   .card.blue h4   { color:var(--blue); }
+        .card.green  { border-color:var(--green); }  .card.green h4  { color:var(--green); }
+        .card.red    { border-color:var(--red); }    .card.red h4    { color:var(--red); }
+        .card.yellow { border-color:var(--yellow); } .card.yellow h4 { color:var(--yellow); }
+
+        /* ── LAYOUTS ── */
+        .two-col   { display:grid; grid-template-columns:1fr 1fr;     gap:18px; }
+        .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+
+        /* ── TABLE ── */
+        .tbl { width:100%; border-collapse:collapse; font-size:.92rem; }
+        .tbl th { background:var(--orange); color:white; padding:10px 14px; text-align:left; }
+        .tbl td { padding:8px 14px; border-bottom:1px solid #eee; }
+        .tbl tr:nth-child(even) td { background:#fdf6ec; }
+        .tbl tr:hover td { background:#fff0d0; }
+
+        /* ── STEPS ── */
+        .steps { counter-reset:step; display:flex; flex-direction:column; gap:10px; }
+        .step  { counter-increment:step; display:flex; align-items:flex-start; gap:13px; font-size:.94rem; line-height:1.7; }
+        .step::before {
+            content:counter(step);
+            background:var(--orange); color:white;
+            width:27px; height:27px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:700; font-size:.84rem;
+            flex-shrink:0; margin-top:2px;
+        }
+
+        /* ── FORMULA (dark card) ── */
+        .formula {
+            background: linear-gradient(135deg,#1a1a2e,#2a2a3e);
+            border: 2px solid var(--orange);
+            border-radius: 14px;
+            padding: 18px 24px;
+            text-align: center;
+            color: #f0f0ff;
+        }
+        .formula .title { color:var(--orange); font-size:.82rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; font-weight:700; }
+        .formula .katex { color:#f0f0ff; }
+        .formula.blue   { border-color:var(--blue); }
+        .formula.blue .title { color:#7fb3d3; }
+
+        /* ── SIGN GRID (cofatores) ── */
+        .sign-grid {
+            display:inline-grid;
+            background:var(--code-bg);
+            border-radius:8px;
+            padding:10px 18px;
+            font-family:'Courier New',monospace;
+            font-size:1.25rem;
+            font-weight:700;
+            text-align:center;
+            gap:4px 22px;
+            border-left:5px solid var(--orange);
+        }
+        .sg3 { grid-template-columns:repeat(3,1fr); }
+        .sg4 { grid-template-columns:repeat(4,1fr); }
+        .sg-p { color:#7dcea0; }
+        .sg-n { color:#f1948a; }
+
+        /* ── LISTS ── */
+        ul.custom { list-style:none; padding:0; }
+        ul.custom li { padding:5px 0 5px 28px; position:relative; font-size:.94rem; line-height:1.65; }
+        ul.custom li::before { content:'▸'; position:absolute; left:0; color:var(--orange); top:7px; }
+        ul.custom li.check::before { content:'✓'; color:var(--green); }
+        ul.custom li.key::before   { content:'▸'; color:var(--orange); font-weight:700; }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            display:flex; align-items:center; gap:10px;
+            font-size:1.05rem; font-weight:700; color:var(--dark);
+        }
+        .section-title::before { content:''; width:6px; height:22px; background:var(--orange); border-radius:3px; }
+        .divider { height:2px; background:linear-gradient(90deg,var(--orange),transparent); border-radius:2px; }
+
+        /* ── COVER ── */
+        .cover .slide-content {
+            background:linear-gradient(155deg,#1e1e2e 0%,#2d1a00 60%,#1e1e2e 100%);
+            justify-content:center; align-items:center; text-align:center;
+            position:relative; overflow:hidden;
+        }
+        .cover .slide-content::before {
+            content:''; position:absolute; top:-80px; right:-80px;
+            width:340px; height:340px; border-radius:50%;
+            background:radial-gradient(circle,rgba(255,140,0,.18) 0%,transparent 70%);
+        }
+        .cover .slide-content::after {
+            content:''; position:absolute; bottom:-60px; left:-60px;
+            width:260px; height:260px; border-radius:50%;
+            background:radial-gradient(circle,rgba(255,107,53,.14) 0%,transparent 70%);
+        }
+        .cover-inner { z-index:2; padding:40px; }
+        .cover-badge { background:rgba(255,140,0,.2); border:1px solid rgba(255,140,0,.5); color:var(--orange); border-radius:30px; padding:6px 22px; font-size:.9rem; letter-spacing:1px; display:inline-block; margin-bottom:24px; }
+        .cover h1 { font-size:3rem; font-weight:800; color:white; line-height:1.2; margin-bottom:12px; }
+        .cover h1 span { color:var(--orange); }
+        .cover h2 { font-size:1.5rem; color:rgba(255,255,255,.75); font-weight:400; margin-bottom:32px; }
+        .cover-meta { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; }
+        .cover-meta-item { color:rgba(255,255,255,.6); font-size:.92rem; }
+        .cover-meta-item strong { color:var(--orange); display:block; font-size:1rem; }
+
+        /* ── PROGRESS / NAV ── */
+        .progress-bar { position:fixed; bottom:0; left:0; height:4px; background:linear-gradient(90deg,var(--orange),var(--accent)); transition:width .4s ease; z-index:100; }
+        .slide-counter { position:fixed; bottom:14px; right:20px; color:rgba(255,255,255,.55); font-size:.82rem; font-family:'Courier New',monospace; z-index:100; }
+        .slide-counter span { color:var(--orange); font-weight:700; }
+        .nav-btn { position:fixed; top:50%; transform:translateY(-50%); background:rgba(255,140,0,.18); border:1px solid rgba(255,140,0,.4); color:var(--orange); width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; transition:background .2s; z-index:100; user-select:none; }
+        .nav-btn:hover { background:rgba(255,140,0,.35); }
+        #btn-prev { left:14px; }
+        #btn-next { right:14px; }
+    </style>
+</head>
+<body>
+<div class="presentation">
+
+<!-- ══════ SLIDE 1 — CAPA ══════ -->
+<div class="slide cover active" id="slide-1">
+    <div class="slide-content">
+        <div class="cover-inner">
+            <div class="cover-badge anim d1">📐 Ensino Superior · Engenharia</div>
+            <h1 class="anim d2">Tópicos em<br><span>Álgebra Linear</span></h1>
+            <h2 class="anim d3">Aula 02 · Determinantes II + Regra de Cramer</h2>
+            <div class="cover-meta anim d4">
+                <div class="cover-meta-item"><strong>📅 Data</strong>05 de maio de 2026</div>
+                <div class="cover-meta-item"><strong>⏱ Carga</strong>3 horas-aula</div>
+                <div class="cover-meta-item"><strong>📚 Bloco</strong>1 de 5 · Determinantes</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 2 — REVISÃO + GABARITO ══════ -->
+<div class="slide" id="slide-2">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Revisão · Aula 01</div>
+            <h2>Recapitulando — Determinantes I</h2>
+            <p>Gabarito da tarefa + o que precisamos para avançar</p>
+        </div>
+        <div class="slide-body">
+            <div class="cards anim d1">
+                <div class="card">
+                    <h4>🔢 Sarrus (3×3)</h4>
+                    \(\det(A)\) = soma das 3 diagonais principais <span class="grn">(+)</span> menos as 3 secundárias <span class="red">(−)</span>
+                </div>
+                <div class="card blue">
+                    <h4>⚙️ Propriedades-chave</h4>
+                    Troca de linhas → muda sinal · Linha nula → \(\det = 0\) · Triangular → produto da diagonal
+                </div>
+                <div class="card green">
+                    <h4>🔗 Conexão</h4>
+                    \(\det(A) \neq 0 \;\Leftrightarrow\; A\) invertível \(\;\Leftrightarrow\; Ax=b\) tem <strong>solução única</strong>
+                </div>
+            </div>
+            <div class="divider anim d2"></div>
+            <div class="section-title anim d2">📋 Gabarito da Tarefa</div>
+            <div class="two-col anim d3">
+                <div>
+                    <div class="calc-block">
+                        <p>$$A = \begin{bmatrix} 3 & 1 \\ 6 & 2 \end{bmatrix}$$</p>
+                        <p>\(\det(A) = 3{\cdot}2 - 1{\cdot}6 = 6 - 6 = {\color{#e74c3c}0}\)</p>
+                        <p>→ <span class="red">SINGULAR</span> — \(L_2 = 2L_1\), linhas dependentes.</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="calc-block">
+                        <p>$$B = \begin{bmatrix} 1 & 2 & 0 \\ 3 & -1 & 2 \\ 2 & 4 & 1 \end{bmatrix}$$</p>
+                        <p><span class="s-pos">Diag. (+):</span> \(1(-1)(1)+2(2)(2)+0(3)(4)=-1+8+0=7\)</p>
+                        <p><span class="s-neg">Diag. (−):</span> \(0(-1)(2)+1(2)(4)+2(3)(1)=0+8+6=14\)</p>
+                        <p>\(\det(B) = 7-14 = {\color{#FF8C00}{-7}}\) → <span class="grn">INVERTÍVEL</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="box blue anim d4">
+                🎯 <strong>Hoje vamos generalizar:</strong> Sarrus só funciona para ordem 3. O <span class="blu">Teorema de Laplace</span> resolve qualquer \(n\times n\) — e a <span class="blu">Regra de Cramer</span> usa determinantes para resolver sistemas lineares diretamente.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 3 — MENORES E COFATORES ══════ -->
+<div class="slide" id="slide-3">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 1 · Determinantes</div>
+            <h2>Menores Complementares e Cofatores</h2>
+            <p>Os ingredientes fundamentais do Teorema de Laplace</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div class="box">
+                    <strong class="hi">Menor Complementar \(M_{ij}\)</strong><br><br>
+                    Dado \(A_{n\times n}\), o menor \(M_{ij}\) é o <em>determinante</em> da submatriz \((n{-}1)\times(n{-}1)\) obtida <strong>eliminando a linha \(i\) e a coluna \(j\)</strong> de \(A\).
+                </div>
+                <div class="box blue">
+                    <strong class="blu">Cofator \(C_{ij}\)</strong><br><br>
+                    O cofator associa um <strong>sinal de posição</strong> ao menor:
+                    $$C_{ij} \;=\; (-1)^{\,i+j} \cdot M_{ij}$$
+                </div>
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Calculando \(M_{12}\) e \(C_{12}\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>$$A = \begin{bmatrix} 2 & {\color{red}1} & -1 \\ 3 & {\color{red}0} & 4 \\ -1 & {\color{red}2} & 3 \end{bmatrix} \;\leftarrow \text{elimina linha 1 e coluna 2}$$</p>
+                        <p>$$M_{12} = \begin{vmatrix} 3 & 4 \\ -1 & 3 \end{vmatrix} = 3{\cdot}3 - 4{\cdot}(-1) = 9+4 = 13$$</p>
+                        <p>$$C_{12} = (-1)^{1+2}\cdot 13 = (-1)^3\cdot 13 = {\color{#e74c3c}{-13}}$$</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Padrão de Sinais \((-1)^{i+j}\)</div>
+                    <div style="margin-top:10px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;">
+                        <div style="display:flex;align-items:center;gap:16px;">
+                            <span style="font-size:.88rem;min-width:72px;">Ordem 3×3:</span>
+                            <div class="sign-grid sg3">
+                                <span class="sg-p">+</span><span class="sg-n">−</span><span class="sg-p">+</span>
+                                <span class="sg-n">−</span><span class="sg-p">+</span><span class="sg-n">−</span>
+                                <span class="sg-p">+</span><span class="sg-n">−</span><span class="sg-p">+</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:16px;">
+                            <span style="font-size:.88rem;min-width:72px;">Ordem 4×4:</span>
+                            <div class="sign-grid sg4">
+                                <span class="sg-p">+</span><span class="sg-n">−</span><span class="sg-p">+</span><span class="sg-n">−</span>
+                                <span class="sg-n">−</span><span class="sg-p">+</span><span class="sg-n">−</span><span class="sg-p">+</span>
+                                <span class="sg-p">+</span><span class="sg-n">−</span><span class="sg-p">+</span><span class="sg-n">−</span>
+                                <span class="sg-n">−</span><span class="sg-p">+</span><span class="sg-n">−</span><span class="sg-p">+</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box yellow" style="margin-top:12px;">
+                        💡 <strong>Mnemônico:</strong> começa com <span class="grn">+</span> no canto superior esquerdo e <em>alterna</em> em todas as direções — como um tabuleiro de xadrez.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 4 — TEOREMA DE LAPLACE ══════ -->
+<div class="slide" id="slide-4">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 1 · Determinantes</div>
+            <h2>Teorema de Laplace</h2>
+            <p>Desenvolvimento por cofatores — generalização para qualquer \(n\times n\)</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div class="formula">
+                    <div class="title">Desenvolvimento pela Linha <em>i</em></div>
+                    $$\det(A) = \sum_{j=1}^{n} a_{ij} \cdot C_{ij}$$
+                    <div style="font-size:.85rem;color:#aaa;margin-top:6px;">para qualquer linha \(i\) fixada</div>
+                </div>
+                <div class="formula blue">
+                    <div class="title">Desenvolvimento pela Coluna <em>j</em></div>
+                    $$\det(A) = \sum_{i=1}^{n} a_{ij} \cdot C_{ij}$$
+                    <div style="font-size:.85rem;color:#aaa;margin-top:6px;">para qualquer coluna \(j\) fixada</div>
+                </div>
+            </div>
+            <div class="box anim d2">
+                📌 <strong>O resultado é sempre o mesmo</strong> independentemente da linha ou coluna escolhida. Ambas as somas produzem \(\det(A)\).
+            </div>
+            <div class="three-col anim d3">
+                <div class="card green">
+                    <h4>✅ Estratégia Ótima</h4>
+                    Escolha sempre a linha ou coluna com <strong>mais zeros</strong>. Cada zero elimina um cofator inteiro — menos determinantes \((n{-}1)\times(n{-}1)\) a calcular!
+                </div>
+                <div class="card blue">
+                    <h4>🔄 Recursividade</h4>
+                    Cada cofator exige \(\det\) de uma submatriz \((n{-}1)\times(n{-}1)\). Para \(n=4\), gera determinantes \(3\times3\) resolvíveis por Sarrus.
+                </div>
+                <div class="card">
+                    <h4>🔗 Conexão com Sarrus</h4>
+                    Para \(n=3\), o desenvolvimento pela linha 1 produz exatamente os mesmos termos da Regra de Sarrus — Laplace é a <strong>generalização</strong>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 5 — LAPLACE 3×3 ══════ -->
+<div class="slide" id="slide-5">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Laplace</div>
+            <h2>Exemplo — Laplace em \(3\times3\) passo a passo</h2>
+            <p>Explorando o zero estratégico na linha 2</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Calcule \(\det(C)\) pelo Teorema de Laplace:<br>
+                $$C = \begin{bmatrix} 2 & 1 & -1 \\ {\color{#FF8C00}3} & {\color{red}0} & {\color{#FF8C00}4} \\ -1 & 2 & 3 \end{bmatrix} \qquad \leftarrow \text{Linha 2 tem um } {\color{red}0}\text{: desenvolvemos por ela!}$$
+            </div>
+            <div class="two-col anim d2">
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Expansão pela Linha 2:</strong>
+                            $$\det(C) = 3\,C_{21} + {\color{red}0}\cdot C_{22} + 4\,C_{23} = 3\,C_{21} + 4\,C_{23}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Cofator \(C_{21}\) — sinal \((-1)^{2+1}=-1\):</strong>
+                            $$M_{21} = \begin{vmatrix} 1 & -1 \\ 2 & 3 \end{vmatrix} = 1{\cdot}3 - (-1){\cdot}2 = 5$$
+                            $$C_{21} = -1\cdot 5 = {\color{#e74c3c}{-5}}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Cofator \(C_{23}\) — sinal \((-1)^{2+3}=-1\):</strong>
+                            $$M_{23} = \begin{vmatrix} 2 & 1 \\ -1 & 2 \end{vmatrix} = 2{\cdot}2 - 1{\cdot}(-1) = 5$$
+                            $$C_{23} = -1\cdot 5 = {\color{#e74c3c}{-5}}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Resultado:</strong>
+                            $$\det(C) = 3(-5) + 4(-5) = -15-20 = {\color{#FF8C00}{-35}}$$
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Verificação via Sarrus</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p><span class="s-pos">Diag. (+):</span></p>
+                        <p>\(2(0)(3)+1(4)(-1)+(-1)(3)(2) = 0-4-6 = {\color{#27ae60}{-10}}\)</p>
+                        <p><span class="s-neg">Diag. (−):</span></p>
+                        <p>\((-1)(0)(-1)+2(4)(2)+1(3)(3) = 0+16+9 = {\color{#e74c3c}{25}}\)</p>
+                        <p>\(\det(C) = -10 - 25 = {\color{#FF8C00}{-35}}\) ✓</p>
+                    </div>
+                    <div class="box green" style="margin-top:12px;">
+                        ✅ O zero em \((2,2)\) eliminou um cofator — reduzimos de 3 para <strong>2</strong> os cálculos de \(\det\) \(2\times2\).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 6 — LAPLACE 4×4 ══════ -->
+<div class="slide" id="slide-6">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Laplace</div>
+            <h2>Laplace em \(4\times4\) — Explorando Zeros</h2>
+            <p>3 zeros em uma coluna → apenas <strong>1</strong> determinante \(3\times3\) a calcular</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Calcule \(\det(H)\):
+                $$H = \begin{bmatrix} 2 & 1 & {\color{red}0} & 3 \\ 4 & -1 & {\color{red}0} & 2 \\ 0 & 0 & {\color{#FF8C00}3} & 1 \\ 1 & 2 & {\color{red}0} & -1 \end{bmatrix} \qquad \leftarrow \text{Coluna 3: três zeros e um }{\color{#FF8C00}3}\text{ — desenvolvemos por ela!}$$
+            </div>
+            <div class="two-col anim d2">
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Expansão pela Coluna 3 — apenas o termo não-nulo:</strong>
+                            $$\det(H) = {\color{red}0}C_{13}+{\color{red}0}C_{23}+{\color{#FF8C00}3}C_{33}+{\color{red}0}C_{43} = 3\,C_{33}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Sinal de \(C_{33}\): \((-1)^{3+3}=(+1)\)</strong><br>
+                            Submatriz \(M_{33}\) = \(H\) sem linha 3 e sem coluna 3:
+                            $$M_{33} = \begin{vmatrix} 2 & 1 & 3 \\ 4 & -1 & 2 \\ 1 & 2 & -1 \end{vmatrix}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>\(\det(M_{33})\) via Sarrus:</strong>
+                            <div class="calc-block" style="margin-top:6px;">
+                                <p><span class="s-pos">(+):</span> \(2(-1)(-1)+1(2)(1)+3(4)(2)=2+2+24={\color{#27ae60}{28}}\)</p>
+                                <p><span class="s-neg">(−):</span> \(3(-1)(1)+2(2)(2)+1(4)(-1)=-3+8-4={\color{#e74c3c}{1}}\)</p>
+                                <p>\(\det(M_{33}) = 28 - 1 = {\color{#FF8C00}{27}}\)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Resultado:</strong>
+                            $$\det(H) = 3\cdot C_{33} = 3\cdot 27 = {\color{#FF8C00}{81}}$$
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="box">
+                        Sem zeros, Laplace numa \(4\times4\) exigiria <strong>4 determinantes</strong> \(3\times3\).<br><br>
+                        Os 3 zeros reduziram o trabalho para <span class="hi">apenas 1 determinante</span> \(3\times3\).
+                    </div>
+                    <div class="box blue">
+                        🏗️ <strong>Engenharia:</strong> matrizes de rigidez de treliças são <em>esparsas</em>. A estrutura esparsa torna Laplace viável na prática.
+                    </div>
+                    <div class="box green">
+                        💡 <strong>Dica:</strong> antes de calcular, identifique sempre a linha ou coluna com mais zeros — em provas, as matrizes são quase sempre projetadas assim!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 7 — MATRIZES TRIANGULARES ══════ -->
+<div class="slide" id="slide-7">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 1 · Determinantes</div>
+            <h2>Determinante de Matrizes Triangulares</h2>
+            <p>Propriedade P10 com demonstração via Laplace — base da Eliminação Gaussiana</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Propriedade P10 — Matriz Triangular Superior ou Inferior</div>
+                $$\det(A) \;=\; a_{11}\cdot a_{22}\cdot a_{33}\cdots a_{nn}$$
+                <div style="font-size:.88rem;color:#aaa;margin-top:6px;">produto dos elementos da diagonal principal</div>
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Demonstração (via Laplace)</div>
+                    <div class="box" style="margin-top:8px;line-height:1.9;">
+                        Numa triangular <strong>superior</strong>, a coluna 1 contém \(a_{11}\) e zeros abaixo.<br><br>
+                        Expandindo pela coluna 1:<br>
+                        \(\det(A) = a_{11}\cdot C_{11} + 0 + \cdots + 0 = a_{11}\cdot M_{11}\)<br><br>
+                        \(M_{11}\) é também triangular superior. Aplicando o mesmo argumento recursivamente, chegamos ao produto da diagonal. \(\blacksquare\)
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">Exemplo — Ordem 4</div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p>$$T = \begin{bmatrix} {\color{#FF8C00}3} & 1 & -2 & 5 \\ 0 & {\color{#FF8C00}-4} & 3 & 1 \\ 0 & 0 & {\color{#FF8C00}2} & -1 \\ 0 & 0 & 0 & {\color{#FF8C00}7} \end{bmatrix}$$</p>
+                        <p>$$\det(T) = {\color{#FF8C00}3}\cdot({\color{#FF8C00}{-4}})\cdot{\color{#FF8C00}2}\cdot{\color{#FF8C00}7} = {\color{#FF8C00}{-168}}$$</p>
+                    </div>
+                </div>
+            </div>
+            <div class="three-col anim d3">
+                <div class="card green">
+                    <h4>↗ Triangular Superior</h4>
+                    Todos os elementos <strong>abaixo</strong> da diagonal são zero. \(\det\) = produto da diagonal.
+                </div>
+                <div class="card blue">
+                    <h4>↙ Triangular Inferior</h4>
+                    Todos os elementos <strong>acima</strong> da diagonal são zero. Vale a mesma propriedade.
+                </div>
+                <div class="card">
+                    <h4>⚙️ Gauss usa isso!</h4>
+                    A Eliminação Gaussiana transforma \(A\) em triangular superior <em>preservando \(\det\)</em> via P4. Depois: só multiplicar a diagonal!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 8 — REGRA DE CRAMER — TEORIA ══════ -->
+<div class="slide" id="slide-8">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Regra de Cramer</div>
+            <h2>Regra de Cramer — Enunciado</h2>
+            <p>Resolução de sistemas lineares via razão de determinantes</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                <strong>Teorema de Cramer:</strong> dado \(Ax = b\) com \(A\) quadrada e \(\det(A)\neq 0\), a solução única é:
+                $$x_i = \dfrac{\det(A_i)}{\det(A)}, \qquad i = 1,2,\ldots,n$$
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">O que é a Matriz \(A_i\)?</div>
+                    <div class="box" style="margin-top:8px;line-height:1.9;">
+                        \(A_i\) é a matriz \(A\) com a <strong>coluna \(i\)</strong> substituída pelo vetor \(\mathbf{b}\):<br><br>
+                        $$A_1 = \begin{bmatrix} {\color{#FF8C00}b_1} & a_{12} & a_{13} \\ {\color{#FF8C00}b_2} & a_{22} & a_{23} \\ {\color{#FF8C00}b_3} & a_{32} & a_{33} \end{bmatrix}, \quad A_2 = \begin{bmatrix} a_{11} & {\color{#FF8C00}b_1} & a_{13} \\ a_{21} & {\color{#FF8C00}b_2} & a_{23} \\ a_{31} & {\color{#FF8C00}b_3} & a_{33} \end{bmatrix}$$
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="card green">
+                        <h4>✅ Quando usar Cramer</h4>
+                        Sistemas de pequena ordem (\(n\leq4\)), quando se quer isolar <em>uma variável específica</em> sem resolver o sistema todo, e para análise teórica de sensibilidade.
+                    </div>
+                    <div class="card red">
+                        <h4>⚠️ Quando evitar</h4>
+                        Para \(n\geq5\), Cramer exige \((n+1)\) determinantes de ordem \(n\) — custo \(\mathcal{O}(n!)\). Use <strong>Eliminação Gaussiana</strong> com custo \(\mathcal{O}(n^3)\).
+                    </div>
+                    <div class="card blue">
+                        <h4>🔗 Se \(\det(A)=0\)</h4>
+                        Cramer não se aplica: o sistema é <strong>indeterminado</strong> (infinitas soluções) ou <strong>impossível</strong> (sem solução).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 9 — CRAMER 2×2 ══════ -->
+<div class="slide" id="slide-9">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Regra de Cramer</div>
+            <h2>Cramer — Sistema \(2\times2\) Completo</h2>
+            <p>Passo a passo com verificação</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Resolva usando a Regra de Cramer:
+                $$2x + y = 5 \qquad \text{e} \qquad x - 3y = -4$$
+            </div>
+            <div class="two-col anim d2">
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Monte \(A\) e calcule \(\det(A)\):</strong>
+                            $$A = \begin{bmatrix} 2 & 1 \\ 1 & -3 \end{bmatrix}, \quad \mathbf{b} = \begin{bmatrix} 5 \\ -4 \end{bmatrix}$$
+                            $$\det(A) = 2(-3)-1(1) = -6-1 = {\color{#FF8C00}{-7}}$$
+                            <span class="grn">→ \(\det(A)\neq0\) — solução única existe.</span>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Monte \(A_1\) (coluna 1 ← \(\mathbf{b}\)):</strong>
+                            $$A_1 = \begin{bmatrix} {\color{#FF8C00}5} & 1 \\ {\color{#FF8C00}-4} & -3 \end{bmatrix}, \quad \det(A_1) = 5(-3)-1(-4) = -11$$
+                            $$x = \dfrac{\det(A_1)}{\det(A)} = \dfrac{-11}{-7} = {\color{#27ae60}{\dfrac{11}{7}}}$$
+                        </div>
+                    </div>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Monte \(A_2\) (coluna 2 ← \(\mathbf{b}\)):</strong>
+                            $$A_2 = \begin{bmatrix} 2 & {\color{#FF8C00}5} \\ 1 & {\color{#FF8C00}-4} \end{bmatrix}, \quad \det(A_2) = 2(-4)-5(1) = -13$$
+                            $$y = \dfrac{\det(A_2)}{\det(A)} = \dfrac{-13}{-7} = {\color{#27ae60}{\dfrac{13}{7}}}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Verificação:</strong>
+                            <div class="calc-block" style="margin-top:6px;">
+                                <p>Eq. 1: \(2\cdot\tfrac{11}{7}+\tfrac{13}{7}=\tfrac{22+13}{7}=\tfrac{35}{7}={\color{#27ae60}5}\) ✓</p>
+                                <p>Eq. 2: \(\tfrac{11}{7}-3\cdot\tfrac{13}{7}=\tfrac{11-39}{7}=\tfrac{-28}{7}={\color{#27ae60}{-4}}\) ✓</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 10 — CRAMER 3×3 ══════ -->
+<div class="slide" id="slide-10">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Regra de Cramer</div>
+            <h2>Cramer — Sistema \(3\times3\) Completo</h2>
+            <p>Solução inteira — todos os determinantes via Sarrus</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Resolva via Cramer: \(\quad x+y+z=6 \;\cdot\; 2x-y+z=3 \;\cdot\; x+2y-z=2\)
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="calc-block">
+                        <p>$$A = \begin{bmatrix}1&1&1\\2&-1&1\\1&2&-1\end{bmatrix}, \quad \mathbf{b}=\begin{bmatrix}6\\3\\2\end{bmatrix}$$</p>
+                        <p><span class="s-pos">(+):</span> \(1(-1)(-1)+1(1)(1)+1(2)(2)=1+1+4=6\)</p>
+                        <p><span class="s-neg">(−):</span> \(1(-1)(1)+1(1)(2)+1(2)(-1)=-1+2-2=-1\)</p>
+                        <p>\(\det(A)=6-(-1)={\color{#FF8C00}7}\)</p>
+                    </div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p>$$A_1=\begin{bmatrix}{\color{#FF8C00}6}&1&1\\{\color{#FF8C00}3}&-1&1\\{\color{#FF8C00}2}&2&-1\end{bmatrix}$$</p>
+                        <p><span class="s-pos">(+):</span> \(6(-1)(-1)+1(1)(2)+1(3)(2)=6+2+6=14\)</p>
+                        <p><span class="s-neg">(−):</span> \(1(-1)(2)+6(1)(2)+1(3)(-1)=-2+12-3=7\)</p>
+                        <p>\(\det(A_1)=14-7=7 \;\Rightarrow\; x=\tfrac{7}{7}={\color{#FF8C00}1}\)</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="calc-block">
+                        <p>$$A_2=\begin{bmatrix}1&{\color{#FF8C00}6}&1\\2&{\color{#FF8C00}3}&1\\1&{\color{#FF8C00}2}&-1\end{bmatrix}$$</p>
+                        <p><span class="s-pos">(+):</span> \(1(3)(-1)+6(1)(1)+1(2)(2)=-3+6+4=7\)</p>
+                        <p><span class="s-neg">(−):</span> \(1(3)(1)+1(1)(2)+6(2)(-1)=3+2-12=-7\)</p>
+                        <p>\(\det(A_2)=7-(-7)=14 \;\Rightarrow\; y=\tfrac{14}{7}={\color{#FF8C00}2}\)</p>
+                    </div>
+                    <div class="calc-block" style="margin-top:8px;">
+                        <p>$$A_3=\begin{bmatrix}1&1&{\color{#FF8C00}6}\\2&-1&{\color{#FF8C00}3}\\1&2&{\color{#FF8C00}2}\end{bmatrix}$$</p>
+                        <p><span class="s-pos">(+):</span> \(1(-1)(2)+1(3)(1)+6(2)(2)=-2+3+24=25\)</p>
+                        <p><span class="s-neg">(−):</span> \(6(-1)(1)+1(3)(2)+1(2)(2)=-6+6+4=4\)</p>
+                        <p>\(\det(A_3)=25-4=21 \;\Rightarrow\; z=\tfrac{21}{7}={\color{#FF8C00}3}\)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="box green anim d3" style="text-align:center;">
+                ✅ <strong>Solução:</strong> \(x=1,\quad y=2,\quad z=3\)
+                &emsp;|&emsp; Verificação: \(1+2+3=6\) ✓ &nbsp; \(2-2+3=3\) ✓ &nbsp; \(1+4-3=2\) ✓
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 11 — CRAMER vs GAUSSIANA ══════ -->
+<div class="slide" id="slide-11">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Análise Comparativa</div>
+            <h2>Cramer vs Eliminação Gaussiana</h2>
+            <p>Quando cada método é a escolha certa?</p>
+        </div>
+        <div class="slide-body">
+            <div class="anim d1">
+                <table class="tbl">
+                    <thead><tr><th>Critério</th><th>Regra de Cramer</th><th>Eliminação Gaussiana</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Custo computacional</strong></td><td><span class="red">\(\mathcal{O}(n!)\) — exponencial</span></td><td><span class="grn">\(\mathcal{O}(n^3)\) — polinomial</span></td></tr>
+                        <tr><td><strong>Tamanho ideal</strong></td><td>\(n\leq4\) (ideal \(n\leq3\))</td><td>Qualquer \(n\) — padrão industrial</td></tr>
+                        <tr><td><strong>Exige</strong></td><td>\(\det(A)\neq0\)</td><td>Funciona mesmo com \(\det(A)=0\)</td></tr>
+                        <tr><td><strong>Isola uma variável</strong></td><td><span class="grn">Sim! Calcula \(x_i\) sem as demais</span></td><td>Resolve o sistema completo</td></tr>
+                        <tr><td><strong>Análise de sensibilidade</strong></td><td><span class="grn">Excelente — fórmula analítica</span></td><td>Requer re-execução completa</td></tr>
+                        <tr><td><strong>Uso em engenharia</strong></td><td>Análise estrutural 2D, provas</td><td>MEF, análise numérica, software</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="two-col anim d2">
+                <div class="box green">
+                    🏆 <strong>Cramer brilha quando:</strong> você precisa de <em>uma</em> variável específica — ex.: calcular a reação de apoio \(R_A\) sem resolver o sistema todo. A fórmula analítica permite estudar como \(x_i\) varia com os parâmetros.
+                </div>
+                <div class="box blue">
+                    🏗️ <strong>Gaussiana domina quando:</strong> o sistema tem \(n\geq5\) equações, é esparso, ou quando se usa software (Python, MATLAB, Julia). O MEF gera sistemas com milhares de equações — Gauss/LU são essenciais.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 12 — RESUMO + PRÓXIMA AULA ══════ -->
+<div class="slide" id="slide-12">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Encerramento</div>
+            <h2>Resumo da Aula 02</h2>
+            <p>O que aprendemos hoje — e o que vem a seguir</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div>
+                    <div class="section-title">Conquistas de Hoje ✅</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="check">Menores \(M_{ij}\) e cofatores \(C_{ij}=(-1)^{i+j}M_{ij}\)</li>
+                        <li class="check">Padrão de sinais — tabuleiro de xadrez</li>
+                        <li class="check">Teorema de Laplace — expansão por linha/coluna</li>
+                        <li class="check">Estratégia: linha/coluna com mais zeros</li>
+                        <li class="check">Exemplo completo de \(4\times4\) com zero estratégico</li>
+                        <li class="check">Triangulares: \(\det\) = produto da diagonal (P10 demonstrada)</li>
+                        <li class="check">Regra de Cramer — teoria e dois exemplos completos</li>
+                        <li class="check">Comparação Cramer × Gaussiana</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="section-title">Próxima Aula — 12/05 📅</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="key">Matriz Adjunta e Inversa via cofatores</li>
+                        <li class="key">\(A^{-1} = \dfrac{1}{\det(A)}\,\text{adj}(A)\)</li>
+                        <li class="key">Propriedades de \(A^{-1}\)</li>
+                        <li class="key">Método de Gauss-Jordan para inversão</li>
+                        <li class="key">Aplicação: resolução de \(Ax=b\) por inversão</li>
+                    </ul>
+                    <div class="box" style="margin-top:14px;">
+                        📚 <strong>Tarefa:</strong> resolva por Cramer:<br>
+                        (a) \(3x+2y=7\;;\;x-y=1\)<br>
+                        (b) \(x+y+z=0\;;\;x-y+z=2\;;\;x+y-z=4\)
+                    </div>
+                </div>
+            </div>
+            <div class="box green anim d2" style="text-align:center;">
+                🎯 <strong>Visão do Bloco 1:</strong> Determinantes (Aulas 01–02) + Matriz Inversa (Aula 03) formam o núcleo algébrico que sustenta Transformações Lineares, Autovalores e toda a aplicação em Engenharia Civil.
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="progress-bar" id="progress"></div>
+<div class="slide-counter">Slide <span id="cur">1</span> / <span id="tot"></span></div>
+<div class="nav-btn" id="btn-prev">&#8592;</div>
+<div class="nav-btn" id="btn-next">&#8594;</div>
+
+<script>
+    // ── SLIDE SYSTEM ──
+    const slides = document.querySelectorAll('.slide');
+    const total  = slides.length;
+    let   cur    = 0;
+    document.getElementById('tot').textContent = total;
+
+    function goTo(n) {
+        slides[cur].classList.remove('active');
+        cur = (n + total) % total;
+        slides[cur].classList.add('active');
+        document.getElementById('cur').textContent = cur + 1;
+        document.getElementById('progress').style.width = ((cur+1)/total*100) + '%';
+    }
+    document.getElementById('btn-next').addEventListener('click', () => goTo(cur+1));
+    document.getElementById('btn-prev').addEventListener('click', () => goTo(cur-1));
+    document.addEventListener('keydown', e => {
+        if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') goTo(cur+1);
+        if (e.key==='ArrowLeft' ||e.key==='ArrowUp')                  goTo(cur-1);
+    });
+    let tx = 0;
+    document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+    document.addEventListener('touchend',   e => {
+        const dx = e.changedTouches[0].clientX - tx;
+        if (Math.abs(dx) > 40) goTo(cur + (dx < 0 ? 1 : -1));
+    });
+    document.getElementById('progress').style.width = (1/total*100) + '%';
+
+    // ── KaTeX — renderiza toda a matemática da página ──
+    renderMathInElement(document.body, {
+        delimiters: [
+            { left: '$$',  right: '$$',  display: true  },
+            { left: '\\[', right: '\\]', display: true  },
+            { left: '$',   right: '$',   display: false },
+            { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+    });
+</script>
+</body>
+</html>
