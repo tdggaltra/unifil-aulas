@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 02 — Vetores: Soma, Média, Máx e Mín | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --vec-blue:      #0369a1;
+            --vec-green:     #059669;
+            --vec-purple:    #7c3aed;
+            --vec-teal:      #0d9488;
+            --lang-ptg:      #7c3aed;
+            --lang-c:        #0550ae;
+            --lang-java:     #b45309;
+            --code-bg:       #1e2130;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2e1a 0%, #1e1a2e 100%);
+            overflow: hidden; color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0; transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev   { transform: translateX(-100%); }
+
+        .slide-content {
+            background: white; width: 90%; max-width: 1200px; height: 90%;
+            margin: auto; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* HEADER */
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 26px 50px; color: white; flex-shrink: 0; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -18px; left: 0; right: 0; height: 36px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.1rem; margin-bottom: 6px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.6rem; margin-bottom: 6px; font-weight: 600; }
+        .slide-header p  { font-size: 1rem; opacity: 0.95; }
+
+        /* BODY */
+        .slide-body { flex: 1; padding: 50px 50px 30px; overflow-y: auto; }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track  { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb  { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        /* LAYOUTS */
+        .two-col   { display: grid; grid-template-columns: 1fr 1fr;     gap: 26px; margin: 20px 0; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 20px 0; }
+
+        /* BOX */
+        .box {
+            background: var(--unifil-light); padding: 22px; border-radius: 14px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+        }
+        .box h3 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.2rem; }
+        .box ul { list-style: none; padding: 0; }
+        .box li { padding: 7px 0 7px 26px; position: relative; font-size: 0.98rem; line-height: 1.6; }
+        .box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; }
+        .box.blue   { border-left-color: var(--lang-c);    } .box.blue h3   { color: var(--lang-c);    }
+        .box.green  { border-left-color: var(--vec-green); } .box.green h3  { color: var(--vec-green); }
+        .box.purple { border-left-color: var(--lang-ptg);  } .box.purple h3 { color: var(--lang-ptg);  }
+        .box.teal   { border-left-color: var(--vec-teal);  } .box.teal h3   { color: var(--vec-teal);  }
+        .box.amber  { border-left-color: var(--lang-java); } .box.amber h3  { color: var(--lang-java); }
+        .box.red    { border-left-color: #dc2626;          } .box.red h3    { color: #dc2626;          }
+
+        /* HIGHLIGHT */
+        .hi {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 22px; border-radius: 14px; margin: 18px 0;
+            animation: fadeInUp 0.55s ease-out 0.2s forwards; opacity: 0;
+        }
+        .hi h3 { margin-bottom: 9px; font-size: 1.35rem; }
+        .hi p, .hi li { font-size: 1rem; line-height: 1.7; }
+
+        /* BIG IDEA */
+        .big {
+            background: linear-gradient(135deg, var(--lang-c) 0%, #0d4b8c 100%);
+            color: white; padding: 28px; border-radius: 20px;
+            font-size: 1.5rem; font-weight: 600; text-align: center; margin: 20px 0;
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(5,80,174,0.3); line-height: 1.5;
+        }
+
+        /* ANALOGY */
+        .yel {
+            background: #fff8e1; border: 3px solid #f59e0b;
+            border-radius: 14px; padding: 20px; margin: 18px 0;
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+        }
+        .yel h3 { color: #92400e; margin-bottom: 9px; font-size: 1.2rem; }
+        .yel p  { font-size: 0.98rem; line-height: 1.7; color: #78350f; }
+
+        /* CODE TABS */
+        .code-tabs {
+            margin: 16px 0; border-radius: 14px; overflow: hidden;
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .code-tabs-nav { display: flex; background: #1a1a2e; }
+        .code-tab-btn {
+            padding: 10px 20px; border: none; cursor: pointer;
+            font-family: 'Courier New', monospace; font-size: 0.88rem; font-weight: 700;
+            transition: all 0.2s; flex: 1;
+        }
+        .code-tab-btn.ptg  { background: #2d1b69; color: #c4b5fd; }
+        .code-tab-btn.c    { background: #0c2a4f; color: #93c5fd; }
+        .code-tab-btn.java { background: #3d1c02; color: #fcd34d; }
+        .code-tab-btn.active.ptg  { background: var(--lang-ptg); color: white; }
+        .code-tab-btn.active.c    { background: var(--lang-c);   color: white; }
+        .code-tab-btn.active.java { background: var(--lang-java);color: white; }
+        .code-tab-panel {
+            background: var(--code-bg); display: none;
+            padding: 18px 22px; font-family: 'Courier New', monospace;
+            font-size: 0.84rem; line-height: 1.8; color: var(--code-text);
+            overflow-x: auto; white-space: pre;
+        }
+        .code-tab-panel.active { display: block; }
+        .kw  { color: #c678dd; } .fn  { color: #61afef; }
+        .str { color: #98c379; } .cm  { color: #5c6370; font-style: italic; }
+        .nm  { color: #d19a66; } .tp  { color: #e5c07b; }
+        .op  { color: #56b6c2; } .ret { color: #e06c75; }
+
+        /* ALGO CARD — pseudocode */
+        .algo-card {
+            background: #0f172a; border-radius: 14px; padding: 20px 24px;
+            margin: 16px 0; animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+            border-top: 4px solid var(--unifil-orange);
+        }
+        .algo-card .algo-title {
+            color: var(--unifil-orange); font-size: 1rem; font-weight: 700;
+            margin-bottom: 12px; font-family: 'Courier New', monospace;
+        }
+        .algo-card pre {
+            font-family: 'Courier New', monospace; font-size: 0.84rem;
+            line-height: 1.9; color: #e2e8f0; white-space: pre-wrap;
+        }
+        .al-kw   { color: #c4b5fd; font-weight: 700; }
+        .al-var  { color: #86efac; }
+        .al-nm   { color: #fde68a; }
+        .al-cm   { color: #6b7280; font-style: italic; }
+        .al-op   { color: #7dd3fc; }
+
+        /* STAT CARD */
+        .stat-card {
+            text-align: center; padding: 18px; background: white;
+            border-radius: 14px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 2.2rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 6px; }
+        .stat-card .label  { font-size: 0.9rem; color: var(--unifil-gray); font-weight: 500; }
+
+        /* CARD */
+        .card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 18px; border-radius: 12px; margin: 12px 0;
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+            transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-3px); }
+        .card h4 { color: var(--unifil-orange); margin-bottom: 8px; font-size: 1.1rem; }
+
+        /* TRACE TABLE */
+        .trace-tbl {
+            width: 100%; border-collapse: collapse; margin: 14px 0;
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+            font-size: 0.9rem;
+        }
+        .trace-tbl th {
+            background: linear-gradient(135deg, var(--unifil-orange), var(--unifil-accent));
+            color: white; padding: 11px 14px; text-align: center;
+        }
+        .trace-tbl td { padding: 9px 14px; border-bottom: 1px solid #eee; text-align: center; vertical-align: middle; }
+        .trace-tbl tr:last-child td { border-bottom: none; }
+        .trace-tbl tr:nth-child(even) { background: #f9fafb; }
+        .trace-tbl tr.res-row td { background: #fff8f0; font-weight: 700; }
+        .trace-tbl .chg { background: #dbeafe; font-weight: 700; color: var(--lang-c); }
+
+        /* LANG BADGE */
+        .lang-badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; font-family: 'Courier New', monospace; margin: 2px; }
+        .lb-ptg  { background: #ede9fe; color: #5b21b6; }
+        .lb-c    { background: #dbeafe; color: #1e40af; }
+        .lb-java { background: #fef3c7; color: #92400e; }
+
+        /* TIMELINE */
+        .tl { position: relative; padding-left: 36px; margin: 18px 0; }
+        .tl::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 3px; background: var(--unifil-orange); }
+        .tl-item { position: relative; padding: 12px 0; animation: fadeInLeft 0.55s ease-out forwards; opacity: 0; }
+        .tl-item::before { content: ''; position: absolute; left: -30px; top: 18px; width: 11px; height: 11px; border-radius: 50%; background: var(--unifil-orange); border: 3px solid white; box-shadow: 0 0 0 3px var(--unifil-orange); }
+        .tl-item h4 { color: var(--unifil-orange); font-size: 1.15rem; margin-bottom: 5px; }
+
+        /* QUIZ */
+        .quiz {
+            background: var(--unifil-light); border-radius: 14px; padding: 18px;
+            margin: 12px 0; border-left: 5px solid var(--lang-c);
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+        }
+        .quiz p.q { font-size: 1.02rem; font-weight: 600; color: var(--lang-c); margin-bottom: 9px; line-height: 1.55; }
+        .quiz .opts label { display: flex; align-items: flex-start; gap: 10px; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.93rem; line-height: 1.5; margin: 3px 0; transition: background 0.2s; }
+        .quiz .opts label:hover { background: #dbeafe; }
+        .quiz .opts input[type=radio] { margin-top: 3px; accent-color: var(--lang-c); flex-shrink: 0; }
+        .fb { display: none; margin-top: 8px; padding: 9px 14px; border-radius: 8px; font-size: 0.93rem; font-weight: 600; }
+        .fb.ok { background: #d1fae5; color: #065f46; display: block; }
+        .fb.no { background: #fee2e2; color: #991b1b; display: block; }
+        .chk-btn { background: var(--lang-c); color: white; border: none; padding: 7px 18px; border-radius: 16px; cursor: pointer; font-size: 0.88rem; font-weight: 600; margin-top: 8px; transition: all 0.3s; }
+        .chk-btn:hover { background: #0553b1; transform: translateY(-2px); }
+
+        /* VEC VISUAL */
+        .vec-vis {
+            display: flex; align-items: flex-end; gap: 10px;
+            padding: 16px 20px; background: var(--code-bg);
+            border-radius: 12px; margin: 14px 0;
+            animation: fadeInUp 0.55s ease-out forwards; opacity: 0;
+        }
+        .vec-bar {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+        }
+        .vec-bar .bar-val {
+            background: var(--lang-c); color: white;
+            font-family: 'Courier New', monospace; font-size: 0.88rem; font-weight: 700;
+            padding: 6px 0; width: 52px; text-align: center; border-radius: 6px 6px 0 0;
+            transition: height 0.4s;
+        }
+        .vec-bar .bar-idx { color: #6b7280; font-family: 'Courier New', monospace; font-size: 0.78rem; }
+        .vec-bar.max-bar .bar-val { background: #dc2626; }
+        .vec-bar.min-bar .bar-val { background: var(--vec-green); }
+
+        /* NAVIGATION */
+        .navigation { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; align-items: center; background: rgba(255,255,255,0.97); padding: 13px 26px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; }
+        .nav-btn { background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.93rem; font-weight: 600; transition: all 0.3s; }
+        .nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 72px; text-align: center; font-size: 1rem; }
+        .progress-bar  { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.15); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange), var(--vec-green)); transition: width 0.4s; }
+        .slide-dots { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 1001; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: var(--unifil-orange); transform: scale(1.5); }
+
+        @keyframes fadeInUp   { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeInLeft { from { opacity:0; transform:translateX(-24px);} to { opacity:1; transform:translateX(0); } }
+        .d1{animation-delay:.10s} .d2{animation-delay:.20s} .d3{animation-delay:.30s}
+        .d4{animation-delay:.40s} .d5{animation-delay:.50s} .d6{animation-delay:.60s}
+
+        ic { background:#f0f0f0; padding:1px 7px; border-radius:5px; font-family:'Courier New',monospace; font-size:0.9em; color:#e11d48; }
+        ic.wh { background:rgba(255,255,255,0.2); color:white; }
+    </style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="slide-dots" id="slideDots"></div>
+<div class="presentation">
+
+<!-- ═══ SLIDE 01 — CAPA ═══ -->
+<div class="slide active">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h1>Lógica de Programação e Algoritmos</h1>
+            <p>Aula 02 — Vetores: Soma, Média, Máximo e Mínimo · 06/05/2026</p>
+        </div>
+        <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+            <div style="font-size:5.5rem;margin-bottom:18px;">📊</div>
+            <h2 style="font-size:2.3rem;color:var(--unifil-orange);margin-bottom:14px;">
+                Calculando sobre coleções de dados!
+            </h2>
+            <p style="font-size:1.15rem;color:var(--unifil-gray);max-width:820px;margin-bottom:30px;line-height:1.7;">
+                Com o conceito de vetor em mãos, hoje você vai aprender os
+                <strong>quatro algoritmos clássicos</strong> de processamento:
+                <strong>soma, média, máximo e mínimo</strong> — em Portugol, C e Java,
+                com trace manual e exercícios práticos.
+            </p>
+            <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;">
+                <div class="stat-card" style="min-width:130px;border-color:var(--vec-blue);"><div class="number" style="color:var(--vec-blue);">Σ</div><div class="label">Soma</div></div>
+                <div class="stat-card" style="min-width:130px;animation-delay:.1s;border-color:var(--vec-teal);"><div class="number" style="color:var(--vec-teal);">x̄</div><div class="label">Média</div></div>
+                <div class="stat-card" style="min-width:130px;animation-delay:.2s;border-color:#dc2626;"><div class="number" style="color:#dc2626;">↑</div><div class="label">Máximo</div></div>
+                <div class="stat-card" style="min-width:130px;animation-delay:.3s;border-color:var(--vec-green);"><div class="number" style="color:var(--vec-green);">↓</div><div class="label">Mínimo</div></div>
+            </div>
+            <div style="margin-top:34px;font-size:1.02rem;color:var(--unifil-gray);line-height:1.9;">
+                <p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; tiago.galvao@unifil.br</p>
+                <p><strong>Data:</strong> Quarta-feira, 06 de Maio de 2026 &nbsp;|&nbsp; <strong>Unidade I — Aula 02</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 02 — REVISÃO AULA 01 ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🔁 Revisão Rápida — Aula 01</h2>
+            <p>Consolidando antes de avançar</p>
+        </div>
+        <div class="slide-body">
+            <div style="background:var(--unifil-light);border-radius:14px;padding:16px 22px;margin-bottom:16px;animation:fadeInUp 0.55s ease-out forwards;opacity:0;border-left:5px solid var(--unifil-orange);">
+                <p style="font-weight:700;color:var(--unifil-orange);font-size:1.05rem;margin-bottom:10px;">⚡ Quiz Relâmpago — Aula 01</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.92rem;">
+                    <div style="background:white;padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;">
+                        <span style="color:var(--lang-c);font-weight:700;">Q: </span>O primeiro índice válido de qualquer vetor é?
+                        <p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block;">✅ 0 (zero)</p>
+                    </div>
+                    <div style="background:white;padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;">
+                        <span style="color:var(--lang-c);font-weight:700;">Q: </span>Como declarar vetor de 6 floats em C?
+                        <p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block;">✅ float v[6];</p>
+                    </div>
+                    <div style="background:white;padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;">
+                        <span style="color:var(--lang-c);font-weight:700;">Q: </span>Por que usar <ic>&v[i]</ic> no scanf?
+                        <p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block;">✅ Passa o endereço de memória</p>
+                    </div>
+                    <div style="background:white;padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;">
+                        <span style="color:var(--lang-c);font-weight:700;">Q: </span>Em Java, como saber o tamanho do array <ic>v</ic>?
+                        <p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block;">✅ v.length</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="two-col" style="margin-top:10px;gap:22px;">
+                <div class="box">
+                    <h3>📌 Recapitulando o padrão de percurso</h3>
+                    <ul>
+                        <li>Vetor de N elementos → índices válidos: <strong>0 até N-1</strong></li>
+                        <li>Laço padrão: <ic>for(i=0; i &lt; N; i++)</ic></li>
+                        <li>Acesso ao elemento: <ic>v[i]</ic></li>
+                        <li>Em C: leitura com <ic>scanf("%tipo", &v[i])</ic></li>
+                        <li>Elementos em memória contígua → acesso O(1)</li>
+                    </ul>
+                </div>
+                <div class="yel d1" style="margin:0;">
+                    <h3>🎯 Objetivo desta aula</h3>
+                    <p>Dado um vetor já preenchido com N valores, implementar quatro algoritmos fundamentais: <strong>soma total</strong>, <strong>média aritmética</strong>, <strong>maior valor</strong> (máximo) e <strong>menor valor</strong> (mínimo) — nas três linguagens com trace completo.</p>
+                </div>
+            </div>
+
+            <!-- Mini visualização do vetor de entrada -->
+            <div class="vec-vis d2">
+                <span style="color:#a6adc8;font-family:'Courier New',monospace;font-size:0.85rem;flex-shrink:0;">vetor v[]&nbsp;&nbsp;</span>
+                <div class="vec-bar"><div class="vec-bar bar-val" style="background:#0550ae;">4</div><div class="bar-idx">[0]</div></div>
+                <div class="vec-bar"><div class="vec-bar bar-val" style="background:#0550ae;">9</div><div class="bar-idx">[1]</div></div>
+                <div class="vec-bar max-bar"><div class="bar-val">12</div><div class="bar-idx">[2]</div></div>
+                <div class="vec-bar"><div class="vec-bar bar-val" style="background:#0550ae;">7</div><div class="bar-idx">[3]</div></div>
+                <div class="vec-bar min-bar"><div class="bar-val">2</div><div class="bar-idx">[4]</div></div>
+                <div class="vec-bar"><div class="vec-bar bar-val" style="background:#0550ae;">6</div><div class="bar-idx">[5]</div></div>
+                <div style="margin-left:16px;color:#6b7280;font-size:0.82rem;line-height:1.8;">
+                    <span style="color:#dc2626;font-weight:700;">■ máx = 12</span> (índice 2)<br>
+                    <span style="color:var(--vec-green);font-weight:700;">■ mín = 2</span> (índice 4)<br>
+                    soma = 40 · média = 6.67
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 03 — ALGORITMO DE SOMA ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>Σ Algoritmo de Soma</h2>
+            <p>Acumulando valores com um único percurso</p>
+        </div>
+        <div class="slide-body">
+            <div class="algo-card">
+                <div class="algo-title">📐 Pseudocódigo — Soma de vetor</div>
+                <pre><span class="al-cm">// Entrada: vetor v com N elementos inteiros</span>
+<span class="al-cm">// Saída: soma de todos os elementos</span>
+<span class="al-var">soma</span> ← <span class="al-nm">0</span>                       <span class="al-cm">// acumulador inicia em zero</span>
+<span class="al-kw">PARA</span> <span class="al-var">i</span> <span class="al-kw">DE</span> <span class="al-nm">0</span> <span class="al-kw">ATÉ</span> N<span class="al-op">-</span><span class="al-nm">1</span> <span class="al-kw">FAÇA</span>
+    <span class="al-var">soma</span> ← <span class="al-var">soma</span> <span class="al-op">+</span> v[<span class="al-var">i</span>]        <span class="al-cm">// acumula cada elemento</span>
+<span class="al-kw">FIM-PARA</span>
+<span class="al-kw">ESCREVA</span> "Soma = ", <span class="al-var">soma</span></pre>
+            </div>
+
+            <div class="code-tabs d1">
+                <div class="code-tabs-nav">
+                    <button class="code-tab-btn ptg active" onclick="switchTab(this,'ptg','t-soma')">🟣 Portugol</button>
+                    <button class="code-tab-btn c"          onclick="switchTab(this,'c',  't-soma')">🔵 Linguagem C</button>
+                    <button class="code-tab-btn java"       onclick="switchTab(this,'java','t-soma')">🟡 Java</button>
+                </div>
+                <div class="code-tab-panel active" id="t-soma-ptg">
+<span class="kw">programa</span> {
+    <span class="kw">funcao</span> <span class="fn">inicio</span>() {
+        <span class="tp">inteiro</span> N = <span class="nm">6</span>
+        <span class="tp">inteiro</span> v[<span class="nm">6</span>] = {<span class="nm">4</span>, <span class="nm">9</span>, <span class="nm">12</span>, <span class="nm">7</span>, <span class="nm">2</span>, <span class="nm">6</span>}
+        <span class="tp">inteiro</span> soma = <span class="nm">0</span>
+
+        <span class="kw">para</span> (<span class="tp">inteiro</span> i = <span class="nm">0</span>; i &lt; N; i++) {
+            soma = soma + v[i]             <span class="cm">// acumula</span>
+        }
+
+        <span class="fn">escreva</span>(<span class="str">"Soma = "</span> + soma)        <span class="cm">// Soma = 40</span>
+    }
+}
+                </div>
+                <div class="code-tab-panel" id="t-soma-c">
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#define</span> N <span class="nm">6</span>
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">int</span> v[N] = {<span class="nm">4</span>, <span class="nm">9</span>, <span class="nm">12</span>, <span class="nm">7</span>, <span class="nm">2</span>, <span class="nm">6</span>};
+    <span class="tp">int</span> soma = <span class="nm">0</span>;
+
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; N; i++) {
+        soma += v[i];                   <span class="cm">// soma += v[i] ≡ soma = soma + v[i]</span>
+    }
+
+    <span class="fn">printf</span>(<span class="str">"Soma = %d\n"</span>, soma);      <span class="cm">// Soma = 40</span>
+    <span class="kw">return</span> <span class="nm">0</span>;
+}
+                </div>
+                <div class="code-tab-panel" id="t-soma-java">
+<span class="kw">public class</span> <span class="tp">Soma</span> {
+    <span class="kw">public static void</span> <span class="fn">main</span>(<span class="tp">String</span>[] args) {
+        <span class="tp">int</span>[] v = {<span class="nm">4</span>, <span class="nm">9</span>, <span class="nm">12</span>, <span class="nm">7</span>, <span class="nm">2</span>, <span class="nm">6</span>};
+        <span class="tp">int</span> soma = <span class="nm">0</span>;
+
+        <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; v.length; i++) {
+            soma += v[i];
+        }
+
+        <span class="cm">// alternativa moderna: for-each</span>
+        <span class="tp">int</span> soma2 = <span class="nm">0</span>;
+        <span class="kw">for</span> (<span class="tp">int</span> x : v) soma2 += x;
+
+        <span class="tp">System</span>.out.println(<span class="str">"Soma = "</span> + soma);  <span class="cm">// 40</span>
+    }
+}
+                </div>
+            </div>
+
+            <div class="hi d2" style="padding:14px 22px;">
+                <h3>💡 Ponto-chave: o acumulador</h3>
+                <p style="margin-top:6px;font-size:0.97rem;">O acumulador <ic style="background:rgba(255,255,255,0.2);color:white;">soma</ic> <strong>deve ser inicializado com zero</strong> antes do laço. Se não for inicializado, conterá lixo de memória em C — e a soma será incorreta. Em Java e Portugol o compilador avisa, em C não.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 04 — ALGORITMO DE MÉDIA ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>x̄ Algoritmo de Média Aritmética</h2>
+            <p>Soma dividida pela quantidade — e o cuidado com a divisão inteira</p>
+        </div>
+        <div class="slide-body">
+            <div class="big" style="font-size:1.4rem;padding:22px;">
+                Média = Soma de todos os elementos / Quantidade de elementos &nbsp;→&nbsp; <strong>x̄ = Σv[i] / N</strong>
+            </div>
+
+            <div class="two-col" style="gap:20px;margin-top:12px;">
+                <div>
+                    <div class="algo-card" style="margin-top:0;">
+                        <div class="algo-title">📐 Pseudocódigo — Média</div>
+                        <pre><span class="al-var">soma</span> ← <span class="al-nm">0</span>
+<span class="al-kw">PARA</span> <span class="al-var">i</span> <span class="al-kw">DE</span> <span class="al-nm">0</span> <span class="al-kw">ATÉ</span> N<span class="al-op">-</span><span class="al-nm">1</span> <span class="al-kw">FAÇA</span>
+    <span class="al-var">soma</span> ← <span class="al-var">soma</span> <span class="al-op">+</span> v[<span class="al-var">i</span>]
+<span class="al-kw">FIM-PARA</span>
+<span class="al-var">media</span> ← <span class="al-var">soma</span> / N      <span class="al-cm">// atenção ao tipo!</span>
+<span class="al-kw">ESCREVA</span> "Média = ", <span class="al-var">media</span></pre>
+                    </div>
+
+                    <div class="box red d1" style="margin-top:14px;">
+                        <h3>⚠️ Armadilha — Divisão Inteira em C</h3>
+                        <ul>
+                            <li>Se <ic>soma</ic> e <ic>N</ic> são <ic>int</ic>, a divisão <ic>soma/N</ic> é <strong>inteira</strong> — trunca o resultado!</li>
+                            <li><ic>40 / 6</ic> em inteiros = <strong>6</strong> (não 6.67!)</li>
+                            <li>Solução: usar <ic>float</ic> ou cast → <ic>(float)soma / N</ic></li>
+                            <li>Em Java o mesmo problema ocorre com <ic>int/int</ic></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="code-tabs d1">
+                        <div class="code-tabs-nav">
+                            <button class="code-tab-btn ptg active" onclick="switchTab(this,'ptg','t-med')">🟣 Portugol</button>
+                            <button class="code-tab-btn c"          onclick="switchTab(this,'c',  't-med')">🔵 C</button>
+                            <button class="code-tab-btn java"       onclick="switchTab(this,'java','t-med')">🟡 Java</button>
+                        </div>
+                        <div class="code-tab-panel active" id="t-med-ptg">
+<span class="tp">inteiro</span> v[<span class="nm">6</span>] = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>}
+<span class="tp">real</span> soma = <span class="nm">0</span>, media
+
+<span class="kw">para</span> (<span class="tp">inteiro</span> i = <span class="nm">0</span>; i &lt; <span class="nm">6</span>; i++) {
+    soma = soma + v[i]
+}
+
+media = soma / <span class="nm">6</span>
+<span class="fn">escreva</span>(<span class="str">"Média = "</span> + media)  <span class="cm">// 6.666...</span>
+                        </div>
+                        <div class="code-tab-panel" id="t-med-c">
+<span class="tp">int</span> v[N] = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>};
+<span class="tp">int</span>   soma = <span class="nm">0</span>;
+<span class="tp">float</span> media;
+
+<span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>; i&lt;N; i++) soma += v[i];
+
+<span class="cm">/* cast garante divisão real */</span>
+media = (<span class="tp">float</span>)soma / N;
+
+<span class="fn">printf</span>(<span class="str">"Média = %.2f\n"</span>, media);
+<span class="cm">// Média = 6.67</span>
+                        </div>
+                        <div class="code-tab-panel" id="t-med-java">
+<span class="tp">int</span>[] v = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>};
+<span class="tp">int</span>    soma = <span class="nm">0</span>;
+<span class="tp">double</span> media;
+
+<span class="kw">for</span>(<span class="tp">int</span> x : v) soma += x;
+
+<span class="cm">// cast para double antes da divisão</span>
+media = (<span class="tp">double</span>)soma / v.length;
+
+<span class="tp">System</span>.out.printf(<span class="str">"Média = %.2f%n"</span>, media);
+<span class="cm">// Média = 6.67</span>
+                        </div>
+                    </div>
+
+                    <!-- Trace resumido -->
+                    <table class="trace-tbl d2" style="margin-top:14px;">
+                        <thead><tr><th>i</th><th>v[i]</th><th>soma após</th></tr></thead>
+                        <tbody>
+                            <tr><td>—</td><td>—</td><td>0</td></tr>
+                            <tr><td>0</td><td>4</td><td>4</td></tr>
+                            <tr><td>1</td><td>9</td><td>13</td></tr>
+                            <tr><td>2</td><td>12</td><td>25</td></tr>
+                            <tr><td>3</td><td>7</td><td>32</td></tr>
+                            <tr><td>4</td><td>2</td><td>34</td></tr>
+                            <tr><td>5</td><td>6</td><td>40</td></tr>
+                            <tr class="res-row"><td colspan="2">média</td><td>(float)40/6 = <strong>6.67</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 05 — ALGORITMO DE MÁXIMO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>↑ Algoritmo do Maior Valor (Máximo)</h2>
+            <p>Percorrer e comparar — a estratégia do "campeão atual"</p>
+        </div>
+        <div class="slide-body">
+            <div class="yel" style="margin-top:4px;">
+                <h3>🏆 Estratégia: "Campeão Atual"</h3>
+                <p>Assuma que o <strong>primeiro elemento é o maior</strong>. Percorra o restante comparando cada elemento com o "campeão atual". Se encontrar um maior, ele vira o novo campeão. No final, o campeão é o máximo.</p>
+            </div>
+
+            <div class="two-col" style="gap:20px;margin-top:12px;">
+                <div>
+                    <div class="algo-card" style="margin-top:0;">
+                        <div class="algo-title">📐 Pseudocódigo — Máximo</div>
+                        <pre><span class="al-var">maior</span> ← v[<span class="al-nm">0</span>]              <span class="al-cm">// assume 1º como maior</span>
+<span class="al-var">posMax</span> ← <span class="al-nm">0</span>                <span class="al-cm">// posição do maior</span>
+
+<span class="al-kw">PARA</span> <span class="al-var">i</span> <span class="al-kw">DE</span> <span class="al-nm">1</span> <span class="al-kw">ATÉ</span> N<span class="al-op">-</span><span class="al-nm">1</span> <span class="al-kw">FAÇA</span>  <span class="al-cm">// começa no índice 1!</span>
+    <span class="al-kw">SE</span> v[<span class="al-var">i</span>] <span class="al-op">&gt;</span> <span class="al-var">maior</span> <span class="al-kw">ENTÃO</span>
+        <span class="al-var">maior</span>  ← v[<span class="al-var">i</span>]
+        <span class="al-var">posMax</span> ← <span class="al-var">i</span>
+    <span class="al-kw">FIM-SE</span>
+<span class="al-kw">FIM-PARA</span>
+<span class="al-kw">ESCREVA</span> "Máx = ", <span class="al-var">maior</span>, " na posição ", <span class="al-var">posMax</span></pre>
+                    </div>
+
+                    <!-- Trace do máximo -->
+                    <table class="trace-tbl d1" style="margin-top:12px;font-size:0.85rem;">
+                        <thead><tr><th>i</th><th>v[i]</th><th>v[i] > maior?</th><th>maior</th><th>posMax</th></tr></thead>
+                        <tbody>
+                            <tr><td>inicio</td><td>—</td><td>—</td><td class="chg">4</td><td class="chg">0</td></tr>
+                            <tr><td>1</td><td>9</td><td>9 > 4 ✅</td><td class="chg">9</td><td class="chg">1</td></tr>
+                            <tr><td>2</td><td>12</td><td>12 > 9 ✅</td><td class="chg">12</td><td class="chg">2</td></tr>
+                            <tr><td>3</td><td>7</td><td>7 > 12 ❌</td><td>12</td><td>2</td></tr>
+                            <tr><td>4</td><td>2</td><td>2 > 12 ❌</td><td>12</td><td>2</td></tr>
+                            <tr><td>5</td><td>6</td><td>6 > 12 ❌</td><td>12</td><td>2</td></tr>
+                            <tr class="res-row"><td colspan="2">resultado</td><td colspan="3">maior = <strong>12</strong> na posição 2</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <div class="code-tabs d1">
+                        <div class="code-tabs-nav">
+                            <button class="code-tab-btn ptg active" onclick="switchTab(this,'ptg','t-max')">🟣 Portugol</button>
+                            <button class="code-tab-btn c"          onclick="switchTab(this,'c',  't-max')">🔵 C</button>
+                            <button class="code-tab-btn java"       onclick="switchTab(this,'java','t-max')">🟡 Java</button>
+                        </div>
+                        <div class="code-tab-panel active" id="t-max-ptg">
+<span class="tp">inteiro</span> v[<span class="nm">6</span>] = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>}
+<span class="tp">inteiro</span> maior = v[<span class="nm">0</span>], posMax = <span class="nm">0</span>
+
+<span class="kw">para</span> (<span class="tp">inteiro</span> i = <span class="nm">1</span>; i &lt; <span class="nm">6</span>; i++) {
+    <span class="kw">se</span> (v[i] > maior) {
+        maior  = v[i]
+        posMax = i
+    }
+}
+
+<span class="fn">escreva</span>(<span class="str">"Maior: "</span> + maior + <span class="str">" na pos "</span> + posMax)
+<span class="cm">// Maior: 12 na pos 2</span>
+                        </div>
+                        <div class="code-tab-panel" id="t-max-c">
+<span class="tp">int</span> v[N] = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>};
+<span class="tp">int</span> maior = v[<span class="nm">0</span>], posMax = <span class="nm">0</span>;
+
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i &lt; N; i++) {   <span class="cm">// começa em 1!</span>
+    <span class="kw">if</span> (v[i] > maior) {
+        maior  = v[i];
+        posMax = i;
+    }
+}
+
+<span class="fn">printf</span>(<span class="str">"Maior: %d na pos %d\n"</span>, maior, posMax);
+<span class="cm">// Maior: 12 na pos 2</span>
+                        </div>
+                        <div class="code-tab-panel" id="t-max-java">
+<span class="tp">int</span>[] v = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>};
+<span class="tp">int</span> maior = v[<span class="nm">0</span>], posMax = <span class="nm">0</span>;
+
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i &lt; v.length; i++) {
+    <span class="kw">if</span> (v[i] > maior) {
+        maior  = v[i];
+        posMax = i;
+    }
+}
+
+<span class="tp">System</span>.out.printf(<span class="str">"Maior: %d na pos %d%n"</span>, maior, posMax);
+<span class="cm">// Maior: 12 na pos 2</span>
+                        </div>
+                    </div>
+
+                    <div class="box blue d2" style="margin-top:14px;">
+                        <h3>💡 Detalhe importante: começa em 1</h3>
+                        <ul>
+                            <li>O laço começa em <ic>i = 1</ic> porque já assumimos que <ic>v[0]</ic> é o maior</li>
+                            <li>Comparar <ic>v[0]</ic> com ele mesmo seria inútil</li>
+                            <li>O mesmo vale para o mínimo — começar em 1 é mais eficiente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 06 — ALGORITMO DE MÍNIMO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>↓ Algoritmo do Menor Valor (Mínimo)</h2>
+            <p>Mesma estratégia do máximo — apenas a comparação muda</p>
+        </div>
+        <div class="slide-body">
+            <div class="big" style="font-size:1.4rem;padding:22px;">
+                Máximo usa <strong>&gt;</strong> (maior que). &nbsp;Mínimo usa <strong>&lt;</strong> (menor que). &nbsp;Todo o resto do algoritmo é <strong>idêntico</strong>!
+            </div>
+
+            <div class="two-col" style="gap:20px;margin-top:10px;">
+                <div>
+                    <div class="algo-card" style="margin-top:0;">
+                        <div class="algo-title">📐 Pseudocódigo — Mínimo</div>
+                        <pre><span class="al-var">menor</span> ← v[<span class="al-nm">0</span>]             <span class="al-cm">// assume 1º como menor</span>
+<span class="al-var">posMin</span> ← <span class="al-nm">0</span>
+
+<span class="al-kw">PARA</span> <span class="al-var">i</span> <span class="al-kw">DE</span> <span class="al-nm">1</span> <span class="al-kw">ATÉ</span> N<span class="al-op">-</span><span class="al-nm">1</span> <span class="al-kw">FAÇA</span>
+    <span class="al-kw">SE</span> v[<span class="al-var">i</span>] <span class="al-op">&lt;</span> <span class="al-var">menor</span> <span class="al-kw">ENTÃO</span>  <span class="al-cm">// &lt; em vez de &gt;</span>
+        <span class="al-var">menor</span>  ← v[<span class="al-var">i</span>]
+        <span class="al-var">posMin</span> ← <span class="al-var">i</span>
+    <span class="al-kw">FIM-SE</span>
+<span class="al-kw">FIM-PARA</span>
+<span class="al-kw">ESCREVA</span> "Mín = ", <span class="al-var">menor</span>, " na posição ", <span class="al-var">posMin</span></pre>
+                    </div>
+
+                    <table class="trace-tbl d1" style="margin-top:12px;font-size:0.85rem;">
+                        <thead><tr><th>i</th><th>v[i]</th><th>v[i] &lt; menor?</th><th>menor</th><th>posMin</th></tr></thead>
+                        <tbody>
+                            <tr><td>inicio</td><td>—</td><td>—</td><td class="chg">4</td><td class="chg">0</td></tr>
+                            <tr><td>1</td><td>9</td><td>9 &lt; 4 ❌</td><td>4</td><td>0</td></tr>
+                            <tr><td>2</td><td>12</td><td>12 &lt; 4 ❌</td><td>4</td><td>0</td></tr>
+                            <tr><td>3</td><td>7</td><td>7 &lt; 4 ❌</td><td>4</td><td>0</td></tr>
+                            <tr><td>4</td><td>2</td><td>2 &lt; 4 ✅</td><td class="chg">2</td><td class="chg">4</td></tr>
+                            <tr><td>5</td><td>6</td><td>6 &lt; 2 ❌</td><td>2</td><td>4</td></tr>
+                            <tr class="res-row"><td colspan="2">resultado</td><td colspan="3">menor = <strong>2</strong> na posição 4</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <div class="code-tabs d1">
+                        <div class="code-tabs-nav">
+                            <button class="code-tab-btn ptg active" onclick="switchTab(this,'ptg','t-min')">🟣 Portugol</button>
+                            <button class="code-tab-btn c"          onclick="switchTab(this,'c',  't-min')">🔵 C</button>
+                            <button class="code-tab-btn java"       onclick="switchTab(this,'java','t-min')">🟡 Java</button>
+                        </div>
+                        <div class="code-tab-panel active" id="t-min-ptg">
+<span class="tp">inteiro</span> v[<span class="nm">6</span>] = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>}
+<span class="tp">inteiro</span> menor = v[<span class="nm">0</span>], posMin = <span class="nm">0</span>
+
+<span class="kw">para</span> (<span class="tp">inteiro</span> i = <span class="nm">1</span>; i &lt; <span class="nm">6</span>; i++) {
+    <span class="kw">se</span> (v[i] <span class="op">&lt;</span> menor) {      <span class="cm">// só muda o sinal!</span>
+        menor  = v[i]
+        posMin = i
+    }
+}
+
+<span class="fn">escreva</span>(<span class="str">"Menor: "</span> + menor + <span class="str">" na pos "</span> + posMin)
+<span class="cm">// Menor: 2 na pos 4</span>
+                        </div>
+                        <div class="code-tab-panel" id="t-min-c">
+<span class="tp">int</span> v[N] = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>};
+<span class="tp">int</span> menor = v[<span class="nm">0</span>], posMin = <span class="nm">0</span>;
+
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i &lt; N; i++) {
+    <span class="kw">if</span> (v[i] <span class="op">&lt;</span> menor) {        <span class="cm">// < em vez de ></span>
+        menor  = v[i];
+        posMin = i;
+    }
+}
+
+<span class="fn">printf</span>(<span class="str">"Menor: %d na pos %d\n"</span>, menor, posMin);
+<span class="cm">// Menor: 2 na pos 4</span>
+                        </div>
+                        <div class="code-tab-panel" id="t-min-java">
+<span class="tp">int</span>[] v = {<span class="nm">4</span>,<span class="nm">9</span>,<span class="nm">12</span>,<span class="nm">7</span>,<span class="nm">2</span>,<span class="nm">6</span>};
+<span class="tp">int</span> menor = v[<span class="nm">0</span>], posMin = <span class="nm">0</span>;
+
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i &lt; v.length; i++) {
+    <span class="kw">if</span> (v[i] <span class="op">&lt;</span> menor) {
+        menor  = v[i];
+        posMin = i;
+    }
+}
+
+<span class="tp">System</span>.out.printf(<span class="str">"Menor: %d na pos %d%n"</span>, menor, posMin);
+<span class="cm">// Menor: 2 na pos 4</span>
+                        </div>
+                    </div>
+
+                    <div class="hi d2" style="margin-top:14px;padding:14px 20px;">
+                        <h3>🔄 Máx e Mín no mesmo laço</h3>
+                        <p style="margin-top:6px;font-size:0.95rem;">É possível calcular máximo e mínimo em <strong>um único percurso</strong>, com duas variáveis e dois <ic style="background:rgba(255,255,255,0.2);color:white;">if</ic> dentro do mesmo laço — mais eficiente para vetores grandes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 07 — PROGRAMA COMPLETO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>💻 Programa Completo em C</h2>
+            <p>Todos os quatro algoritmos juntos com leitura do usuário</p>
+        </div>
+        <div class="slide-body">
+            <div style="background:var(--code-bg);border-radius:14px;overflow:hidden;margin-top:8px;animation:fadeInUp 0.55s ease-out forwards;opacity:0;box-shadow:0 6px 20px rgba(0,0,0,0.2);">
+                <div style="background:#313244;padding:10px 16px;display:flex;align-items:center;gap:8px;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57;"></div>
+                    <div style="width:12px;height:12px;border-radius:50%;background:#febc2e;"></div>
+                    <div style="width:12px;height:12px;border-radius:50%;background:#28c840;"></div>
+                    <span style="color:#a6adc8;font-size:0.82rem;margin-left:8px;font-family:'Courier New',monospace;">estatisticas_vetor.c</span>
+                </div>
+                <div style="padding:18px 22px;font-family:'Courier New',monospace;font-size:0.82rem;line-height:1.85;color:var(--code-text);overflow-x:auto;white-space:pre;">
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#define</span> N <span class="nm">6</span>
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">int</span>   v[N];
+    <span class="tp">int</span>   soma = <span class="nm">0</span>, maior, menor, posMax = <span class="nm">0</span>, posMin = <span class="nm">0</span>;
+    <span class="tp">float</span> media;
+
+    <span class="cm">/* ── Leitura ── */</span>
+    <span class="fn">printf</span>(<span class="str">"Digite %d valores inteiros:\n"</span>, N);
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; N; i++) {
+        <span class="fn">printf</span>(<span class="str">"v[%d]: "</span>, i);
+        <span class="fn">scanf</span>(<span class="str">"%d"</span>, &v[i]);
+    }
+
+    <span class="cm">/* ── Processamento ── */</span>
+    maior = v[<span class="nm">0</span>];   menor = v[<span class="nm">0</span>];        <span class="cm">// inicializa com 1º elemento</span>
+
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; N; i++) {
+        soma += v[i];                         <span class="cm">// soma</span>
+        <span class="kw">if</span> (v[i] &gt; maior) { maior = v[i]; posMax = i; }  <span class="cm">// max</span>
+        <span class="kw">if</span> (v[i] &lt; menor) { menor = v[i]; posMin = i; }  <span class="cm">// min</span>
+    }
+    media = (<span class="tp">float</span>)soma / N;
+
+    <span class="cm">/* ── Saída formatada ── */</span>
+    <span class="fn">printf</span>(<span class="str">"\n── Estatísticas ──\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"Soma   : %d\n"</span>, soma);
+    <span class="fn">printf</span>(<span class="str">"Média  : %.2f\n"</span>, media);
+    <span class="fn">printf</span>(<span class="str">"Máximo : %d (posição %d)\n"</span>, maior, posMax);
+    <span class="fn">printf</span>(<span class="str">"Mínimo : %d (posição %d)\n"</span>, menor, posMin);
+
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</div>
+            </div>
+
+            <div class="two-col" style="margin-top:12px;gap:18px;">
+                <div class="box green d1">
+                    <h3>✅ Saída esperada (entrada: 4 9 12 7 2 6)</h3>
+                    <ul>
+                        <li>Soma   : <strong>40</strong></li>
+                        <li>Média  : <strong>6.67</strong></li>
+                        <li>Máximo : <strong>12 (posição 2)</strong></li>
+                        <li>Mínimo : <strong>2 (posição 4)</strong></li>
+                    </ul>
+                </div>
+                <div class="box teal d2">
+                    <h3>🔑 Boas Práticas Aplicadas</h3>
+                    <ul>
+                        <li>Único laço para soma + máx + mín → 1 percurso</li>
+                        <li>Cast <ic>(float)</ic> antes da divisão</li>
+                        <li>Variáveis inicializadas com <ic>v[0]</ic></li>
+                        <li>Saída alinhada com <ic>\t</ic> ou espaços</li>
+                        <li>Constante <ic>#define N</ic> para fácil manutenção</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 08 — CONTAGEM E VERIFICAÇÃO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🔢 Contagem e Verificação em Vetores</h2>
+            <p>Contar elementos que satisfazem uma condição — padrão essencial</p>
+        </div>
+        <div class="slide-body">
+            <div class="yel" style="margin-top:6px;">
+                <h3>🎯 Problema típico</h3>
+                <p>Dado um vetor de notas, <strong>quantos alunos foram aprovados</strong> (nota ≥ 6.0)? <strong>Quantos ficaram acima da média</strong>? Esses problemas exigem um <strong>contador</strong> — variável inicializada em 0 que incrementa quando a condição é verdadeira.</p>
+            </div>
+
+            <div class="code-tabs d1">
+                <div class="code-tabs-nav">
+                    <button class="code-tab-btn ptg active" onclick="switchTab(this,'ptg','t-cnt')">🟣 Portugol</button>
+                    <button class="code-tab-btn c"          onclick="switchTab(this,'c',  't-cnt')">🔵 C</button>
+                    <button class="code-tab-btn java"       onclick="switchTab(this,'java','t-cnt')">🟡 Java</button>
+                </div>
+                <div class="code-tab-panel active" id="t-cnt-ptg">
+<span class="cm">// Conta aprovados (nota >= 6.0) e acima da média</span>
+<span class="tp">real</span> notas[<span class="nm">5</span>] = {<span class="nm">7.5</span>, <span class="nm">4.0</span>, <span class="nm">8.5</span>, <span class="nm">5.5</span>, <span class="nm">9.0</span>}
+<span class="tp">real</span> soma = <span class="nm">0</span>, media
+<span class="tp">inteiro</span> aprovados = <span class="nm">0</span>, acimaMedia = <span class="nm">0</span>
+
+<span class="kw">para</span> (<span class="tp">inteiro</span> i = <span class="nm">0</span>; i &lt; <span class="nm">5</span>; i++) {
+    soma = soma + notas[i]
+    <span class="kw">se</span> (notas[i] &gt;= <span class="nm">6.0</span>) {
+        aprovados = aprovados + <span class="nm">1</span>
+    }
+}
+media = soma / <span class="nm">5</span>
+
+<span class="kw">para</span> (<span class="tp">inteiro</span> i = <span class="nm">0</span>; i &lt; <span class="nm">5</span>; i++) {
+    <span class="kw">se</span> (notas[i] > media) {
+        acimaMedia = acimaMedia + <span class="nm">1</span>
+    }
+}
+<span class="fn">escreva</span>(<span class="str">"Aprovados: "</span> + aprovados)      <span class="cm">// 3</span>
+<span class="fn">escreva</span>(<span class="str">"Acima da média: "</span> + acimaMedia) <span class="cm">// 3</span>
+                </div>
+                <div class="code-tab-panel" id="t-cnt-c">
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#define</span> N <span class="nm">5</span>
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">float</span> notas[N] = {<span class="nm">7.5f</span>, <span class="nm">4.0f</span>, <span class="nm">8.5f</span>, <span class="nm">5.5f</span>, <span class="nm">9.0f</span>};
+    <span class="tp">float</span> soma = <span class="nm">0</span>, media;
+    <span class="tp">int</span>   aprovados = <span class="nm">0</span>, acimaMedia = <span class="nm">0</span>;
+
+    <span class="cm">/* 1ª passagem: soma e conta aprovados */</span>
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; N; i++) {
+        soma += notas[i];
+        <span class="kw">if</span> (notas[i] &gt;= <span class="nm">6.0f</span>) aprovados++;
+    }
+    media = soma / N;
+
+    <span class="cm">/* 2ª passagem: conta acima da média */</span>
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; N; i++)
+        <span class="kw">if</span> (notas[i] &gt; media) acimaMedia++;
+
+    <span class="fn">printf</span>(<span class="str">"Aprovados: %d\nAcima da média: %d\n"</span>,
+           aprovados, acimaMedia);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}
+                </div>
+                <div class="code-tab-panel" id="t-cnt-java">
+<span class="kw">public class</span> <span class="tp">Contagem</span> {
+    <span class="kw">public static void</span> <span class="fn">main</span>(<span class="tp">String</span>[] args) {
+        <span class="tp">float</span>[] notas = {<span class="nm">7.5f</span>, <span class="nm">4.0f</span>, <span class="nm">8.5f</span>, <span class="nm">5.5f</span>, <span class="nm">9.0f</span>};
+        <span class="tp">float</span> soma = <span class="nm">0</span>, media;
+        <span class="tp">int</span> aprovados = <span class="nm">0</span>, acimaMedia = <span class="nm">0</span>;
+
+        <span class="kw">for</span> (<span class="tp">float</span> n : notas) {
+            soma += n;
+            <span class="kw">if</span> (n &gt;= <span class="nm">6.0f</span>) aprovados++;
+        }
+        media = soma / notas.length;
+
+        <span class="kw">for</span> (<span class="tp">float</span> n : notas)
+            <span class="kw">if</span> (n &gt; media) acimaMedia++;
+
+        <span class="tp">System</span>.out.println(<span class="str">"Aprovados: "</span> + aprovados);
+        <span class="tp">System</span>.out.println(<span class="str">"Acima da média: "</span> + acimaMedia);
+    }
+}
+                </div>
+            </div>
+
+            <div class="two-col" style="margin-top:12px;gap:18px;">
+                <table class="trace-tbl d2">
+                    <thead><tr><th>i</th><th>nota</th><th>≥6.0?</th><th>aprovados</th></tr></thead>
+                    <tbody>
+                        <tr><td>—</td><td>—</td><td>—</td><td>0</td></tr>
+                        <tr><td>0</td><td>7.5</td><td>✅</td><td class="chg">1</td></tr>
+                        <tr><td>1</td><td>4.0</td><td>❌</td><td>1</td></tr>
+                        <tr><td>2</td><td>8.5</td><td>✅</td><td class="chg">2</td></tr>
+                        <tr><td>3</td><td>5.5</td><td>❌</td><td>2</td></tr>
+                        <tr><td>4</td><td>9.0</td><td>✅</td><td class="chg">3</td></tr>
+                        <tr class="res-row"><td colspan="3">resultado</td><td><strong>3 aprovados</strong></td></tr>
+                    </tbody>
+                </table>
+                <div class="hi d3" style="margin:0;display:flex;flex-direction:column;justify-content:center;">
+                    <h3>💡 Por que 2 passagens?</h3>
+                    <p style="margin-top:8px;font-size:0.95rem;">Para saber quem ficou acima da <em>média</em>, precisamos primeiro calcular a média — o que requer a soma de todos os elementos. Por isso são necessárias <strong>duas passagens</strong> pelo vetor: a 1ª calcula a média, a 2ª conta quem ficou acima dela.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 09 — LABORATÓRIO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🧪 Laboratório — Prática Guiada</h2>
+            <p>Implemente cada passo e teste no Portugol Studio / GCC</p>
+        </div>
+        <div class="slide-body">
+            <div class="hi" style="padding:14px 22px;margin-top:4px;">
+                <h3>📋 Roteiro da Aula 02 — compile e teste cada exercício</h3>
+            </div>
+
+            <div class="three-col" style="margin-top:14px;gap:16px;">
+                <div class="card" style="border-color:var(--lang-ptg);">
+                    <h4 style="color:var(--lang-ptg);">🟣 Exercício 1 — Portugol</h4>
+                    <p style="font-size:0.9rem;line-height:1.6;margin-bottom:10px;">Declare um vetor de 7 <strong>inteiros</strong> e leia os valores do usuário. Calcule e exiba <strong>soma</strong> e <strong>média</strong>. Teste com: 3 5 8 2 7 1 4</p>
+                    <div style="background:#0f172a;padding:10px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:0.8rem;color:#c4b5fd;">
+                        Saída esperada:<br>Soma = 30<br>Média = 4.28...
+                    </div>
+                </div>
+                <div class="card d1" style="border-color:var(--lang-c);">
+                    <h4 style="color:var(--lang-c);">🔵 Exercício 2 — C</h4>
+                    <p style="font-size:0.9rem;line-height:1.6;margin-bottom:10px;">Escreva em C que lê N notas de alunos e exibe <strong>máximo</strong>, <strong>mínimo</strong> e quantos foram <strong>aprovados</strong> (nota ≥ 7.0). Use <ic>#define N 5</ic>. Teste com: 8.0 5.5 9.5 3.0 7.0</p>
+                    <div style="background:#0f172a;padding:10px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:0.8rem;color:#93c5fd;">
+                        Saída esperada:<br>Máx = 9.50 | Mín = 3.00<br>Aprovados: 3
+                    </div>
+                </div>
+                <div class="card d2" style="border-color:var(--vec-green);">
+                    <h4 style="color:var(--vec-green);">🔥 Exercício 3 — Desafio</h4>
+                    <p style="font-size:0.9rem;line-height:1.6;margin-bottom:10px;">Em C, leia N temperaturas diárias. Exiba: soma, média, máx, mín e <strong>quantos dias ficaram acima da média</strong>. Teste com: 28.5 31.0 25.5 33.0 29.0 27.5 30.0</p>
+                    <div style="background:#0f172a;padding:10px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:0.8rem;color:#86efac;">
+                        Dica: calcule a média em<br>uma 1ª passagem, depois<br>conte em uma 2ª passagem.
+                    </div>
+                </div>
+            </div>
+
+            <div class="two-col" style="margin-top:16px;gap:18px;">
+                <div class="box teal d3">
+                    <h3>🔍 Comandos de compilação (terminal)</h3>
+                    <ul>
+                        <li><ic>gcc exercicio1.c -o ex1</ic> — compila</li>
+                        <li><ic>./ex1</ic> (Linux/Mac) ou <ic>ex1.exe</ic> (Windows)</li>
+                        <li><ic>gcc -Wall exercicio2.c -o ex2</ic> — com warnings</li>
+                        <li>VS Code: botão <strong>▶ Run</strong> com extensão C/C++</li>
+                    </ul>
+                </div>
+                <div class="box d4" style="border-left-color:var(--lang-ptg);">
+                    <h3 style="color:var(--lang-ptg);">🌐 Portugol Web Studio</h3>
+                    <ul>
+                        <li>Acesse: <strong>portugol-webstudio.cubos.io</strong></li>
+                        <li>Cole o código na área do editor</li>
+                        <li>Clique em <strong>Executar (▶)</strong></li>
+                        <li>Digite os valores no console quando solicitado</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 10 — EXERCÍCIOS DE FIXAÇÃO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>✏️ Exercícios de Fixação</h2>
+            <p>Teste seu entendimento da Aula 02</p>
+        </div>
+        <div class="slide-body">
+
+            <div class="quiz" id="q1">
+                <p class="q">1. Para encontrar o máximo de um vetor de 8 elementos, o laço de busca começa no índice 1 (e não 0). Por quê?</p>
+                <div class="opts">
+                    <label><input type="radio" name="q1" value="a"> a) Para evitar divisão por zero na comparação</label>
+                    <label><input type="radio" name="q1" value="b"> b) Porque o índice 0 é reservado para o resultado</label>
+                    <label><input type="radio" name="q1" value="c"> c) Porque a variável <ic>maior</ic> já foi inicializada com <ic>v[0]</ic>, comparar <ic>v[0]</ic> com ele mesmo seria redundante</label>
+                    <label><input type="radio" name="q1" value="d"> d) Porque <ic>v[0]</ic> nunca pode ser o maior valor</label>
+                </div>
+                <button class="chk-btn" onclick="check('q1','c','✅ Correto! Já inicializamos maior = v[0], então comparar v[0] > v[0] é sempre falso e desperdiça tempo. Começar em i=1 é mais eficiente e logicamente correto.','❌ Reveja o Slide 05. A variável maior é inicializada com v[0], então começar em i=1 evita uma comparação redundante de v[0] com ele mesmo.')">Verificar</button>
+                <div class="fb" id="q1-fb"></div>
+            </div>
+
+            <div class="quiz d1" id="q2">
+                <p class="q">2. Em C, o vetor <ic>int v[] = {10, 3, 7, 15, 6};</ic> é processado pelo algoritmo de soma. Qual é o valor de <ic>soma</ic> após o laço terminar?</p>
+                <div class="opts">
+                    <label><input type="radio" name="q2" value="a"> a) 15 (apenas o maior)</label>
+                    <label><input type="radio" name="q2" value="b"> b) 10 (apenas o primeiro)</label>
+                    <label><input type="radio" name="q2" value="c"> c) 41</label>
+                    <label><input type="radio" name="q2" value="d"> d) 8.2 (a média)</label>
+                </div>
+                <button class="chk-btn" onclick="check('q2','c','✅ Perfeito! 10 + 3 + 7 + 15 + 6 = 41. O acumulador soma recebe cada elemento: 0 → 10 → 13 → 20 → 35 → 41.','❌ Calcule: 10 + 3 + 7 + 15 + 6 = 41. Trace passo a passo: soma começa em 0, depois acumula 10, 13, 20, 35, 41.')">Verificar</button>
+                <div class="fb" id="q2-fb"></div>
+            </div>
+
+            <div class="quiz d2" id="q3">
+                <p class="q">3. Qual é o resultado de <ic>(int)soma / N</ic> em C quando <ic>soma = 41</ic> e <ic>N = 5</ic>, versus <ic>(float)soma / N</ic>?</p>
+                <div class="opts">
+                    <label><input type="radio" name="q3" value="a"> a) Ambos resultam em 8.2</label>
+                    <label><input type="radio" name="q3" value="b"> b) <ic>int/int</ic> = 8 (divisão inteira trunca); <ic>(float)soma/N</ic> = 8.2</label>
+                    <label><input type="radio" name="q3" value="c"> c) <ic>int/int</ic> = 8.0; <ic>(float)/int</ic> = 8.20</label>
+                    <label><input type="radio" name="q3" value="d"> d) Ambos resultam em 8 porque N é inteiro</label>
+                </div>
+                <button class="chk-btn" onclick="check('q3','b','✅ Exato! Em C, int/int trunca o decimal: 41/5 = 8 (não 8.2). O cast (float) converte soma para float antes da divisão, resultando em 8.2. Sempre use cast ou float quando precisar de precisão decimal.','❌ Reveja o Slide 04 (armadilha da divisão inteira). int/int em C descarta o decimal: 41/5 = 8. Use (float)soma/N = 8.2 para resultado correto.')">Verificar</button>
+                <div class="fb" id="q3-fb"></div>
+            </div>
+
+            <div class="quiz d3" style="border-left-color:var(--unifil-orange);">
+                <p class="q" style="color:var(--unifil-orange);">4. 💬 Trace Manual — resolva no papel:</p>
+                <p style="font-size:0.95rem;line-height:1.6;color:var(--unifil-dark);margin-top:6px;">
+                    Dado o vetor <ic>int v[] = {5, 3, 8, 1, 6}</ic> (N=5),
+                    execute <strong>mentalmente</strong> o algoritmo de mínimo:
+                    inicialize <ic>menor = v[0]</ic>, percorra de i=1 a 4.
+                    Qual é o valor final de <ic>menor</ic> e em qual posição está?
+                </p>
+                <div style="background:#fef3c7;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:0.88rem;color:#78350f;">
+                    <strong>💡 Gabarito:</strong> inicio: menor=5, posMin=0 | i=1: 3&lt;5 ✅ → menor=3, posMin=1 | i=2: 8&lt;3 ❌ | i=3: 1&lt;3 ✅ → <strong>menor=1, posMin=3</strong> | i=4: 6&lt;1 ❌ | Resultado: <strong>menor = 1 na posição 3</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ SLIDE 11 — RESUMO ═══ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🎯 Resumo e Próxima Aula</h2>
+            <p>Quatro algoritmos clássicos de vetores dominados!</p>
+        </div>
+        <div class="slide-body">
+            <div class="big" style="font-size:1.4rem;line-height:1.5;">
+                Com soma, média, máximo, mínimo e contagem você já resolve a grande maioria dos problemas clássicos de processamento de vetores! 📊
+            </div>
+
+            <!-- Tabela resumo dos 4 algoritmos -->
+            <table class="trace-tbl d1" style="margin-top:20px;font-size:0.9rem;">
+                <thead>
+                    <tr>
+                        <th>Algoritmo</th>
+                        <th>Inicialização</th>
+                        <th>Operação no laço</th>
+                        <th>Começa em</th>
+                        <th>Cuidado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Soma</strong></td>
+                        <td><ic>soma = 0</ic></td>
+                        <td><ic>soma += v[i]</ic></td>
+                        <td>i = 0</td>
+                        <td>Inicializar em 0</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Média</strong></td>
+                        <td><ic>soma = 0</ic></td>
+                        <td><ic>soma += v[i]</ic> → <ic>(float)soma/N</ic></td>
+                        <td>i = 0</td>
+                        <td>Cast para float!</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Máximo</strong></td>
+                        <td><ic>maior = v[0]</ic></td>
+                        <td><ic>if (v[i] > maior) maior = v[i]</ic></td>
+                        <td>i = 1</td>
+                        <td>Comparador <ic>&gt;</ic></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mínimo</strong></td>
+                        <td><ic>menor = v[0]</ic></td>
+                        <td><ic>if (v[i] &lt; menor) menor = v[i]</ic></td>
+                        <td>i = 1</td>
+                        <td>Comparador <ic>&lt;</ic></td>
+                    </tr>
+                    <tr class="res-row">
+                        <td><strong>Contagem</strong></td>
+                        <td><ic>cont = 0</ic></td>
+                        <td><ic>if (condição) cont++</ic></td>
+                        <td>i = 0</td>
+                        <td>Definir condição</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="hi d2" style="margin-top:18px;">
+                <h3>📚 Para a Próxima Aula — 08/05 · Aula 03 (Sexta-feira) · Laboratório</h3>
+                <div class="two-col" style="margin-top:10px;gap:16px;">
+                    <ul style="list-style:none;padding:0;font-size:0.97rem;">
+                        <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>1️⃣ Praticar:</strong> implementar os 3 exercícios do laboratório (slides anteriores)
+                        </li>
+                        <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>2️⃣ Resolver:</strong> <strong>Lista 01</strong> disponível no Classroom (6 exercícios de vetores)
+                        </li>
+                        <li style="padding:6px 0;">
+                            <strong>3️⃣ Aula 03:</strong> prática guiada no laboratório com correção ao vivo
+                        </li>
+                    </ul>
+                    <ul style="list-style:none;padding:0;font-size:0.97rem;">
+                        <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>4️⃣ Aula 04 (13/05):</strong> busca linear e binária em vetores
+                        </li>
+                        <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>5️⃣ Aula 05 (15/05):</strong> Bubble Sort e Selection Sort
+                        </li>
+                        <li style="padding:6px 0;">
+                            <strong>6️⃣ Referência:</strong> Forbellone Cap. 6 · visualgo.net (sorting)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin-top:20px;">
+                <p style="font-size:1.1rem;font-weight:600;color:var(--unifil-dark);">Ótima aula! Pratique os exercícios da lista hoje. 📊</p>
+                <p style="font-size:0.95rem;color:var(--unifil-gray);margin-top:7px;font-style:italic;">
+                    "Máximo e mínimo são a base de todo algoritmo de ordenação que veremos nas próximas aulas." 🎯
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="navigation">
+    <button class="nav-btn" id="prevBtn" onclick="nav(-1)">← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 11</span>
+    <button class="nav-btn" id="nextBtn" onclick="nav(1)">Próximo →</button>
+</div>
+
+<script>
+    let cur = 0;
+    const slides = document.querySelectorAll('.slide');
+    const total  = slides.length;
+    const dotsEl = document.getElementById('slideDots');
+
+    for (let i = 0; i < total; i++) {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.onclick = () => show(i);
+        dotsEl.appendChild(d);
+    }
+
+    function show(n) {
+        slides.forEach(s => s.classList.remove('active','prev'));
+        cur = (n + total) % total;
+        slides[cur].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${cur + 1} / ${total}`;
+        document.getElementById('prevBtn').disabled = cur === 0;
+        document.getElementById('nextBtn').disabled = cur === total - 1;
+        document.getElementById('progressBar').style.width = ((cur + 1) / total * 100) + '%';
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+        const els = slides[cur].querySelectorAll(
+            '.box,.card,.hi,.big,.yel,.tl-item,.stat-card,.code-tabs,.quiz,.algo-card,.trace-tbl,.vec-vis'
+        );
+        els.forEach(el => {
+            el.style.animation = 'none'; el.style.opacity = '0';
+            void el.offsetWidth; el.style.animation = '';
+        });
+        // reativa primeira aba
+        slides[cur].querySelectorAll('.code-tabs').forEach(ct => {
+            const btns   = ct.querySelectorAll('.code-tab-btn');
+            const panels = ct.querySelectorAll('.code-tab-panel');
+            btns.forEach(b => b.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            if (btns[0]) {
+                btns[0].classList.add('active');
+                if (panels[0]) panels[0].classList.add('active');
+            }
+        });
+    }
+
+    function nav(d) { const n = cur + d; if (n >= 0 && n < total) show(n); }
+
+    function switchTab(btn, lang, group) {
+        const tabs = btn.closest('.code-tabs');
+        tabs.querySelectorAll('.code-tab-btn').forEach(b => b.classList.remove('active'));
+        tabs.querySelectorAll('.code-tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const panel = document.getElementById(group + '-' + lang);
+        if (panel) panel.classList.add('active');
+    }
+
+    function check(qid, correct, msgOk, msgWrong) {
+        const sel = document.querySelector(`input[name="${qid}"]:checked`);
+        const fb  = document.getElementById(`${qid}-fb`);
+        if (!sel) { fb.className = 'fb no'; fb.textContent = '⚠️ Selecione uma alternativa.'; return; }
+        fb.className = sel.value === correct ? 'fb ok' : 'fb no';
+        fb.textContent = sel.value === correct ? msgOk : msgWrong;
+        document.querySelectorAll(`input[name="${qid}"]`).forEach(i => i.disabled = true);
+        document.querySelector(`#${qid} .chk-btn`).disabled = true;
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  nav(-1);
+        if (e.key === 'ArrowRight') nav(1);
+    });
+    let tx = 0;
+    document.addEventListener('touchstart', e => tx = e.changedTouches[0].screenX);
+    document.addEventListener('touchend',   e => {
+        const dx = e.changedTouches[0].screenX - tx;
+        if (dx < -50) nav(1); if (dx > 50) nav(-1);
+    });
+    show(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Aula - Gerência de Configuração e Controle de Versão | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark: #4A4A4A;
+            --unifil-light: #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray: #6B6B6B;
+            --git-blue: #0366d6;
+            --git-dark: #24292e;
+            --git-green: #28a745;
+            --git-purple: #6f42c1;
+            --ci-teal: #0d9488;
+            --cd-indigo: #4338ca;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--unifil-dark) 0%, #1a2a3a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev { transform: translateX(-100%); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 28px 50px; color: white; position: relative; flex-shrink: 0;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -18px; left: 0; right: 0; height: 36px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.3rem; margin-bottom: 8px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.7rem; margin-bottom: 8px; font-weight: 600; }
+        .slide-header p { font-size: 1.05rem; opacity: 0.95; }
+
+        .slide-body {
+            flex: 1; padding: 55px 50px 35px;
+            overflow-y: auto;
+        }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        /* LAYOUT */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 25px 0; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; margin: 25px 0; }
+        .four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 25px 0; }
+
+        /* BOXES */
+        .content-box {
+            background: var(--unifil-light); padding: 25px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+        .content-box ul { list-style: none; padding: 0; }
+        .content-box li { padding: 8px 0 8px 28px; position: relative; font-size: 1rem; line-height: 1.55; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 25px; border-radius: 15px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 12px; font-size: 1.5rem; }
+        .highlight-box p, .highlight-box li { font-size: 1.05rem; line-height: 1.6; }
+
+        .git-box {
+            background: var(--git-dark); color: #e6edf3; padding: 25px;
+            border-radius: 15px; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            border-top: 4px solid var(--git-blue);
+        }
+        .git-box h3 { color: #58a6ff; margin-bottom: 14px; font-size: 1.3rem; }
+        .git-box code { background: #161b22; color: #7ee787; padding: 2px 8px; border-radius: 6px; font-family: 'Courier New', monospace; }
+
+        .big-idea {
+            background: linear-gradient(135deg, var(--git-blue) 0%, var(--cd-indigo) 100%);
+            color: white; padding: 35px; border-radius: 20px;
+            font-size: 1.7rem; font-weight: 600; text-align: center; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(3, 102, 214, 0.3);
+        }
+
+        .stat-card {
+            text-align: center; padding: 22px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 2.6rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 8px; }
+        .stat-card .label { font-size: 1rem; color: var(--unifil-gray); font-weight: 500; }
+
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 22px; border-radius: 12px; margin: 18px 0;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.2rem; }
+
+        /* UNIT BADGES */
+        .unit-badge {
+            display: inline-block; padding: 6px 18px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .badge-git { background: #0d1117; color: #58a6ff; }
+        .badge-flow { background: #6f42c1; color: white; }
+        .badge-pr { background: #1a7f37; color: white; }
+        .badge-ci { background: #0d9488; color: white; }
+        .badge-cd { background: #4338ca; color: white; }
+
+        /* CRONOGRAMA TABLE */
+        .cronograma-table {
+            width: 100%; border-collapse: collapse; margin: 20px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .cronograma-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 14px 16px; text-align: left; font-size: 1rem;
+        }
+        .cronograma-table td {
+            padding: 12px 16px; border-bottom: 1px solid #eee;
+            font-size: 0.95rem; line-height: 1.5; vertical-align: middle;
+        }
+        .cronograma-table tr:last-child td { border-bottom: none; }
+        .cronograma-table tr:hover td { background: #fff8f0; }
+        .cronograma-table tr.row-avaliacao td { background: #fff3cd; font-weight: 600; }
+        .cronograma-table tr.row-prova td { background: #fce4ec; font-weight: 700; }
+        .cronograma-table tr.row-exame td { background: #f3e5f5; font-weight: 700; }
+        .cronograma-table tr.row-trabalho td { background: #e8f5e9; font-weight: 600; }
+
+        .tipo-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 0.78rem; font-weight: 700; white-space: nowrap;
+        }
+        .tipo-teoria { background: #e3f2fd; color: #1565c0; }
+        .tipo-pratica { background: #e8f5e9; color: #2e7d32; }
+        .tipo-mista { background: #fff3e0; color: #e65100; }
+        .tipo-revisao { background: #f3e5f5; color: #6a1b9a; }
+        .tipo-prova { background: #fce4ec; color: #880e4f; }
+        .tipo-entrega { background: #e8f5e9; color: #1b5e20; }
+        .tipo-exame { background: #ede7f6; color: #4527a0; }
+
+        .aula-num {
+            background: var(--unifil-orange); color: white;
+            border-radius: 50%; width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+        }
+
+        /* AVALIACAO CARD */
+        .avaliacao-card {
+            border-radius: 16px; overflow: hidden; margin: 18px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .avaliacao-header {
+            padding: 18px 25px; color: white;
+            display: flex; align-items: center; gap: 15px;
+        }
+        .avaliacao-header h3 { font-size: 1.4rem; }
+        .avaliacao-header .peso {
+            background: rgba(255,255,255,0.25); padding: 5px 14px;
+            border-radius: 20px; font-weight: 700; font-size: 1.1rem; margin-left: auto;
+        }
+        .avaliacao-body { background: var(--unifil-light); padding: 20px 25px; }
+        .avaliacao-body li { padding: 6px 0 6px 24px; position: relative; }
+        .avaliacao-body li::before { content: '✓'; position: absolute; left: 0; font-weight: bold; }
+
+        /* TIMELINE */
+        .timeline { position: relative; padding-left: 38px; margin: 25px 0; }
+        .timeline::before {
+            content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+            width: 3px; background: var(--unifil-orange);
+        }
+        .timeline-item {
+            position: relative; padding: 16px 0;
+            animation: fadeInLeft 0.6s ease-out forwards; opacity: 0;
+        }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -31px; top: 22px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--unifil-orange); border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+        .timeline-item h4 { color: var(--unifil-orange); font-size: 1.2rem; margin-bottom: 6px; }
+
+        /* NAVIGATION */
+        .navigation {
+            position: fixed; bottom: 28px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 18px; align-items: center;
+            background: rgba(255,255,255,0.96); padding: 14px 28px;
+            border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 11px 22px; border-radius: 25px;
+            cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 75px; text-align: center; font-size: 1.05rem; }
+
+        /* PROGRESS BAR */
+        .progress-bar { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.15); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange), var(--git-blue)); transition: width 0.4s ease; }
+
+        /* SLIDE INDICATOR */
+        .slide-dots {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; z-index: 1001;
+        }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.35); cursor: pointer; transition: all 0.3s;
+        }
+        .dot.active { background: var(--unifil-orange); transform: scale(1.4); }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-28px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+
+        /* NOTA CALC */
+        .nota-formula {
+            background: linear-gradient(135deg, var(--git-dark) 0%, #1e3a5f 100%);
+            color: white; padding: 28px 35px; border-radius: 16px; margin: 22px 0;
+            text-align: center; animation: fadeInUp 0.6s ease-out 0.3s forwards; opacity: 0;
+        }
+        .nota-formula .formula { font-size: 1.6rem; font-weight: 700; font-family: 'Courier New', monospace; margin: 12px 0; color: #58a6ff; }
+        .nota-formula .obs { font-size: 0.95rem; opacity: 0.75; margin-top: 10px; }
+
+        /* UNIDADE HEADER */
+        .unidade-header {
+            display: flex; align-items: center; gap: 18px;
+            background: linear-gradient(135deg, var(--git-dark) 0%, #1e3a5f 100%);
+            padding: 20px 28px; border-radius: 14px; margin-bottom: 25px;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .unidade-header .icone { font-size: 2.6rem; }
+        .unidade-header h3 { color: #58a6ff; font-size: 1.5rem; margin-bottom: 4px; }
+        .unidade-header p { color: #8b949e; font-size: 1rem; }
+
+        /* RECURSOS */
+        .recurso-item {
+            display: flex; align-items: flex-start; gap: 15px;
+            padding: 16px; border-radius: 12px; margin: 12px 0;
+            background: var(--unifil-light);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            transition: transform 0.3s;
+        }
+        .recurso-item:hover { transform: translateX(6px); }
+        .recurso-icone {
+            background: var(--unifil-orange); color: white;
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="slide-dots" id="slideDots"></div>
+
+<div class="presentation">
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 1: CAPA -->
+    <!-- ============================================================ -->
+    <div class="slide active">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h1>Gerência de Configuração e Controle de Versão</h1>
+                <p>Entrega Contínua — Plano de Ensino | UniFil · CC & ES · 2026.1</p>
+            </div>
+            <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+                <div style="font-size:5rem;margin-bottom:25px;">⚙️</div>
+                <h2 style="font-size:2.3rem;color:var(--unifil-orange);margin-bottom:16px;">
+                    De commits a deploys em produção!
+                </h2>
+                <p style="font-size:1.2rem;color:var(--unifil-gray);max-width:780px;margin-bottom:35px;line-height:1.7;">
+                    Aprenda a versionar, colaborar, automatizar e entregar software com qualidade
+                    usando <strong>Git</strong>, <strong>GitFlow</strong>, <strong>Pull Requests</strong>
+                    e <strong>GitHub Actions</strong>.
+                </p>
+                <div class="four-col" style="width:100%;max-width:900px;">
+                    <div class="stat-card">
+                        <div class="number">11</div>
+                        <div class="label">Aulas</div>
+                    </div>
+                    <div class="stat-card" style="animation-delay:0.1s;">
+                        <div class="number">16,5h</div>
+                        <div class="label">Carga Horária</div>
+                    </div>
+                    <div class="stat-card" style="animation-delay:0.2s;">
+                        <div class="number">2</div>
+                        <div class="label">Avaliações</div>
+                    </div>
+                    <div class="stat-card" style="animation-delay:0.3s;">
+                        <div class="number">100%</div>
+                        <div class="label">Prático</div>
+                    </div>
+                </div>
+                <div style="margin-top:40px;font-size:1.05rem;color:var(--unifil-gray);line-height:1.8;">
+                    <p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; tiago.galvao@unifil.br</p>
+                    <p><strong>Início:</strong> 29/04/2026 &nbsp;|&nbsp; <strong>Encerramento:</strong> 10/07/2026</p>
+                    <p><strong>Cursos:</strong> Ciência da Computação &amp; Engenharia de Software</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 2: DADOS DA DISCIPLINA -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📋 Dados da Disciplina</h2>
+                <p>Identificação e ementa oficial</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col">
+                    <div class="content-box">
+                        <h3>🏫 Identificação</h3>
+                        <ul>
+                            <li><strong>Disciplina:</strong> Gerência de Configuração e Controle de Versão</li>
+                            <li><strong>Subtítulo:</strong> Entrega Contínua</li>
+                            <li><strong>Cursos:</strong> Ciência da Computação / Engenharia de Software</li>
+                            <li><strong>Nível:</strong> Ensino Superior</li>
+                            <li><strong>Período:</strong> 2026.1</li>
+                            <li><strong>Dia/Horário:</strong> Quartas-feiras, 1h30 por aula</li>
+                            <li><strong>Datas:</strong> 29/04 a 10/07/2026</li>
+                        </ul>
+                    </div>
+                    <div class="content-box delay-1">
+                        <h3>📚 Ementa Oficial</h3>
+                        <ul>
+                            <li>Introdução à <strong>Entrega Contínua</strong> (Continuous Delivery)</li>
+                            <li><strong>Pull Requests</strong> e fluxo de revisão de código</li>
+                            <li><strong>GitHub Actions</strong> — automação de pipelines</li>
+                            <li><strong>Versionamento com Git</strong> — comandos e boas práticas</li>
+                            <li><strong>GitFlow</strong> — modelo de ramificação</li>
+                            <li><strong>Integração Contínua</strong> (CI) — conceitos e ferramentas</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:10px;">
+                    <h3>🎯 Relevância no Mercado de Trabalho</h3>
+                    <p style="font-size:1.05rem;margin-top:10px;line-height:1.7;">
+                        Controle de versão e entrega contínua são habilidades <strong>exigidas em 95% das vagas</strong> de desenvolvimento de software. 
+                        Dominar Git, GitFlow e CI/CD coloca o profissional no padrão das principais empresas do mercado — Google, Microsoft, Nubank, iFood e centenas de startups brasileiras.
+                    </p>
+                </div>
+
+                <div class="three-col" style="margin-top:10px;">
+                    <div class="example-card">
+                        <h4>🔀 Versionamento</h4>
+                        <p style="font-size:0.95rem;line-height:1.6;">Git como ferramenta central para rastrear mudanças, colaborar e recuperar versões do código.</p>
+                    </div>
+                    <div class="example-card delay-1">
+                        <h4>🔄 Integração Contínua</h4>
+                        <p style="font-size:0.95rem;line-height:1.6;">Automatizar build, testes e validação a cada commit — detectando erros antes que cheguem ao usuário.</p>
+                    </div>
+                    <div class="example-card delay-2">
+                        <h4>🚀 Entrega Contínua</h4>
+                        <p style="font-size:0.95rem;line-height:1.6;">Pipeline que leva o código do repositório ao ambiente de produção de forma automática e confiável.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 3: OBJETIVOS -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🎯 Objetivos de Aprendizagem</h2>
+                <p>O que você será capaz de fazer ao final da disciplina</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea">
+                    Gerenciar o ciclo de vida completo do código — da primeira linha ao deploy em produção!
+                </div>
+
+                <div class="two-col" style="margin-top:20px;">
+                    <div>
+                        <div class="content-box">
+                            <h3>🟢 Objetivos Gerais</h3>
+                            <ul>
+                                <li>Compreender os princípios da Gerência de Configuração de Software</li>
+                                <li>Utilizar Git com proficiência em projetos reais</li>
+                                <li>Implementar fluxos de trabalho colaborativos com GitFlow</li>
+                                <li>Criar e revisar Pull Requests seguindo boas práticas</li>
+                                <li>Construir pipelines de CI/CD com GitHub Actions</li>
+                                <li>Aplicar conceitos de Entrega Contínua em projetos acadêmicos</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="content-box delay-1">
+                            <h3>🔵 Competências Específicas</h3>
+                            <ul>
+                                <li>Executar comandos Git no terminal com segurança</li>
+                                <li>Criar e mesclar branches sem conflitos</li>
+                                <li>Trabalhar com repositórios remotos (GitHub/GitLab)</li>
+                                <li>Escrever workflows YAML para GitHub Actions</li>
+                                <li>Automatizar testes e deploys em pipelines</li>
+                                <li>Realizar code review crítico e construtivo</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline" style="margin-top:25px;">
+                    <div class="timeline-item">
+                        <h4>📌 Unidade I — Fundamentos e Git (Aulas 01-03)</h4>
+                        <p>Gerência de Configuração · Instalação · Versionamento local e remoto</p>
+                    </div>
+                    <div class="timeline-item delay-1">
+                        <h4>📌 Unidade II — Branches e GitFlow (Aulas 04-05)</h4>
+                        <p>Ramificações · Estratégia de branches · Modelo GitFlow completo</p>
+                    </div>
+                    <div class="timeline-item delay-2">
+                        <h4>📌 Unidade III — Colaboração e Pull Requests (Aulas 06-07)</h4>
+                        <p>Fork · Revisão de código · Merge strategies · Boas práticas</p>
+                    </div>
+                    <div class="timeline-item delay-3">
+                        <h4>📌 Unidade IV — CI/CD e GitHub Actions (Aulas 08-11)</h4>
+                        <p>Integração Contínua · Workflows · Entrega Contínua · Deploy automatizado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 4: AVALIAÇÕES -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📊 Sistema de Avaliação</h2>
+                <p>Critérios, pesos e datas das atividades avaliativas</p>
+            </div>
+            <div class="slide-body">
+                <div class="nota-formula">
+                    <p style="font-size:1rem;opacity:0.8;margin-bottom:6px;">CÁLCULO DA NOTA FINAL</p>
+                    <div class="formula">NF = (Prova × 0,60) + (Trabalho × 0,40)</div>
+                    <p class="obs">Mínimo para aprovação: NF ≥ 6,0 &nbsp;|&nbsp; Frequência mínima: 75%</p>
+                </div>
+
+                <!-- Avaliação 1: Prova -->
+                <div class="avaliacao-card">
+                    <div class="avaliacao-header" style="background: linear-gradient(135deg, #c62828, #b71c1c);">
+                        <span style="font-size:1.8rem;">📝</span>
+                        <div>
+                            <h3>Prova Final — Avaliação Teórico-Prática</h3>
+                            <p style="opacity:0.85;font-size:0.95rem;">📅 Data: <strong>08/07/2026</strong> (Aula 11) &nbsp;|&nbsp; Exame Final: 10/07/2026</p>
+                        </div>
+                        <div class="peso">60%</div>
+                    </div>
+                    <div class="avaliacao-body">
+                        <div class="two-col" style="margin:0;">
+                            <ul style="list-style:none;padding:0;">
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#c62828;font-weight:bold;">✓</span>
+                                    Questões objetivas (múltipla escolha) — 40%
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#c62828;font-weight:bold;">✓</span>
+                                    Questões discursivas conceituais — 30%
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#c62828;font-weight:bold;">✓</span>
+                                    Exercício prático com Git/YAML — 30%
+                                </li>
+                            </ul>
+                            <ul style="list-style:none;padding:0;">
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#c62828;font-weight:bold;">✓</span>
+                                    Conteúdo: todo o semestre (Unidades I–IV)
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#c62828;font-weight:bold;">✓</span>
+                                    Consulta: não permitida
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#c62828;font-weight:bold;">✓</span>
+                                    Duração: 1h30 (toda a aula)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Avaliação 2: Trabalho -->
+                <div class="avaliacao-card" style="animation-delay:0.2s;">
+                    <div class="avaliacao-header" style="background: linear-gradient(135deg, #1b5e20, #2e7d32);">
+                        <span style="font-size:1.8rem;">💻</span>
+                        <div>
+                            <h3>Trabalho Prático — Projeto em Equipe</h3>
+                            <p style="opacity:0.85;font-size:0.95rem;">📅 Entrega: <strong>24/06/2026</strong> (Aula 09) &nbsp;|&nbsp; Duplas ou trios</p>
+                        </div>
+                        <div class="peso">40%</div>
+                    </div>
+                    <div class="avaliacao-body">
+                        <div class="two-col" style="margin:0;">
+                            <ul style="list-style:none;padding:0;">
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#2e7d32;font-weight:bold;">✓</span>
+                                    Repositório GitHub com histórico de commits
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#2e7d32;font-weight:bold;">✓</span>
+                                    GitFlow implementado (feature/release/hotfix)
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#2e7d32;font-weight:bold;">✓</span>
+                                    Ao menos 2 Pull Requests com code review
+                                </li>
+                            </ul>
+                            <ul style="list-style:none;padding:0;">
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#2e7d32;font-weight:bold;">✓</span>
+                                    Pipeline CI/CD no GitHub Actions (workflow YAML)
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#2e7d32;font-weight:bold;">✓</span>
+                                    README.md documentando o projeto e o pipeline
+                                </li>
+                                <li style="padding:5px 0 5px 22px;position:relative;font-size:0.95rem;">
+                                    <span style="position:absolute;left:0;color:#2e7d32;font-weight:bold;">✓</span>
+                                    Apresentação oral de 10 min (na Aula 09)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#fff8e1;border-left:4px solid #f59e0b;padding:14px 20px;border-radius:10px;margin-top:10px;">
+                    <strong>⚠️ Regras Gerais:</strong> Frequência mínima 75% · Plágio = nota zero para ambos · Trabalhos entregues com atraso perdem 1,0 por dia · Sem recuperação parcial do trabalho.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 5: CRONOGRAMA COMPLETO -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📅 Cronograma Completo</h2>
+                <p>Todas as aulas, datas e marcos do semestre — Quartas-feiras</p>
+            </div>
+            <div class="slide-body">
+                <table class="cronograma-table">
+                    <thead>
+                        <tr>
+                            <th style="width:38px;">#</th>
+                            <th style="width:110px;">Data</th>
+                            <th>Tema / Conteúdo</th>
+                            <th style="width:120px;">Tipo</th>
+                            <th style="width:130px;">Marco</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="aula-num">01</div></td>
+                            <td><strong>29/04</strong></td>
+                            <td>Apresentação da disciplina · Gerência de Configuração: conceitos, baseline, release, linha de versão</td>
+                            <td><span class="tipo-badge tipo-teoria">Teórica</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">02</div></td>
+                            <td><strong>06/05</strong></td>
+                            <td>Git: instalação, configuração global, repositório local · <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:0.85rem;">init add commit status log diff</code></td>
+                            <td><span class="tipo-badge tipo-pratica">Prática</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">03</div></td>
+                            <td><strong>13/05</strong></td>
+                            <td>Repositórios remotos · GitHub · <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;font-size:0.85rem;">clone push pull fetch remote</code> · Boas práticas de commit (Conventional Commits)</td>
+                            <td><span class="tipo-badge tipo-pratica">Prática</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">04</div></td>
+                            <td><strong>20/05</strong></td>
+                            <td>Branches: criação, checkout, merge · Tipos de merge (fast-forward, 3-way) · Resolução de conflitos</td>
+                            <td><span class="tipo-badge tipo-pratica">Prática</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">05</div></td>
+                            <td><strong>27/05</strong></td>
+                            <td>GitFlow: modelo de ramificação · <em>main, develop, feature/*, release/*, hotfix/*</em> · Prática completa com git-flow CLI</td>
+                            <td><span class="tipo-badge tipo-mista">Teórico-Prática</span></td>
+                            <td>📢 <small>Divulgar Trabalho</small></td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">06</div></td>
+                            <td><strong>03/06</strong></td>
+                            <td>Colaboração em equipe · Fork &amp; Clone · Rebase vs Merge · Squash commits · Stash e tags</td>
+                            <td><span class="tipo-badge tipo-pratica">Prática</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">07</div></td>
+                            <td><strong>10/06</strong></td>
+                            <td>Pull Requests: criação, revisão, aprovação · Code Review: critérios, etiqueta · Templates de PR · Branch protection rules</td>
+                            <td><span class="tipo-badge tipo-pratica">Prática</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">08</div></td>
+                            <td><strong>17/06</strong></td>
+                            <td>Integração Contínua (CI): conceitos, benefícios · Pipelines · GitHub Actions: eventos, jobs, steps · Sintaxe YAML</td>
+                            <td><span class="tipo-badge tipo-mista">Teórico-Prática</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr class="row-trabalho">
+                            <td><div class="aula-num" style="background:var(--git-green);">09</div></td>
+                            <td><strong>24/06</strong></td>
+                            <td>GitHub Actions avançado · Actions do Marketplace · Testes automáticos no pipeline · Apresentação dos Trabalhos</td>
+                            <td><span class="tipo-badge tipo-entrega">Prática + Entrega</span></td>
+                            <td>✅ <strong>Entrega do Trabalho (40%)</strong></td>
+                        </tr>
+                        <tr>
+                            <td><div class="aula-num">10</div></td>
+                            <td><strong>01/07</strong></td>
+                            <td>Entrega Contínua (CD): ambientes dev/staging/prod · Deploy automatizado · Secrets &amp; variáveis · Monitoramento</td>
+                            <td><span class="tipo-badge tipo-teoria">Teórica</span></td>
+                            <td>—</td>
+                        </tr>
+                        <tr class="row-prova">
+                            <td><div class="aula-num" style="background:#c62828;">11</div></td>
+                            <td><strong>08/07</strong></td>
+                            <td>Revisão Geral: Git, GitFlow, Pull Requests, CI/CD · Simulado comentado · Dúvidas para a Prova</td>
+                            <td><span class="tipo-badge tipo-revisao">Revisão</span></td>
+                            <td>📝 <strong>PROVA (60%)</strong></td>
+                        </tr>
+                        <tr class="row-exame">
+                            <td><div class="aula-num" style="background:#6a1b9a;">EF</div></td>
+                            <td><strong>10/07</strong></td>
+                            <td><strong>EXAME FINAL</strong> — Recuperação para alunos com NF entre 4,0 e 5,9</td>
+                            <td><span class="tipo-badge tipo-exame">Exame Final</span></td>
+                            <td>🎓 <strong>Encerramento</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:0.88rem;">
+                    <span style="background:#e8f5e9;padding:4px 12px;border-radius:10px;color:#2e7d32;font-weight:600;">🟢 Entrega do Trabalho: 24/06</span>
+                    <span style="background:#fce4ec;padding:4px 12px;border-radius:10px;color:#880e4f;font-weight:600;">🔴 Prova: 08/07</span>
+                    <span style="background:#ede7f6;padding:4px 12px;border-radius:10px;color:#4527a0;font-weight:600;">🟣 Exame Final: 10/07</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 6: UNIDADE I — FUNDAMENTOS -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📦 Unidade I — Fundamentos e Git</h2>
+                <p>Aulas 01, 02 e 03 · 29/04 · 06/05 · 13/05/2026</p>
+            </div>
+            <div class="slide-body">
+                <div class="unidade-header">
+                    <div class="icone">🗃️</div>
+                    <div>
+                        <h3>Gerência de Configuração + Git Essencial</h3>
+                        <p>Do conceito ao primeiro repositório remoto no GitHub</p>
+                    </div>
+                </div>
+
+                <div class="three-col">
+                    <div class="example-card">
+                        <h4>📘 Aula 01 — 29/04</h4>
+                        <p style="font-size:0.93rem;line-height:1.6;margin-bottom:10px;"><strong>Gerência de Configuração</strong></p>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ O que é GCS e por que importa</li>
+                            <li style="padding:3px 0;">→ Baseline, release, build, tag</li>
+                            <li style="padding:3px 0;">→ Linha do tempo do versionamento</li>
+                            <li style="padding:3px 0;">→ Sistemas: CVS, SVN, Git</li>
+                            <li style="padding:3px 0;">→ Apresentação do plano da disciplina</li>
+                        </ul>
+                    </div>
+                    <div class="example-card delay-1">
+                        <h4>💻 Aula 02 — 06/05</h4>
+                        <p style="font-size:0.93rem;line-height:1.6;margin-bottom:10px;"><strong>Git Local</strong></p>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ Instalação e <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">git config</code></li>
+                            <li style="padding:3px 0;">→ <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">init · add · commit · status</code></li>
+                            <li style="padding:3px 0;">→ <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">log · diff · show · reset</code></li>
+                            <li style="padding:3px 0;">→ .gitignore — o que versionar</li>
+                            <li style="padding:3px 0;">→ Área de staging (index)</li>
+                        </ul>
+                    </div>
+                    <div class="example-card delay-2">
+                        <h4>🌐 Aula 03 — 13/05</h4>
+                        <p style="font-size:0.93rem;line-height:1.6;margin-bottom:10px;"><strong>Git Remoto e GitHub</strong></p>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">remote · clone · push · pull</code></li>
+                            <li style="padding:3px 0;">→ SSH keys e autenticação</li>
+                            <li style="padding:3px 0;">→ Conventional Commits</li>
+                            <li style="padding:3px 0;">→ Semantic Versioning (SemVer)</li>
+                            <li style="padding:3px 0;">→ README.md e GitHub profile</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="git-box">
+                    <h3>🖥️ Comandos Fundamentais — Referência Rápida</h3>
+                    <div class="two-col" style="margin-top:10px;gap:15px;">
+                        <div>
+                            <p style="margin-bottom:8px;font-size:0.9rem;color:#8b949e;">REPOSITÓRIO LOCAL:</p>
+                            <code>git init</code>&nbsp; &nbsp;
+                            <code>git add .</code>&nbsp; &nbsp;
+                            <code>git commit -m "msg"</code><br><br>
+                            <code>git status</code>&nbsp; &nbsp;
+                            <code>git log --oneline</code>
+                        </div>
+                        <div>
+                            <p style="margin-bottom:8px;font-size:0.9rem;color:#8b949e;">REPOSITÓRIO REMOTO:</p>
+                            <code>git remote add origin URL</code><br><br>
+                            <code>git push -u origin main</code>&nbsp; &nbsp;
+                            <code>git pull</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-box delay-3" style="border-left-color:var(--git-green);">
+                    <h3 style="color:var(--git-green);">✅ Atividade Prática — Aulas 02 e 03</h3>
+                    <ul>
+                        <li>Criar repositório no GitHub com README e .gitignore</li>
+                        <li>Realizar ao menos 5 commits com mensagens no padrão Conventional Commits</li>
+                        <li>Fazer push para o repositório remoto e compartilhar o link no Classroom</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 7: UNIDADE II — BRANCHES E GITFLOW -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🌿 Unidade II — Branches e GitFlow</h2>
+                <p>Aulas 04 e 05 · 20/05 · 27/05/2026</p>
+            </div>
+            <div class="slide-body">
+                <div class="unidade-header">
+                    <div class="icone">🔀</div>
+                    <div>
+                        <h3>Ramificações e Modelo GitFlow</h3>
+                        <p>Trabalhar em paralelo sem bagunçar o código de produção</p>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div>
+                        <div class="example-card">
+                            <h4>🌲 Aula 04 — 20/05 · Branches e Merge</h4>
+                            <ul style="list-style:none;padding:0;font-size:0.93rem;">
+                                <li style="padding:4px 0;">→ Por que usar branches? Isolamento de features</li>
+                                <li style="padding:4px 0;">→ <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">branch · checkout · switch</code></li>
+                                <li style="padding:4px 0;">→ Merge fast-forward vs 3-way merge</li>
+                                <li style="padding:4px 0;">→ Conflitos: identificar e resolver</li>
+                                <li style="padding:4px 0;">→ <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">rebase</code> — histórico linear</li>
+                                <li style="padding:4px 0;">→ Estratégias: merge commit, squash</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="example-card delay-1">
+                            <h4>⚙️ Aula 05 — 27/05 · GitFlow</h4>
+                            <ul style="list-style:none;padding:0;font-size:0.93rem;">
+                                <li style="padding:4px 0;">→ O modelo GitFlow (Vincent Driessen, 2010)</li>
+                                <li style="padding:4px 0;">→ Branch <strong>main</strong> — produção estável</li>
+                                <li style="padding:4px 0;">→ Branch <strong>develop</strong> — integração</li>
+                                <li style="padding:4px 0;">→ <strong>feature/*</strong> — novas funcionalidades</li>
+                                <li style="padding:4px 0;">→ <strong>release/*</strong> — preparação de versão</li>
+                                <li style="padding:4px 0;">→ <strong>hotfix/*</strong> — correção emergencial</li>
+                                <li style="padding:4px 0;">→ Instalação e uso do <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">git-flow</code> CLI</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="git-box" style="margin-top:15px;">
+                    <h3>🌊 Fluxo GitFlow — Visão Geral</h3>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;font-size:0.9rem;">
+                        <span style="background:#28a745;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">main</span>
+                        <span style="color:#58a6ff;">←← hotfix/*</span>
+                        <span style="background:#0366d6;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">develop</span>
+                        <span style="color:#58a6ff;">←← feature/*</span>
+                        <span style="color:#8b949e;font-size:0.85rem;">&amp; ←→ release/*</span>
+                    </div>
+                    <div style="margin-top:14px;font-size:0.88rem;color:#8b949e;line-height:1.7;">
+                        <code>git flow init</code> &nbsp;→&nbsp; <code>git flow feature start minha-feature</code> &nbsp;→&nbsp;
+                        <code>git flow feature finish minha-feature</code> &nbsp;→&nbsp; <code>git flow release start 1.0.0</code>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;">
+                    <h3>📢 Divulgação do Trabalho — Aula 05 (27/05)</h3>
+                    <p style="font-size:1rem;margin-top:10px;line-height:1.7;">
+                        O tema, especificações e critérios do <strong>Trabalho Prático (40%)</strong> serão apresentados nesta aula. 
+                        As equipes têm até a <strong>Aula 09 (24/06)</strong> para entrega — 4 semanas de desenvolvimento.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 8: UNIDADE III — COLABORAÇÃO E PULL REQUESTS -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🔁 Unidade III — Colaboração e Pull Requests</h2>
+                <p>Aulas 06 e 07 · 03/06 · 10/06/2026</p>
+            </div>
+            <div class="slide-body">
+                <div class="unidade-header">
+                    <div class="icone">👥</div>
+                    <div>
+                        <h3>Trabalho em Equipe e Revisão de Código</h3>
+                        <p>Fork, contribuição, Pull Requests e Code Review profissional</p>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="content-box">
+                        <h3>🍴 Aula 06 — 03/06 · Colaboração</h3>
+                        <ul>
+                            <li><strong>Fork</strong> — cópia pessoal de repositório alheio</li>
+                            <li>Fluxo: Fork → Clone → Branch → Push → PR</li>
+                            <li><strong>Rebase interativo</strong> — <code style="background:#f5f5f5;padding:1px 5px;border-radius:3px;">git rebase -i</code></li>
+                            <li><strong>Squash</strong> — unir commits antes do PR</li>
+                            <li><strong>Stash</strong> — guardar trabalho inacabado</li>
+                            <li><strong>Tags</strong> — marcar versões estáveis</li>
+                        </ul>
+                    </div>
+                    <div class="content-box delay-1">
+                        <h3>📬 Aula 07 — 10/06 · Pull Requests</h3>
+                        <ul>
+                            <li>Anatomia de um Pull Request de qualidade</li>
+                            <li>Criação: título, descrição, reviewers, labels</li>
+                            <li><strong>Code Review</strong>: o que verificar e como dar feedback</li>
+                            <li>Branch protection rules e required reviewers</li>
+                            <li>Templates de PR com <code style="background:#f5f5f5;padding:1px 5px;border-radius:3px;">.github/PULL_REQUEST_TEMPLATE.md</code></li>
+                            <li>Draft PRs e WIP (Work in Progress)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="three-col" style="margin-top:15px;">
+                    <div class="example-card" style="border-color:#0366d6;">
+                        <h4 style="color:#0366d6;">📋 Boas Práticas de PR</h4>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ Um propósito por PR</li>
+                            <li style="padding:3px 0;">→ Máx. 400 linhas alteradas</li>
+                            <li style="padding:3px 0;">→ Título no imperativo</li>
+                            <li style="padding:3px 0;">→ Screenshots para UI</li>
+                        </ul>
+                    </div>
+                    <div class="example-card delay-1" style="border-color:#6f42c1;">
+                        <h4 style="color:#6f42c1;">🔍 Code Review: O Que Verificar</h4>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ Lógica e correção</li>
+                            <li style="padding:3px 0;">→ Legibilidade do código</li>
+                            <li style="padding:3px 0;">→ Testes cobrem o change?</li>
+                            <li style="padding:3px 0;">→ Segurança e performance</li>
+                        </ul>
+                    </div>
+                    <div class="example-card delay-2" style="border-color:#28a745;">
+                        <h4 style="color:#28a745;">✅ Critérios de Aprovação</h4>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ CI/CD passando (verde)</li>
+                            <li style="padding:3px 0;">→ Ao menos 1 reviewer</li>
+                            <li style="padding:3px 0;">→ Sem conflitos</li>
+                            <li style="padding:3px 0;">→ Branch atualizada</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="git-box">
+                    <h3>💬 Etiqueta de Code Review — Regra de Ouro</h3>
+                    <p style="font-size:0.95rem;line-height:1.7;margin-top:10px;">
+                        Critique o <strong style="color:#7ee787;">código</strong>, nunca a <strong style="color:#f97316;">pessoa</strong>. 
+                        Use perguntas: <em>"O que você acha de…?"</em> em vez de afirmações: <em>"Isso está errado."</em>  
+                        Elogie soluções elegantes. O objetivo do review é <code>melhorar o produto</code>, não mostrar quem é mais esperto.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 9: UNIDADE IV — CI/CD E GITHUB ACTIONS -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>⚡ Unidade IV — CI/CD e GitHub Actions</h2>
+                <p>Aulas 08, 09, 10 e 11 · 17/06 → 08/07/2026</p>
+            </div>
+            <div class="slide-body">
+                <div class="unidade-header">
+                    <div class="icone">🤖</div>
+                    <div>
+                        <h3>Integração e Entrega Contínua Automatizada</h3>
+                        <p>Do push ao deploy — sem tocar no servidor manualmente!</p>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div>
+                        <div class="example-card" style="border-color:var(--ci-teal);">
+                            <h4 style="color:var(--ci-teal);">🔨 Aulas 08-09 · CI com GitHub Actions</h4>
+                            <ul style="list-style:none;padding:0;font-size:0.92rem;">
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> O que é CI e por que adotar</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Workflows: arquivo <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">.github/workflows/*.yml</code></li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Eventos: <code style="background:#f0f0f0;border-radius:3px;padding:0 4px;">push · pull_request · schedule</code></li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Jobs, steps e runners (ubuntu-latest)</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Actions do Marketplace (<em>actions/checkout</em>, <em>setup-node</em>)</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Executar testes automáticos no pipeline</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Artifacts e cache de dependências</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="example-card delay-1" style="border-color:var(--cd-indigo);">
+                            <h4 style="color:var(--cd-indigo);">🚀 Aula 10 · Entrega Contínua (CD)</h4>
+                            <ul style="list-style:none;padding:0;font-size:0.92rem;">
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> CI vs CD vs Continuous Deployment</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Ambientes: dev → staging → produção</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Deploy automático no GitHub Pages</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Secrets e variáveis de ambiente</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Environments com approvals</li>
+                                <li style="padding:3px 0 3px 20px;position:relative;"><span style="position:absolute;left:0;">→</span> Monitoramento pós-deploy</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="git-box">
+                    <h3>📄 Exemplo — Workflow CI Básico</h3>
+                    <pre style="font-size:0.82rem;line-height:1.7;color:#e6edf3;margin-top:10px;"><span style="color:#8b949e"># .github/workflows/ci.yml</span>
+<span style="color:#7ee787;">name</span>: <span style="color:#a5d6ff;">CI Pipeline</span>
+<span style="color:#7ee787;">on</span>: [<span style="color:#a5d6ff;">push</span>, <span style="color:#a5d6ff;">pull_request</span>]
+<span style="color:#7ee787;">jobs</span>:
+  <span style="color:#7ee787;">build-and-test</span>:
+    <span style="color:#7ee787;">runs-on</span>: <span style="color:#a5d6ff;">ubuntu-latest</span>
+    <span style="color:#7ee787;">steps</span>:
+      - <span style="color:#7ee787;">uses</span>: <span style="color:#a5d6ff;">actions/checkout@v4</span>
+      - <span style="color:#7ee787;">uses</span>: <span style="color:#a5d6ff;">actions/setup-node@v4</span>
+      - <span style="color:#7ee787;">run</span>: <span style="color:#a5d6ff;">npm install &amp;&amp; npm test</span></pre>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;animation-delay:0.4s;">
+                    <h3>🎯 Aula 11 — 08/07 · Revisão + PROVA</h3>
+                    <p style="font-size:1rem;margin-top:10px;line-height:1.7;">
+                        A última aula será dedicada à revisão de todo o semestre com simulado comentado.
+                        Em seguida, a <strong>Prova (60%)</strong> será aplicada na mesma sessão.
+                        O Exame Final (recuperação) ocorre na <strong>sexta-feira, 10/07/2026</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 10: ESPECIFICAÇÕES DO TRABALHO -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>💻 Trabalho Prático — Especificações</h2>
+                <p>Projeto Integrador · 40% da Nota Final · Equipes de 2-3 pessoas</p>
+            </div>
+            <div class="slide-body">
+                <div class="big-idea" style="font-size:1.4rem;padding:25px;">
+                    🎯 Criar um repositório real com GitFlow, Pull Requests e Pipeline CI/CD funcional
+                </div>
+
+                <div class="two-col" style="margin-top:15px;">
+                    <div>
+                        <div class="content-box">
+                            <h3>📦 Entregáveis Obrigatórios</h3>
+                            <ul>
+                                <li><strong>Repositório GitHub público</strong> com histórico de commits significativo</li>
+                                <li><strong>GitFlow completo</strong>: branches main, develop, ao menos 2 feature, 1 release</li>
+                                <li><strong>2+ Pull Requests</strong> com code review documentado (aprovações e comentários)</li>
+                                <li><strong>Pipeline CI</strong> (<code style="background:#f5f5f5;padding:1px 5px;border-radius:3px;">.github/workflows/ci.yml</code>) executando testes</li>
+                                <li><strong>README.md</strong> documentando: projeto, como rodar e pipeline</li>
+                                <li><strong>Apresentação oral</strong> de 10 min na Aula 09 (24/06)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="content-box delay-1">
+                            <h3>📊 Critérios de Avaliação</h3>
+                            <ul>
+                                <li><strong>Repositório e commits (20%)</strong>: histórico, mensagens, .gitignore</li>
+                                <li><strong>GitFlow (25%)</strong>: branches corretas, merge sem conflito, tags</li>
+                                <li><strong>Pull Requests (20%)</strong>: qualidade, code review real entre membros</li>
+                                <li><strong>Pipeline CI/CD (25%)</strong>: workflow funcional, testes passando</li>
+                                <li><strong>Apresentação (10%)</strong>: clareza, domínio, demo ao vivo</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="three-col" style="margin-top:15px;">
+                    <div class="example-card" style="border-color:#0d9488;">
+                        <h4 style="color:#0d9488;">💡 Sugestão A — API REST</h4>
+                        <p style="font-size:0.9rem;line-height:1.55;">Mini API Node.js/Express com testes unitários automatizados no pipeline. Deploy no Railway ou Render.</p>
+                    </div>
+                    <div class="example-card delay-1" style="border-color:#0366d6;">
+                        <h4 style="color:#0366d6;">💡 Sugestão B — Site Estático</h4>
+                        <p style="font-size:0.9rem;line-height:1.55;">Portfólio ou landing page com pipeline de lint + build + deploy automático no GitHub Pages.</p>
+                    </div>
+                    <div class="example-card delay-2" style="border-color:#6f42c1;">
+                        <h4 style="color:#6f42c1;">💡 Sugestão C — Tema Livre</h4>
+                        <p style="font-size:0.9rem;line-height:1.55;">Qualquer projeto que justifique GitFlow e CI/CD. Aprovação prévia com o professor até a Aula 06.</p>
+                    </div>
+                </div>
+
+                <div style="background:#fff8e1;border-left:4px solid #f59e0b;padding:14px 20px;border-radius:10px;margin-top:12px;font-size:0.95rem;">
+                    <strong>📅 Linha do Tempo:</strong> &nbsp;
+                    <span style="background:#e3f2fd;padding:3px 10px;border-radius:8px;margin:0 4px;">27/05 — Divulgação do Trabalho</span> →
+                    <span style="background:#fce4ec;padding:3px 10px;border-radius:8px;margin:0 4px;">03/06 — Definição das equipes</span> →
+                    <span style="background:#e8f5e9;padding:3px 10px;border-radius:8px;margin:0 4px;font-weight:700;">24/06 — Entrega + Apresentação</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 11: METODOLOGIA -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🧑‍🏫 Metodologia e Dinâmica das Aulas</h2>
+                <p>Como as aulas serão conduzidas</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col">
+                    <div class="content-box">
+                        <h3>🎓 Abordagem Pedagógica</h3>
+                        <ul>
+                            <li><strong>Aulas expositivo-dialogadas</strong> com slides e live coding</li>
+                            <li><strong>Laboratório prático</strong> — cada conceito é imediatamente aplicado no terminal</li>
+                            <li><strong>Pair programming</strong> — aprendizado colaborativo entre alunos</li>
+                            <li><strong>Projeto incremental</strong> — o repositório do trabalho é construído ao longo do semestre</li>
+                            <li><strong>Resolução de problemas reais</strong> — situações do dia a dia do desenvolvedor</li>
+                        </ul>
+                    </div>
+                    <div class="content-box delay-1">
+                        <h3>🖥️ Ambiente de Trabalho</h3>
+                        <ul>
+                            <li><strong>Git</strong> (v2.43+) instalado localmente</li>
+                            <li><strong>VS Code</strong> com extensão GitLens</li>
+                            <li><strong>GitHub</strong> — conta gratuita obrigatória</li>
+                            <li><strong>Terminal</strong> (bash/zsh/PowerShell)</li>
+                            <li>Laboratórios da UniFil — tudo já configurado</li>
+                            <li>Para casa: tutorial de instalação no Classroom</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="three-col" style="margin-top:15px;">
+                    <div class="example-card" style="border-color:var(--ci-teal);">
+                        <h4 style="color:var(--ci-teal);">📐 Estrutura de Cada Aula</h4>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ 10 min — Revisão anterior</li>
+                            <li style="padding:3px 0;">→ 30 min — Teoria + Demo</li>
+                            <li style="padding:3px 0;">→ 40 min — Prática guiada</li>
+                            <li style="padding:3px 0;">→ 10 min — Dúvidas + resumo</li>
+                        </ul>
+                    </div>
+                    <div class="example-card delay-1" style="border-color:var(--git-blue);">
+                        <h4 style="color:var(--git-blue);">📚 Recursos Disponíveis</h4>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ Slides no Google Classroom</li>
+                            <li style="padding:3px 0;">→ Repositório de exemplos</li>
+                            <li style="padding:3px 0;">→ Fórum de dúvidas</li>
+                            <li style="padding:3px 0;">→ Pro Git Book (gratuito)</li>
+                        </ul>
+                    </div>
+                    <div class="example-card delay-2" style="border-color:var(--unifil-orange);">
+                        <h4>📋 Regras da Disciplina</h4>
+                        <ul style="list-style:none;padding:0;font-size:0.9rem;">
+                            <li style="padding:3px 0;">→ 75% de presença mínima</li>
+                            <li style="padding:3px 0;">→ Plágio = nota zero</li>
+                            <li style="padding:3px 0;">→ Atraso no trabalho: -1,0/dia</li>
+                            <li style="padding:3px 0;">→ Dúvidas: atendimento quinta 21h</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;">
+                    <h3>💡 Dica de Ouro para a Disciplina</h3>
+                    <p style="font-size:1.05rem;margin-top:10px;line-height:1.7;">
+                        <strong>Commit todos os dias!</strong> Mesmo pequenas mudanças. Isso constrói o hábito e 
+                        garante que você pratique os comandos naturalmente. Um perfil GitHub ativo com 
+                        histórico consistente é um dos <strong>melhores cartões de visita</strong> para o mercado.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 12: RECURSOS E REFERÊNCIAS -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>📚 Recursos e Referências</h2>
+                <p>Fontes, ferramentas e materiais de apoio</p>
+            </div>
+            <div class="slide-body">
+                <div class="two-col">
+                    <div>
+                        <h3 style="color:var(--unifil-orange);margin-bottom:15px;font-size:1.3rem;">📖 Bibliografia Principal</h3>
+
+                        <div class="recurso-item">
+                            <div class="recurso-icone">📗</div>
+                            <div>
+                                <strong style="font-size:1rem;">Pro Git (2ª ed.) — Scott Chacon</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">Referência oficial do Git. Disponível gratuitamente em git-scm.com/book/pt-br</p>
+                            </div>
+                        </div>
+
+                        <div class="recurso-item delay-1">
+                            <div class="recurso-icone">📙</div>
+                            <div>
+                                <strong style="font-size:1rem;">Continuous Delivery — Jez Humble &amp; David Farley</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">O livro definitivo sobre entrega contínua e pipelines de deploy</p>
+                            </div>
+                        </div>
+
+                        <div class="recurso-item delay-2">
+                            <div class="recurso-icone">📘</div>
+                            <div>
+                                <strong style="font-size:1rem;">A Successful Git Branching Model — V. Driessen</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">Artigo original do GitFlow — nvie.com/posts/a-successful-git-branching-model</p>
+                            </div>
+                        </div>
+
+                        <div class="recurso-item delay-3">
+                            <div class="recurso-icone">📕</div>
+                            <div>
+                                <strong style="font-size:1rem;">GitHub Actions Docs — docs.github.com</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">Documentação oficial completa com exemplos de workflows</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="color:var(--unifil-orange);margin-bottom:15px;font-size:1.3rem;">🛠️ Ferramentas da Disciplina</h3>
+
+                        <div class="recurso-item" style="animation-delay:0.1s;">
+                            <div class="recurso-icone" style="background:var(--git-dark);">🐙</div>
+                            <div>
+                                <strong style="font-size:1rem;">GitHub — github.com</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">Repositórios, Actions, Pull Requests — plataforma principal da disciplina</p>
+                            </div>
+                        </div>
+
+                        <div class="recurso-item" style="animation-delay:0.2s;">
+                            <div class="recurso-icone" style="background:#007ACC;">💻</div>
+                            <div>
+                                <strong style="font-size:1rem;">VS Code + GitLens</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">IDE recomendada com visualização avançada do histórico Git</p>
+                            </div>
+                        </div>
+
+                        <div class="recurso-item" style="animation-delay:0.3s;">
+                            <div class="recurso-icone" style="background:#0d9488;">⚡</div>
+                            <div>
+                                <strong style="font-size:1rem;">GitHub Actions Marketplace</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">github.com/marketplace — ações prontas para os pipelines</p>
+                            </div>
+                        </div>
+
+                        <div class="recurso-item" style="animation-delay:0.4s;">
+                            <div class="recurso-icone" style="background:#6f42c1;">🌳</div>
+                            <div>
+                                <strong style="font-size:1rem;">LearnGitBranching — learngitbranching.js.org</strong>
+                                <p style="font-size:0.88rem;color:var(--unifil-gray);margin-top:3px;">Ferramenta visual e interativa para praticar branches e merges</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top:15px;">
+                    <h3>🔗 Acesso aos Materiais da Disciplina</h3>
+                    <div class="two-col" style="margin-top:12px;gap:20px;">
+                        <div>
+                            <p style="font-size:1rem;line-height:1.7;">
+                                <strong>📧 Email:</strong> tiago.galvao@unifil.br<br>
+                                <strong>🏫 Google Classroom:</strong> link disponibilizado na Aula 01<br>
+                                <strong>⏰ Atendimento:</strong> Quintas-feiras, 21h–22h
+                            </p>
+                        </div>
+                        <div>
+                            <p style="font-size:1rem;line-height:1.7;">
+                                <strong>🏢 Sala:</strong> Laboratório de Informática — Bloco C<br>
+                                <strong>📁 Repositório de Exemplos:</strong> será compartilhado na Aula 01<br>
+                                <strong>📌 GitHub Pages:</strong> slides disponíveis online
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SLIDE 13: ENCERRAMENTO -->
+    <!-- ============================================================ -->
+    <div class="slide">
+        <div class="slide-content">
+            <div class="slide-header">
+                <h2>🚀 Prontos para Começar?</h2>
+                <p>Gerência de Configuração e Controle de Versão — 2026.1</p>
+            </div>
+            <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+                <div style="font-size:4.5rem;margin-bottom:20px;">⚙️🔀🚀</div>
+                <div class="big-idea" style="max-width:850px;">
+                    "O código que não está sob controle de versão é como código que não existe." — Tom Preston-Werner
+                </div>
+
+                <div class="four-col" style="width:100%;max-width:920px;margin-top:25px;">
+                    <div class="stat-card">
+                        <div class="number" style="font-size:2rem;">11</div>
+                        <div class="label">Aulas Práticas</div>
+                    </div>
+                    <div class="stat-card" style="animation-delay:0.1s;">
+                        <div class="number" style="font-size:2rem;">29/04</div>
+                        <div class="label">Primeira Aula</div>
+                    </div>
+                    <div class="stat-card" style="animation-delay:0.2s;">
+                        <div class="number" style="font-size:2rem;">24/06</div>
+                        <div class="label">Entrega Trabalho</div>
+                    </div>
+                    <div class="stat-card" style="animation-delay:0.3s;">
+                        <div class="number" style="font-size:2rem;">10/07</div>
+                        <div class="label">Exame Final</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:35px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center;">
+                    <div style="background:#e8f5e9;border:2px solid #28a745;padding:16px 28px;border-radius:16px;">
+                        <p style="font-size:1rem;font-weight:700;color:#1b5e20;">✅ Trabalho (40%)</p>
+                        <p style="font-size:0.9rem;color:#2e7d32;margin-top:4px;">Entrega: 24/06/2026</p>
+                    </div>
+                    <div style="background:#fce4ec;border:2px solid #c62828;padding:16px 28px;border-radius:16px;">
+                        <p style="font-size:1rem;font-weight:700;color:#880e4f;">📝 Prova (60%)</p>
+                        <p style="font-size:0.9rem;color:#c62828;margin-top:4px;">Aula 11: 08/07/2026</p>
+                    </div>
+                    <div style="background:#ede7f6;border:2px solid #6a1b9a;padding:16px 28px;border-radius:16px;">
+                        <p style="font-size:1rem;font-weight:700;color:#4527a0;">🎓 Exame Final</p>
+                        <p style="font-size:0.9rem;color:#6a1b9a;margin-top:4px;">Recuperação: 10/07/2026</p>
+                    </div>
+                </div>
+
+                <div style="margin-top:35px;font-size:1.05rem;color:var(--unifil-gray);line-height:1.8;">
+                    <p><strong>Prof. Tiago Dutra Galvão</strong> &nbsp;|&nbsp; tiago.galvao@unifil.br</p>
+                    <p>Ciência da Computação &amp; Engenharia de Software — UniFil, Londrina-PR</p>
+                </div>
+
+                <div style="margin-top:25px;font-size:0.95rem;color:var(--unifil-gray);font-style:italic;">
+                    "Todo sênior já foi um git commit assustador." 😄 &nbsp;—&nbsp; Pratique. Aprenda. Versione.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /presentation -->
+
+<!-- NAVEGAÇÃO -->
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 13</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const dotsContainer = document.getElementById('slideDots');
+
+    // Create dots
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => showSlide(i);
+        dotsContainer.appendChild(dot);
+    }
+
+    function showSlide(n) {
+        slides.forEach(s => s.classList.remove('active', 'prev'));
+        currentSlide = (n + totalSlides) % totalSlides;
+        slides[currentSlide].classList.add('active');
+
+        document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+        document.getElementById('prevBtn').disabled = currentSlide === 0;
+        document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+        const progress = ((currentSlide + 1) / totalSlides) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+
+        // Dots
+        document.querySelectorAll('.dot').forEach((d, i) => {
+            d.classList.toggle('active', i === currentSlide);
+        });
+
+        // Reset animations
+        const animated = slides[currentSlide].querySelectorAll(
+            '.content-box, .example-card, .highlight-box, .big-idea, .timeline-item, .stat-card, .git-box, .unidade-header, .avaliacao-card, .nota-formula, .cronograma-table, .recurso-item'
+        );
+        animated.forEach(el => {
+            el.style.animation = 'none';
+            el.style.opacity = '0';
+            void el.offsetWidth;
+            el.style.animation = '';
+        });
+    }
+
+    function changeSlide(dir) {
+        const next = currentSlide + dir;
+        if (next >= 0 && next < totalSlides) showSlide(next);
+    }
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft') changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    // Touch
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+    document.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].screenX - touchStartX;
+        if (dx < -50) changeSlide(1);
+        if (dx > 50) changeSlide(-1);
+    });
+
+    showSlide(0);
+</script>
+</body>
+</html>

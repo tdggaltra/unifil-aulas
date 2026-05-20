@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 01 — Gerência de Configuração | UniFil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --unifil-orange: #FF8C00;
+            --unifil-dark:   #4A4A4A;
+            --unifil-light:  #F5F5F5;
+            --unifil-accent: #FF6B35;
+            --unifil-gray:   #6B6B6B;
+            --git-blue:      #0366d6;
+            --git-dark:      #24292e;
+            --git-green:     #28a745;
+            --git-purple:    #6f42c1;
+            --cvs-gray:      #6b7280;
+            --svn-amber:     #d97706;
+            --code-bg:       #282c34;
+            --code-text:     #abb2bf;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a3a 0%, #0d1b2a 100%);
+            overflow: hidden;
+            color: var(--unifil-dark);
+        }
+
+        .presentation { width: 100vw; height: 100vh; position: relative; }
+
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            display: none; opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.prev   { transform: translateX(-100%); }
+
+        .slide-content {
+            background: white;
+            width: 90%; max-width: 1200px;
+            height: 90%; margin: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── HEADER ────────────────────────────────────── */
+        .slide-header {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            padding: 28px 50px; color: white; flex-shrink: 0; position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -18px; left: 0; right: 0; height: 36px;
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        }
+        .slide-header h1 { font-size: 2.3rem; margin-bottom: 8px; font-weight: 700; }
+        .slide-header h2 { font-size: 1.7rem; margin-bottom: 8px; font-weight: 600; }
+        .slide-header p  { font-size: 1.05rem; opacity: 0.95; }
+
+        /* ── BODY ──────────────────────────────────────── */
+        .slide-body {
+            flex: 1; padding: 55px 50px 35px; overflow-y: auto;
+        }
+        .slide-body::-webkit-scrollbar { width: 8px; }
+        .slide-body::-webkit-scrollbar-track  { background: var(--unifil-light); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb  { background: var(--unifil-orange); border-radius: 10px; }
+        .slide-body::-webkit-scrollbar-thumb:hover { background: var(--unifil-accent); }
+
+        /* ── LAYOUTS ──────────────────────────────────── */
+        .two-col   { display: grid; grid-template-columns: 1fr 1fr;      gap: 30px; margin: 25px 0; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr;  gap: 22px; margin: 25px 0; }
+        .four-col  { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin: 25px 0; }
+
+        /* ── CONTENT BOX ──────────────────────────────── */
+        .content-box {
+            background: var(--unifil-light); padding: 25px; border-radius: 15px;
+            border-left: 5px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .content-box h3 { color: var(--unifil-orange); margin-bottom: 12px; font-size: 1.3rem; }
+        .content-box ul { list-style: none; padding: 0; }
+        .content-box li { padding: 8px 0 8px 28px; position: relative; font-size: 1.02rem; line-height: 1.6; }
+        .content-box li::before { content: '→'; position: absolute; left: 0; color: var(--unifil-orange); font-weight: bold; font-size: 1.1rem; }
+
+        .content-box.blue  { border-left-color: var(--git-blue);   }  .content-box.blue  h3 { color: var(--git-blue);   }
+        .content-box.green { border-left-color: var(--git-green);  }  .content-box.green h3 { color: var(--git-green);  }
+        .content-box.purple{ border-left-color: var(--git-purple); }  .content-box.purple h3{ color: var(--git-purple); }
+        .content-box.amber { border-left-color: var(--svn-amber);  }  .content-box.amber h3 { color: var(--svn-amber);  }
+
+        /* ── HIGHLIGHT BOX ────────────────────────────── */
+        .highlight-box {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 28px; border-radius: 15px; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0;
+        }
+        .highlight-box h3 { margin-bottom: 12px; font-size: 1.5rem; }
+        .highlight-box p, .highlight-box li { font-size: 1.05rem; line-height: 1.7; }
+
+        /* ── BIG IDEA ─────────────────────────────────── */
+        .big-idea {
+            background: linear-gradient(135deg, var(--git-blue) 0%, #0d4b8c 100%);
+            color: white; padding: 35px; border-radius: 20px;
+            font-size: 1.7rem; font-weight: 600; text-align: center; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            box-shadow: 0 10px 30px rgba(3,102,214,0.3);
+            line-height: 1.5;
+        }
+
+        /* ── ANALOGY BOX ──────────────────────────────── */
+        .analogy-box {
+            background: #fff8e1; border: 3px solid #f59e0b;
+            border-radius: 15px; padding: 25px; margin: 22px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .analogy-box h3 { color: #92400e; margin-bottom: 12px; font-size: 1.3rem; }
+        .analogy-box p  { font-size: 1.05rem; line-height: 1.7; color: #78350f; }
+
+        /* ── EXAMPLE CARD ─────────────────────────────── */
+        .example-card {
+            background: white; border: 2px solid var(--unifil-orange);
+            padding: 22px; border-radius: 12px; margin: 18px 0;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .example-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255,140,0,0.2); }
+        .example-card h4 { color: var(--unifil-orange); margin-bottom: 10px; font-size: 1.2rem; }
+
+        /* ── STAT CARD ────────────────────────────────── */
+        .stat-card {
+            text-align: center; padding: 22px; background: white;
+            border-radius: 15px; border: 3px solid var(--unifil-orange);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .stat-card .number { font-size: 2.5rem; font-weight: 700; color: var(--unifil-orange); margin-bottom: 8px; }
+        .stat-card .label  { font-size: 1rem; color: var(--unifil-gray); font-weight: 500; }
+
+        /* ── COMPARISON TABLE ─────────────────────────── */
+        .comparison-table {
+            width: 100%; border-collapse: collapse; margin: 25px 0;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; padding: 16px 18px; text-align: left; font-size: 1.05rem;
+        }
+        .comparison-table td {
+            padding: 14px 18px; border-bottom: 1px solid #eee;
+            font-size: 1rem; line-height: 1.6; vertical-align: middle;
+        }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table tr:hover td { background: #fff8f0; }
+
+        /* ── CODE BLOCK ───────────────────────────────── */
+        .code-block {
+            background: var(--code-bg); color: var(--code-text);
+            padding: 20px; border-radius: 10px;
+            font-family: 'Courier New', monospace; font-size: 0.88rem;
+            overflow-x: auto; margin: 15px 0; line-height: 1.7; white-space: pre;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .kw  { color: #c678dd; } .fn  { color: #61afef; }
+        .str { color: #98c379; } .cm  { color: #5c6370; font-style: italic; }
+        .nm  { color: #d19a66; } .op  { color: #56b6c2; }
+        .tag { color: #e06c75; } .atr { color: #d19a66; }
+
+        /* ── TIMELINE ─────────────────────────────────── */
+        .timeline { position: relative; padding-left: 40px; margin: 25px 0; }
+        .timeline::before {
+            content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+            width: 3px; background: var(--unifil-orange);
+        }
+        .timeline-item {
+            position: relative; padding: 18px 0;
+            animation: fadeInLeft 0.6s ease-out forwards; opacity: 0;
+        }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -33px; top: 24px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--unifil-orange); border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--unifil-orange);
+        }
+        .timeline-item h4 { color: var(--unifil-orange); font-size: 1.25rem; margin-bottom: 7px; }
+
+        /* ── VCS TIMELINE (horizontal) ────────────────── */
+        .vcs-timeline {
+            display: flex; align-items: flex-start; gap: 0;
+            margin: 28px 0; position: relative;
+        }
+        .vcs-timeline::before {
+            content: ''; position: absolute;
+            top: 38px; left: 5%; right: 5%; height: 4px;
+            background: linear-gradient(90deg, var(--cvs-gray), var(--svn-amber), var(--git-blue), var(--git-green));
+            border-radius: 2px; z-index: 0;
+        }
+        .vcs-node {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; position: relative; z-index: 1;
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .vcs-dot {
+            width: 22px; height: 22px; border-radius: 50%;
+            border: 4px solid white; margin-bottom: 14px; flex-shrink: 0;
+            box-shadow: 0 0 0 3px currentColor;
+        }
+        .vcs-card {
+            background: white; border-radius: 12px; padding: 14px 12px;
+            text-align: center; width: 90%; margin-top: 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .vcs-card .year { font-size: 0.8rem; font-weight: 700; opacity: 0.6; margin-bottom: 4px; }
+        .vcs-card .name { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+        .vcs-card p     { font-size: 0.82rem; line-height: 1.5; color: var(--unifil-gray); }
+
+        /* ── CONCEPT PILL ─────────────────────────────── */
+        .pill-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+        .pill {
+            padding: 10px 20px; border-radius: 30px; font-weight: 600;
+            font-size: 0.95rem; animation: fadeInUp 0.5s ease-out forwards; opacity: 0;
+            cursor: default; transition: transform 0.2s;
+        }
+        .pill:hover { transform: scale(1.06); }
+        .pill-orange { background: linear-gradient(135deg, var(--unifil-orange), var(--unifil-accent)); color: white; }
+        .pill-blue   { background: linear-gradient(135deg, var(--git-blue), #0553b1); color: white; }
+        .pill-green  { background: linear-gradient(135deg, var(--git-green), #1a6b31); color: white; }
+        .pill-purple { background: linear-gradient(135deg, var(--git-purple), #4c1d95); color: white; }
+        .pill-gray   { background: #374151; color: white; }
+
+        /* ── QUIZ / EXERCÍCIO ─────────────────────────── */
+        .quiz-item {
+            background: var(--unifil-light); border-radius: 14px; padding: 22px;
+            margin: 16px 0; border-left: 5px solid var(--git-blue);
+            animation: fadeInUp 0.6s ease-out forwards; opacity: 0;
+        }
+        .quiz-item p.question { font-size: 1.08rem; font-weight: 600; color: var(--git-blue); margin-bottom: 12px; line-height: 1.5; }
+        .quiz-item .options label {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 8px 14px; border-radius: 8px; cursor: pointer;
+            font-size: 0.97rem; line-height: 1.5; margin: 5px 0;
+            transition: background 0.2s;
+        }
+        .quiz-item .options label:hover { background: #e0e7ff; }
+        .quiz-item .options input[type=radio] { margin-top: 3px; accent-color: var(--git-blue); flex-shrink: 0; }
+        .quiz-item .feedback { display: none; margin-top: 10px; padding: 10px 16px; border-radius: 8px; font-size: 0.97rem; font-weight: 600; }
+        .quiz-item .feedback.correct { background: #d1fae5; color: #065f46; display: block; }
+        .quiz-item .feedback.wrong   { background: #fee2e2; color: #991b1b; display: block; }
+        .check-btn {
+            background: var(--git-blue); color: white; border: none;
+            padding: 9px 22px; border-radius: 20px; cursor: pointer;
+            font-size: 0.95rem; font-weight: 600; margin-top: 12px;
+            transition: all 0.3s;
+        }
+        .check-btn:hover { background: #0553b1; transform: translateY(-2px); }
+
+        /* ── NAVIGATION ───────────────────────────────── */
+        .navigation {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 18px; align-items: center;
+            background: rgba(255,255,255,0.97); padding: 14px 28px;
+            border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .nav-button {
+            background: linear-gradient(135deg, var(--unifil-orange) 0%, var(--unifil-accent) 100%);
+            color: white; border: none; padding: 11px 22px; border-radius: 25px;
+            cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s;
+        }
+        .nav-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
+        .nav-button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .slide-counter { font-weight: 600; color: var(--unifil-dark); min-width: 75px; text-align: center; font-size: 1.05rem; }
+
+        .progress-bar  { position: fixed; top: 0; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.15); z-index: 1001; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--unifil-orange), var(--git-blue)); transition: width 0.4s; }
+
+        .slide-dots { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 1001; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: var(--unifil-orange); transform: scale(1.5); }
+
+        @keyframes fadeInUp   { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeInLeft { from { opacity:0; transform:translateX(-28px);} to { opacity:1; transform:translateX(0); } }
+
+        .d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s}
+        .d4{animation-delay:.4s} .d5{animation-delay:.5s} .d6{animation-delay:.6s}
+    </style>
+</head>
+<body>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="slide-dots" id="slideDots"></div>
+<div class="presentation">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 01 — CAPA
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide active">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h1>Gerência de Configuração e Controle de Versão</h1>
+            <p>Aula 01 — Gerência de Configuração de Software</p>
+        </div>
+        <div class="slide-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+            <div style="font-size:6rem;margin-bottom:26px;">⚙️</div>
+            <h2 style="font-size:2.4rem;color:var(--unifil-orange);margin-bottom:16px;">
+                Bem-vindo ao Mundo do Controle de Versão!
+            </h2>
+            <p style="font-size:1.2rem;color:var(--unifil-gray);max-width:820px;margin-bottom:38px;line-height:1.7;">
+                Nesta disciplina você vai dominar as ferramentas e práticas que
+                <strong>todo desenvolvedor profissional</strong> usa no dia a dia —
+                do primeiro <code style="background:#f0f0f0;padding:2px 8px;border-radius:6px;color:var(--unifil-dark);">git commit</code>
+                ao deploy automático em produção.
+            </p>
+            <div class="four-col" style="width:100%;max-width:920px;">
+                <div class="stat-card">
+                    <div class="number">11</div>
+                    <div class="label">Aulas</div>
+                </div>
+                <div class="stat-card d1">
+                    <div class="number">16,5h</div>
+                    <div class="label">Carga Horária</div>
+                </div>
+                <div class="stat-card d2">
+                    <div class="number">4</div>
+                    <div class="label">Unidades</div>
+                </div>
+                <div class="stat-card d3">
+                    <div class="number">100%</div>
+                    <div class="label">Prático</div>
+                </div>
+            </div>
+            <div style="margin-top:42px;font-size:1.05rem;color:var(--unifil-gray);line-height:1.9;">
+                <p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; tiago.galvao@unifil.br</p>
+                <p><strong>Data:</strong> Quarta-feira, 29 de Abril de 2026</p>
+                <p><strong>Cursos:</strong> Ciência da Computação &amp; Engenharia de Software — UniFil</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 02 — PLANO DA DISCIPLINA
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>📋 Plano da Disciplina</h2>
+            <p>O que você aprenderá — e como será avaliado</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col">
+                <div class="content-box">
+                    <h3>🗺️ Unidades do Semestre</h3>
+                    <ul>
+                        <li><strong>Unidade I (Aulas 01-03):</strong> Gerência de Configuração + Git Essencial</li>
+                        <li><strong>Unidade II (Aulas 04-05):</strong> Branches e GitFlow</li>
+                        <li><strong>Unidade III (Aulas 06-07):</strong> Colaboração e Pull Requests</li>
+                        <li><strong>Unidade IV (Aulas 08-11):</strong> CI/CD com GitHub Actions</li>
+                    </ul>
+                </div>
+                <div class="content-box blue d1">
+                    <h3>📊 Avaliações</h3>
+                    <ul>
+                        <li><strong>Trabalho Prático (40%)</strong> — Entrega 24/06/2026 · Equipes de 2-3 · Repositório com GitFlow + Pipeline CI/CD</li>
+                        <li><strong>Prova Final (60%)</strong> — 08/07/2026 · Toda a matéria · 1h30 · Sem consulta</li>
+                        <li><strong>Exame Final</strong> — 10/07/2026 · Recuperação (NF 4,0–5,9)</li>
+                        <li><strong>Aprovação:</strong> NF ≥ 6,0 e frequência ≥ 75%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h3>🎯 O que você conseguirá fazer ao final</h3>
+                <div class="two-col" style="margin:14px 0 0;gap:18px;">
+                    <ul style="list-style:none;padding:0;">
+                        <li style="padding:5px 0;font-size:1rem;">✅ Versionar código com Git proficiência</li>
+                        <li style="padding:5px 0;font-size:1rem;">✅ Trabalhar com GitFlow em equipes</li>
+                        <li style="padding:5px 0;font-size:1rem;">✅ Criar e revisar Pull Requests</li>
+                    </ul>
+                    <ul style="list-style:none;padding:0;">
+                        <li style="padding:5px 0;font-size:1rem;">✅ Escrever workflows YAML para CI/CD</li>
+                        <li style="padding:5px 0;font-size:1rem;">✅ Automatizar testes e deploys</li>
+                        <li style="padding:5px 0;font-size:1rem;">✅ Entregar software com qualidade</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="content-box green d2">
+                    <h3>🛠️ Ferramentas que usaremos</h3>
+                    <ul>
+                        <li><strong>Git</strong> — controle de versão local</li>
+                        <li><strong>GitHub</strong> — repositório remoto e Actions</li>
+                        <li><strong>VS Code</strong> + extensão GitLens</li>
+                        <li><strong>Terminal</strong> (bash / PowerShell)</li>
+                    </ul>
+                </div>
+                <div class="content-box d3" style="border-left-color:#e11d48;">
+                    <h3 style="color:#e11d48;">⚠️ Regras da Disciplina</h3>
+                    <ul>
+                        <li>Presença mínima: <strong>75%</strong></li>
+                        <li>Plágio: <strong>nota zero</strong> para ambas as partes</li>
+                        <li>Trabalho com atraso: <strong>−1,0 ponto/dia</strong></li>
+                        <li>Dúvidas: e-mail ou atendimento quinta 21h</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 03 — O PROBLEMA SEM CONTROLE DE VERSÃO
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>😱 O Caos sem Controle de Versão</h2>
+            <p>Você já viveu isso? Muitos desenvolvedores já…</p>
+        </div>
+        <div class="slide-body">
+            <div class="analogy-box">
+                <h3>📁 Cena do Crime — A Pasta do Projeto</h3>
+                <div class="code-block" style="background:#1a1a2e;color:#e2e8f0;margin-top:12px;font-size:0.85rem;">
+projeto/
+├── relatorio.docx
+├── relatorio_v2.docx
+├── relatorio_FINAL.docx
+├── relatorio_FINAL_v2.docx
+├── relatorio_FINAL_ESSE_MESMO.docx
+├── relatorio_FINAL_ESSE_MESMO_corrigido.docx
+└── relatorio_USE_ESTE.docx          <span style="color:#f59e0b;">← qual mesmo??</span></div>
+                <p style="margin-top:14px;"><strong>Soa familiar?</strong> Agora imagine isso com código, em equipe, com 50 arquivos. 🤯</p>
+            </div>
+
+            <div class="three-col">
+                <div class="example-card">
+                    <h4>❌ Problema 1 — Histórico perdido</h4>
+                    <p style="font-size:0.97rem;line-height:1.6;">Você não sabe <strong>o que mudou</strong> entre uma versão e outra, nem <strong>quem</strong> fez a mudança ou <strong>por quê</strong>.</p>
+                </div>
+                <div class="example-card d1">
+                    <h4>❌ Problema 2 — Trabalho em equipe</h4>
+                    <p style="font-size:0.97rem;line-height:1.6;">Dois devs editam o mesmo arquivo. Um sobrescreve o trabalho do outro. Horas de código <strong>perdidas para sempre</strong>.</p>
+                </div>
+                <div class="example-card d2">
+                    <h4>❌ Problema 3 — Sem retorno seguro</h4>
+                    <p style="font-size:0.97rem;line-height:1.6;">Você fez uma mudança que <strong>quebrou tudo</strong>. Sem controle de versão, não tem como voltar ao estado anterior que funcionava.</p>
+                </div>
+            </div>
+
+            <div class="big-idea" style="margin-top:20px;">
+                Controle de versão é o <strong>histórico médico do seu código</strong> — cada consulta, diagnóstico e tratamento registrado com data e responsável. 🏥
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 04 — O QUE É GCS
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>⚙️ Gerência de Configuração de Software (GCS)</h2>
+            <p>Conceito, definição e disciplina de engenharia</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea" style="font-size:1.5rem;line-height:1.6;">
+                GCS é a disciplina de Engenharia de Software que <strong>identifica, organiza e controla</strong> as modificações no software ao longo de todo o ciclo de vida do produto.
+            </div>
+
+            <div class="two-col">
+                <div class="content-box">
+                    <h3>📌 O que a GCS controla?</h3>
+                    <ul>
+                        <li><strong>Código-fonte</strong> — todos os arquivos .c, .java, .py…</li>
+                        <li><strong>Documentação</strong> — requisitos, diagramas, manuais</li>
+                        <li><strong>Arquivos de configuração</strong> — .env, .yaml, .json</li>
+                        <li><strong>Scripts de build e deploy</strong> — Makefile, Dockerfile</li>
+                        <li><strong>Testes automatizados</strong> — arquivos de teste e fixtures</li>
+                        <li><strong>Assets</strong> — imagens, fontes, ícones do projeto</li>
+                    </ul>
+                </div>
+                <div class="content-box blue d1">
+                    <h3>🎯 Objetivos da GCS</h3>
+                    <ul>
+                        <li>Garantir <strong>rastreabilidade</strong> de todas as mudanças</li>
+                        <li>Permitir <strong>reproduzir qualquer versão</strong> do sistema</li>
+                        <li>Evitar conflitos em <strong>trabalho paralelo</strong> em equipes</li>
+                        <li>Facilitar a <strong>auditoria</strong> e o controle de qualidade</li>
+                        <li>Suportar <strong>entrega e implantação</strong> controladas</li>
+                        <li>Possibilitar <strong>rollback</strong> seguro em caso de falha</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="analogy-box">
+                <h3>🏗️ Analogia: GCS é como a Engenharia Civil</h3>
+                <p>
+                    Na construção de um prédio, toda planta, especificação de material e ordem de serviço é
+                    <strong>documentada, versionada e aprovada</strong> antes de ir para a obra.
+                    Nenhuma alteração estrutural é feita sem registro. A GCS faz o mesmo com software:
+                    toda mudança passa por um processo controlado — com <strong>quem, quando, o que e por quê</strong>.
+                </p>
+            </div>
+
+            <div class="highlight-box">
+                <h3>📚 Norma IEEE 828 — Padrão de GCS</h3>
+                <p style="margin-top:10px;">
+                    O IEEE 828 define que um plano de GCS deve cobrir: <strong>identificação de configuração</strong>,
+                    <strong>controle de configuração</strong>, <strong>auditoria de configuração</strong> e
+                    <strong>relatório de status</strong> — os quatro pilares que o Git implementa nativamente.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 05 — ITENS DE CONFIGURAÇÃO E CONCEITOS-CHAVE
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🔑 Itens de Configuração e Conceitos Fundamentais</h2>
+            <p>O vocabulário essencial da GCS</p>
+        </div>
+        <div class="slide-body">
+            <div class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Conceito</th>
+                        <th>Definição</th>
+                        <th>Exemplo no Git</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>🗂️ Item de Configuração (IC)</strong></td>
+                        <td>Qualquer artefato que está sob gerência de configuração — código, doc, config, teste</td>
+                        <td>Qualquer arquivo rastreado: <code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">arquivo.c</code>, <code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">.env</code>, <code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">README.md</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📍 Baseline</strong></td>
+                        <td>Fotografia do estado do sistema em um ponto específico — aprovada e imutável</td>
+                        <td>Uma <strong>tag</strong> no Git: <code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">git tag v1.0.0</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🚀 Release</strong></td>
+                        <td>Versão do software entregue ao cliente ou ao ambiente de produção</td>
+                        <td>Branch <code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">release/1.0</code> + tag <code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">v1.0.0</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🔨 Build</strong></td>
+                        <td>Processo de compilar/empacotar o código em um artefato executável</td>
+                        <td>Pipeline CI no GitHub Actions que compila e testa</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🔄 Revisão / Commit</strong></td>
+                        <td>Unidade atômica de mudança — conjunto de alterações salvas no repositório</td>
+                        <td><code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">git commit -m "feat: adiciona login"</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📜 Log de Mudanças</strong></td>
+                        <td>Histórico completo de quem mudou o quê, quando e por quê</td>
+                        <td><code style="background:#f0f0f0;padding:1px 6px;border-radius:4px;">git log --oneline --graph</code></td>
+                    </tr>
+                </tbody>
+            </div>
+
+            <div class="analogy-box" style="margin-top:16px;">
+                <h3>📸 Baseline = "Checkpoint" de um Jogo</h3>
+                <p>
+                    Em jogos, você salva em um <em>checkpoint</em> antes de uma batalha difícil. Se morrer, volta ao ponto salvo — não ao início do jogo.
+                    Na GCS, uma <strong>baseline</strong> é esse checkpoint: uma versão estável e aprovada à qual você pode sempre retornar,
+                    independentemente de quantas mudanças foram feitas depois.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 06 — SEMVER E BOAS PRÁTICAS DE VERSIONAMENTO
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🏷️ Versionamento Semântico (SemVer)</h2>
+            <p>A linguagem universal dos números de versão</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea" style="font-size:2.8rem;letter-spacing:2px;">
+                <span style="color:#fbbf24;">MAJOR</span> . <span style="color:#34d399;">MINOR</span> . <span style="color:#f87171;">PATCH</span>
+                &nbsp;→&nbsp;
+                <span style="color:#fbbf24;">2</span> . <span style="color:#34d399;">14</span> . <span style="color:#f87171;">3</span>
+            </div>
+
+            <div class="three-col">
+                <div class="example-card d1" style="border-color:#d97706;">
+                    <h4 style="color:#d97706;">🔴 MAJOR — Versão Principal</h4>
+                    <p style="font-size:0.97rem;line-height:1.6;margin-bottom:10px;">Incrementa quando há <strong>mudanças incompatíveis</strong> com versões anteriores (breaking change).</p>
+                    <p style="font-size:0.9rem;color:var(--unifil-gray);">Ex: <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px;">1.x.x</code> → <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px;">2.0.0</code></p>
+                    <p style="font-size:0.9rem;color:var(--unifil-gray);">React 17 → React 18</p>
+                </div>
+                <div class="example-card d2" style="border-color:var(--git-green);">
+                    <h4 style="color:var(--git-green);">🟡 MINOR — Nova Funcionalidade</h4>
+                    <p style="font-size:0.97rem;line-height:1.6;margin-bottom:10px;">Incrementa quando se adiciona <strong>nova funcionalidade</strong> mantendo compatibilidade.</p>
+                    <p style="font-size:0.9rem;color:var(--unifil-gray);">Ex: <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px;">1.3.x</code> → <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px;">1.4.0</code></p>
+                    <p style="font-size:0.9rem;color:var(--unifil-gray);">Node.js 20.0 → 20.1</p>
+                </div>
+                <div class="example-card d3" style="border-color:var(--git-blue);">
+                    <h4 style="color:var(--git-blue);">🟢 PATCH — Correção de Bug</h4>
+                    <p style="font-size:0.97rem;line-height:1.6;margin-bottom:10px;">Incrementa quando há <strong>correções de falhas</strong> sem alterar a interface pública.</p>
+                    <p style="font-size:0.9rem;color:var(--unifil-gray);">Ex: <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px;">1.3.2</code> → <code style="background:#f0f0f0;padding:1px 5px;border-radius:4px;">1.3.3</code></p>
+                    <p style="font-size:0.9rem;color:var(--unifil-gray);">Hotfix de segurança</p>
+                </div>
+            </div>
+
+            <div class="content-box green d4">
+                <h3>📝 Sufixos Especiais</h3>
+                <ul>
+                    <li><code style="background:#f5f5f5;padding:1px 7px;border-radius:4px;">1.0.0-alpha</code> — versão alfa, instável, uso interno</li>
+                    <li><code style="background:#f5f5f5;padding:1px 7px;border-radius:4px;">1.0.0-beta.1</code> — versão beta, testes externos</li>
+                    <li><code style="background:#f5f5f5;padding:1px 7px;border-radius:4px;">1.0.0-rc.1</code> — Release Candidate, candidato a lançamento</li>
+                    <li><code style="background:#f5f5f5;padding:1px 7px;border-radius:4px;">1.0.0</code> — versão estável, produção</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box d5">
+                <h3>💡 Regra de Ouro do SemVer</h3>
+                <p style="margin-top:10px;">
+                    Se você <strong>conserta um bug</strong> → PATCH. Se você <strong>adiciona algo novo mas não quebra nada</strong> → MINOR.
+                    Se você <strong>muda algo que vai quebrar quem usa</strong> sua biblioteca → MAJOR.
+                    Uma vez publicada, uma versão <strong>nunca pode ser alterada</strong> — crie uma nova.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 07 — LINHA DO TEMPO DOS VCS
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🕐 Evolução dos Sistemas de Controle de Versão</h2>
+            <p>De arquivos com "_v2_FINAL" ao Git distribuído</p>
+        </div>
+        <div class="slide-body">
+            <div class="vcs-timeline" style="margin-top:35px;">
+                <!-- Sem VCS -->
+                <div class="vcs-node">
+                    <div class="vcs-dot" style="color:#9ca3af;background:#9ca3af;"></div>
+                    <div class="vcs-card">
+                        <div class="year">Pré-1972</div>
+                        <div class="name" style="color:#6b7280;">Sem VCS</div>
+                        <p>Cópias manuais · pastas datadas · risco total de perda</p>
+                    </div>
+                </div>
+                <!-- SCCS/RCS -->
+                <div class="vcs-node d1">
+                    <div class="vcs-dot" style="color:#6b7280;background:#6b7280;"></div>
+                    <div class="vcs-card">
+                        <div class="year">1972–1985</div>
+                        <div class="name" style="color:#6b7280;">SCCS / RCS</div>
+                        <p>Primeiro VCS real · local · um arquivo por vez · sem rede</p>
+                    </div>
+                </div>
+                <!-- CVS -->
+                <div class="vcs-node d2">
+                    <div class="vcs-dot" style="color:var(--cvs-gray);background:var(--cvs-gray);"></div>
+                    <div class="vcs-card">
+                        <div class="year">1990–2000</div>
+                        <div class="name" style="color:var(--cvs-gray);">CVS</div>
+                        <p>Concurrent Versions System · centralizado · primeiro VCS em rede · branches lentas</p>
+                    </div>
+                </div>
+                <!-- SVN -->
+                <div class="vcs-node d3">
+                    <div class="vcs-dot" style="color:var(--svn-amber);background:var(--svn-amber);"></div>
+                    <div class="vcs-card">
+                        <div class="year">2000–2005</div>
+                        <div class="name" style="color:var(--svn-amber);">SVN</div>
+                        <p>Subversion · melhorou o CVS · commits atômicos · ainda centralizado · usado até hoje em legado</p>
+                    </div>
+                </div>
+                <!-- Git -->
+                <div class="vcs-node d4">
+                    <div class="vcs-dot" style="color:var(--git-blue);background:var(--git-blue);"></div>
+                    <div class="vcs-card">
+                        <div class="year">2005 →</div>
+                        <div class="name" style="color:var(--git-blue);">Git</div>
+                        <p>Linus Torvalds · distribuído · branches baratas · rápido · padrão absoluto do mercado</p>
+                    </div>
+                </div>
+                <!-- GitHub/GitLab -->
+                <div class="vcs-node d5">
+                    <div class="vcs-dot" style="color:var(--git-green);background:var(--git-green);"></div>
+                    <div class="vcs-card">
+                        <div class="year">2008 →</div>
+                        <div class="name" style="color:var(--git-green);">GitHub · GitLab</div>
+                        <p>Plataformas remotas · Pull Requests · Actions · CI/CD · code review social</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analogy-box" style="margin-top:10px;">
+                <h3>⚡ Por que o Git surgiu em 2005?</h3>
+                <p>
+                    Linus Torvalds criou o Git em <strong>apenas 10 dias</strong> para gerenciar o kernel do Linux após
+                    uma crise com o BitKeeper (VCS proprietário que revogou a licença gratuita). Ele precisava de algo
+                    <strong>rápido, distribuído e confiável</strong> para coordenar milhares de desenvolvedores ao redor do mundo.
+                    O resultado foi o VCS que hoje é usado por <strong>mais de 94% dos desenvolvedores</strong> no mundo.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 08 — CVCS vs DVCS
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🏛️ Centralizado (CVCS) × Distribuído (DVCS)</h2>
+            <p>A diferença fundamental de arquitetura que mudou o desenvolvimento</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col">
+                <!-- CVCS -->
+                <div style="animation: fadeInUp 0.6s ease-out forwards; opacity:0;">
+                    <div style="background:linear-gradient(135deg,#b45309,#92400e);color:white;padding:18px 22px;border-radius:14px 14px 0 0;text-align:center;">
+                        <div style="font-size:2rem;">🏢</div>
+                        <h3 style="font-size:1.3rem;margin-top:6px;">CVCS — Centralizado</h3>
+                        <p style="opacity:0.85;font-size:0.9rem;">CVS · SVN · Perforce</p>
+                    </div>
+                    <div style="background:var(--unifil-light);padding:20px 22px;border-radius:0 0 14px 14px;border:2px solid #d97706;border-top:none;">
+                        <ul style="list-style:none;padding:0;">
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">📡 <strong>Um servidor central</strong> guarda todo o histórico</li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">💻 Desenvolvedores fazem <strong>checkout</strong> de arquivos</li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">🔴 <strong>Sem internet = sem commits</strong></li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">🔴 Servidor cai = <strong>toda equipe parada</strong></li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">🔴 <strong>Ponto único de falha</strong> — se o HD do server morrer…</li>
+                            <li style="padding:7px 0;font-size:0.97rem;">🟡 Branches são <strong>lentas e caras</strong> de criar</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- DVCS -->
+                <div style="animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity:0;">
+                    <div style="background:linear-gradient(135deg,var(--git-blue),#0d4b8c);color:white;padding:18px 22px;border-radius:14px 14px 0 0;text-align:center;">
+                        <div style="font-size:2rem;">🌐</div>
+                        <h3 style="font-size:1.3rem;margin-top:6px;">DVCS — Distribuído</h3>
+                        <p style="opacity:0.85;font-size:0.9rem;">Git · Mercurial</p>
+                    </div>
+                    <div style="background:#f0f7ff;padding:20px 22px;border-radius:0 0 14px 14px;border:2px solid var(--git-blue);border-top:none;">
+                        <ul style="list-style:none;padding:0;">
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">💾 Cada dev tem <strong>cópia completa</strong> do repositório</li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">✅ <strong>Trabalha offline</strong> — commit, log, branch, diff</li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">✅ Servidor cai = <strong>equipe continua trabalhando</strong></li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">✅ Cada clone é um <strong>backup completo</strong> do projeto</li>
+                            <li style="padding:7px 0;font-size:0.97rem;border-bottom:1px solid #ddd;">✅ Branches são <strong>rápidas e gratuitas</strong></li>
+                            <li style="padding:7px 0;font-size:0.97rem;">✅ Suporta <strong>múltiplos fluxos</strong> de colaboração</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box d3">
+                <h3>🚀 Por que o Git dominou o mercado?</h3>
+                <p style="margin-top:10px;line-height:1.7;">
+                    Git é <strong>10-100× mais rápido</strong> que SVN em operações locais · Branches são criadas em <strong>milissegundos</strong> ·
+                    GitHub (2008) + GitLab (2011) democratizaram a colaboração open-source ·
+                    O modelo de <strong>Pull Request</strong> revolucionou o code review em equipes.
+                    Hoje: <strong>94%</strong> dos devs usam Git (Stack Overflow Survey 2023).
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 09 — GCS NA PRÁTICA: O ECOSSISTEMA GIT
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🌐 GCS na Prática — O Ecossistema Git</h2>
+            <p>Como os conceitos de GCS se mapeiam nas ferramentas que usaremos</p>
+        </div>
+        <div class="slide-body">
+            <div class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Conceito GCS</th>
+                        <th>Ferramenta / Comando Git</th>
+                        <th>Quando ocorre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Identificação de IC</strong></td>
+                        <td><code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">git add arquivo.c</code></td>
+                        <td>Ao "marcar" arquivos para o controle de versão</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Registro de mudança (commit)</strong></td>
+                        <td><code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">git commit -m "mensagem"</code></td>
+                        <td>A cada unidade lógica de trabalho concluída</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Baseline</strong></td>
+                        <td><code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">git tag v1.0.0</code></td>
+                        <td>Ao lançar uma versão estável</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ramificação</strong></td>
+                        <td><code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">git branch feature/login</code></td>
+                        <td>Ao iniciar nova funcionalidade ou correção</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auditoria / Log de Mudanças</strong></td>
+                        <td><code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">git log --graph --oneline</code></td>
+                        <td>Para revisar histórico completo do projeto</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Integração / Release</strong></td>
+                        <td><code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">git merge</code> + GitHub Actions</td>
+                        <td>Ao unir código e acionar o pipeline de CI/CD</td>
+                    </tr>
+                </tbody>
+            </div>
+
+            <div class="two-col" style="margin-top:18px;">
+                <div class="content-box green d2">
+                    <h3>🔄 Fluxo Básico GCS com Git</h3>
+                    <ul>
+                        <li><strong>1.</strong> Criar/clonar repositório (<em>init/clone</em>)</li>
+                        <li><strong>2.</strong> Modificar ICs (editar arquivos)</li>
+                        <li><strong>3.</strong> Adicionar ao staging (<em>git add</em>)</li>
+                        <li><strong>4.</strong> Registrar mudança (<em>git commit</em>)</li>
+                        <li><strong>5.</strong> Compartilhar (<em>git push</em>)</li>
+                        <li><strong>6.</strong> Marcar versões (<em>git tag</em>)</li>
+                    </ul>
+                </div>
+                <div class="content-box purple d3">
+                    <h3>📌 O que veremos nas próximas aulas</h3>
+                    <ul>
+                        <li><strong>Aula 02:</strong> Git local — init, add, commit, log, diff</li>
+                        <li><strong>Aula 03:</strong> Git remoto — GitHub, push, pull, clone</li>
+                        <li><strong>Aulas 04-05:</strong> Branches e GitFlow</li>
+                        <li><strong>Aulas 06-07:</strong> Pull Requests e Code Review</li>
+                        <li><strong>Aulas 08-11:</strong> GitHub Actions e CI/CD</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 10 — EXERCÍCIO DE FIXAÇÃO
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>✏️ Exercícios de Fixação</h2>
+            <p>Verifique seu entendimento da Aula 01</p>
+        </div>
+        <div class="slide-body">
+
+            <!-- Q1 -->
+            <div class="quiz-item" id="q1">
+                <p class="question">1. Uma empresa está desenvolvendo um sistema bancário. O gerente de configuração marca o código como estável após todos os testes passarem. Esse ponto de referência imutável chama-se:</p>
+                <div class="options">
+                    <label><input type="radio" name="q1" value="a"> a) Release</label>
+                    <label><input type="radio" name="q1" value="b"> b) Build</label>
+                    <label><input type="radio" name="q1" value="c"> c) Baseline</label>
+                    <label><input type="radio" name="q1" value="d"> d) Branch</label>
+                </div>
+                <button class="check-btn" onclick="check('q1','c','✅ Correto! Baseline é exatamente esse snapshot aprovado e imutável do sistema em um ponto específico. No Git, usamos uma tag para criar uma baseline.','❌ Reveja o Slide 05. Uma baseline é o estado aprovado e imutável do sistema — como um checkpoint de jogo salvo.')">Verificar</button>
+                <div class="feedback" id="q1-fb"></div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="quiz-item d1" id="q2">
+                <p class="question">2. Um desenvolvedor está em viagem de avião sem internet e precisa registrar as mudanças feitas no código. Com qual tipo de VCS isso é possível?</p>
+                <div class="options">
+                    <label><input type="radio" name="q2" value="a"> a) CVS (centralizado) — ele acessa o servidor remoto</label>
+                    <label><input type="radio" name="q2" value="b"> b) SVN (centralizado) — funciona offline parcialmente</label>
+                    <label><input type="radio" name="q2" value="c"> c) Git (distribuído) — tem cópia completa do repositório localmente</label>
+                    <label><input type="radio" name="q2" value="d"> d) Nenhum — controle de versão sempre exige internet</label>
+                </div>
+                <button class="check-btn" onclick="check('q2','c','✅ Correto! Em DVCS como o Git, cada cópia local É o repositório completo. Você pode fazer commits, criar branches e ver o histórico sem qualquer conexão.','❌ Reveja o Slide 08. Em sistemas distribuídos como o Git, cada desenvolvedor tem uma cópia completa — commits funcionam offline!')">Verificar</button>
+                <div class="feedback" id="q2-fb"></div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="quiz-item d2" id="q3">
+                <p class="question">3. Uma biblioteca npm lança a versão 2.5.1 → 2.5.2 após corrigir um bug crítico de segurança. Segundo o SemVer, qual campo foi incrementado e por quê?</p>
+                <div class="options">
+                    <label><input type="radio" name="q3" value="a"> a) MAJOR — porque segurança é sempre uma mudança principal</label>
+                    <label><input type="radio" name="q3" value="b"> b) MINOR — porque corrigir bug adiciona valor ao produto</label>
+                    <label><input type="radio" name="q3" value="c"> c) PATCH — porque é uma correção de falha sem alterar a interface pública</label>
+                    <label><input type="radio" name="q3" value="d"> d) Nenhum — bugfixes não geram nova versão</label>
+                </div>
+                <button class="check-btn" onclick="check('q3','c','✅ Exato! Correções de bug (mesmo críticas) que não mudam a API pública incrementam o PATCH. De 2.5.1 para 2.5.2 → apenas o PATCH mudou.','❌ Reveja o Slide 06. PATCH é incrementado para correções de falhas que mantêm compatibilidade. MAJOR só muda quando há breaking changes.')">Verificar</button>
+                <div class="feedback" id="q3-fb"></div>
+            </div>
+
+            <!-- Q4 (discursiva) -->
+            <div class="quiz-item d3" style="border-left-color: var(--unifil-orange);">
+                <p class="question" style="color:var(--unifil-orange);">4. 💬 Questão Dissertativa — Reflita e responda em 2-3 linhas:</p>
+                <p style="font-size:1rem;line-height:1.6;color:var(--unifil-dark);margin-top:6px;">
+                    Por que o modelo <strong>distribuído</strong> do Git representa uma vantagem significativa para times que trabalham em diferentes fusos horários ou em regiões com internet instável? Cite ao menos dois benefícios práticos.
+                </p>
+                <div style="background:#e0f2fe;border-radius:10px;padding:14px 18px;margin-top:14px;font-size:0.95rem;color:#0c4a6e;">
+                    <strong>💡 Gabarito orientativo:</strong> (1) Trabalho offline completo — commits, branches e log sem internet; (2) Redundância — cada clone é um backup total; (3) Performance — operações locais são 10-100× mais rápidas que em rede; (4) Independência do servidor — o servidor pode cair sem impactar o trabalho em andamento.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 11 — RESUMO E PRÓXIMA AULA
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+    <div class="slide-content">
+        <div class="slide-header">
+            <h2>🎯 Resumo e Próximos Passos</h2>
+            <p>O que aprendemos hoje — e o que vem pela frente</p>
+        </div>
+        <div class="slide-body">
+            <div class="big-idea" style="font-size:1.45rem;">
+                Você agora entende <strong>por que</strong> o controle de versão existe, <strong>o que</strong> ele resolve e <strong>como</strong> o Git se encaixa na GCS! 🚀
+            </div>
+
+            <div class="timeline" style="margin-top:28px;">
+                <div class="timeline-item">
+                    <h4>✅ O Problema sem VCS</h4>
+                    <p>Histórico perdido, conflitos em equipe, impossibilidade de rollback — o "arquivo_FINAL_v2_ESSE_MESMO.docx" da vida real.</p>
+                </div>
+                <div class="timeline-item d1">
+                    <h4>✅ Gerência de Configuração de Software</h4>
+                    <p>Disciplina IEEE que identifica, controla e rastreia todos os artefatos do projeto ao longo do ciclo de vida.</p>
+                </div>
+                <div class="timeline-item d2">
+                    <h4>✅ Conceitos Fundamentais</h4>
+                    <p>Item de Configuração · Baseline · Release · Build · Commit · Log — o vocabulário profissional do desenvolvedor.</p>
+                </div>
+                <div class="timeline-item d3">
+                    <h4>✅ Versionamento Semântico (SemVer)</h4>
+                    <p>MAJOR.MINOR.PATCH — a linguagem universal para comunicar o impacto de cada versão lançada.</p>
+                </div>
+                <div class="timeline-item d4">
+                    <h4>✅ CVCS vs DVCS — e por que Git venceu</h4>
+                    <p>Trabalho offline · branches rápidas · cada clone é um backup · 94% do mercado usa Git.</p>
+                </div>
+            </div>
+
+            <div class="highlight-box d5" style="margin-top:28px;">
+                <h3>📚 Para a Próxima Aula — 06/05 (Git Local)</h3>
+                <div class="two-col" style="margin-top:14px;gap:18px;">
+                    <ul style="list-style:none;padding:0;font-size:1rem;">
+                        <li style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>1️⃣ Instalar Git:</strong> git-scm.com/downloads
+                        </li>
+                        <li style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>2️⃣ Configurar:</strong> nome e e-mail no terminal
+                        </li>
+                        <li style="padding:7px 0;">
+                            <strong>3️⃣ Verificar:</strong> <code style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;">git --version</code> no terminal
+                        </li>
+                    </ul>
+                    <ul style="list-style:none;padding:0;font-size:1rem;">
+                        <li style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>4️⃣ Criar conta:</strong> github.com (gratuito)
+                        </li>
+                        <li style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.2);">
+                            <strong>5️⃣ Instalar VS Code</strong> + extensão GitLens
+                        </li>
+                        <li style="padding:7px 0;">
+                            <strong>6️⃣ Leitura:</strong> Pro Git Cap. 1 (git-scm.com/book/pt-br)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="two-col" style="margin-top:22px;">
+                <div class="content-box blue d5">
+                    <h3>💬 Contato e Dúvidas</h3>
+                    <ul>
+                        <li><strong>Email:</strong> tiago.galvao@unifil.br</li>
+                        <li><strong>Atendimento:</strong> Quintas-feiras, 21h–22h</li>
+                        <li><strong>Sala:</strong> Laboratório de Informática — Bloco C</li>
+                        <li><strong>Fórum:</strong> Google Classroom da disciplina</li>
+                    </ul>
+                </div>
+                <div class="content-box green d6">
+                    <h3>🔥 Próximas Aulas</h3>
+                    <ul>
+                        <li>Aula 02 — Git local: init, add, commit, log</li>
+                        <li>Aula 03 — GitHub: push, pull, clone</li>
+                        <li>Aulas 04-05 — Branches e GitFlow</li>
+                        <li>Aulas 06-07 — Pull Requests e Code Review</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin-top:30px;">
+                <p style="font-size:1.2rem;font-weight:600;color:var(--unifil-dark);">Obrigado pela atenção! 🙏</p>
+                <p style="font-size:1rem;color:var(--unifil-gray);margin-top:8px;font-style:italic;">
+                    "Todo código sem controle de versão é um código em risco. Começemos a fazer isso direito!" 💪
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /presentation -->
+
+<!-- NAVEGAÇÃO -->
+<div class="navigation">
+    <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 11</span>
+    <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Próximo →</button>
+</div>
+
+<script>
+    let cur = 0;
+    const slides = document.querySelectorAll('.slide');
+    const total  = slides.length;
+    const dotsEl = document.getElementById('slideDots');
+
+    for (let i = 0; i < total; i++) {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.onclick = () => show(i);
+        dotsEl.appendChild(d);
+    }
+
+    function show(n) {
+        slides.forEach(s => s.classList.remove('active','prev'));
+        cur = (n + total) % total;
+        slides[cur].classList.add('active');
+        document.getElementById('slideCounter').textContent = `${cur + 1} / ${total}`;
+        document.getElementById('prevBtn').disabled = cur === 0;
+        document.getElementById('nextBtn').disabled = cur === total - 1;
+        document.getElementById('progressBar').style.width = ((cur + 1) / total * 100) + '%';
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+
+        const toAnimate = slides[cur].querySelectorAll(
+            '.content-box,.example-card,.highlight-box,.big-idea,.analogy-box,' +
+            '.timeline-item,.stat-card,.code-block,.comparison-table,.quiz-item,' +
+            '.vcs-node,.pill'
+        );
+        toAnimate.forEach(el => {
+            el.style.animation = 'none';
+            el.style.opacity   = '0';
+            void el.offsetWidth;
+            el.style.animation = '';
+        });
+    }
+
+    function changeSlide(d) {
+        const n = cur + d;
+        if (n >= 0 && n < total) show(n);
+    }
+
+    function check(qid, correct, msgOk, msgWrong) {
+        const sel = document.querySelector(`input[name="${qid}"]:checked`);
+        const fb  = document.getElementById(`${qid}-fb`);
+        if (!sel) { fb.className = 'feedback wrong'; fb.textContent = '⚠️ Selecione uma alternativa antes de verificar.'; return; }
+        fb.className = sel.value === correct ? 'feedback correct' : 'feedback wrong';
+        fb.textContent = sel.value === correct ? msgOk : msgWrong;
+        // Disable options after answer
+        document.querySelectorAll(`input[name="${qid}"]`).forEach(i => i.disabled = true);
+        document.querySelector(`#${qid} .check-btn`).disabled = true;
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+
+    // Touch swipe
+    let tx = 0;
+    document.addEventListener('touchstart', e => tx = e.changedTouches[0].screenX);
+    document.addEventListener('touchend',   e => {
+        const dx = e.changedTouches[0].screenX - tx;
+        if (dx < -50) changeSlide(1);
+        if (dx > 50)  changeSlide(-1);
+    });
+
+    show(0);
+</script>
+</body>
+</html>
