@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 07 — Revisão Unidade I | UniFil</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --or:#FF8C00;--ac:#FF6B35;--dk:#4A4A4A;--lt:#F5F5F5;--gy:#6B6B6B;
+            --lc:#0550ae;--lp:#7c3aed;--lj:#b45309;--vg:#059669;--vt:#0d9488;
+            --sr:#dc2626;--cb:#1e2130;--ct:#abb2bf
+        }
+        body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0d1b2e,#1a1a2e);overflow:hidden;color:var(--dk)}
+        .presentation{width:100vw;height:100vh;position:relative}
+        .slide{width:100%;height:100%;position:absolute;top:0;left:0;display:none;opacity:0;transform:translateX(100%);transition:all .6s cubic-bezier(.68,-.55,.265,1.55)}
+        .slide.active{display:flex;opacity:1;transform:translateX(0)}
+        .slide-content{background:white;width:90%;max-width:1200px;height:90%;margin:auto;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
+        .sh{background:linear-gradient(135deg,var(--or),var(--ac));padding:26px 50px;color:white;flex-shrink:0;position:relative}
+        .sh::after{content:'';position:absolute;bottom:-18px;left:0;right:0;height:36px;background:linear-gradient(135deg,var(--or),var(--ac));clip-path:polygon(0 0,100% 0,100% 100%,0 0)}
+        .sh h1{font-size:2.1rem;margin-bottom:6px;font-weight:700}
+        .sh h2{font-size:1.6rem;margin-bottom:6px;font-weight:600}
+        .sh p{font-size:1rem;opacity:.95}
+        .sb{flex:1;padding:50px 50px 30px;overflow-y:auto}
+        .sb::-webkit-scrollbar{width:8px}
+        .sb::-webkit-scrollbar-track{background:var(--lt);border-radius:10px}
+        .sb::-webkit-scrollbar-thumb{background:var(--or);border-radius:10px}
+        .two{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:18px 0}
+        .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin:18px 0}
+        .box{background:var(--lt);padding:20px;border-radius:14px;border-left:5px solid var(--or);animation:fiu .55s ease-out forwards;opacity:0}
+        .box h3{color:var(--or);margin-bottom:9px;font-size:1.15rem}
+        .box ul{list-style:none;padding:0}
+        .box li{padding:6px 0 6px 24px;position:relative;font-size:.95rem;line-height:1.6}
+        .box li::before{content:'→';position:absolute;left:0;color:var(--or);font-weight:bold}
+        .box.bl{border-left-color:var(--lc)}.box.bl h3{color:var(--lc)}
+        .box.gn{border-left-color:var(--vg)}.box.gn h3{color:var(--vg)}
+        .box.pu{border-left-color:var(--lp)}.box.pu h3{color:var(--lp)}
+        .box.tl{border-left-color:var(--vt)}.box.tl h3{color:var(--vt)}
+        .box.rd{border-left-color:var(--sr)}.box.rd h3{color:var(--sr)}
+        .box.am{border-left-color:var(--lj)}.box.am h3{color:var(--lj)}
+        .hi{background:linear-gradient(135deg,var(--or),var(--ac));color:white;padding:20px;border-radius:14px;margin:16px 0;animation:fiu .55s ease-out .2s forwards;opacity:0}
+        .hi h3{margin-bottom:8px;font-size:1.3rem}
+        .hi p{font-size:.97rem;line-height:1.7}
+        .big{background:linear-gradient(135deg,var(--lc),#0d4b8c);color:white;padding:24px;border-radius:18px;font-size:1.4rem;font-weight:600;text-align:center;margin:18px 0;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 10px 28px rgba(5,80,174,.3);line-height:1.5}
+        .yel{background:#fff8e1;border:3px solid #f59e0b;border-radius:14px;padding:18px;margin:16px 0;animation:fiu .55s ease-out forwards;opacity:0}
+        .yel h3{color:#92400e;margin-bottom:8px;font-size:1.15rem}
+        .yel p{font-size:.96rem;line-height:1.7;color:#78350f}
+        /* Resumo table */
+        .rtbl{width:100%;border-collapse:collapse;margin:14px 0;animation:fiu .55s ease-out forwards;opacity:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+        .rtbl th{background:linear-gradient(135deg,var(--or),var(--ac));color:white;padding:11px 14px;text-align:left;font-size:.93rem}
+        .rtbl td{padding:10px 14px;border-bottom:1px solid #eee;font-size:.9rem;line-height:1.6;vertical-align:top}
+        .rtbl tr:last-child td{border-bottom:none}
+        .rtbl tr:nth-child(even){background:#f9fafb}
+        .rtbl tr:hover td{background:#fff8f0}
+        /* Code block */
+        .cblk{background:var(--cb);border-radius:12px;overflow:hidden;margin:10px 0;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+        .cblk-bar{background:#313244;padding:8px 14px;display:flex;align-items:center;gap:8px}
+        .cblk-bar .d{width:10px;height:10px;border-radius:50%}
+        .cblk-bar .d.r{background:#ff5f57}.cblk-bar .d.y{background:#febc2e}.cblk-bar .d.g{background:#28c840}
+        .cblk-bar .t{color:#a6adc8;font-size:.80rem;margin-left:8px;font-family:'Courier New',monospace}
+        .cblk pre{padding:14px 18px;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;color:var(--ct);overflow-x:auto;white-space:pre}
+        .kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+        .nm{color:#d19a66}.tp{color:#e5c07b}.op{color:#56b6c2}
+        /* stat cards */
+        .sc{text-align:center;padding:18px;background:white;border-radius:14px;border:3px solid var(--or);animation:fiu .55s ease-out forwards;opacity:0}
+        .sc .n{font-size:2.2rem;font-weight:700;color:var(--or);margin-bottom:5px}
+        .sc .l{font-size:.88rem;color:var(--gy);font-weight:500}
+        /* timeline */
+        .tl{position:relative;padding-left:34px;margin:16px 0}
+        .tl::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:3px;background:var(--or)}
+        .tli{position:relative;padding:11px 0;animation:fil .55s ease-out forwards;opacity:0}
+        .tli::before{content:'';position:absolute;left:-29px;top:17px;width:10px;height:10px;border-radius:50%;background:var(--or);border:3px solid white;box-shadow:0 0 0 3px var(--or)}
+        .tli h4{color:var(--or);font-size:1.1rem;margin-bottom:4px}
+        /* quiz */
+        .qz{background:var(--lt);border-radius:14px;padding:16px;margin:10px 0;border-left:5px solid var(--lc);animation:fiu .55s ease-out forwards;opacity:0}
+        .qz p.q{font-size:1rem;font-weight:600;color:var(--lc);margin-bottom:8px;line-height:1.55}
+        .qz .opts label{display:flex;align-items:flex-start;gap:10px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:.92rem;line-height:1.5;margin:3px 0;transition:background .2s}
+        .qz .opts label:hover{background:#dbeafe}
+        .qz .opts input[type=radio]{margin-top:3px;accent-color:var(--lc);flex-shrink:0}
+        .fb{display:none;margin-top:8px;padding:8px 13px;border-radius:8px;font-size:.92rem;font-weight:600}
+        .fb.ok{background:#d1fae5;color:#065f46;display:block}
+        .fb.no{background:#fee2e2;color:#991b1b;display:block}
+        .chk{background:var(--lc);color:white;border:none;padding:7px 16px;border-radius:14px;cursor:pointer;font-size:.87rem;font-weight:600;margin-top:8px;transition:all .3s}
+        .chk:hover{background:#0553b1;transform:translateY(-2px)}
+        /* badge de aula */
+        .badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:.82rem;margin:2px}
+        /* progress ring */
+        .prog-item{background:white;border:2px solid #e5e7eb;border-radius:14px;padding:14px;animation:fiu .55s ease-out forwards;opacity:0;transition:transform .3s}
+        .prog-item:hover{transform:translateY(-3px)}
+        .prog-item h4{font-size:1rem;margin-bottom:5px}
+        .prog-bar-wrap{background:#e5e7eb;border-radius:8px;height:10px;margin:6px 0}
+        .prog-bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--or),var(--vg));transition:width .6s}
+        /* nav */
+        .nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.97);padding:12px 24px;border-radius:50px;box-shadow:0 10px 28px rgba(0,0,0,.2);z-index:1000}
+        .nb{background:linear-gradient(135deg,var(--or),var(--ac));color:white;border:none;padding:9px 18px;border-radius:22px;cursor:pointer;font-size:.91rem;font-weight:600;transition:all .3s}
+        .nb:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 14px rgba(255,140,0,.4)}
+        .nb:disabled{opacity:.4;cursor:not-allowed}
+        .ctr{font-weight:600;color:var(--dk);min-width:68px;text-align:center;font-size:.98rem}
+        .pb{position:fixed;top:0;left:0;width:100%;height:5px;background:rgba(255,255,255,.15);z-index:1001}
+        .pf{height:100%;background:linear-gradient(90deg,var(--or),var(--vg));transition:width .4s}
+        .dots{position:fixed;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:1001}
+        .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s}
+        .dot.active{background:var(--or);transform:scale(1.5)}
+        @keyframes fiu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fil{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
+        .d1{animation-delay:.10s}.d2{animation-delay:.20s}.d3{animation-delay:.30s}
+        .d4{animation-delay:.40s}.d5{animation-delay:.50s}.d6{animation-delay:.60s}
+        ic{background:#f0f0f0;padding:1px 7px;border-radius:5px;font-family:'Courier New',monospace;font-size:.9em;color:#e11d48}
+        ic.wh{background:rgba(255,255,255,.2);color:white}
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="PF"></div></div>
+<div class="dots" id="DOTS"></div>
+<div class="presentation">
+
+<!-- ═══════════════ SLIDE 01 — CAPA ═══════════════ -->
+<div class="slide active">
+ <div class="slide-content">
+  <div class="sh">
+   <h1>Lógica de Programação e Algoritmos</h1>
+   <p>Aula 07 — Revisão Integrada: Unidade I completa · 22/05/2026</p>
+  </div>
+  <div class="sb" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+   <div style="font-size:5rem;margin-bottom:16px">🎯</div>
+   <h2 style="font-size:2.2rem;color:var(--or);margin-bottom:14px">Consolidando a Unidade I — Vetores!</h2>
+   <p style="font-size:1.1rem;color:var(--gy);max-width:820px;margin-bottom:26px;line-height:1.7">
+    Hoje revisamos <strong>todos os tópicos das Aulas 01 a 06</strong>: conceito de arranjo,
+    soma/média/máx/mín, busca linear e binária, Bubble Sort, Selection Sort e strings.
+    Mapa mental, tabela comparativa, exercícios integrados e gabarito ao vivo!
+   </p>
+   <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+    <div class="sc" style="min-width:120px;border-color:var(--lc)"><div class="n" style="color:var(--lc)">6</div><div class="l">Aulas revisadas</div></div>
+    <div class="sc" style="min-width:120px;animation-delay:.1s;border-color:var(--vg)"><div class="n" style="color:var(--vg)">5</div><div class="l">Algoritmos</div></div>
+    <div class="sc" style="min-width:120px;animation-delay:.2s;border-color:var(--lp)"><div class="n" style="color:var(--lp)">3</div><div class="l">Exercícios integrados</div></div>
+    <div class="sc" style="min-width:120px;animation-delay:.3s;border-color:var(--lj)"><div class="n" style="color:var(--lj)">3</div><div class="l">Linguagens</div></div>
+   </div>
+   <div style="margin-top:28px;font-size:1rem;color:var(--gy);line-height:1.9">
+    <p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; tiago.galvao@unifil.br</p>
+    <p><strong>Data:</strong> Sexta-feira, 22 de Maio de 2026 &nbsp;|&nbsp; <strong>Unidade I — Aula 07</strong></p>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 02 — MAPA MENTAL ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🗺️ Mapa Mental — Unidade I</h2><p>Tudo que aprendemos sobre vetores em um único slide</p></div>
+  <div class="sb">
+   <!-- Centro -->
+   <div style="background:linear-gradient(135deg,var(--or),var(--ac));color:white;border-radius:16px;padding:16px 20px;text-align:center;margin-bottom:16px;animation:fiu .55s ease-out forwards;opacity:0;font-size:1.3rem;font-weight:700">
+    📦 VETOR = coleção de elementos do mesmo tipo em memória contígua, indexada a partir de 0
+   </div>
+   <!-- 6 cards em grade -->
+   <div class="three" style="gap:12px;margin:0">
+    <div class="box bl">
+     <h3>📌 Conceito (Aula 01)</h3>
+     <ul>
+      <li>Declaração: <ic>tipo v[N];</ic></li>
+      <li>Índices: 0 até N-1</li>
+      <li>Percurso: <ic>for(i=0;i&lt;N;i++)</ic></li>
+      <li>scanf: <ic>scanf("%d",&amp;v[i])</ic></li>
+      <li>Java: <ic>tipo[] v = new tipo[N]</ic></li>
+     </ul>
+    </div>
+    <div class="box gn d1">
+     <h3>📊 Estatísticas (Aula 02)</h3>
+     <ul>
+      <li>Soma: acumulador = 0</li>
+      <li>Média: (float)soma / N</li>
+      <li>Máx/Mín: inicia com v[0]</li>
+      <li>Laço máx/mín: começa em i=1</li>
+      <li>Contagem: cont++ na condição</li>
+     </ul>
+    </div>
+    <div class="box tl d2">
+     <h3>🧪 Laboratório (Aula 03)</h3>
+     <ul>
+      <li>Ex 01: par/ímpar com %</li>
+      <li>Ex 02: soma e média de notas</li>
+      <li>Ex 03: máx, mín, amplitude</li>
+      <li>Ex 04: aprovados/recuperação</li>
+      <li>Ex 05-06: acima da média, estação</li>
+     </ul>
+    </div>
+    <div class="box rd d3">
+     <h3>🔍 Busca (Aula 04)</h3>
+     <ul>
+      <li><strong>Linear:</strong> percorre i=0..N-1 · O(n)</li>
+      <li>Retorna posição ou -1</li>
+      <li><strong>Binária:</strong> divide ao meio · O(log n)</li>
+      <li>Exige vetor <strong>ordenado!</strong></li>
+      <li>Variáveis: esq · dir · meio</li>
+     </ul>
+    </div>
+    <div class="box pu d4">
+     <h3>🫧 Ordenação (Aula 05)</h3>
+     <ul>
+      <li><strong>Bubble:</strong> compara adjacentes, troca · O(n²)</li>
+      <li>Otimização: flag <ic>trocou</ic></li>
+      <li><strong>Selection:</strong> seleciona mínimo · O(n²)</li>
+      <li>Max N-1 trocas totais</li>
+      <li>Swap sempre usa <ic>temp</ic></li>
+     </ul>
+    </div>
+    <div class="box am d5">
+     <h3>🔤 Strings (Aula 06)</h3>
+     <ul>
+      <li><ic>char s[N]</ic> + terminador <ic>\0</ic></li>
+      <li>Tamanho mínimo = strlen+1</li>
+      <li><ic>strlen · strcpy · strcmp · strcat</ic></li>
+      <li>Nunca use <ic>==</ic> para comparar!</li>
+      <li>fgets remove \n do final</li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 03 — TABELA COMPARATIVA DOS ALGORITMOS ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>📊 Tabela Comparativa — 5 Algoritmos</h2><p>Quando usar cada um — referência rápida para a prova</p></div>
+  <div class="sb">
+   <table class="rtbl" style="margin-top:6px">
+    <thead>
+     <tr>
+      <th style="width:140px">Algoritmo</th>
+      <th>Complexidade</th>
+      <th>Pré-requisito</th>
+      <th>Inicialização-chave</th>
+      <th>Quando usar</th>
+     </tr>
+    </thead>
+    <tbody>
+     <tr>
+      <td><strong>Soma / Média</strong></td>
+      <td>O(n)</td>
+      <td>Nenhum</td>
+      <td><ic>soma = 0</ic> · cast <ic>(float)</ic></td>
+      <td>Calcular totais e médias de coleção</td>
+     </tr>
+     <tr>
+      <td><strong>Máximo / Mínimo</strong></td>
+      <td>O(n)</td>
+      <td>Nenhum</td>
+      <td><ic>maior = v[0]</ic> · laço desde i=1</td>
+      <td>Encontrar extremos — nunca inicie com 0!</td>
+     </tr>
+     <tr>
+      <td><strong>Busca Linear</strong></td>
+      <td>O(n)</td>
+      <td>Nenhum</td>
+      <td>Retorna posição ou <ic>-1</ic></td>
+      <td>Vetor pequeno ou desordenado</td>
+     </tr>
+     <tr>
+      <td><strong>Busca Binária</strong></td>
+      <td>O(log n)</td>
+      <td><strong>Vetor ordenado!</strong></td>
+      <td><ic>esq=0, dir=N-1, meio=(esq+dir)/2</ic></td>
+      <td>Vetor grande e estático já ordenado</td>
+     </tr>
+     <tr>
+      <td><strong>Bubble Sort</strong></td>
+      <td>O(n²) · best O(n)</td>
+      <td>Nenhum</td>
+      <td>Flag <ic>trocou=0</ic> por passagem</td>
+      <td>Pequenos ou quase ordenados</td>
+     </tr>
+     <tr>
+      <td><strong>Selection Sort</strong></td>
+      <td>O(n²)</td>
+      <td>Nenhum</td>
+      <td><ic>posMin=i</ic> a cada passagem</td>
+      <td>Quando trocas são custosas (≤ N-1 trocas)</td>
+     </tr>
+    </tbody>
+   </table>
+
+   <div class="two" style="gap:18px;margin-top:12px">
+    <div class="yel" style="margin:0">
+     <h3>🎯 Regra de escolha rápida</h3>
+     <p><strong>Busca em vetor ordenado grande → binária.</strong><br>
+     <strong>Busca em vetor pequeno ou desordenado → linear.</strong><br>
+     <strong>Ordenar poucas vezes e buscar muito → ordena (O(n²)) uma vez, busca binária (O(log n)) sempre.</strong><br>
+     Para N&lt;50 qualquer algoritmo funciona; para N&gt;10.000 use <ic>qsort()</ic>/<ic>Arrays.sort()</ic>.</p>
+    </div>
+    <div class="box gn d1" style="margin:0">
+     <h3>🔗 Conexões entre algoritmos</h3>
+     <ul>
+      <li>Máximo da Aula 02 é usado no Selection Sort (Aula 05)</li>
+      <li>Busca binária (Aula 04) exige a ordenação (Aula 05)</li>
+      <li>Ranking com Selection Sort pode usar <ic>strcmp</ic> (Aulas 05+06)</li>
+      <li>Acima da média (Aula 03) usa 2 passagens — como busca + contagem</li>
+      <li>strlen percorre igual ao algoritmo de busca linear!</li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 04 — EXERCÍCIO INTEGRADO 01 ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>💻 Exercício Integrado 01 — Sistema de Notas</h2><p>Combina: leitura · soma/média · máx · contagem · ordenação</p></div>
+  <div class="sb">
+   <div class="big" style="font-size:1.1rem;padding:18px">
+    Enunciado: leia N notas de alunos com nome e nota. Calcule média da turma. Exiba quem ficou acima da média. Ordene por nota (decrescente) e mostre o ranking. Realize busca por nome.
+   </div>
+   <div class="cblk d1">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">sistema_notas.c — solução integrada completa</span></div>
+    <pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="kw">#define</span> N <span class="nm">5</span>
+
+<span class="cm">/* 1. Ordenação decrescente por nota (Selection Sort) */</span>
+<span class="kw">void</span> <span class="fn">ordenar</span>(<span class="tp">char</span> nomes[][<span class="nm">50</span>], <span class="tp">float</span> notas[], <span class="tp">int</span> n) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;n-<span class="nm">1</span>;i++) {
+        <span class="tp">int</span> pm=i;
+        <span class="kw">for</span>(<span class="tp">int</span> j=i+<span class="nm">1</span>;j&lt;n;j++) <span class="kw">if</span>(notas[j]&gt;notas[pm]) pm=j;
+        <span class="kw">if</span>(pm!=i) {
+            <span class="tp">float</span> t=notas[i]; notas[i]=notas[pm]; notas[pm]=t;
+            <span class="tp">char</span> tmp[<span class="nm">50</span>]; <span class="fn">strcpy</span>(tmp,nomes[i]); <span class="fn">strcpy</span>(nomes[i],nomes[pm]); <span class="fn">strcpy</span>(nomes[pm],tmp);
+        }
+    }
+}
+
+<span class="cm">/* 2. Busca linear por nome */</span>
+<span class="tp">int</span> <span class="fn">buscarNome</span>(<span class="tp">char</span> nomes[][<span class="nm">50</span>], <span class="tp">int</span> n, <span class="tp">char</span> chave[]) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;n;i++) <span class="kw">if</span>(<span class="fn">strcmp</span>(nomes[i],chave)==<span class="nm">0</span>) <span class="kw">return</span> i;
+    <span class="kw">return</span> -<span class="nm">1</span>;
+}
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">char</span>  nomes[N][<span class="nm">50</span>];
+    <span class="tp">float</span> notas[N], soma=<span class="nm">0</span>, media;
+
+    <span class="cm">/* Leitura */</span>
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N;i++) {
+        <span class="fn">printf</span>(<span class="str">"Nome %d: "</span>,i+<span class="nm">1</span>); <span class="fn">scanf</span>(<span class="str">"%s"</span>,nomes[i]);
+        <span class="fn">printf</span>(<span class="str">"Nota %d: "</span>,i+<span class="nm">1</span>); <span class="fn">scanf</span>(<span class="str">"%f"</span>,&notas[i]);
+        soma+=notas[i];
+    }
+    media=(<span class="tp">float</span>)soma/N;
+    <span class="fn">printf</span>(<span class="str">"\nMédia: %.2f\n"</span>,media);
+
+    <span class="cm">/* Acima da média */</span>
+    <span class="fn">printf</span>(<span class="str">"Acima da média: "</span>);
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N;i++) <span class="kw">if</span>(notas[i]&gt;media) <span class="fn">printf</span>(<span class="str">"%s(%.1f) "</span>,nomes[i],notas[i]);
+
+    <span class="cm">/* Ordenar e exibir ranking */</span>
+    <span class="fn">ordenar</span>(nomes,notas,N);
+    <span class="fn">printf</span>(<span class="str">"\n\nRanking:\n"</span>);
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N;i++) <span class="fn">printf</span>(<span class="str">"%dº %-15s %.1f\n"</span>,i+<span class="nm">1</span>,nomes[i],notas[i]);
+
+    <span class="cm">/* Busca por nome */</span>
+    <span class="tp">char</span> busca[<span class="nm">50</span>]; <span class="fn">printf</span>(<span class="str">"\nBuscar aluno: "</span>); <span class="fn">scanf</span>(<span class="str">"%s"</span>,busca);
+    <span class="tp">int</span> pos=<span class="fn">buscarNome</span>(nomes,N,busca);
+    <span class="kw">if</span>(pos!=-<span class="nm">1</span>) <span class="fn">printf</span>(<span class="str">"Ranking %dº: nota %.1f\n"</span>,pos+<span class="nm">1</span>,notas[pos]);
+    <span class="kw">else</span>         <span class="fn">puts</span>(<span class="str">"Não encontrado."</span>);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+   </div>
+   <div class="box gn d2">
+    <h3>✅ Algoritmos integrados neste programa</h3>
+    <ul style="display:grid;grid-template-columns:1fr 1fr;column-gap:20px">
+     <li>Leitura de vetor de float + strings</li>
+     <li>Cálculo de soma e média (Aula 02)</li>
+     <li>Contagem acima da média (Aula 03)</li>
+     <li>Selection Sort decrescente (Aula 05)</li>
+     <li>Vetores paralelos nome+nota (Aula 05)</li>
+     <li>strcmp + strcpy para strings (Aula 06)</li>
+     <li>Busca linear por nome (Aula 04)</li>
+     <li>Função auxiliar reutilizável (prévia Aula 12)</li>
+    </ul>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 05 — EXERCÍCIO INTEGRADO 02 ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>💻 Exercício Integrado 02 — Análise Meteorológica</h2><p>Combina: busca · ordenação · strings · estatísticas</p></div>
+  <div class="sb">
+   <div style="background:var(--lt);border-radius:14px;padding:16px 20px;margin-bottom:14px;animation:fiu .55s ease-out forwards;opacity:0;border-left:5px solid var(--lc)">
+    <p style="font-weight:700;color:var(--lc);font-size:1rem;margin-bottom:10px">📋 Enunciado</p>
+    <p style="font-size:.96rem;line-height:1.7">Uma rede de estações meteorológicas registra a temperatura máxima de <strong>7 cidades paranaenses</strong> em um determinado dia. O programa deve: <strong>(1)</strong> ler nome e temperatura de cada cidade. <strong>(2)</strong> Calcular média, máxima e mínima. <strong>(3)</strong> Ordenar em ordem crescente de temperatura (Bubble Sort). <strong>(4)</strong> Exibir quais cidades ficaram acima da média. <strong>(5)</strong> Permitir busca de uma cidade pelo nome (busca linear com strcmp).</p>
+   </div>
+   <div class="two" style="gap:18px;margin-top:6px">
+    <div class="cblk d1">
+     <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">estacoes.c — esqueleto para completar</span></div>
+     <pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="kw">#define</span> N <span class="nm">7</span>
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+  <span class="tp">char</span>  cidades[N][<span class="nm">50</span>];
+  <span class="tp">float</span> temps[N], soma=<span class="nm">0</span>, media;
+  <span class="tp">float</span> maior=temps[<span class="nm">0</span>], menor=temps[<span class="nm">0</span>];
+
+  <span class="cm">/* TODO 1: Leia nome e temp de cada cidade */</span>
+
+  <span class="cm">/* TODO 2: Calcule média, maior, menor */</span>
+
+  <span class="cm">/* TODO 3: Bubble Sort crescente por temperatura
+     (troque cidade E temp juntos — vetores paralelos!) */</span>
+
+  <span class="cm">/* TODO 4: Exiba cidades acima da média */</span>
+
+  <span class="cm">/* TODO 5: Leia uma cidade e busque com strcmp */</span>
+
+  <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+    </div>
+    <div>
+     <div style="background:#e8f5e9;border:2px solid var(--vg);border-radius:14px;padding:16px;margin-bottom:12px;animation:fiu .55s ease-out .2s forwards;opacity:0">
+      <p style="font-weight:700;color:var(--vg);margin-bottom:10px">📥 Entrada esperada</p>
+      <div style="font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;background:var(--cb);color:#fde68a;padding:10px 12px;border-radius:8px">
+Londrina    33.5
+Maringá     31.0
+Curitiba    22.5
+Foz         34.0
+Cascavel    28.5
+Ponta Grossa 25.0
+Paranavaí   35.0
+      </div>
+     </div>
+     <div style="background:#e3f2fd;border:2px solid var(--lc);border-radius:14px;padding:16px;animation:fiu .55s ease-out .3s forwards;opacity:0">
+      <p style="font-weight:700;color:var(--lc);margin-bottom:10px">📤 Saída esperada</p>
+      <div style="font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;background:var(--cb);color:#86efac;padding:10px 12px;border-radius:8px">
+Média: 29.93°C
+Máxima: 35.0°C (Paranavaí)
+Mínima: 22.5°C (Curitiba)
+Acima da média: Londrina Foz Paranavaí
+
+Ordenadas (crescente):
+1. Curitiba      22.5°C
+2. Ponta Grossa  25.0°C
+...
+
+Buscar cidade: Londrina
+Londrina: 33.5°C (acima da média)
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 06 — EXERCÍCIO INTEGRADO 03 ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>💻 Exercício Integrado 03 — Processamento de Strings</h2><p>Combina: strings · percurso · ordenação · contagem</p></div>
+  <div class="sb">
+   <div style="background:var(--lt);border-radius:14px;padding:16px 20px;margin-bottom:12px;animation:fiu .55s ease-out forwards;opacity:0;border-left:5px solid var(--lp)">
+    <p style="font-weight:700;color:var(--lp);font-size:1rem;margin-bottom:10px">📋 Enunciado — Dicionário de Palavras</p>
+    <p style="font-size:.96rem;line-height:1.7">Leia <strong>8 palavras</strong> do usuário (<ic>char palavras[8][50]</ic>). Para cada uma, calcule seu <strong>comprimento</strong>. Exiba a <strong>maior palavra</strong> (em tamanho). Ordene as palavras em <strong>ordem alfabética</strong> (Selection Sort + strcmp). Verifique quais são <strong>palíndromos</strong>. Por fim, permita <strong>busca binária</strong> no vetor ordenado usando <ic>strcmp</ic>.</p>
+   </div>
+   <div class="two" style="gap:18px;margin-top:6px">
+    <div class="cblk d1">
+     <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">dicionario.c — função palíndromo</span></div>
+     <pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;ctype.h&gt;</span>   <span class="cm">// tolower()</span>
+<span class="kw">#define</span> N <span class="nm">8</span>
+
+<span class="cm">/* Verifica palíndromo ignorando maiúsculas */</span>
+<span class="tp">int</span> <span class="fn">ehPalindromo</span>(<span class="tp">char</span> s[]) {
+  <span class="tp">int</span> esq=<span class="nm">0</span>, dir=<span class="fn">strlen</span>(s)-<span class="nm">1</span>;
+  <span class="kw">while</span>(esq &lt; dir) {
+    <span class="kw">if</span>(<span class="fn">tolower</span>(s[esq]) != <span class="fn">tolower</span>(s[dir])) <span class="kw">return</span> <span class="nm">0</span>;
+    esq++; dir--;
+  }
+  <span class="kw">return</span> <span class="nm">1</span>;
+}
+
+<span class="cm">/* Busca binária em vetor de strings ordenado */</span>
+<span class="tp">int</span> <span class="fn">buscaBin</span>(<span class="tp">char</span> v[][<span class="nm">50</span>], <span class="tp">int</span> n, <span class="tp">char</span> chave[]) {
+  <span class="tp">int</span> esq=<span class="nm">0</span>, dir=n-<span class="nm">1</span>;
+  <span class="kw">while</span>(esq&lt;=dir) {
+    <span class="tp">int</span> m=(esq+dir)/<span class="nm">2</span>;
+    <span class="tp">int</span> cmp=<span class="fn">strcmp</span>(v[m],chave);
+    <span class="kw">if</span>(!cmp) <span class="kw">return</span> m;
+    <span class="kw">if</span>(cmp&lt;<span class="nm">0</span>) esq=m+<span class="nm">1</span>; <span class="kw">else</span> dir=m-<span class="nm">1</span>;
+  }
+  <span class="kw">return</span> -<span class="nm">1</span>;
+}
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+  <span class="tp">char</span> palavras[N][<span class="nm">50</span>];
+  <span class="tp">int</span>  maiorTam=<span class="nm">0</span>, iMaior=<span class="nm">0</span>;
+
+  <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N;i++) {
+    <span class="fn">printf</span>(<span class="str">"Palavra %d: "</span>,i+<span class="nm">1</span>);
+    <span class="fn">scanf</span>(<span class="str">"%s"</span>,palavras[i]);
+    <span class="tp">int</span> t=<span class="fn">strlen</span>(palavras[i]);
+    <span class="kw">if</span>(t&gt;maiorTam){ maiorTam=t; iMaior=i; }
+    <span class="kw">if</span>(<span class="fn">ehPalindromo</span>(palavras[i]))
+      <span class="fn">printf</span>(<span class="str">"  → palíndromo!\n"</span>);
+  }
+  <span class="fn">printf</span>(<span class="str">"\nMaior: %s (%d chars)\n"</span>,palavras[iMaior],maiorTam);
+  <span class="cm">/* TODO: Selection Sort + busca binária */</span>
+  <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+    </div>
+    <div>
+     <div class="box gn d2" style="margin-bottom:12px">
+      <h3>✅ Conceitos integrados</h3>
+      <ul>
+       <li>strlen → encontrar maior palavra</li>
+       <li>strcmp → ordenar e buscar</li>
+       <li>Selection Sort → ordenar alfabeticamente</li>
+       <li>Busca binária → após ordenar</li>
+       <li>Algoritmo palíndromo → dois índices</li>
+       <li>tolower() → ignorar maiúsculas</li>
+      </ul>
+     </div>
+     <div class="box bl d3">
+      <h3>🔗 strcmp na busca binária</h3>
+      <ul>
+       <li><ic>strcmp(v[meio],chave) == 0</ic> → encontrou</li>
+       <li><ic>strcmp(v[meio],chave) &lt; 0</ic> → meio vem antes → esq = meio+1</li>
+       <li><ic>strcmp(v[meio],chave) &gt; 0</ic> → meio vem depois → dir = meio-1</li>
+       <li>Funciona igual à busca binária de inteiros, só muda o comparador!</li>
+      </ul>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 07 — QUIZ DE REVISÃO PARTE 1 ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🧠 Quiz de Revisão — Parte 1</h2><p>Questões objetivas sobre os tópicos da Unidade I</p></div>
+  <div class="sb">
+   <div class="qz" id="q1">
+    <p class="q">1. Um vetor <ic>int v[] = {10, 3, 7, 15, 6}</ic> passa pelo algoritmo de máximo. Qual é o erro no código: <ic>int maior = 0;</ic> antes do laço?</p>
+    <div class="opts">
+     <label><input type="radio" name="q1" value="a"> a) Nenhum erro — inicializar com 0 é sempre correto</label>
+     <label><input type="radio" name="q1" value="b"> b) Se todos os valores fossem negativos, o resultado seria 0 (incorreto). Inicialize sempre com <ic>v[0]</ic></label>
+     <label><input type="radio" name="q1" value="c"> c) O laço deve começar em i=0 e não em i=1</label>
+     <label><input type="radio" name="q1" value="d"> d) O tipo deveria ser float, não int</label>
+    </div>
+    <button class="chk" onclick="chk('q1','b','✅ Correto! Se todos os valores fossem negativos (ex: {-5,-3,-8}), nenhum superaria 0 e o resultado seria 0 — que não é nenhum elemento! Use sempre maior = v[0] para inicializar. O laço começa em i=1 porque v[0] já está em maior.','❌ Reveja o algoritmo de máximo. O problema é que 0 pode não ser o menor valor possível — se todos os elementos fossem negativos, nenhum superaria 0. Sempre inicialize com v[0].')">Verificar</button>
+    <div class="fb" id="q1-fb"></div>
+   </div>
+   <div class="qz d1" id="q2">
+    <p class="q">2. Qual é a complexidade da busca binária para N=1.024 elementos? E quantas comparações são necessárias no pior caso?</p>
+    <div class="opts">
+     <label><input type="radio" name="q2" value="a"> a) O(n) — até 1.024 comparações</label>
+     <label><input type="radio" name="q2" value="b"> b) O(n/2) — até 512 comparações</label>
+     <label><input type="radio" name="q2" value="c"> c) O(log n) — até 10 comparações (log₂ 1.024 = 10)</label>
+     <label><input type="radio" name="q2" value="d"> d) O(√n) — até 32 comparações</label>
+    </div>
+    <button class="chk" onclick="chk('q2','c','✅ Perfeito! A busca binária tem complexidade O(log₂ n). log₂(1024) = 10 porque 2¹⁰ = 1024. A cada comparação, metade dos elementos é descartada — é a potência do algoritmo!','❌ Busca binária: O(log₂ n). log₂(1024) = 10 pois 2¹⁰=1024. Muito diferente de 1024 comparações da busca linear!')">Verificar</button>
+    <div class="fb" id="q2-fb"></div>
+   </div>
+   <div class="qz d2" id="q3">
+    <p class="q">3. Após a 1ª passagem do Bubble Sort no vetor <ic>[4, 2, 7, 1, 5]</ic>, qual é o estado do vetor?</p>
+    <div class="opts">
+     <label><input type="radio" name="q3" value="a"> a) [1, 2, 4, 5, 7] — completamente ordenado</label>
+     <label><input type="radio" name="q3" value="b"> b) [2, 4, 1, 5, 7] — o maior (7) chegou ao final</label>
+     <label><input type="radio" name="q3" value="c"> c) [2, 7, 4, 1, 5] — só a primeira troca foi feita</label>
+     <label><input type="radio" name="q3" value="d"> d) [4, 2, 7, 1, 5] — nenhuma troca porque já está parcialmente ordenado</label>
+    </div>
+    <button class="chk" onclick="chk('q3','b','✅ Correto! Trace: 4>2→troca[2,4,7,1,5] | 4<7 sem troca | 7>1→troca[2,4,1,7,5] | 7>5→troca[2,4,1,5,7]. O maior elemento (7) borbulhou para a posição final — o comportamento esperado após a 1ª passagem completa!','❌ Trace passo a passo: compare par a par da esquerda para direita. O maior elemento (7) vai "borbulhando" para o final. Resultado: [2,4,1,5,7].')">Verificar</button>
+    <div class="fb" id="q3-fb"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 08 — QUIZ DE REVISÃO PARTE 2 ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🧠 Quiz de Revisão — Parte 2</h2><p>Strings, algoritmos e armadilhas clássicas</p></div>
+  <div class="sb">
+   <div class="qz" id="q4">
+    <p class="q">4. Em C, <ic>char s[10] = "radar"</ic>. Qual é o valor de <ic>strlen(s)</ic> e quantos bytes o vetor ocupa no total?</p>
+    <div class="opts">
+     <label><input type="radio" name="q4" value="a"> a) strlen=5, vetor ocupa 5 bytes</label>
+     <label><input type="radio" name="q4" value="b"> b) strlen=6 (conta o \0), vetor ocupa 10 bytes</label>
+     <label><input type="radio" name="q4" value="c"> c) strlen=5, vetor ocupa 10 bytes</label>
+     <label><input type="radio" name="q4" value="d"> d) strlen=10, vetor ocupa 10 bytes</label>
+    </div>
+    <button class="chk" onclick="chk('q4','c','✅ Perfeito! strlen retorna 5 — o número de chars antes do \\0. O vetor char s[10] ocupa 10 bytes de memória sempre, independente do tamanho da string armazenada. Os bytes [6..9] ficam disponíveis mas não usados.','❌ strlen conta chars ANTES do \\0 → 5. O vetor char s[10] SEMPRE ocupa 10 bytes (declaração define o tamanho em memória), independente do conteúdo.')">Verificar</button>
+    <div class="fb" id="q4-fb"></div>
+   </div>
+   <div class="qz d1" id="q5">
+    <p class="q">5. O que acontece se você calcular <ic>int media = soma / N</ic> em C quando <ic>soma = 41</ic> e <ic>N = 5</ic> (ambos int)?</p>
+    <div class="opts">
+     <label><input type="radio" name="q5" value="a"> a) media = 8.2 (resultado correto)</label>
+     <label><input type="radio" name="q5" value="b"> b) media = 8 (divisão inteira trunca o decimal)</label>
+     <label><input type="radio" name="q5" value="c"> c) Erro de compilação — tipos incompatíveis</label>
+     <label><input type="radio" name="q5" value="d"> d) media = 8.0 (C converte automaticamente)</label>
+    </div>
+    <button class="chk" onclick="chk('q5','b','✅ Certo! Em C, int/int faz divisão inteira e trunca o resultado: 41/5 = 8 (não 8.2). Para obter 8.2, use (float)soma/N ou float media = (float)soma/N. Essa é uma das armadilhas mais comuns da linguagem!','❌ int/int em C sempre faz divisão inteira, descartando o decimal: 41/5 = 8. Para 8.2, precisaria de (float)soma/N. Nenhuma conversão automática ocorre na divisão.')">Verificar</button>
+    <div class="fb" id="q5-fb"></div>
+   </div>
+   <div class="qz d2" id="q6">
+    <p class="q">6. Qual é a diferença entre <ic>Bubble Sort com flag</ic> e <ic>Selection Sort</ic> em termos de <strong>número de trocas</strong>?</p>
+    <div class="opts">
+     <label><input type="radio" name="q6" value="a"> a) Ambos fazem exatamente N(N-1)/2 trocas no pior caso</label>
+     <label><input type="radio" name="q6" value="b"> b) Bubble pode fazer O(n²) trocas; Selection faz no máximo N-1 trocas</label>
+     <label><input type="radio" name="q6" value="c"> c) Selection faz mais trocas porque percorre o vetor mais vezes</label>
+     <label><input type="radio" name="q6" value="d"> d) Não há diferença — ambos têm O(n²) trocas</label>
+    </div>
+    <button class="chk" onclick="chk('q6','b','✅ Exato! Bubble Sort pode fazer até O(n²) trocas no pior caso (a cada comparação pode trocar). Selection Sort faz exatamente 1 troca por passagem (no máximo) — total de N-1 trocas. Isso o torna preferível quando trocas são custosas.','❌ Bubble Sort pode fazer muitas trocas (O(n²) no pior caso). Selection Sort faz no máximo 1 troca por passagem, totalizando N-1 trocas — muito menos movimentação de dados!')">Verificar</button>
+    <div class="fb" id="q6-fb"></div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 09 — GABARITO RÁPIDO ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>✅ Gabarito Rápido — Armadilhas da Prova</h2><p>Os erros mais comuns e as respostas corretas</p></div>
+  <div class="sb">
+   <div class="three" style="margin-top:6px;gap:14px">
+    <div>
+     <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:14px;margin-bottom:10px;animation:fiu .55s ease-out .1s forwards;opacity:0">
+      <p style="font-weight:700;color:#92400e;margin-bottom:8px">⚠️ Armadilha 1 — Índice além do limite</p>
+      <div style="background:var(--cb);color:#fca5a5;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6">int v[5];
+for(i=0; i&lt;=5; i++) // ERRADO
+// v[5] não existe!</div>
+      <div style="background:#14532d;color:#86efac;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6;margin-top:4px">for(i=0; i&lt;5; i++) // ✅
+// Índices: 0 a N-1</div>
+     </div>
+     <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:14px;animation:fiu .55s ease-out .2s forwards;opacity:0">
+      <p style="font-weight:700;color:#92400e;margin-bottom:8px">⚠️ Armadilha 2 — Máximo com 0</p>
+      <div style="background:var(--cb);color:#fca5a5;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6">maior = 0; // ERRADO
+// Falha para negativos!</div>
+      <div style="background:#14532d;color:#86efac;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6;margin-top:4px">maior = v[0]; // ✅
+// Sempre use v[0]</div>
+     </div>
+    </div>
+    <div>
+     <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:14px;margin-bottom:10px;animation:fiu .55s ease-out .3s forwards;opacity:0">
+      <p style="font-weight:700;color:#92400e;margin-bottom:8px">⚠️ Armadilha 3 — Divisão inteira</p>
+      <div style="background:var(--cb);color:#fca5a5;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6">// soma=41, N=5 (ints)
+media = soma / N; // = 8!</div>
+      <div style="background:#14532d;color:#86efac;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6;margin-top:4px">media = (float)soma/N;
+// = 8.2 ✅</div>
+     </div>
+     <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:14px;animation:fiu .55s ease-out .4s forwards;opacity:0">
+      <p style="font-weight:700;color:#92400e;margin-bottom:8px">⚠️ Armadilha 4 — scanf com &amp;</p>
+      <div style="background:var(--cb);color:#fca5a5;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6">scanf("%s", &amp;s); // ambíguo</div>
+      <div style="background:#14532d;color:#86efac;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6;margin-top:4px">scanf("%s", s);   // ✅
+scanf("%d", &amp;v[i]); // int ✅</div>
+     </div>
+    </div>
+    <div>
+     <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:14px;margin-bottom:10px;animation:fiu .55s ease-out .5s forwards;opacity:0">
+      <p style="font-weight:700;color:#92400e;margin-bottom:8px">⚠️ Armadilha 5 — Comparar strings</p>
+      <div style="background:var(--cb);color:#fca5a5;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6">if(s1 == s2) // ERRADO
+// Compara endereços!</div>
+      <div style="background:#14532d;color:#86efac;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6;margin-top:4px">if(strcmp(s1,s2)==0)// ✅
+// Compara conteúdo</div>
+     </div>
+     <div style="background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:14px;animation:fiu .55s ease-out .6s forwards;opacity:0">
+      <p style="font-weight:700;color:#92400e;margin-bottom:8px">⚠️ Armadilha 6 — Busca binária sem ordenar</p>
+      <div style="background:var(--cb);color:#fca5a5;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6">// vetor desordenado
+buscaBinaria(v,N,chave)
+// Resultado ERRADO!</div>
+      <div style="background:#14532d;color:#86efac;padding:8px 10px;border-radius:7px;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6;margin-top:4px">ordenar(v,N);    // 1º ✅
+buscaBinaria(v,N,x); // 2º</div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 10 — LISTA 02 ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>📋 Lista 02 — Exercícios de Revisão</h2><p>5 problemas para praticar até a Aula 08 (Matrizes)</p></div>
+  <div class="sb">
+   <div class="two" style="margin-top:6px;gap:18px">
+    <div>
+     <div class="box bl">
+      <h3>📝 Problema 01 ★☆☆ — Vetor de temperaturas</h3>
+      <p style="font-size:.92rem;line-height:1.6;margin-bottom:8px">Leia 10 temperaturas (floats). Calcule: média, máxima, mínima e amplitude. Exiba quantas estão acima e abaixo da média. Use uma <strong>única passagem</strong> para soma+máx+mín.</p>
+     </div>
+     <div class="box gn d1" style="margin-top:10px">
+      <h3>📝 Problema 02 ★★☆ — Ordenar e buscar</h3>
+      <p style="font-size:.92rem;line-height:1.6;margin-bottom:8px">Leia 12 inteiros. Ordene com Bubble Sort <strong>decrescente</strong> (contando trocas). Depois, aplique busca binária para encontrar um valor informado. Exiba o número de comparações feitas.</p>
+     </div>
+     <div class="box pu d2" style="margin-top:10px">
+      <h3>📝 Problema 03 ★★☆ — Ocorrências</h3>
+      <p style="font-size:.92rem;line-height:1.6;margin-bottom:8px">Leia um vetor de 15 inteiros entre 1 e 10. Sem ordenar, exiba quantas vezes cada valor (1 a 10) aparece. Use busca linear para contar frequências.</p>
+     </div>
+    </div>
+    <div>
+     <div class="box tl">
+      <h3>📝 Problema 04 ★★☆ — Análise de nomes</h3>
+      <p style="font-size:.92rem;line-height:1.6;margin-bottom:8px">Leia 6 nomes. Exiba: o maior nome (em tamanho), o menor, e ordene-os alfabeticamente. Verifique quais são palíndromos. Use <ic>strlen</ic>, <ic>strcmp</ic> e <ic>strcpy</ic>.</p>
+     </div>
+     <div class="box rd d1" style="margin-top:10px">
+      <h3>📝 Problema 05 ★★★ — Sistema integrado</h3>
+      <p style="font-size:.92rem;line-height:1.6;margin-bottom:8px">Leia nome e salário de 8 funcionários. Calcule média salarial. Reajuste em 10% quem ganha abaixo da média. Ordene por salário decrescente. Exiba o ranking final com nome e salário reajustado.</p>
+     </div>
+     <div class="hi d2" style="margin-top:10px;padding:14px 16px">
+      <h3>📅 Prazo</h3>
+      <p style="margin-top:6px;font-size:.95rem">Entrega via Google Classroom até a <strong>Aula 08 (27/05)</strong>. Implementar em C. Inclua comentários explicando cada trecho. Testados com casos de borda (valores negativos, vetor já ordenado, strings com espaço).</p>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════════ SLIDE 11 — FECHAMENTO ═══════════════ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🎯 Encerramento da Unidade I</h2><p>Próxima parada: Unidade II — Matrizes (arrays bidimensionais)!</p></div>
+  <div class="sb">
+   <!-- Barra de progresso dos tópicos -->
+   <div style="background:var(--lt);border-radius:16px;padding:18px 22px;margin-bottom:16px;animation:fiu .55s ease-out forwards;opacity:0">
+    <p style="font-weight:700;font-size:1.05rem;margin-bottom:14px;color:var(--dk)">📊 Progresso da Disciplina</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+     <div><div style="display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px"><span>✅ Unidade I — Vetores (Aulas 01-07)</span><span style="font-weight:700;color:var(--vg)">100%</span></div><div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:100%;background:linear-gradient(90deg,var(--vg),#34d399)"></div></div></div>
+     <div><div style="display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px"><span>⏳ Unidade II — Matrizes (Aulas 08-11)</span><span style="font-weight:700;color:var(--or)">0%</span></div><div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:0%;background:linear-gradient(90deg,var(--or),var(--ac))"></div></div></div>
+     <div><div style="display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:4px"><span>⏳ Unidade III — Sub-rotinas (Aulas 12-17)</span><span style="font-weight:700;color:var(--lp)">0%</span></div><div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:0%;background:linear-gradient(90deg,var(--lp),#a78bfa)"></div></div></div>
+    </div>
+   </div>
+
+   <div class="big" style="font-size:1.35rem;line-height:1.5;margin-top:0">
+    Você agora domina vetores em Portugol, C e Java — declaração, percurso, busca, ordenação e strings! 🎉
+   </div>
+
+   <div class="tl" style="margin-top:16px">
+    <div class="tli"><h4>✅ Unidade I completa — 7 aulas, 5 algoritmos</h4><p>Conceito · Estatísticas · Lab 01 · Busca Linear/Binária · Bubble/Selection Sort · Strings em C</p></div>
+    <div class="tli d1"><h4>📋 Lista 02 — entrega até 27/05</h4><p>5 exercícios de revisão integrando todos os tópicos da Unidade I.</p></div>
+    <div class="tli d2"><h4>🔜 Aula 08 — 27/05 — Matrizes</h4><p>Declaração bidimensional <ic>int m[L][C]</ic>, percurso com dois laços aninhados, leitura e escrita.</p></div>
+    <div class="tli d3"><h4>🔜 Aula 09 — 29/05 — Operações em Matrizes</h4><p>Soma de linhas/colunas, diagonal principal e secundária, transposta.</p></div>
+    <div class="tli d4"><h4>🔜 Aulas 10-11 — Operações avançadas + Lab</h4><p>Multiplicação de matrizes, casos especiais, laboratório de fixação da Unidade II.</p></div>
+   </div>
+
+   <div class="hi d5" style="margin-top:16px;padding:14px 20px">
+    <h3>🚀 O que vem na Aula 08 — Matrizes</h3>
+    <p style="margin-top:6px;font-size:.96rem">Uma matriz é um <strong>vetor de vetores</strong> — você já sabe a metade! <ic class="wh">int m[3][4]</ic> declara 3 linhas × 4 colunas = 12 elementos. Percurso com dois <ic class="wh">for</ic> aninhados. Aplicações: tabelas, imagens, jogos (ex: tabuleiro do xadrez).</p>
+   </div>
+
+   <div style="text-align:center;margin-top:16px">
+    <p style="font-size:1.08rem;font-weight:600;color:var(--dk)">Parabéns pelo excelente trabalho na Unidade I! 🏆</p>
+    <p style="font-size:.93rem;color:var(--gy);margin-top:7px;font-style:italic">"Dominar vetores é dominar a fundação — matrizes e sub-rotinas são o próximo andar." 🏗️</p>
+   </div>
+  </div>
+ </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="nav">
+ <button class="nb" id="PB" onclick="nav(-1)">← Anterior</button>
+ <span class="ctr" id="CTR">1 / 11</span>
+ <button class="nb" id="NB" onclick="nav(1)">Próximo →</button>
+</div>
+
+<script>
+ let cur=0;
+ const slides=document.querySelectorAll('.slide'),tot=slides.length,dotsEl=document.getElementById('DOTS');
+ for(let i=0;i<tot;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>show(i);dotsEl.appendChild(d)}
+ function show(n){
+  slides.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; slides[cur].classList.add('active');
+  document.getElementById('CTR').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('PB').disabled=cur===0;
+  document.getElementById('NB').disabled=cur===tot-1;
+  document.getElementById('PF').style.width=((cur+1)/tot*100)+'%';
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  slides[cur].querySelectorAll('.box,.hi,.big,.yel,.tli,.sc,.qz,.cblk,.rtbl,.prog-item').forEach(el=>{
+   el.style.animation='none';el.style.opacity='0';void el.offsetWidth;el.style.animation='';
+  });
+ }
+ function nav(d){const n=cur+d;if(n>=0&&n<tot)show(n)}
+ function chk(qid,correct,ok,no){
+  const sel=document.querySelector(`input[name="${qid}"]:checked`);
+  const fb=document.getElementById(`${qid}-fb`);
+  if(!sel){fb.className='fb no';fb.textContent='⚠️ Selecione uma alternativa.';return}
+  fb.className=sel.value===correct?'fb ok':'fb no';
+  fb.textContent=sel.value===correct?ok:no;
+  document.querySelectorAll(`input[name="${qid}"]`).forEach(i=>i.disabled=true);
+  document.querySelector(`#${qid} .chk`).disabled=true;
+ }
+ document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')nav(-1);if(e.key==='ArrowRight')nav(1)});
+ let tx=0;
+ document.addEventListener('touchstart',e=>tx=e.changedTouches[0].screenX);
+ document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tx;if(dx<-50)nav(1);if(dx>50)nav(-1)});
+ show(0);
+</script>
+</body>
+</html>
