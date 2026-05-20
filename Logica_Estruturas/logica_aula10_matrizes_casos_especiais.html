@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 10 — Casos Especiais de Matrizes | UniFil</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --or:#FF8C00;--ac:#FF6B35;--dk:#4A4A4A;--lt:#F5F5F5;--gy:#6B6B6B;
+            --lc:#0550ae;--lp:#7c3aed;--lj:#b45309;--vg:#059669;--vt:#0d9488;
+            --sr:#dc2626;--cb:#1e2130;--ct:#abb2bf;
+            --id:#0369a1;--sm:#6d28d9;--tr:#b45309;--z0:#374151
+        }
+        body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0d1b2e,#1a0d2e);overflow:hidden;color:var(--dk)}
+        .presentation{width:100vw;height:100vh;position:relative}
+        .slide{width:100%;height:100%;position:absolute;top:0;left:0;display:none;opacity:0;transform:translateX(100%);transition:all .6s cubic-bezier(.68,-.55,.265,1.55)}
+        .slide.active{display:flex;opacity:1;transform:translateX(0)}
+        .slide-content{background:white;width:90%;max-width:1200px;height:90%;margin:auto;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
+        .sh{background:linear-gradient(135deg,var(--or),var(--ac));padding:26px 50px;color:white;flex-shrink:0;position:relative}
+        .sh::after{content:'';position:absolute;bottom:-18px;left:0;right:0;height:36px;background:linear-gradient(135deg,var(--or),var(--ac));clip-path:polygon(0 0,100% 0,100% 100%,0 0)}
+        .sh h1{font-size:2.1rem;margin-bottom:6px;font-weight:700}
+        .sh h2{font-size:1.6rem;margin-bottom:6px;font-weight:600}
+        .sh p{font-size:1rem;opacity:.95}
+        .sb{flex:1;padding:50px 50px 30px;overflow-y:auto}
+        .sb::-webkit-scrollbar{width:8px}
+        .sb::-webkit-scrollbar-track{background:var(--lt);border-radius:10px}
+        .sb::-webkit-scrollbar-thumb{background:var(--or);border-radius:10px}
+        .two{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+        .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:16px 0}
+        .box{background:var(--lt);padding:20px;border-radius:14px;border-left:5px solid var(--or);animation:fiu .55s ease-out forwards;opacity:0}
+        .box h3{color:var(--or);margin-bottom:9px;font-size:1.15rem}
+        .box ul{list-style:none;padding:0}
+        .box li{padding:6px 0 6px 24px;position:relative;font-size:.95rem;line-height:1.6}
+        .box li::before{content:'→';position:absolute;left:0;color:var(--or);font-weight:bold}
+        .box.bl{border-left-color:var(--lc)}.box.bl h3{color:var(--lc)}
+        .box.gn{border-left-color:var(--vg)}.box.gn h3{color:var(--vg)}
+        .box.pu{border-left-color:var(--lp)}.box.pu h3{color:var(--lp)}
+        .box.tl{border-left-color:var(--vt)}.box.tl h3{color:var(--vt)}
+        .box.rd{border-left-color:var(--sr)}.box.rd h3{color:var(--sr)}
+        .box.am{border-left-color:var(--lj)}.box.am h3{color:var(--lj)}
+        .box.id{border-left-color:var(--id)}.box.id h3{color:var(--id)}
+        .box.sm{border-left-color:var(--sm)}.box.sm h3{color:var(--sm)}
+        .hi{background:linear-gradient(135deg,var(--or),var(--ac));color:white;padding:20px;border-radius:14px;margin:16px 0;animation:fiu .55s ease-out .2s forwards;opacity:0}
+        .hi h3{margin-bottom:8px;font-size:1.3rem}
+        .hi p{font-size:.97rem;line-height:1.7}
+        .big{background:linear-gradient(135deg,var(--lc),#0d4b8c);color:white;padding:22px;border-radius:18px;font-size:1.4rem;font-weight:600;text-align:center;margin:16px 0;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 10px 28px rgba(5,80,174,.3);line-height:1.5}
+        .yel{background:#fff8e1;border:3px solid #f59e0b;border-radius:14px;padding:18px;margin:14px 0;animation:fiu .55s ease-out forwards;opacity:0}
+        .yel h3{color:#92400e;margin-bottom:8px;font-size:1.15rem}
+        .yel p{font-size:.96rem;line-height:1.7;color:#78350f}
+        /* Code tabs */
+        .ct{margin:12px 0;border-radius:14px;overflow:hidden;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+        .ct-nav{display:flex;background:#1a1a2e}
+        .ct-btn{padding:9px 18px;border:none;cursor:pointer;font-family:'Courier New',monospace;font-size:.86rem;font-weight:700;transition:all .2s;flex:1}
+        .ct-btn.p{background:#2d1b69;color:#c4b5fd}.ct-btn.c{background:#0c2a4f;color:#93c5fd}.ct-btn.j{background:#3d1c02;color:#fcd34d}
+        .ct-btn.active.p{background:var(--lp);color:white}.ct-btn.active.c{background:var(--lc);color:white}.ct-btn.active.j{background:var(--lj);color:white}
+        .ct-panel{background:var(--cb);display:none;padding:14px 20px;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;color:var(--ct);overflow-x:auto;white-space:pre}
+        .ct-panel.active{display:block}
+        .kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+        .nm{color:#d19a66}.tp{color:#e5c07b}.op{color:#56b6c2}
+        /* Code block */
+        .cblk{background:var(--cb);border-radius:12px;overflow:hidden;margin:10px 0;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+        .cblk-bar{background:#313244;padding:8px 14px;display:flex;align-items:center;gap:8px}
+        .cblk-bar .d{width:10px;height:10px;border-radius:50%}
+        .cblk-bar .d.r{background:#ff5f57}.cblk-bar .d.y{background:#febc2e}.cblk-bar .d.g{background:#28c840}
+        .cblk-bar .t{color:#a6adc8;font-size:.80rem;margin-left:8px;font-family:'Courier New',monospace}
+        .cblk pre{padding:14px 18px;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;color:var(--ct);overflow-x:auto;white-space:pre}
+        /* Matriz visual */
+        .mwrap{animation:fiu .55s ease-out forwards;opacity:0;display:inline-block}
+        .mlabel{font-family:'Courier New',monospace;font-size:.82rem;color:var(--gy);margin-bottom:8px;display:block}
+        .mgrid{display:flex;flex-direction:column;gap:3px}
+        .mrow{display:flex;gap:3px}
+        .mc{height:42px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Courier New',monospace;font-size:.88rem;font-weight:700;min-width:44px;transition:all .3s}
+        .mc.id0{background:#1e3a5f;color:#93c5fd}   /* zero */
+        .mc.id1{background:#0550ae;color:white}     /* 1 (diagonal identidade) */
+        .mc.dg{background:#d97706;color:white}      /* diagonal */
+        .mc.sp{background:#6d28d9;color:white}      /* simétrico espelho */
+        .mc.sm0{background:#1f2937;color:#4b5563}   /* zero de simétrica */
+        .mc.tri{background:#059669;color:white}     /* triangular preenchido */
+        .mc.tri0{background:#1f2937;color:#374151}  /* triangular zero */
+        .mc.hi{background:#dc2626;color:white}      /* destaque */
+        .mc.any{background:#374151;color:#d1d5db}   /* qualquer valor */
+        /* Verify table */
+        .vtbl{width:100%;border-collapse:collapse;margin:12px 0;animation:fiu .55s ease-out forwards;opacity:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+        .vtbl th{background:linear-gradient(135deg,var(--or),var(--ac));color:white;padding:10px 13px;text-align:left;font-size:.9rem}
+        .vtbl td{padding:9px 13px;border-bottom:1px solid #eee;font-size:.88rem;line-height:1.6;vertical-align:top}
+        .vtbl tr:last-child td{border-bottom:none}
+        .vtbl tr:nth-child(even){background:#f9fafb}
+        .vtbl .ok{color:var(--vg);font-weight:700}
+        .vtbl .ko{color:var(--sr);font-weight:700}
+        /* stat */
+        .sc{text-align:center;padding:16px;background:white;border-radius:14px;border:3px solid var(--or);animation:fiu .55s ease-out forwards;opacity:0}
+        .sc .n{font-size:2.1rem;font-weight:700;color:var(--or);margin-bottom:5px}
+        .sc .l{font-size:.87rem;color:var(--gy);font-weight:500}
+        /* timeline */
+        .tl{position:relative;padding-left:34px;margin:16px 0}
+        .tl::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:3px;background:var(--or)}
+        .tli{position:relative;padding:10px 0;animation:fil .55s ease-out forwards;opacity:0}
+        .tli::before{content:'';position:absolute;left:-29px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--or);border:3px solid white;box-shadow:0 0 0 3px var(--or)}
+        .tli h4{color:var(--or);font-size:1.1rem;margin-bottom:4px}
+        /* quiz */
+        .qz{background:var(--lt);border-radius:14px;padding:16px;margin:10px 0;border-left:5px solid var(--lc);animation:fiu .55s ease-out forwards;opacity:0}
+        .qz p.q{font-size:1rem;font-weight:600;color:var(--lc);margin-bottom:8px;line-height:1.55}
+        .qz .opts label{display:flex;align-items:flex-start;gap:10px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:.92rem;line-height:1.5;margin:3px 0;transition:background .2s}
+        .qz .opts label:hover{background:#dbeafe}
+        .qz .opts input[type=radio]{margin-top:3px;accent-color:var(--lc);flex-shrink:0}
+        .fb{display:none;margin-top:8px;padding:8px 13px;border-radius:8px;font-size:.92rem;font-weight:600}
+        .fb.ok{background:#d1fae5;color:#065f46;display:block}
+        .fb.no{background:#fee2e2;color:#991b1b;display:block}
+        .chk{background:var(--lc);color:white;border:none;padding:7px 16px;border-radius:14px;cursor:pointer;font-size:.87rem;font-weight:600;margin-top:8px;transition:all .3s}
+        .chk:hover{background:#0553b1;transform:translateY(-2px)}
+        /* nav */
+        .nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.97);padding:12px 24px;border-radius:50px;box-shadow:0 10px 28px rgba(0,0,0,.2);z-index:1000}
+        .nb{background:linear-gradient(135deg,var(--or),var(--ac));color:white;border:none;padding:9px 18px;border-radius:22px;cursor:pointer;font-size:.91rem;font-weight:600;transition:all .3s}
+        .nb:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 14px rgba(255,140,0,.4)}
+        .nb:disabled{opacity:.4;cursor:not-allowed}
+        .ctr{font-weight:600;color:var(--dk);min-width:68px;text-align:center;font-size:.98rem}
+        .pb{position:fixed;top:0;left:0;width:100%;height:5px;background:rgba(255,255,255,.15);z-index:1001}
+        .pf{height:100%;background:linear-gradient(90deg,var(--or),var(--vg));transition:width .4s}
+        .dots{position:fixed;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:1001}
+        .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s}
+        .dot.active{background:var(--or);transform:scale(1.5)}
+        @keyframes fiu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fil{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
+        .d1{animation-delay:.10s}.d2{animation-delay:.20s}.d3{animation-delay:.30s}
+        .d4{animation-delay:.40s}.d5{animation-delay:.50s}.d6{animation-delay:.60s}
+        ic{background:#f0f0f0;padding:1px 7px;border-radius:5px;font-family:'Courier New',monospace;font-size:.9em;color:#e11d48}
+        ic.wh{background:rgba(255,255,255,.2);color:white}
+    </style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="PF"></div></div>
+<div class="dots" id="DOTS"></div>
+<div class="presentation">
+
+<!-- ═══ SLIDE 01 — CAPA ═══ -->
+<div class="slide active">
+ <div class="slide-content">
+  <div class="sh">
+   <h1>Lógica de Programação e Algoritmos</h1>
+   <p>Aula 10 — Casos Especiais de Matrizes · 03/06/2026 · Unidade II</p>
+  </div>
+  <div class="sb" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+   <div style="font-size:5rem;margin-bottom:16px">🔷</div>
+   <h2 style="font-size:2.2rem;color:var(--or);margin-bottom:14px">Matrizes com personalidade própria!</h2>
+   <p style="font-size:1.1rem;color:var(--gy);max-width:820px;margin-bottom:26px;line-height:1.7">
+    Algumas matrizes têm estrutura especial que simplifica algoritmos e revela propriedades matemáticas importantes.
+    Hoje você aprende a <strong>identificar e verificar</strong>: matriz identidade, nula, simétrica, antissimétrica,
+    triangular superior e inferior — e aplica esses conceitos em código.
+   </p>
+   <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+    <div class="sc" style="min-width:118px;border-color:var(--id)"><div class="n" style="color:var(--id)">I</div><div class="l">Identidade</div></div>
+    <div class="sc" style="min-width:118px;animation-delay:.1s;border-color:var(--sm)"><div class="n" style="color:var(--sm)">Aᵀ=A</div><div class="l">Simétrica</div></div>
+    <div class="sc" style="min-width:118px;animation-delay:.2s;border-color:var(--lj)"><div class="n" style="color:var(--lj)">△</div><div class="l">Triangular</div></div>
+    <div class="sc" style="min-width:118px;animation-delay:.3s;border-color:var(--vg)"><div class="n" style="color:var(--vg)">0</div><div class="l">Nula</div></div>
+   </div>
+   <div style="margin-top:28px;font-size:1rem;color:var(--gy);line-height:1.9">
+    <p><strong>Professor:</strong> Tiago Dutra Galvão &nbsp;|&nbsp; tiago.galvao@unifil.br</p>
+    <p><strong>Data:</strong> Quarta-feira, 03 de Junho de 2026 &nbsp;|&nbsp; <strong>Unidade II — Aula 10</strong></p>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 02 — REVISÃO ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🔁 Revisão Rápida — Aula 09</h2><p>Operações matriciais consolidadas</p></div>
+  <div class="sb">
+   <div style="background:var(--lt);border-radius:14px;padding:13px 18px;margin-bottom:13px;animation:fiu .55s ease-out forwards;opacity:0;border-left:5px solid var(--or)">
+    <p style="font-weight:700;color:var(--or);font-size:1rem;margin-bottom:9px">⚡ Quiz Relâmpago — Aula 09</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;font-size:.91rem">
+     <div style="background:white;padding:9px 12px;border-radius:10px;border:2px solid #e5e7eb"><span style="color:var(--lc);font-weight:700">Q: </span>Fórmula da soma de matrizes?<p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block">✅ C[i][j] = A[i][j] + B[i][j]</p></div>
+     <div style="background:white;padding:9px 12px;border-radius:10px;border:2px solid #e5e7eb"><span style="color:var(--lc);font-weight:700">Q: </span>Fórmula da transposição?<p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block">✅ T[j][i] = A[i][j]</p></div>
+     <div style="background:white;padding:9px 12px;border-radius:10px;border:2px solid #e5e7eb"><span style="color:var(--lc);font-weight:700">Q: </span>Fórmula e nº de laços da multiplicação?<p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block">✅ C[i][j]+=A[i][k]*B[k][j] · 3 laços</p></div>
+     <div style="background:white;padding:9px 12px;border-radius:10px;border:2px solid #e5e7eb"><span style="color:var(--lc);font-weight:700">Q: </span>Por que zerar C antes da multiplicação?<p style="margin-top:5px;background:#d1fae5;padding:4px 10px;border-radius:6px;color:#065f46;font-weight:700;display:inline-block">✅ Variáveis locais contêm lixo em C</p></div>
+    </div>
+   </div>
+   <div class="two" style="gap:18px;margin-top:10px">
+    <div class="yel" style="margin:0">
+     <h3>🎯 Por que estudar casos especiais?</h3>
+     <p>Reconhecer que uma matriz é simétrica, triangular ou identidade permite <strong>economizar memória</strong> (armazenar só metade), <strong>acelerar algoritmos</strong> (pular zeros), e explorar propriedades matemáticas como A×I = A. São padrões que aparecem constantemente em sistemas reais.</p>
+    </div>
+    <div class="box bl d1" style="margin:0">
+     <h3>📋 O que vemos hoje</h3>
+     <ul>
+      <li><strong>Nula:</strong> todos os elementos são 0</li>
+      <li><strong>Identidade:</strong> diagonal = 1, resto = 0</li>
+      <li><strong>Simétrica:</strong> A[i][j] == A[j][i]</li>
+      <li><strong>Antissimétrica:</strong> A[i][j] == −A[j][i]</li>
+      <li><strong>Triangular Superior:</strong> zeros abaixo da diagonal</li>
+      <li><strong>Triangular Inferior:</strong> zeros acima da diagonal</li>
+     </ul>
+    </div>
+   </div>
+   <div class="hi d3" style="padding:13px 20px;margin-top:12px">
+    <h3>🎯 Objetivo desta aula</h3>
+    <p style="margin-top:6px;font-size:.96rem">Identificar visualmente cada tipo especial de matriz, entender sua propriedade definidora e implementar funções de <strong>verificação em C</strong> que retornam 1 (verdadeiro) ou 0 (falso) — reutilizáveis em qualquer programa.</p>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 03 — MATRIZ NULA E IDENTIDADE ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>⬛ Matriz Nula · 🔷 Matriz Identidade</h2><p>Os dois casos fundamentais — zero e neutro da multiplicação</p></div>
+  <div class="sb">
+   <div class="two" style="margin-top:6px;gap:22px">
+    <!-- Nula -->
+    <div>
+     <div style="background:linear-gradient(135deg,#1f2937,#374151);border-radius:14px;padding:16px 20px;margin-bottom:12px;animation:fiu .55s ease-out forwards;opacity:0">
+      <p style="font-weight:700;color:#9ca3af;font-size:1.1rem;margin-bottom:10px">⬛ Matriz Nula (zero)</p>
+      <p style="font-size:.93rem;color:#d1d5db;line-height:1.65;margin-bottom:12px">Todos os elementos são zero. Equivale ao número 0 nas matrizes: A + 0 = A. Não precisa ser quadrada.</p>
+      <!-- Diagrama 3x3 nula -->
+      <div class="mwrap" style="animation:none;opacity:1">
+       <span class="mlabel">Nula 3×3</span>
+       <div class="mgrid">
+        <div class="mrow"><div class="mc id0">0</div><div class="mc id0">0</div><div class="mc id0">0</div></div>
+        <div class="mrow"><div class="mc id0">0</div><div class="mc id0">0</div><div class="mc id0">0</div></div>
+        <div class="mrow"><div class="mc id0">0</div><div class="mc id0">0</div><div class="mc id0">0</div></div>
+       </div>
+      </div>
+     </div>
+     <div class="cblk d1">
+      <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">ehNula() em C</span></div>
+      <pre><span class="cm">/* Verifica se m[L][C] é nula */</span>
+<span class="tp">int</span> <span class="fn">ehNula</span>(<span class="tp">int</span> m[<span class="nm">3</span>][<span class="nm">3</span>], <span class="tp">int</span> l, <span class="tp">int</span> c) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;l;i++)
+        <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;c;j++)
+            <span class="kw">if</span>(m[i][j] != <span class="nm">0</span>) <span class="kw">return</span> <span class="nm">0</span>;
+    <span class="kw">return</span> <span class="nm">1</span>; <span class="cm">// todos zero</span>
+}</pre>
+     </div>
+    </div>
+    <!-- Identidade -->
+    <div>
+     <div style="background:linear-gradient(135deg,#1e3a5f,#075985);border-radius:14px;padding:16px 20px;margin-bottom:12px;animation:fiu .55s ease-out .1s forwards;opacity:0">
+      <p style="font-weight:700;color:#93c5fd;font-size:1.1rem;margin-bottom:10px">🔷 Matriz Identidade (I)</p>
+      <p style="font-size:.93rem;color:#bfdbfe;line-height:1.65;margin-bottom:12px">Diagonal principal = 1, resto = 0. Sempre quadrada. A × I = I × A = A (neutro da multiplicação).</p>
+      <!-- Diagrama 3x3 identidade -->
+      <div class="mwrap" style="animation:none;opacity:1">
+       <span class="mlabel" style="color:#93c5fd">Identidade I₃</span>
+       <div class="mgrid">
+        <div class="mrow"><div class="mc id1">1</div><div class="mc id0">0</div><div class="mc id0">0</div></div>
+        <div class="mrow"><div class="mc id0">0</div><div class="mc id1">1</div><div class="mc id0">0</div></div>
+        <div class="mrow"><div class="mc id0">0</div><div class="mc id0">0</div><div class="mc id1">1</div></div>
+       </div>
+      </div>
+     </div>
+     <div class="cblk d2">
+      <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">ehIdentidade() + gerarIdentidade() em C</span></div>
+      <pre><span class="cm">/* Verifica se m[N][N] é identidade */</span>
+<span class="tp">int</span> <span class="fn">ehIdentidade</span>(<span class="tp">int</span> m[][<span class="nm">3</span>], <span class="tp">int</span> n) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;n;i++)
+        <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;n;j++) {
+            <span class="kw">int</span> esperado = (i==j) ? <span class="nm">1</span> : <span class="nm">0</span>;
+            <span class="kw">if</span>(m[i][j] != esperado) <span class="kw">return</span> <span class="nm">0</span>;
+        }
+    <span class="kw">return</span> <span class="nm">1</span>;
+}
+
+<span class="cm">/* Gera a identidade N×N */</span>
+<span class="kw">void</span> <span class="fn">gerarIdentidade</span>(<span class="tp">int</span> m[][<span class="nm">3</span>], <span class="tp">int</span> n) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;n;i++)
+        <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;n;j++)
+            m[i][j] = (i==j) ? <span class="nm">1</span> : <span class="nm">0</span>;
+}</pre>
+     </div>
+    </div>
+   </div>
+   <div class="hi d3" style="padding:13px 20px">
+    <h3>💡 O operador ternário <ic class="wh">(i==j) ? 1 : 0</ic></h3>
+    <p style="margin-top:6px;font-size:.95rem">Equivale a: <strong>se i==j então 1, senão 0</strong>. Compacto e elegante para preencher a identidade em uma linha. O mesmo padrão serve para qualquer matriz diagonal!</p>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 04 — MATRIZ SIMÉTRICA E ANTISSIMÉTRICA ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🔄 Matriz Simétrica · Antissimétrica</h2><p>Propriedades definidas pela relação entre A[i][j] e A[j][i]</p></div>
+  <div class="sb">
+   <div class="two" style="margin-top:6px;gap:22px">
+    <!-- Simétrica -->
+    <div>
+     <div style="background:linear-gradient(135deg,#3b0764,#4c1d95);border-radius:14px;padding:16px 20px;margin-bottom:12px;animation:fiu .55s ease-out forwards;opacity:0">
+      <p style="font-weight:700;color:#c4b5fd;font-size:1.1rem;margin-bottom:8px">🔄 Simétrica — A[i][j] == A[j][i]</p>
+      <p style="font-size:.91rem;color:#ede9fe;line-height:1.6;margin-bottom:10px">Equivalente a Aᵀ = A. A reflexão pela diagonal principal é igual à original. Sempre quadrada.</p>
+      <div class="mwrap" style="animation:none;opacity:1">
+       <span class="mlabel" style="color:#c4b5fd">Simétrica 3×3 — note os pares iguais</span>
+       <div class="mgrid">
+        <div class="mrow"><div class="mc dg">1</div><div class="mc sp">5</div><div class="mc sp">9</div></div>
+        <div class="mrow"><div class="mc sp">5</div><div class="mc dg">2</div><div class="mc sp">7</div></div>
+        <div class="mrow"><div class="mc sp">9</div><div class="mc sp">7</div><div class="mc dg">3</div></div>
+       </div>
+      </div>
+      <p style="font-size:.78rem;color:#c4b5fd;margin-top:6px;font-family:'Courier New',monospace">A[0][1]=A[1][0]=5 · A[0][2]=A[2][0]=9 · A[1][2]=A[2][1]=7</p>
+     </div>
+     <div class="cblk d1">
+      <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">ehSimetrica() em C</span></div>
+      <pre><span class="tp">int</span> <span class="fn">ehSimetrica</span>(<span class="tp">int</span> m[][<span class="nm">3</span>], <span class="tp">int</span> n) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;n;i++)
+        <span class="kw">for</span>(<span class="tp">int</span> j=i+<span class="nm">1</span>;j&lt;n;j++) <span class="cm">// só acima da diag</span>
+            <span class="kw">if</span>(m[i][j] != m[j][i]) <span class="kw">return</span> <span class="nm">0</span>;
+    <span class="kw">return</span> <span class="nm">1</span>;
+}
+<span class="cm">// j começa em i+1: não verifica diagonal</span>
+<span class="cm">// nem repete comparações já feitas</span></pre>
+     </div>
+    </div>
+    <!-- Antissimétrica -->
+    <div>
+     <div style="background:linear-gradient(135deg,#1c1917,#292524);border-radius:14px;padding:16px 20px;margin-bottom:12px;animation:fiu .55s ease-out .1s forwards;opacity:0">
+      <p style="font-weight:700;color:#d6d3d1;font-size:1.1rem;margin-bottom:8px">↕️ Antissimétrica — A[i][j] == −A[j][i]</p>
+      <p style="font-size:.91rem;color:#a8a29e;line-height:1.6;margin-bottom:10px">Equivale a Aᵀ = −A. A diagonal principal é sempre zero (A[i][i] = −A[i][i] → 2×A[i][i]=0). Sempre quadrada.</p>
+      <div class="mwrap" style="animation:none;opacity:1">
+       <span class="mlabel" style="color:#a8a29e">Antissimétrica 3×3 — pares opostos</span>
+       <div class="mgrid">
+        <div class="mrow"><div class="mc id0">0</div><div class="mc hi">3</div><div class="mc hi">-7</div></div>
+        <div class="mrow"><div class="mc hi">-3</div><div class="mc id0">0</div><div class="mc hi">5</div></div>
+        <div class="mrow"><div class="mc hi">7</div><div class="mc hi">-5</div><div class="mc id0">0</div></div>
+       </div>
+      </div>
+      <p style="font-size:.78rem;color:#a8a29e;margin-top:6px;font-family:'Courier New',monospace">A[0][1]=3 → A[1][0]=-3 · diagonal sempre 0</p>
+     </div>
+     <div class="cblk d2">
+      <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">ehAntissimetrica() em C</span></div>
+      <pre><span class="tp">int</span> <span class="fn">ehAntissimetrica</span>(<span class="tp">int</span> m[][<span class="nm">3</span>], <span class="tp">int</span> n) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;n;i++)
+        <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;n;j++)
+            <span class="kw">if</span>(m[i][j] != -m[j][i]) <span class="kw">return</span> <span class="nm">0</span>;
+    <span class="kw">return</span> <span class="nm">1</span>;
+}
+<span class="cm">// Verifica TODOS os pares, inclusive diag</span>
+<span class="cm">// Diagonal: m[i][i] != -m[i][i] se ≠ 0</span></pre>
+     </div>
+    </div>
+   </div>
+   <div class="yel d3" style="margin-top:6px;padding:13px 16px">
+    <h3>💡 Otimização da função simétrica: j começa em i+1</h3>
+    <p style="font-size:.91rem">Para verificar simetria só precisamos checar os elementos <em>acima</em> da diagonal: se A[i][j]==A[j][i] para todo j&gt;i, a matriz é simétrica. A diagonal (i==j) é automaticamente simétrica (A[i][i]==A[i][i]). Isso reduz as comparações de n² para n(n-1)/2.</p>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 05 — MATRIZ TRIANGULAR ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>△ Matrizes Triangulares</h2><p>Superior · Inferior · Diagonal — zeros em posições previsíveis</p></div>
+  <div class="sb">
+   <div class="big" style="font-size:1.3rem;padding:20px">Uma matriz triangular tem zeros em um <strong>triângulo inteiro</strong> — acima ou abaixo da diagonal. São a base do método de eliminação de Gauss e de algoritmos O(n²) para sistemas lineares.</div>
+
+   <div class="three" style="margin-top:10px;gap:16px">
+    <!-- Triangular Superior -->
+    <div>
+     <div style="background:linear-gradient(135deg,#064e3b,#065f46);border-radius:14px;padding:14px 16px;margin-bottom:10px;animation:fiu .55s ease-out .1s forwards;opacity:0">
+      <p style="font-weight:700;color:#6ee7b7;font-size:1rem;margin-bottom:8px">△ Triangular Superior</p>
+      <p style="font-size:.85rem;color:#a7f3d0;line-height:1.55;margin-bottom:10px">Zeros <strong>abaixo</strong> da diagonal: A[i][j]==0 para i&gt;j</p>
+      <div class="mwrap" style="animation:none;opacity:1">
+       <div class="mgrid">
+        <div class="mrow"><div class="mc tri" style="min-width:40px;height:38px">5</div><div class="mc tri" style="min-width:40px;height:38px">3</div><div class="mc tri" style="min-width:40px;height:38px">7</div></div>
+        <div class="mrow"><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc tri" style="min-width:40px;height:38px">2</div><div class="mc tri" style="min-width:40px;height:38px">4</div></div>
+        <div class="mrow"><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc tri" style="min-width:40px;height:38px">8</div></div>
+       </div>
+      </div>
+     </div>
+     <div style="background:var(--cb);border-radius:8px;padding:10px 13px;font-family:'Courier New',monospace;font-size:.79rem;line-height:1.7;color:var(--ct);animation:fiu .55s ease-out .2s forwards;opacity:0">
+      <span class="cm">// Condição: i &gt; j → zero</span><br>
+      <span class="cm">// Verifica zeros abaixo da diag</span><br>
+      <span class="kw">for</span>(i=<span class="nm">1</span>;i&lt;n;i++)<br>
+      &nbsp;&nbsp;<span class="kw">for</span>(j=<span class="nm">0</span>;j&lt;i;j++)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>(m[i][j]!=<span class="nm">0</span>) <span class="kw">return</span> <span class="nm">0</span>;
+     </div>
+    </div>
+    <!-- Triangular Inferior -->
+    <div>
+     <div style="background:linear-gradient(135deg,#1e3a5f,#1e40af);border-radius:14px;padding:14px 16px;margin-bottom:10px;animation:fiu .55s ease-out .2s forwards;opacity:0">
+      <p style="font-weight:700;color:#93c5fd;font-size:1rem;margin-bottom:8px">▽ Triangular Inferior</p>
+      <p style="font-size:.85rem;color:#bfdbfe;line-height:1.55;margin-bottom:10px">Zeros <strong>acima</strong> da diagonal: A[i][j]==0 para i&lt;j</p>
+      <div class="mwrap" style="animation:none;opacity:1">
+       <div class="mgrid">
+        <div class="mrow"><div class="mc tri" style="min-width:40px;height:38px">5</div><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc tri0" style="min-width:40px;height:38px">0</div></div>
+        <div class="mrow"><div class="mc tri" style="min-width:40px;height:38px">3</div><div class="mc tri" style="min-width:40px;height:38px">2</div><div class="mc tri0" style="min-width:40px;height:38px">0</div></div>
+        <div class="mrow"><div class="mc tri" style="min-width:40px;height:38px">7</div><div class="mc tri" style="min-width:40px;height:38px">4</div><div class="mc tri" style="min-width:40px;height:38px">8</div></div>
+       </div>
+      </div>
+     </div>
+     <div style="background:var(--cb);border-radius:8px;padding:10px 13px;font-family:'Courier New',monospace;font-size:.79rem;line-height:1.7;color:var(--ct);animation:fiu .55s ease-out .3s forwards;opacity:0">
+      <span class="cm">// Condição: i &lt; j → zero</span><br>
+      <span class="cm">// Verifica zeros acima da diag</span><br>
+      <span class="kw">for</span>(i=<span class="nm">0</span>;i&lt;n<span class="nm">-1</span>;i++)<br>
+      &nbsp;&nbsp;<span class="kw">for</span>(j=i+<span class="nm">1</span>;j&lt;n;j++)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>(m[i][j]!=<span class="nm">0</span>) <span class="kw">return</span> <span class="nm">0</span>;
+     </div>
+    </div>
+    <!-- Diagonal -->
+    <div>
+     <div style="background:linear-gradient(135deg,#451a03,#92400e);border-radius:14px;padding:14px 16px;margin-bottom:10px;animation:fiu .55s ease-out .3s forwards;opacity:0">
+      <p style="font-weight:700;color:#fcd34d;font-size:1rem;margin-bottom:8px">◈ Diagonal</p>
+      <p style="font-size:.85rem;color:#fde68a;line-height:1.55;margin-bottom:10px">Zeros fora da diagonal: só A[i][i] pode ser não-zero</p>
+      <div class="mwrap" style="animation:none;opacity:1">
+       <div class="mgrid">
+        <div class="mrow"><div class="mc dg" style="min-width:40px;height:38px">5</div><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc tri0" style="min-width:40px;height:38px">0</div></div>
+        <div class="mrow"><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc dg" style="min-width:40px;height:38px">2</div><div class="mc tri0" style="min-width:40px;height:38px">0</div></div>
+        <div class="mrow"><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc tri0" style="min-width:40px;height:38px">0</div><div class="mc dg" style="min-width:40px;height:38px">8</div></div>
+       </div>
+      </div>
+     </div>
+     <div style="background:var(--cb);border-radius:8px;padding:10px 13px;font-family:'Courier New',monospace;font-size:.79rem;line-height:1.7;color:var(--ct);animation:fiu .55s ease-out .4s forwards;opacity:0">
+      <span class="cm">// Triangular Sup e Inf ao mesmo tempo</span><br>
+      <span class="cm">// Verifica todos i≠j</span><br>
+      <span class="kw">for</span>(i=<span class="nm">0</span>;i&lt;n;i++)<br>
+      &nbsp;&nbsp;<span class="kw">for</span>(j=<span class="nm">0</span>;j&lt;n;j++)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>(i!=j&amp;&amp;m[i][j]!=<span class="nm">0</span>) <span class="kw">return</span> <span class="nm">0</span>;
+     </div>
+    </div>
+   </div>
+
+   <div class="box bl d4" style="margin-top:12px">
+    <h3>🔗 Relação entre os tipos</h3>
+    <ul style="display:grid;grid-template-columns:1fr 1fr;column-gap:20px">
+     <li>Toda matriz diagonal é triangular superior E inferior</li>
+     <li>A identidade é diagonal com 1 na diagonal</li>
+     <li>A matriz nula é um caso especial de todas as anteriores</li>
+     <li>Simétrica ≠ triangular (em geral)</li>
+    </ul>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 06 — TABELA COMPARATIVA E VERIFICAÇÕES ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>📊 Tabela Comparativa e Funções de Verificação</h2><p>Referência rápida — propriedade, condição e custo</p></div>
+  <div class="sb">
+   <table class="vtbl" style="margin-top:6px">
+    <thead><tr><th>Tipo</th><th>Condição definidora</th><th>Req. quadrada?</th><th>Custo verificação</th><th>Uso típico</th></tr></thead>
+    <tbody>
+     <tr><td><strong>Nula</strong></td><td><ic>m[i][j] == 0</ic> ∀ i,j</td><td>Não</td><td>O(L×C)</td><td>Inicialização, resultado neutro da soma</td></tr>
+     <tr><td><strong>Identidade</strong></td><td><ic>(i==j)?1:0</ic></td><td>Sim</td><td>O(n²)</td><td>Neutro da multiplicação, inversa</td></tr>
+     <tr><td><strong>Simétrica</strong></td><td><ic>m[i][j] == m[j][i]</ic> ∀ i&lt;j</td><td>Sim</td><td>O(n²/2)</td><td>Matrizes de distância, covariância</td></tr>
+     <tr><td><strong>Antissimétrica</strong></td><td><ic>m[i][j] == -m[j][i]</ic></td><td>Sim</td><td>O(n²)</td><td>Rotações, física (tensores)</td></tr>
+     <tr><td><strong>Trian. Superior</strong></td><td><ic>m[i][j] == 0</ic> se i&gt;j</td><td>Sim</td><td>O(n²/2)</td><td>Eliminação de Gauss, back-substitution</td></tr>
+     <tr><td><strong>Trian. Inferior</strong></td><td><ic>m[i][j] == 0</ic> se i&lt;j</td><td>Sim</td><td>O(n²/2)</td><td>Decomposição LU, forward-substitution</td></tr>
+     <tr><td><strong>Diagonal</strong></td><td><ic>m[i][j] == 0</ic> se i≠j</td><td>Sim</td><td>O(n²)</td><td>Escalamento, inércia, PCA</td></tr>
+    </tbody>
+   </table>
+
+   <div class="cblk d2">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">verificador_completo.c — todas as funções em um programa</span></div>
+    <pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#define</span> N <span class="nm">3</span>
+<span class="kw">typedef</span> <span class="tp">int</span> Mat[N][N];
+
+<span class="tp">int</span> <span class="fn">ehNula</span>(Mat m)    { <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N;i++) <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;N;j++) <span class="kw">if</span>(m[i][j]!=<span class="nm">0</span>) <span class="kw">return</span> <span class="nm">0</span>; <span class="kw">return</span> <span class="nm">1</span>; }
+<span class="tp">int</span> <span class="fn">ehIdentidade</span>(Mat m) { <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N;i++) <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;N;j++) <span class="kw">if</span>(m[i][j]!=((i==j)?<span class="nm">1</span>:<span class="nm">0</span>)) <span class="kw">return</span> <span class="nm">0</span>; <span class="kw">return</span> <span class="nm">1</span>; }
+<span class="tp">int</span> <span class="fn">ehSimetrica</span>(Mat m)  { <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N;i++) <span class="kw">for</span>(<span class="tp">int</span> j=i+<span class="nm">1</span>;j&lt;N;j++) <span class="kw">if</span>(m[i][j]!=m[j][i]) <span class="kw">return</span> <span class="nm">0</span>; <span class="kw">return</span> <span class="nm">1</span>; }
+<span class="tp">int</span> <span class="fn">ehTriSup</span>(Mat m)    { <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">1</span>;i&lt;N;i++) <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;i;j++) <span class="kw">if</span>(m[i][j]!=<span class="nm">0</span>) <span class="kw">return</span> <span class="nm">0</span>; <span class="kw">return</span> <span class="nm">1</span>; }
+<span class="tp">int</span> <span class="fn">ehTriInf</span>(Mat m)    { <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;N<span class="nm">-1</span>;i++) <span class="kw">for</span>(<span class="tp">int</span> j=i+<span class="nm">1</span>;j&lt;N;j++) <span class="kw">if</span>(m[i][j]!=<span class="nm">0</span>) <span class="kw">return</span> <span class="nm">0</span>; <span class="kw">return</span> <span class="nm">1</span>; }
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    Mat A = {{<span class="nm">1</span>,<span class="nm">5</span>,<span class="nm">9</span>},{<span class="nm">5</span>,<span class="nm">2</span>,<span class="nm">7</span>},{<span class="nm">9</span>,<span class="nm">7</span>,<span class="nm">3</span>}}; <span class="cm">// simétrica</span>
+    <span class="fn">printf</span>(<span class="str">"Nula?       %s\n"</span>, <span class="fn">ehNula</span>(A)       ? <span class="str">"Sim"</span> : <span class="str">"Não"</span>);
+    <span class="fn">printf</span>(<span class="str">"Identidade? %s\n"</span>, <span class="fn">ehIdentidade</span>(A) ? <span class="str">"Sim"</span> : <span class="str">"Não"</span>);
+    <span class="fn">printf</span>(<span class="str">"Simétrica?  %s\n"</span>, <span class="fn">ehSimetrica</span>(A)  ? <span class="str">"Sim"</span> : <span class="str">"Não"</span>); <span class="cm">// Sim!</span>
+    <span class="fn">printf</span>(<span class="str">"Tri.Sup?    %s\n"</span>, <span class="fn">ehTriSup</span>(A)     ? <span class="str">"Sim"</span> : <span class="str">"Não"</span>);
+    <span class="fn">printf</span>(<span class="str">"Tri.Inf?    %s\n"</span>, <span class="fn">ehTriInf</span>(A)     ? <span class="str">"Sim"</span> : <span class="str">"Não"</span>);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 07 — BUSCA EM MATRIZES ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🔍 Busca em Matrizes</h2><p>Encontrar um valor em uma tabela bidimensional</p></div>
+  <div class="sb">
+   <div class="big" style="font-size:1.3rem;padding:18px">Busca em matriz = busca linear percorrendo todos os L×C elementos com dois laços aninhados. Retorna a posição [i][j] ou indica "não encontrado".</div>
+
+   <div class="two" style="margin-top:10px;gap:20px">
+    <div>
+     <div class="cblk" style="margin-top:0">
+      <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">busca_matriz.c — retorna linha e coluna</span></div>
+      <pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#define</span> L <span class="nm">3</span>
+<span class="kw">#define</span> C <span class="nm">4</span>
+
+<span class="cm">/* Busca linear em matriz
+   Preenche *li e *co com a posição encontrada
+   Retorna 1 se achou, 0 se não achou          */</span>
+<span class="tp">int</span> <span class="fn">buscaMatriz</span>(<span class="tp">int</span> m[][C], <span class="tp">int</span> chave,
+                 <span class="tp">int</span> *li, <span class="tp">int</span> *co) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;L;i++)
+        <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;C;j++)
+            <span class="kw">if</span>(m[i][j]==chave) {
+                *li=i; *co=j;
+                <span class="kw">return</span> <span class="nm">1</span>; <span class="cm">// retorno antecipado!</span>
+            }
+    <span class="kw">return</span> <span class="nm">0</span>;
+}
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">int</span> m[L][C] = {{<span class="nm">2</span>,<span class="nm">4</span>,<span class="nm">6</span>,<span class="nm">8</span>},
+                   {<span class="nm">1</span>,<span class="nm">3</span>,<span class="nm">5</span>,<span class="nm">7</span>},
+                   {<span class="nm">9</span>,<span class="nm">11</span>,<span class="nm">13</span>,<span class="nm">15</span>}};
+    <span class="tp">int</span> chave, lin, col;
+
+    <span class="fn">printf</span>(<span class="str">"Buscar: "</span>); <span class="fn">scanf</span>(<span class="str">"%d"</span>,&chave);
+
+    <span class="kw">if</span>(<span class="fn">buscaMatriz</span>(m,chave,&lin,&col))
+        <span class="fn">printf</span>(<span class="str">"Encontrado em [%d][%d]\n"</span>,lin,col);
+    <span class="kw">else</span>
+        <span class="fn">puts</span>(<span class="str">"Não encontrado."</span>);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</pre>
+     </div>
+    </div>
+    <div>
+     <div class="box bl d1">
+      <h3>💡 Retorno de posição com ponteiros</h3>
+      <ul>
+       <li>A função precisa retornar <em>dois</em> valores: linha e coluna</li>
+       <li>Em C, uma função só retorna 1 valor diretamente</li>
+       <li>Solução: usar <strong>ponteiros</strong> (<ic>int *li, *co</ic>) — passagem por referência</li>
+       <li>Chamada: <ic>buscaMatriz(m, chave, &lin, &col)</ic></li>
+       <li>Dentro da função: <ic>*li = i; *co = j;</ic> modifica as variáveis originais</li>
+       <li>Prévia da Unidade III — Sub-rotinas com ponteiros!</li>
+      </ul>
+     </div>
+     <div class="box gn d2" style="margin-top:12px">
+      <h3>🔍 Busca de todas as ocorrências</h3>
+      <ul>
+       <li>Se a chave pode aparecer múltiplas vezes, <strong>não use retorno antecipado</strong></li>
+       <li>Continue o laço até o final, contando ou armazenando cada posição</li>
+       <li>Use um <ic>contador</ic> e imprima cada [i][j] encontrado</li>
+       <li>Complexidade sempre O(L×C) — percorre toda a matriz</li>
+      </ul>
+     </div>
+     <div class="yel d3" style="margin-top:12px;padding:13px 14px">
+      <h3>⚠️ Diferença: busca linear em vetor vs matriz</h3>
+      <p style="font-size:.9rem">Vetor: 1 laço, retorna índice i. Matriz: 2 laços, retorna par [i][j]. O conceito é o mesmo — a segunda dimensão apenas adiciona o laço interno e um índice a mais.</p>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 08 — ORDENAÇÃO EM MATRIZES ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🔃 Ordenação em Matrizes</h2><p>Ordenar linhas individualmente · linha mais pesada · todas as linhas</p></div>
+  <div class="sb">
+   <div class="yel" style="margin-top:4px">
+    <h3>🎯 Três abordagens de ordenação em matrizes</h3>
+    <p>Não existe "ordenar a matriz inteira" de forma trivial — depende do critério. As abordagens mais comuns são: <strong>(1)</strong> ordenar cada linha individualmente; <strong>(2)</strong> ordenar as linhas pelo valor de uma coluna específica (ex: coluna de notas); <strong>(3)</strong> achatar a matriz em vetor, ordenar e reconstituir.</p>
+   </div>
+
+   <div class="two" style="margin-top:10px;gap:20px">
+    <div class="cblk d1">
+     <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">ordenar_linhas.c — Bubble Sort em cada linha</span></div>
+     <pre><span class="kw">#define</span> L <span class="nm">3</span>
+<span class="kw">#define</span> C <span class="nm">4</span>
+
+<span class="cm">/* Ordena cada linha da matriz individualmente */</span>
+<span class="kw">void</span> <span class="fn">ordenarLinhas</span>(<span class="tp">int</span> m[][C]) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;L;i++) {          <span class="cm">// para cada linha</span>
+        <span class="cm">/* Bubble Sort na linha i */</span>
+        <span class="kw">for</span>(<span class="tp">int</span> p=<span class="nm">0</span>;p&lt;C<span class="nm">-1</span>;p++) {
+            <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;C<span class="nm">-1</span><span class="nm">-p</span>;j++) {
+                <span class="kw">if</span>(m[i][j]>m[i][j+<span class="nm">1</span>]) {
+                    <span class="tp">int</span> t=m[i][j];
+                    m[i][j]=m[i][j+<span class="nm">1</span>];
+                    m[i][j+<span class="nm">1</span>]=t;
+                }
+            }
+        }
+    }
+}
+<span class="cm">/* Antes: {{5,3,8,1},{4,9,2,7},{6,1,5,3}}  */</span>
+<span class="cm">/* Depois: {{1,3,5,8},{2,4,7,9},{1,3,5,6}} */</span></pre>
+    </div>
+    <div>
+     <div class="cblk d2">
+      <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">ordenar por coluna específica (Selection Sort)</span></div>
+      <pre><span class="cm">/* Ordena LINHAS por valor da coluna col
+   Mantém cada linha intacta (como um registro) */</span>
+<span class="kw">void</span> <span class="fn">ordenarPorColuna</span>(<span class="tp">int</span> m[][C], <span class="tp">int</span> col) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;L<span class="nm">-1</span>;i++) {
+        <span class="tp">int</span> pm=i;
+        <span class="kw">for</span>(<span class="tp">int</span> k=i+<span class="nm">1</span>;k&lt;L;k++)
+            <span class="kw">if</span>(m[k][col]&lt;m[pm][col]) pm=k;
+        <span class="kw">if</span>(pm!=i) {  <span class="cm">/* troca linhas inteiras */</span>
+            <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;C;j++) {
+                <span class="tp">int</span> t=m[i][j];
+                m[i][j]=m[pm][j];
+                m[pm][j]=t;
+            }
+        }
+    }
+}
+<span class="cm">/* Uso: ordenarPorColuna(notas, 3) */</span>
+<span class="cm">/* Ordena turmas pelo aluno da col 3 */</span></pre>
+     </div>
+     <div class="box gn d3" style="margin-top:12px">
+      <h3>🔑 Troca de linhas inteiras</h3>
+      <ul>
+       <li>Para trocar duas linhas completas: laço em j e troca m[i][j] ↔ m[pm][j]</li>
+       <li>Mantém a coerência de cada "registro" (linha) ao reordenar</li>
+       <li>Mesmo princípio dos vetores paralelos da Aula 05!</li>
+      </ul>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 09 — LABORATÓRIO ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🧪 Laboratório — Casos Especiais e Busca</h2><p>Três exercícios integrando tudo da Unidade II</p></div>
+  <div class="sb">
+   <div class="three" style="margin-top:6px;gap:14px">
+    <div class="box bl">
+     <h3>📝 Ex 01 ★★☆ — Verificador Completo</h3>
+     <p style="font-size:.9rem;line-height:1.6;margin-bottom:9px">Leia uma matriz quadrada <ic>int m[4][4]</ic>. Implemente e chame todas as funções de verificação: <ic>ehNula</ic>, <ic>ehIdentidade</ic>, <ic>ehSimetrica</ic>, <ic>ehTriSup</ic>, <ic>ehTriInf</ic>. Exiba um relatório com Sim/Não para cada tipo.</p>
+     <div style="background:var(--cb);color:#fde68a;padding:8px 10px;border-radius:8px;font-family:'Courier New',monospace;font-size:.79rem;line-height:1.7">
+      Entrada: {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}<br>
+      Nula? Não | Identidade? Sim<br>
+      Simétrica? Sim | Tri.Sup? Sim | Tri.Inf? Sim
+     </div>
+    </div>
+    <div class="box pu d1">
+     <h3>📝 Ex 02 ★★☆ — Busca com Estatística</h3>
+     <p style="font-size:.9rem;line-height:1.6;margin-bottom:9px">Leia uma matriz <ic>float notas[4][5]</ic> (4 turmas × 5 alunos). Calcule a média geral. Busque e exiba todas as posições [i][j] onde a nota é <strong>igual à maior nota da turma i</strong>. Conte quantas notas estão acima da média geral.</p>
+     <div style="background:var(--cb);color:#c4b5fd;padding:8px 10px;border-radius:8px;font-family:'Courier New',monospace;font-size:.79rem;line-height:1.7">
+      Média geral: 7.2<br>
+      Maior nota turma 0: 9.5 em [0][3]<br>
+      Acima da média: 12 elementos
+     </div>
+    </div>
+    <div class="box rd d2">
+     <h3>🔥 Ex 03 ★★★ — Ranking de Turmas</h3>
+     <p style="font-size:.9rem;line-height:1.6;margin-bottom:9px">Use a matriz <ic>float notas[4][5]</ic>. Para cada turma, calcule a média da linha. Ordene as <strong>linhas da matriz</strong> (com nomes de turma em vetor paralelo) pela média em ordem <strong>decrescente</strong>. Exiba o ranking formatado. Verifique se a matriz resultante é triangular superior (improvável, mas exercita o conceito).</p>
+     <div style="background:var(--cb);color:#fca5a5;padding:8px 10px;border-radius:8px;font-family:'Courier New',monospace;font-size:.79rem;line-height:1.7">
+      1º Turma B  média 8.1<br>
+      2º Turma A  média 7.6<br>
+      3º Turma D  média 6.9<br>
+      4º Turma C  média 6.2
+     </div>
+    </div>
+   </div>
+
+   <div class="cblk d3">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">esqueleto Ex 03 — ranking de turmas com ordenação</span></div>
+    <pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;string.h&gt;</span>
+<span class="kw">#define</span> NT <span class="nm">4</span>   <span class="cm">// turmas (linhas)</span>
+<span class="kw">#define</span> NA <span class="nm">5</span>   <span class="cm">// alunos (colunas)</span>
+
+<span class="cm">/* Calcula média de cada linha */</span>
+<span class="kw">void</span> <span class="fn">calcMedias</span>(<span class="tp">float</span> m[NT][NA], <span class="tp">float</span> med[]) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;NT;i++) {
+        <span class="tp">float</span> s=<span class="nm">0</span>;
+        <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;NA;j++) s+=m[i][j];
+        med[i]=s/NA;
+    }
+}
+
+<span class="cm">/* Selection Sort decrescente por media[] — troca linhas e nomes */</span>
+<span class="kw">void</span> <span class="fn">ordenarTurmas</span>(<span class="tp">float</span> m[NT][NA], <span class="tp">float</span> med[], <span class="tp">char</span> nomes[NT][<span class="nm">20</span>]) {
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;NT<span class="nm">-1</span>;i++) {
+        <span class="tp">int</span> pm=i;
+        <span class="kw">for</span>(<span class="tp">int</span> k=i+<span class="nm">1</span>;k&lt;NT;k++) <span class="kw">if</span>(med[k]>med[pm]) pm=k;
+        <span class="kw">if</span>(pm!=i) {
+            <span class="cm">/* troca linha inteira */</span>
+            <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;NA;j++) { <span class="tp">float</span> t=m[i][j]; m[i][j]=m[pm][j]; m[pm][j]=t; }
+            <span class="tp">float</span> tm=med[i]; med[i]=med[pm]; med[pm]=tm;
+            <span class="tp">char</span> tn[<span class="nm">20</span>]; <span class="fn">strcpy</span>(tn,nomes[i]); <span class="fn">strcpy</span>(nomes[i],nomes[pm]); <span class="fn">strcpy</span>(nomes[pm],tn);
+        }
+    }
+}</pre>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 10 — EXERCÍCIOS DE FIXAÇÃO ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>✏️ Exercícios de Fixação</h2><p>Casos especiais, busca e ordenação em matrizes</p></div>
+  <div class="sb">
+   <div class="qz" id="q1">
+    <p class="q">1. A matriz <ic>A = {{4,2,1},{2,5,3},{1,3,6}}</ic> é simétrica? Justifique verificando os pares [i][j] e [j][i] para todos i&lt;j.</p>
+    <div class="opts">
+     <label><input type="radio" name="q1" value="a"> a) Não — A[0][2]=1 mas A[2][0]=3, logo assimétrica</label>
+     <label><input type="radio" name="q1" value="b"> b) Sim — A[0][1]=A[1][0]=2, A[0][2]=A[2][0]=1, A[1][2]=A[2][1]=3</label>
+     <label><input type="radio" name="q1" value="c"> c) Não — a diagonal não é toda igual</label>
+     <label><input type="radio" name="q1" value="d"> d) Sim, mas apenas porque a diagonal é positiva</label>
+    </div>
+    <button class="chk" onclick="chk('q1','b','✅ Correto! Para ser simétrica: A[i][j]==A[j][i] para todo i≠j. Verificando: A[0][1]=2=A[1][0] ✅ | A[0][2]=1=A[2][0] ✅ | A[1][2]=3=A[2][1] ✅. Todos os pares conferem → simétrica! A diagonal pode ter qualquer valor.','❌ Verifique par a par: A[0][1]=2 e A[1][0]=2 ✅ | A[0][2]=1 e A[2][0]=1 ✅ | A[1][2]=3 e A[2][1]=3 ✅. Todos os elementos fora da diagonal têm seu espelho igual → a matriz É simétrica.')">Verificar</button>
+    <div class="fb" id="q1-fb"></div>
+   </div>
+   <div class="qz d1" id="q2">
+    <p class="q">2. Qual é a condição correta para verificar que uma matriz quadrada é <strong>triangular superior</strong> em C?</p>
+    <div class="opts">
+     <label><input type="radio" name="q2" value="a"> a) <ic>for(i=0;i&lt;n;i++) for(j=0;j&lt;n;j++) if(i==j &amp;&amp; m[i][j]==0) return 0;</ic></label>
+     <label><input type="radio" name="q2" value="b"> b) <ic>for(i=1;i&lt;n;i++) for(j=0;j&lt;i;j++) if(m[i][j]!=0) return 0;</ic></label>
+     <label><input type="radio" name="q2" value="c"> c) <ic>for(i=0;i&lt;n;i++) for(j=i+1;j&lt;n;j++) if(m[i][j]!=0) return 0;</ic></label>
+     <label><input type="radio" name="q2" value="d"> d) <ic>for(i=0;i&lt;n;i++) if(m[i][i]==0) return 0;</ic></label>
+    </div>
+    <button class="chk" onclick="chk('q2','b','✅ Exato! Triangular superior = zeros ABAIXO da diagonal, ou seja, onde i>j. O laço correto percorre exatamente essas posições: i começa em 1 (i=0 não tem posições abaixo), j vai de 0 até i-1 (posições à esquerda da diagonal).','❌ Triangular superior tem zeros onde i>j (abaixo da diagonal). O laço deve verificar essas posições: i começa em 1, j vai de 0 até i-1. A opção C verifica o triângulo SUPERIOR (i<j) — o que seria para triangular INFERIOR.')">Verificar</button>
+    <div class="fb" id="q2-fb"></div>
+   </div>
+   <div class="qz d2" id="q3">
+    <p class="q">3. Ao ordenar as <strong>linhas</strong> de uma matriz pelo valor de uma coluna específica, por que precisamos trocar <em>todas as colunas</em> da linha, e não só a coluna de comparação?</p>
+    <div class="opts">
+     <label><input type="radio" name="q3" value="a"> a) Para manter o custo O(n²) do algoritmo</label>
+     <label><input type="radio" name="q3" value="b"> b) Porque cada linha é um "registro completo" — mover só a coluna de comparação destruiria a associação entre os dados da mesma linha</label>
+     <label><input type="radio" name="q3" value="c"> c) É uma exigência da linguagem C para arrays bidimensionais</label>
+     <label><input type="radio" name="q3" value="d"> d) Porque a ordenação por coluna sempre produz resultados errados se não fizer isso</label>
+    </div>
+    <button class="chk" onclick="chk('q3','b','✅ Correto! Imagine uma matriz onde cada linha representa um aluno (nome, RA, nota, frequência). Se você mover só a nota para ordenar, o nome de um aluno ficaria associado à nota de outro — os dados perdem coerência. É o mesmo princípio dos vetores paralelos da Aula 05.','❌ Pense em uma tabela de banco de dados: cada linha é um registro (aluno, produto, etc). Ao reordenar, você precisa manter cada linha INTACTA — todos os campos juntos. Mover só a coluna de comparação quebraria a associação dos dados.')">Verificar</button>
+    <div class="fb" id="q3-fb"></div>
+   </div>
+   <div class="qz d3" style="border-left-color:var(--or)">
+    <p class="q" style="color:var(--or)">4. 💬 Análise — identifique o tipo:</p>
+    <p style="font-size:.94rem;line-height:1.6;color:var(--dk);margin-top:6px">
+     Para cada matriz abaixo, indique o(s) tipo(s) especial(is) que ela pertence:<br>
+     <strong>A:</strong> <ic>{{1,0,0},{0,1,0},{0,0,1}}</ic> &nbsp;&nbsp;&nbsp;
+     <strong>B:</strong> <ic>{{5,0,0},{0,3,0},{0,0,7}}</ic> &nbsp;&nbsp;&nbsp;
+     <strong>C:</strong> <ic>{{2,4,6},{0,3,5},{0,0,8}}</ic>
+    </p>
+    <div style="background:#fef3c7;border-radius:10px;padding:11px 14px;margin-top:10px;font-size:.86rem;color:#78350f">
+     <strong>💡 Gabarito:</strong><br>
+     <strong>A:</strong> Identidade ✅ · Diagonal ✅ · Triangular Superior ✅ · Triangular Inferior ✅ · Simétrica ✅ (Aᵀ=A)<br>
+     <strong>B:</strong> Diagonal ✅ · Triangular Superior ✅ · Triangular Inferior ✅ · Simétrica ✅ · NÃO é identidade (diagonal ≠ 1)<br>
+     <strong>C:</strong> Triangular Superior ✅ · NÃO é simétrica (A[0][1]=4 ≠ A[1][0]=0) · NÃO é diagonal
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 11 — RESUMO ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🎯 Resumo e Próxima Aula</h2><p>Casos especiais dominados — Unidade II quase completa!</p></div>
+  <div class="sb">
+   <div class="big" style="font-size:1.35rem;line-height:1.5">Reconhecer matrizes especiais é a diferença entre um algoritmo genérico lento e uma solução elegante e eficiente! 🔷</div>
+
+   <div class="tl" style="margin-top:18px">
+    <div class="tli"><h4>✅ Matriz Nula e Identidade</h4><p>Nula: todos zeros. Identidade: diagonal 1, resto 0 (<ic>(i==j)?1:0</ic>). Verificadas com 2 laços em O(n²).</p></div>
+    <div class="tli d1"><h4>✅ Simétrica e Antissimétrica</h4><p>Simétrica: <ic>m[i][j]==m[j][i]</ic> — otimize com j=i+1. Antissimétrica: <ic>m[i][j]==-m[j][i]</ic>, diagonal sempre zero.</p></div>
+    <div class="tli d2"><h4>✅ Triangulares e Diagonal</h4><p>Superior: zeros abaixo (i&gt;j). Inferior: zeros acima (i&lt;j). Diagonal: zeros fora da diagonal (i≠j).</p></div>
+    <div class="tli d3"><h4>✅ Busca em Matriz</h4><p>2 laços, retorno antecipado ao encontrar. Posição retornada via ponteiros <ic>*li, *co</ic>. O(L×C) sempre.</p></div>
+    <div class="tli d4"><h4>✅ Ordenação de Linhas</h4><p>Bubble/Selection Sort adaptado: Trocar <em>linhas inteiras</em> para preservar a coerência de cada "registro".</p></div>
+   </div>
+
+   <div class="hi d5" style="margin-top:16px;padding:13px 20px">
+    <h3>📚 Para as Próximas Aulas</h3>
+    <div class="two" style="margin-top:10px;gap:14px">
+     <ul style="list-style:none;padding:0;font-size:.96rem">
+      <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.2)"><strong>1️⃣ Praticar:</strong> os 3 exercícios do laboratório desta aula</li>
+      <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.2)"><strong>2️⃣ Aula 11 — 05/06 (Sex):</strong> Laboratório integrado da Unidade II — exercícios combinando Aulas 08 a 10</li>
+      <li style="padding:6px 0"><strong>3️⃣ Unidade III:</strong> Aula 12 (10/06) inicia Sub-rotinas</li>
+     </ul>
+     <ul style="list-style:none;padding:0;font-size:.96rem">
+      <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.2)"><strong>4️⃣ Revisar:</strong> ponteiros em C — <ic>int *p;</ic> — prévia da Unidade III</li>
+      <li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.2)"><strong>5️⃣ Referência:</strong> Forbellone Cap. 7 — Matrizes Especiais</li>
+      <li style="padding:6px 0"><strong>6️⃣ Visualizar:</strong> 3Blue1Brown — Linear Algebra (YouTube)</li>
+     </ul>
+    </div>
+   </div>
+
+   <div style="text-align:center;margin-top:16px">
+    <p style="font-size:1.08rem;font-weight:600;color:var(--dk)">Unidade II quase completa — falta só o laboratório! 🔷✅</p>
+    <p style="font-size:.93rem;color:var(--gy);margin-top:7px;font-style:italic">"Matrizes simétricas aparecem em toda parte — grafos, física, estatística. Reconhecê-las é poder." 🎯</p>
+   </div>
+  </div>
+ </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="nav">
+ <button class="nb" id="PB" onclick="nav(-1)">← Anterior</button>
+ <span class="ctr" id="CTR">1 / 11</span>
+ <button class="nb" id="NB" onclick="nav(1)">Próximo →</button>
+</div>
+
+<script>
+ let cur=0;
+ const slides=document.querySelectorAll('.slide'),tot=slides.length,dotsEl=document.getElementById('DOTS');
+ for(let i=0;i<tot;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>show(i);dotsEl.appendChild(d)}
+ function show(n){
+  slides.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; slides[cur].classList.add('active');
+  document.getElementById('CTR').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('PB').disabled=cur===0;
+  document.getElementById('NB').disabled=cur===tot-1;
+  document.getElementById('PF').style.width=((cur+1)/tot*100)+'%';
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  slides[cur].querySelectorAll('.box,.hi,.big,.yel,.tli,.sc,.qz,.cblk,.vtbl,.ct').forEach(el=>{
+   el.style.animation='none';el.style.opacity='0';void el.offsetWidth;el.style.animation='';
+  });
+  slides[cur].querySelectorAll('.ct').forEach(ct=>{
+   const b=ct.querySelectorAll('.ct-btn'),p=ct.querySelectorAll('.ct-panel');
+   b.forEach(x=>x.classList.remove('active'));p.forEach(x=>x.classList.remove('active'));
+   if(b[0])b[0].classList.add('active');if(p[0])p[0].classList.add('active');
+  });
+ }
+ function nav(d){const n=cur+d;if(n>=0&&n<tot)show(n)}
+ function chk(qid,correct,ok,no){
+  const sel=document.querySelector(`input[name="${qid}"]:checked`);
+  const fb=document.getElementById(`${qid}-fb`);
+  if(!sel){fb.className='fb no';fb.textContent='⚠️ Selecione uma alternativa.';return}
+  fb.className=sel.value===correct?'fb ok':'fb no';
+  fb.textContent=sel.value===correct?ok:no;
+  document.querySelectorAll(`input[name="${qid}"]`).forEach(i=>i.disabled=true);
+  document.querySelector(`#${qid} .chk`).disabled=true;
+ }
+ document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')nav(-1);if(e.key==='ArrowRight')nav(1)});
+ let tx=0;
+ document.addEventListener('touchstart',e=>tx=e.changedTouches[0].screenX);
+ document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tx;if(dx<-50)nav(1);if(dx>50)nav(-1)});
+ show(0);
+</script>
+</body>
+</html>
