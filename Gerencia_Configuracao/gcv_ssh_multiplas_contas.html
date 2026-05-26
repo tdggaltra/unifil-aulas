@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerência de Configuração — SSH com Múltiplas Contas GitHub | UniFil</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --or:#FF8C00;--ac:#FF6B35;--dk:#4A4A4A;--lt:#F5F5F5;--gy:#6B6B6B;
+  --lc:#0550ae;--lp:#7c3aed;--lj:#b45309;--vg:#059669;--vt:#0d9488;
+  --sr:#dc2626;--cb:#1e2130;--ct:#abb2bf;
+  --ma:#0369a1;--mb:#6d28d9;--mc2:#b45309
+}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0d1b2e,#1a0d2e);overflow:hidden;color:var(--dk)}
+.presentation{width:100vw;height:100vh;position:relative}
+.slide{width:100%;height:100%;position:absolute;top:0;left:0;display:none;opacity:0;transform:translateX(100%);transition:all .6s cubic-bezier(.68,-.55,.265,1.55)}
+.slide.active{display:flex;opacity:1;transform:translateX(0)}
+.slide-content{background:white;width:90%;max-width:1200px;height:90%;margin:auto;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}
+.sh{background:linear-gradient(135deg,var(--or),var(--ac));padding:26px 50px;color:white;flex-shrink:0;position:relative}
+.sh::after{content:'';position:absolute;bottom:-18px;left:0;right:0;height:36px;background:linear-gradient(135deg,var(--or),var(--ac));clip-path:polygon(0 0,100% 0,100% 100%,0 0)}
+.sh h1{font-size:2.1rem;margin-bottom:6px;font-weight:700}
+.sh h2{font-size:1.6rem;margin-bottom:6px;font-weight:600}
+.sh p{font-size:1rem;opacity:.95}
+.sb{flex:1;padding:50px 50px 30px;overflow-y:auto}
+.sb::-webkit-scrollbar{width:8px}
+.sb::-webkit-scrollbar-track{background:var(--lt);border-radius:10px}
+.sb::-webkit-scrollbar-thumb{background:var(--or);border-radius:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:16px 0}
+.box{background:var(--lt);padding:20px;border-radius:14px;border-left:5px solid var(--or);animation:fiu .55s ease-out forwards;opacity:0}
+.box h3{color:var(--or);margin-bottom:9px;font-size:1.15rem}
+.box ul{list-style:none;padding:0}
+.box li{padding:6px 0 6px 24px;position:relative;font-size:.95rem;line-height:1.6}
+.box li::before{content:'→';position:absolute;left:0;color:var(--or);font-weight:bold}
+.box.bl{border-left-color:var(--lc)}.box.bl h3{color:var(--lc)}
+.box.gn{border-left-color:var(--vg)}.box.gn h3{color:var(--vg)}
+.box.pu{border-left-color:var(--lp)}.box.pu h3{color:var(--lp)}
+.box.tl2{border-left-color:var(--vt)}.box.tl2 h3{color:var(--vt)}
+.box.rd{border-left-color:var(--sr)}.box.rd h3{color:var(--sr)}
+.box.am{border-left-color:var(--lj)}.box.am h3{color:var(--lj)}
+.hi{background:linear-gradient(135deg,var(--or),var(--ac));color:white;padding:20px;border-radius:14px;margin:16px 0;animation:fiu .55s ease-out .2s forwards;opacity:0}
+.hi h3{margin-bottom:8px;font-size:1.3rem}
+.hi p{font-size:.97rem;line-height:1.7}
+.big{background:linear-gradient(135deg,var(--lc),#0d4b8c);color:white;padding:22px;border-radius:18px;font-size:1.4rem;font-weight:600;text-align:center;margin:16px 0;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 10px 28px rgba(5,80,174,.3);line-height:1.5}
+.yel{background:#fff8e1;border:3px solid #f59e0b;border-radius:14px;padding:18px;margin:14px 0;animation:fiu .55s ease-out forwards;opacity:0}
+.yel h3{color:#92400e;margin-bottom:8px;font-size:1.15rem}
+.yel p{font-size:.96rem;line-height:1.7;color:#78350f}
+/* Code tabs */
+.ct{margin:12px 0;border-radius:14px;overflow:hidden;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.ct-nav{display:flex;background:#1a1a2e}
+.ct-btn{padding:9px 18px;border:none;cursor:pointer;font-family:'Courier New',monospace;font-size:.86rem;font-weight:700;transition:all .2s;flex:1}
+.ct-btn.p{background:#2d1b69;color:#c4b5fd}.ct-btn.c{background:#0c2a4f;color:#93c5fd}.ct-btn.j{background:#3d1c02;color:#fcd34d}
+.ct-btn.active.p{background:var(--lp);color:white}.ct-btn.active.c{background:var(--lc);color:white}.ct-btn.active.j{background:var(--lj);color:white}
+.ct-panel{background:var(--cb);display:none;padding:14px 20px;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;color:var(--ct);overflow-x:auto;white-space:pre}
+.ct-panel.active{display:block}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.nm{color:#d19a66}.tp{color:#e5c07b}.op2{color:#56b6c2}
+/* Code block */
+.cblk{background:var(--cb);border-radius:12px;overflow:hidden;margin:10px 0;animation:fiu .55s ease-out forwards;opacity:0;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.cblk-bar{background:#313244;padding:8px 14px;display:flex;align-items:center;gap:8px}
+.cblk-bar .d{width:10px;height:10px;border-radius:50%}
+.cblk-bar .d.r{background:#ff5f57}.cblk-bar .d.y{background:#febc2e}.cblk-bar .d.g{background:#28c840}
+.cblk-bar .t{color:#a6adc8;font-size:.80rem;margin-left:8px;font-family:'Courier New',monospace}
+.cblk pre{padding:14px 18px;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;color:var(--ct);overflow-x:auto;white-space:pre}
+/* Trace table */
+.trtbl{width:100%;border-collapse:collapse;margin:12px 0;animation:fiu .55s ease-out forwards;opacity:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.trtbl th{background:linear-gradient(135deg,var(--or),var(--ac));color:white;padding:10px 12px;text-align:center;font-size:.9rem}
+.trtbl td{padding:8px 12px;border-bottom:1px solid #eee;text-align:center;font-size:.87rem;font-family:'Courier New',monospace}
+.trtbl tr:last-child td{border-bottom:none}
+.trtbl tr:nth-child(even){background:#f9fafb}
+.trtbl .hi-row td{background:#dbeafe;font-weight:700;color:var(--lc)}
+.trtbl .res-row td{background:#d1fae5;font-weight:700;color:#065f46}
+.trtbl .warn-row td{background:#fee2e2;font-weight:700;color:#991b1b}
+/* stat card */
+.sc{text-align:center;padding:16px;background:white;border-radius:14px;border:3px solid var(--or);animation:fiu .55s ease-out forwards;opacity:0}
+.sc .n{font-size:2.1rem;font-weight:700;color:var(--or);margin-bottom:5px}
+.sc .l{font-size:.87rem;color:var(--gy);font-weight:500}
+/* timeline */
+.tl-wrap{position:relative;padding-left:34px;margin:16px 0}
+.tl-wrap::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:3px;background:var(--or)}
+.tli{position:relative;padding:10px 0;animation:fil .55s ease-out forwards;opacity:0}
+.tli::before{content:'';position:absolute;left:-29px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--or);border:3px solid white;box-shadow:0 0 0 3px var(--or)}
+.tli h4{color:var(--or);font-size:1.1rem;margin-bottom:4px}
+/* quiz */
+.qz{background:var(--lt);border-radius:14px;padding:16px;margin:10px 0;border-left:5px solid var(--lc);animation:fiu .55s ease-out forwards;opacity:0}
+.qz p.q{font-size:1rem;font-weight:600;color:var(--lc);margin-bottom:8px;line-height:1.55}
+.qz .opts label{display:flex;align-items:flex-start;gap:10px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:.92rem;line-height:1.5;margin:3px 0;transition:background .2s}
+.qz .opts label:hover{background:#dbeafe}
+.qz .opts input[type=radio]{margin-top:3px;accent-color:var(--lc);flex-shrink:0}
+.fb{display:none;margin-top:8px;padding:8px 13px;border-radius:8px;font-size:.92rem;font-weight:600}
+.fb.ok{background:#d1fae5;color:#065f46;display:block}
+.fb.no{background:#fee2e2;color:#991b1b;display:block}
+.chk{background:var(--lc);color:white;border:none;padding:7px 16px;border-radius:14px;cursor:pointer;font-size:.87rem;font-weight:600;margin-top:8px;transition:all .3s}
+.chk:hover{background:#0553b1;transform:translateY(-2px)}
+/* nav */
+.nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.97);padding:12px 24px;border-radius:50px;box-shadow:0 10px 28px rgba(0,0,0,.2);z-index:1000}
+.nb{background:linear-gradient(135deg,var(--or),var(--ac));color:white;border:none;padding:9px 18px;border-radius:22px;cursor:pointer;font-size:.91rem;font-weight:600;transition:all .3s}
+.nb:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 14px rgba(255,140,0,.4)}
+.nb:disabled{opacity:.4;cursor:not-allowed}
+.ctr{font-weight:600;color:var(--dk);min-width:68px;text-align:center;font-size:.98rem}
+.pb{position:fixed;top:0;left:0;width:100%;height:5px;background:rgba(255,255,255,.15);z-index:1001}
+.pf{height:100%;background:linear-gradient(90deg,var(--or),var(--mb));transition:width .4s}
+.dots{position:fixed;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:1001}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s}
+.dot.active{background:var(--or);transform:scale(1.5)}
+@keyframes fiu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fil{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
+.d1{animation-delay:.10s}.d2{animation-delay:.20s}.d3{animation-delay:.30s}
+.d4{animation-delay:.40s}.d5{animation-delay:.50s}.d6{animation-delay:.60s}
+ic{background:#f0f0f0;padding:1px 7px;border-radius:5px;font-family:'Courier New',monospace;font-size:.9em;color:#e11d48}
+ic.wh{background:rgba(255,255,255,.2);color:white}
+/* account badges */
+.acct{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-weight:700;font-size:.9rem}
+.acct.p1{background:#dbeafe;color:#1e40af}
+.acct.p2{background:#d1fae5;color:#065f46}
+.acct.p3{background:#ede9fe;color:#4c1d95}
+/* flow steps */
+.flow-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;animation:fiu .55s ease-out forwards;opacity:0}
+.fstep{background:var(--lt);border:2px solid var(--or);border-radius:12px;padding:12px 16px;text-align:center;min-width:120px;flex:1}
+.fstep .fn2{font-size:1.6rem;margin-bottom:4px}
+.fstep h4{font-size:.9rem;font-weight:700;color:var(--or)}
+.fstep p{font-size:.78rem;color:var(--gy);margin-top:3px;line-height:1.4}
+.farrow{font-size:1.6rem;color:var(--or);font-weight:700;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="pb"><div class="pf" id="PF"></div></div>
+<div class="dots" id="DOTS"></div>
+<div class="presentation">
+
+<!-- ═══ SLIDE 01 — CAPA ═══ -->
+<div class="slide active">
+ <div class="slide-content">
+  <div class="sh">
+   <h1>Gerência de Configuração e Controle de Versão</h1>
+   <p>SSH com Múltiplas Contas GitHub · Autenticação por Chave · Entrega Contínua</p>
+  </div>
+  <div class="sb" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+   <div style="font-size:5rem;margin-bottom:16px">🔑</div>
+   <h2 style="font-size:2.2rem;color:var(--or);margin-bottom:14px">Múltiplas Contas GitHub com SSH</h2>
+   <p style="font-size:1.1rem;color:var(--gy);max-width:820px;margin-bottom:26px;line-height:1.7">
+    Como configurar o ambiente local para trabalhar com <strong>três contas GitHub distintas</strong>
+    usando chaves SSH individuais e roteamento automático por alias — sem conflito de identidade e
+    sem digitar senha a cada <ic class="wh" style="background:rgba(0,0,0,.15);color:#fff">git push</ic>.
+   </p>
+   <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+    <div class="sc" style="min-width:118px;border-color:var(--ma)"><div class="n" style="color:var(--ma)">🔐</div><div class="l">Chaves ed25519</div></div>
+    <div class="sc" style="min-width:118px;animation-delay:.1s;border-color:var(--mb)"><div class="n" style="color:var(--mb)">⚙️</div><div class="l">~/.ssh/config</div></div>
+    <div class="sc" style="min-width:118px;animation-delay:.2s;border-color:var(--mc2)"><div class="n" style="color:var(--mc2)">🏷️</div><div class="l">Aliases de Host</div></div>
+    <div class="sc" style="min-width:118px;animation-delay:.3s;border-color:var(--vg)"><div class="n" style="color:var(--vg)">✍️</div><div class="l">git config local</div></div>
+   </div>
+   <div style="margin-top:28px;font-size:1rem;color:var(--gy);line-height:1.9">
+    <p><strong>Professor:</strong> Prof. Tiago Galvão &nbsp;|&nbsp; Disciplina: Gerência de Configuração · Entrega Contínua</p>
+    <p><strong>Instituição:</strong> UniFil — Centro Universitário Filadélfia</p>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 02 — O PROBLEMA ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>⚠️ O Problema — Múltiplas Identidades</h2><p>Por que uma única chave SSH genérica causa conflitos</p></div>
+  <div class="sb">
+
+   <div class="yel">
+    <h3>🎯 Situação comum no mundo real</h3>
+    <p>Um desenvolvedor possui <strong>três contas GitHub distintas</strong>: uma pessoal, uma da empresa e uma da instituição de ensino. Com uma única chave SSH genérica, o GitHub sempre autentica como <strong>a mesma conta</strong> — independente do repositório.</p>
+   </div>
+
+   <div class="three" style="margin-top:14px">
+    <div class="box d1">
+     <h3>👤 Conta Pessoal</h3>
+     <ul>
+      <li>Projetos próprios e open source</li>
+      <li>Portfólio e experimentos</li>
+      <li>user: <ic>dev-pessoal</ic></li>
+      <li>email: <ic>dev.pessoal@gmail.com</ic></li>
+     </ul>
+    </div>
+    <div class="box bl d2">
+     <h3>🏢 Conta Empresa</h3>
+     <ul>
+      <li>Repositórios corporativos</li>
+      <li>Projetos de clientes</li>
+      <li>user: <ic>dev-empresa</ic></li>
+      <li>email: <ic>dev@techcorp.com.br</ic></li>
+     </ul>
+    </div>
+    <div class="box pu d3">
+     <h3>🎓 Conta Faculdade</h3>
+     <ul>
+      <li>Trabalhos e aulas</li>
+      <li>Projetos acadêmicos</li>
+      <li>user: <ic>DevFaculdade</ic></li>
+      <li>email: <ic>dev@universidade.edu.br</ic></li>
+     </ul>
+    </div>
+   </div>
+
+   <div class="hi d4">
+    <h3>❌ O que acontece sem a configuração correta</h3>
+    <p>
+     <strong>Erro típico:</strong> <ic class="wh">Permission denied (publickey)</ic> ao tentar fazer push em outro perfil.<br>
+     <strong>Problema silencioso:</strong> push funciona, mas vai para a conta errada — commits aparecem no perfil incorreto.<br>
+     <strong>Raiz do problema:</strong> sem o arquivo <ic class="wh">~/.ssh/config</ic>, o SSH usa a <em>primeira chave disponível</em>, não a correta.
+    </p>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 03 — FUNDAMENTOS SSH ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🔐 Fundamentos do SSH</h2><p>Criptografia assimétrica — como o GitHub autentica sem senha</p></div>
+  <div class="sb">
+
+   <div class="big" style="font-size:1.25rem;padding:20px">
+    SSH usa um <strong>par de chaves matematicamente relacionadas</strong>: a chave privada fica no seu computador, a pública fica no GitHub. Quem possui a privada <strong>prova a identidade</strong> sem transmitir segredos.
+   </div>
+
+   <div class="flow-row d1">
+    <div class="fstep"><div class="fn2">💻</div><h4>Seu Computador</h4><p>Chave privada<br><ic>~/.ssh/id_*</ic></p></div>
+    <span class="farrow">→</span>
+    <div class="fstep"><div class="fn2">🤝</div><h4>git push</h4><p>SSH handshake<br>desafio criptográfico</p></div>
+    <span class="farrow">→</span>
+    <div class="fstep"><div class="fn2">☁️</div><h4>GitHub</h4><p>Valida com<br>chave pública</p></div>
+    <span class="farrow">→</span>
+    <div class="fstep"><div class="fn2">✅</div><h4>Acesso</h4><p>Autorizado para<br>a conta correta</p></div>
+   </div>
+
+   <div class="two" style="margin-top:12px">
+    <div class="box bl d2">
+     <h3>🔑 Algoritmo ed25519 (recomendado)</h3>
+     <ul>
+      <li>Criptografia de curva elíptica (ECC)</li>
+      <li>Mais seguro e rápido que RSA</li>
+      <li>Chaves menores — 68 caracteres</li>
+      <li>Padrão atual do GitHub</li>
+      <li>Flag: <ic>-t ed25519</ic></li>
+     </ul>
+    </div>
+    <div class="box gn d3">
+     <h3>⚡ SSH vs HTTPS</h3>
+     <ul>
+      <li>SSH: sem senha a cada push</li>
+      <li>SSH: ideal para múltiplas contas</li>
+      <li>SSH: melhor para pipelines CI/CD</li>
+      <li>HTTPS: exige token PAT por conta</li>
+      <li>HTTPS: difícil alternar contas</li>
+     </ul>
+    </div>
+   </div>
+
+   <div class="yel d4" style="margin-top:6px">
+    <h3>📁 Par de arquivos gerado por conta</h3>
+    <p>
+     <strong>Chave privada</strong> (sem extensão) → <ic>~/.ssh/id_github_pessoal</ic> — permissão 600 — NUNCA compartilhe!<br>
+     <strong>Chave pública</strong> (<ic>.pub</ic>) → <ic>~/.ssh/id_github_pessoal.pub</ic> — permissão 644 — essa vai para o GitHub.
+    </p>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 04 — GERAR CHAVES ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🛠️ Passos 1 e 2 — Verificar e Gerar Chaves</h2><p>Uma chave nomeada para cada conta — jamais use id_rsa genérico</p></div>
+  <div class="sb">
+
+   <div class="yel" style="margin-top:4px">
+    <h3>🔍 Passo 1 — Verificar chaves existentes</h3>
+    <p>Antes de gerar, confira o que já existe para <strong>não sobrescrever</strong> acidentalmente. Se houver um <ic>id_rsa</ic> ou <ic>id_ed25519</ic> genérico, não apague — apenas crie as novas com nomes específicos.</p>
+   </div>
+
+   <div class="cblk d1">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">Terminal</span></div>
+    <pre>
+<span class="cm"># Listar arquivos na pasta SSH</span>
+<span class="fn">ls</span> -al ~/.ssh
+
+<span class="cm"># Saída esperada após configuração:</span>
+-rw-------  id_github_pessoal       <span class="cm"># ← privada (600)</span>
+-rw-r--r--  id_github_pessoal.pub   <span class="cm"># ← pública  (644)</span>
+-rw-------  id_github_empresa
+-rw-r--r--  id_github_empresa.pub
+-rw-------  id_github_faculdade
+-rw-r--r--  id_github_faculdade.pub
+-rw-r--r--  config                  <span class="cm"># ← arquivo de alias</span>
+-rw-r--r--  known_hosts</pre>
+   </div>
+
+   <div class="box d2" style="margin-top:12px">
+    <h3>⚙️ Passo 2 — Gerar uma chave por conta (flag -f nomeia o arquivo)</h3>
+    <ul>
+     <li><ic>ssh-keygen -t ed25519 -C "dev.pessoal@gmail.com" -f ~/.ssh/id_github_pessoal</ic></li>
+     <li><ic>ssh-keygen -t ed25519 -C "dev@techcorp.com.br" -f ~/.ssh/id_github_empresa</ic></li>
+     <li><ic>ssh-keygen -t ed25519 -C "dev@universidade.edu.br" -f ~/.ssh/id_github_faculdade</ic></li>
+    </ul>
+   </div>
+
+   <div class="two" style="margin-top:10px">
+    <div class="box bl d3">
+     <h3>📌 Significado das flags</h3>
+     <ul>
+      <li><ic>-t ed25519</ic> → algoritmo (curva elíptica)</li>
+      <li><ic>-C "email"</ic> → comentário identificador</li>
+      <li><ic>-f ~/.ssh/nome</ic> → nome do arquivo gerado</li>
+      <li>Enter duas vezes → sem passphrase (desenvolvimento)</li>
+     </ul>
+    </div>
+    <div class="box am d4">
+     <h3>⚠️ Por que nomear com -f?</h3>
+     <ul>
+      <li>Sem <ic>-f</ic>, gera <ic>id_ed25519</ic> genérico</li>
+      <li>Sobrescreve chave anterior!</li>
+      <li>Nome explícito: fácil saber qual conta</li>
+      <li>Ex: <ic>id_github_empresa</ic> → inequívoco</li>
+     </ul>
+    </div>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 05 — SSH-AGENT ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>⚡ Passo 3 — Adicionar ao ssh-agent</h2><p>O agente gerencia as chaves em memória — sem redigitar passphrase</p></div>
+  <div class="sb">
+
+   <div class="big" style="font-size:1.2rem;padding:18px">
+    O <strong>ssh-agent</strong> é um processo em segundo plano que armazena as chaves descriptografadas em memória. Com ele, você não precisa redigitar a passphrase a cada operação Git.
+   </div>
+
+   <div class="ct d1">
+    <div class="ct-nav">
+     <button class="ct-btn c active" onclick="sw(this,'c','agent')">🍎 macOS</button>
+     <button class="ct-btn j"        onclick="sw(this,'j','agent')">🐧 Linux</button>
+    </div>
+    <div class="ct-panel active" id="agent-c">
+<span class="cm"># 1. Iniciar o agente</span>
+<span class="fn">eval</span> "$(ssh-agent -s)"
+<span class="cm"># Saída: Agent pid 12345</span>
+
+<span class="cm"># 2. Adicionar as 3 chaves (--apple-use-keychain persiste no Keychain)</span>
+<span class="fn">ssh-add</span> --apple-use-keychain ~/.ssh/id_github_pessoal
+<span class="fn">ssh-add</span> --apple-use-keychain ~/.ssh/id_github_empresa
+<span class="fn">ssh-add</span> --apple-use-keychain ~/.ssh/id_github_faculdade
+
+<span class="cm"># 3. Confirmar que as 3 foram carregadas</span>
+<span class="fn">ssh-add</span> -l
+<span class="cm"># Saída: 256 SHA256:... dev.pessoal@gmail.com (ED25519)</span>
+<span class="cm">#        256 SHA256:... dev@techcorp.com.br (ED25519)</span>
+<span class="cm">#        256 SHA256:... dev@universidade.edu.br (ED25519)</span></div>
+    <div class="ct-panel" id="agent-j">
+<span class="cm"># 1. Iniciar o agente</span>
+<span class="fn">eval</span> "$(ssh-agent -s)"
+
+<span class="cm"># 2. Adicionar as 3 chaves</span>
+<span class="fn">ssh-add</span> ~/.ssh/id_github_pessoal
+<span class="fn">ssh-add</span> ~/.ssh/id_github_empresa
+<span class="fn">ssh-add</span> ~/.ssh/id_github_faculdade
+
+<span class="cm"># 3. Para persistência (adicione ao ~/.bashrc ou ~/.zshrc):</span>
+<span class="kw">if</span> [ -z "$SSH_AUTH_SOCK" ]; then
+  <span class="fn">eval</span> "$(ssh-agent -s)"
+  <span class="fn">ssh-add</span> ~/.ssh/id_github_pessoal
+  <span class="fn">ssh-add</span> ~/.ssh/id_github_empresa
+  <span class="fn">ssh-add</span> ~/.ssh/id_github_faculdade
+<span class="kw">fi</span>
+
+<span class="cm"># Verificar</span>
+<span class="fn">ssh-add</span> -l</div>
+   </div>
+
+   <div class="two" style="margin-top:10px">
+    <div class="box bl d2">
+     <h3>🛠️ Comandos úteis do agente</h3>
+     <ul>
+      <li><ic>ssh-add -l</ic> → listar chaves carregadas</li>
+      <li><ic>ssh-add -D</ic> → remover todas as chaves</li>
+      <li><ic>ssh-add -d ~/.ssh/arquivo</ic> → remover uma</li>
+      <li><ic>ssh-agent -k</ic> → encerrar o agente</li>
+     </ul>
+    </div>
+    <div class="box gn d3">
+     <h3>✅ Como saber que funcionou</h3>
+     <ul>
+      <li><ic>ssh-add -l</ic> lista os 3 fingerprints</li>
+      <li>Cada linha mostra o e-mail do comentário</li>
+      <li>Se aparecer "no identities" → passo 2 falhou</li>
+      <li>macOS: Keychain guarda entre reinicializações</li>
+     </ul>
+    </div>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 06 — CADASTRAR NO GITHUB ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>☁️ Passo 4 — Cadastrar no GitHub</h2><p>Cada conta recebe apenas a sua chave pública .pub</p></div>
+  <div class="sb">
+
+   <div class="yel" style="margin-top:4px">
+    <h3>📋 Regra fundamental</h3>
+    <p>Repita o procedimento para <strong>cada uma das 3 contas</strong>. Entre no GitHub com a conta correta antes de adicionar a chave. Uma chave pública cadastrada na conta errada não autentica a conta certa!</p>
+   </div>
+
+   <div class="cblk d1">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">Terminal — copiar a chave pública</span></div>
+    <pre>
+<span class="cm"># Exibir no terminal (copie manualmente)</span>
+<span class="fn">cat</span> ~/.ssh/id_github_pessoal.pub
+<span class="fn">cat</span> ~/.ssh/id_github_empresa.pub
+<span class="fn">cat</span> ~/.ssh/id_github_faculdade.pub
+
+<span class="cm"># macOS: copiar direto para a área de transferência</span>
+<span class="fn">pbcopy</span> &lt; ~/.ssh/id_github_pessoal.pub   <span class="cm"># logue como dev-pessoal</span>
+<span class="fn">pbcopy</span> &lt; ~/.ssh/id_github_empresa.pub   <span class="cm"># logue como dev-empresa</span>
+<span class="fn">pbcopy</span> &lt; ~/.ssh/id_github_faculdade.pub <span class="cm"># logue como DevFaculdade</span></pre>
+   </div>
+
+   <div class="tl-wrap" style="margin-top:12px">
+    <div class="tli d2"><h4>① Faça login na conta GitHub correta</h4><p>github.com → clique no avatar → <strong>Settings</strong></p></div>
+    <div class="tli d3"><h4>② Acesse a seção de chaves SSH</h4><p>Menu lateral → <strong>SSH and GPG keys</strong> → botão <strong>New SSH key</strong></p></div>
+    <div class="tli d4"><h4>③ Cole a chave pública (.pub) e nomeie</h4><p>Título sugestivo: <ic>"Notebook Pessoal 2026"</ic> — facilita identificar de qual máquina é</p></div>
+    <div class="tli d5"><h4>④ Confirme com Add SSH key</h4><p>O GitHub pode pedir senha de confirmação. Repita os passos ①–④ para as outras 2 contas.</p></div>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 07 — SSH CONFIG (CORAÇÃO) ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>⚙️ Passo 5 — O arquivo ~/.ssh/config</h2><p>O coração da solução — aliases que roteiam para a chave certa</p></div>
+  <div class="sb">
+
+   <div class="big" style="font-size:1.15rem;padding:18px;margin-top:4px">
+    O arquivo <ic class="wh" style="background:rgba(255,255,255,.2)">~/.ssh/config</ic> define <strong>aliases</strong> para o GitHub. Cada alias aponta para um <ic class="wh" style="background:rgba(255,255,255,.2)">IdentityFile</ic> diferente. O Git usa o alias na URL para saber qual chave (e portanto qual conta) usar.
+   </div>
+
+   <div class="cblk d1">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">~/.ssh/config</span></div>
+    <pre>
+<span class="cm"># ── Conta pessoal — dev-pessoal ─────────────────────────</span>
+<span class="tp">Host</span> <span class="str">github-pessoal</span>
+  HostName      github.com
+  User          git
+  IdentityFile  ~/.ssh/id_github_pessoal
+  AddKeysToAgent yes
+
+<span class="cm"># ── Conta empresa — dev-empresa ─────────────────────────</span>
+<span class="tp">Host</span> <span class="str">github-empresa</span>
+  HostName      github.com
+  User          git
+  IdentityFile  ~/.ssh/id_github_empresa
+  AddKeysToAgent yes
+
+<span class="cm"># ── Conta faculdade — DevFaculdade ──────────────────────</span>
+<span class="tp">Host</span> <span class="str">github-faculdade</span>
+  HostName      github.com
+  User          git
+  IdentityFile  ~/.ssh/id_github_faculdade
+  AddKeysToAgent yes</pre>
+   </div>
+
+   <div class="two" style="margin-top:10px">
+    <div class="box bl d2">
+     <h3>🔍 Anatomia do bloco Host</h3>
+     <ul>
+      <li><ic>Host</ic> → apelido livre (você define o nome)</li>
+      <li><ic>HostName</ic> → sempre <ic>github.com</ic></li>
+      <li><ic>User</ic> → sempre <ic>git</ic></li>
+      <li><ic>IdentityFile</ic> → chave privada desta conta</li>
+      <li><ic>AddKeysToAgent</ic> → carrega no agente automaticamente</li>
+     </ul>
+    </div>
+    <div class="box am d3">
+     <h3>⚠️ Criar o arquivo</h3>
+     <ul>
+      <li>Se não existir: <ic>touch ~/.ssh/config</ic></li>
+      <li>Editar: <ic>nano ~/.ssh/config</ic></li>
+      <li>Permissão correta: <ic>chmod 600 ~/.ssh/config</ic></li>
+      <li>Verificar: <ic>cat ~/.ssh/config</ic></li>
+     </ul>
+    </div>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 08 — TESTAR E USAR ALIAS ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🧪 Passos 6 e 7 — Testar e Usar os Aliases</h2><p>Verificar cada conexão e aplicar os aliases nas URLs dos repositórios</p></div>
+  <div class="sb">
+
+   <div class="box gn" style="margin-top:4px">
+    <h3>✅ Passo 6 — Testar as 3 conexões</h3>
+    <ul>
+     <li>Cada teste responde com o usuário correto da conta correspondente</li>
+     <li><ic>ssh -T git@github-pessoal</ic> → deve retornar: <ic>Hi dev-pessoal! You've successfully authenticated...</ic></li>
+     <li><ic>ssh -T git@github-empresa</ic> → deve retornar: <ic>Hi dev-empresa! You've successfully authenticated...</ic></li>
+     <li><ic>ssh -T git@github-faculdade</ic> → deve retornar: <ic>Hi DevFaculdade! You've successfully authenticated...</ic></li>
+    </ul>
+   </div>
+
+   <table class="trtbl d1">
+    <thead><tr><th>Comando de teste</th><th>Resposta esperada</th><th>Status</th></tr></thead>
+    <tbody>
+     <tr class="hi-row"><td>ssh -T git@github-pessoal</td><td>Hi dev-pessoal! You've successfully authenticated...</td><td>✅ OK</td></tr>
+     <tr class="res-row"><td>ssh -T git@github-empresa</td><td>Hi dev-empresa! You've successfully authenticated...</td><td>✅ OK</td></tr>
+     <tr><td>ssh -T git@github-faculdade</td><td>Hi DevFaculdade! You've successfully authenticated...</td><td>✅ OK</td></tr>
+     <tr class="warn-row"><td>ssh -T git@github-empresa</td><td>Hi dev-pessoal! (conta errada)</td><td>❌ Config errado</td></tr>
+     <tr class="warn-row"><td>ssh -T git@github-faculdade</td><td>Permission denied (publickey)</td><td>❌ Chave faltando</td></tr>
+    </tbody>
+   </table>
+
+   <div class="cblk d2">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">Passo 7 — Usar alias nas URLs dos repositórios</span></div>
+    <pre>
+<span class="cm"># Regra: substitua github.com pelo alias nas URLs</span>
+<span class="cm"># Padrão: git@&lt;ALIAS&gt;:&lt;usuario-github&gt;/&lt;repositorio&gt;.git</span>
+
+<span class="cm"># Clonar com a conta correta</span>
+<span class="fn">git clone</span> git@github-pessoal:dev-pessoal/meu-projeto.git
+<span class="fn">git clone</span> git@github-empresa:dev-empresa/sistema-crm.git
+<span class="fn">git clone</span> git@github-faculdade:DevFaculdade/trabalho-final.git
+
+<span class="cm"># Corrigir remote em repositório já existente</span>
+<span class="fn">git remote</span> -v                                        <span class="cm"># ver atual</span>
+<span class="fn">git remote set-url</span> origin git@github-empresa:dev-empresa/sistema-crm.git
+<span class="fn">git remote</span> -v                                        <span class="cm"># confirmar</span></pre>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 09 — IDENTIDADE DOS COMMITS ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>✍️ Passo 8 — Identidade dos Commits</h2><p>SSH autentica o acesso · git config assina o commit — camadas independentes</p></div>
+  <div class="sb">
+
+   <div class="yel" style="margin-top:4px">
+    <h3>📐 Conceito fundamental</h3>
+    <p>A chave SSH autentica <em>quem pode fazer o push</em>. O <ic>git config user.email</ic> define <em>com qual identidade o commit é assinado</em>. Configure <strong>por repositório</strong> (sem <ic>--global</ic>) para garantir que cada commit use o e-mail correto.</p>
+   </div>
+
+   <div class="cblk d1">
+    <div class="cblk-bar"><div class="d r"></div><div class="d y"></div><div class="d g"></div><span class="t">Terminal — configurar identidade por repositório</span></div>
+    <pre>
+<span class="cm"># Dentro do repositório da EMPRESA</span>
+<span class="fn">git config</span> user.name  <span class="str">"Nome Sobrenome"</span>
+<span class="fn">git config</span> user.email <span class="str">"dev@techcorp.com.br"</span>
+
+<span class="cm"># Dentro do repositório da FACULDADE</span>
+<span class="fn">git config</span> user.name  <span class="str">"Nome Sobrenome (Acadêmico)"</span>
+<span class="fn">git config</span> user.email <span class="str">"dev@universidade.edu.br"</span>
+
+<span class="cm"># Verificar a configuração local do repositório atual</span>
+<span class="fn">git config</span> --list --local
+
+<span class="cm"># Verificar quem vai assinar o próximo commit</span>
+<span class="fn">git config</span> user.name
+<span class="fn">git config</span> user.email</pre>
+   </div>
+
+   <div class="two" style="margin-top:12px">
+    <div class="box bl d2">
+     <h3>🔍 Local vs Global</h3>
+     <ul>
+      <li><ic>--local</ic>: só para o repo atual (arquivo <ic>.git/config</ic>)</li>
+      <li><ic>--global</ic>: padrão para todos os repos (<ic>~/.gitconfig</ic>)</li>
+      <li>Local <strong>sempre sobrepõe</strong> o global</li>
+      <li>Não configure <ic>--global</ic> para múltiplas contas!</li>
+     </ul>
+    </div>
+    <div class="box rd d3">
+     <h3>⚠️ Evite --global com múltiplas contas</h3>
+     <ul>
+      <li>Define e-mail padrão para todos os repos</li>
+      <li>Commits da empresa podem ir com e-mail pessoal</li>
+      <li>Commits aparecem no perfil incorreto no GitHub</li>
+      <li>Difícil de auditar e corrigir depois</li>
+     </ul>
+    </div>
+   </div>
+
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 10 — QUIZ ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🧠 Quiz — SSH com Múltiplas Contas</h2><p>Teste seus conhecimentos antes do resumo!</p></div>
+  <div class="sb">
+   <div class="two" style="gap:18px">
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+     <div class="qz" id="q1">
+      <p class="q">1. Qual flag do ssh-keygen define o NOME do arquivo gerado?</p>
+      <div class="opts">
+       <label><input type="radio" name="q1" value="a"> <span>-t (tipo do algoritmo)</span></label>
+       <label><input type="radio" name="q1" value="b"> <span>-C (comentário/e-mail)</span></label>
+       <label><input type="radio" name="q1" value="c"> <span>-f (file — caminho e nome)</span></label>
+       <label><input type="radio" name="q1" value="d"> <span>-b (tamanho em bits)</span></label>
+      </div>
+      <button class="chk" onclick="chk('q1','c','✅ Correto! -f define o caminho e nome do arquivo. Sem -f, gera id_ed25519 genérico e sobrescreve o anterior!','❌ Incorreto! É a flag -f (file). Exemplo: ssh-keygen -f ~/.ssh/id_github_empresa')">Verificar</button>
+      <div class="fb" id="q1-fb"></div>
+     </div>
+
+     <div class="qz d2" id="q2">
+      <p class="q">2. O que o campo <ic>Host</ic> no arquivo ~/.ssh/config representa?</p>
+      <div class="opts">
+       <label><input type="radio" name="q2" value="a"> <span>O nome de usuário do GitHub</span></label>
+       <label><input type="radio" name="q2" value="b"> <span>Um alias livre que você define — substituirá github.com nas URLs</span></label>
+       <label><input type="radio" name="q2" value="c"> <span>O endereço IP do servidor GitHub</span></label>
+       <label><input type="radio" name="q2" value="d"> <span>O nome do arquivo de chave privada</span></label>
+      </div>
+      <button class="chk" onclick="chk('q2','b','✅ Correto! Host é um apelido livre. Você escolhe o nome e usa ele no lugar de github.com nas URLs: git@github-empresa:usuario/repo.git','❌ Incorreto! Host é um apelido (alias). O HostName é sempre github.com. O alias substitui github.com nas URLs.')">Verificar</button>
+      <div class="fb" id="q2-fb"></div>
+     </div>
+
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+     <div class="qz d1" id="q3">
+      <p class="q">3. Qual URL correta para clonar um repo da conta empresa com o alias <ic>github-empresa</ic>, usuário <ic>dev-empresa</ic>?</p>
+      <div class="opts">
+       <label><input type="radio" name="q3" value="a"> <span>git clone https://github.com/dev-empresa/repo.git</span></label>
+       <label><input type="radio" name="q3" value="b"> <span>git clone git@github.com:dev-empresa/repo.git</span></label>
+       <label><input type="radio" name="q3" value="c"> <span>git clone git@github-empresa:dev-empresa/repo.git</span></label>
+       <label><input type="radio" name="q3" value="d"> <span>git clone ssh://github-empresa/dev-empresa/repo.git</span></label>
+      </div>
+      <button class="chk" onclick="chk('q3','c','✅ Correto! Substitua github.com pelo alias: git@github-empresa:dev-empresa/repo.git — é a única mudança na URL padrão!','❌ Incorreto! A regra é simples: substitua github.com pelo alias definido no Host. Formato: git@&lt;ALIAS&gt;:usuario/repo.git')">Verificar</button>
+      <div class="fb" id="q3-fb"></div>
+     </div>
+
+     <div class="qz d3" id="q4" style="border-left-color:var(--or)">
+      <p class="q" style="color:var(--or)">4. 💬 Análise de Cenário:</p>
+      <p style="font-size:.94rem;line-height:1.6;color:var(--dk);margin-top:6px">Um desenvolvedor fez <ic>git push</ic> com sucesso, mas o commit apareceu no perfil errado no GitHub (conta pessoal em vez da empresa). Qual é a causa mais provável e como corrigir?</p>
+      <div style="background:#fff8e1;border-radius:10px;padding:11px 14px;margin-top:10px;font-size:.86rem;color:#78350f">
+       <strong>💡 Resposta:</strong><br>
+       <strong>Causa:</strong> A chave SSH autenticou corretamente (push funcionou), mas o <ic>git config user.email</ic> estava configurado com o e-mail pessoal (configuração global).<br>
+       <strong>Correção:</strong> Dentro do repositório da empresa, executar <ic>git config user.email "dev@techcorp.com.br"</ic> (sem --global). Para corrigir commits já feitos, usar <ic>git commit --amend --reset-author</ic>.
+      </div>
+     </div>
+
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ SLIDE 11 — RESUMO ═══ -->
+<div class="slide">
+ <div class="slide-content">
+  <div class="sh"><h2>🎯 Resumo e Referência Rápida</h2><p>Oito passos dominados — múltiplas contas sem conflito de identidade!</p></div>
+  <div class="sb">
+   <div class="big" style="font-size:1.15rem;line-height:1.5">
+    SSH autentica o <strong>acesso</strong> · alias no config escolhe a <strong>chave</strong> · URL com alias roteia para a <strong>conta certa</strong> · git config assina o <strong>commit</strong>. 🔑
+   </div>
+
+   <div class="tl-wrap" style="margin-top:16px">
+    <div class="tli"><h4>✅ Passo 1–2 — Verificar e gerar chaves nomeadas</h4><p><ic>ssh-keygen -t ed25519 -C "email" -f ~/.ssh/id_github_&lt;contexto&gt;</ic>. Nunca use <ic>id_rsa</ic> genérico para múltiplas contas.</p></div>
+    <div class="tli d1"><h4>✅ Passo 3 — Adicionar ao ssh-agent</h4><p><ic>eval "$(ssh-agent -s)"</ic> e <ic>ssh-add</ic> para cada chave. Verifique com <ic>ssh-add -l</ic>.</p></div>
+    <div class="tli d2"><h4>✅ Passo 4 — Cadastrar .pub no GitHub</h4><p>Logue na conta correta. Settings → SSH keys → New SSH key. Cole o conteúdo do <ic>.pub</ic>.</p></div>
+    <div class="tli d3"><h4>✅ Passo 5 — Criar ~/.ssh/config com aliases</h4><p>Bloco <ic>Host alias</ic> + <ic>IdentityFile</ic> por conta. Permissão 600. Este é o coração da solução!</p></div>
+    <div class="tli d4"><h4>✅ Passo 6 — Testar: <ic>ssh -T git@alias</ic></h4><p>Cada alias deve responder com o usuário correto. Se errar, revise o IdentityFile e o ssh-agent.</p></div>
+    <div class="tli d5"><h4>✅ Passos 7–8 — Alias na URL + git config local</h4><p>Substitua <ic>github.com</ic> pelo alias nas URLs. Configure <ic>user.email</ic> por repositório, sem <ic>--global</ic>.</p></div>
+   </div>
+
+   <div class="hi d6" style="margin-top:16px;padding:14px 20px">
+    <h3>📋 Referência rápida das 3 contas</h3>
+    <div class="three" style="margin-top:10px;gap:14px">
+     <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px">
+      <p style="font-weight:700;margin-bottom:6px">👤 Pessoal</p>
+      <p style="font-size:.85rem;line-height:1.8;font-family:'Courier New',monospace">user: dev-pessoal<br>email: dev.pessoal@gmail.com<br>chave: id_github_pessoal<br>alias: github-pessoal<br>URL: git@github-pessoal:dev-pessoal/repo.git</p>
+     </div>
+     <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px">
+      <p style="font-weight:700;margin-bottom:6px">🏢 Empresa</p>
+      <p style="font-size:.85rem;line-height:1.8;font-family:'Courier New',monospace">user: dev-empresa<br>email: dev@techcorp.com.br<br>chave: id_github_empresa<br>alias: github-empresa<br>URL: git@github-empresa:dev-empresa/repo.git</p>
+     </div>
+     <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px">
+      <p style="font-weight:700;margin-bottom:6px">🎓 Faculdade</p>
+      <p style="font-size:.85rem;line-height:1.8;font-family:'Courier New',monospace">user: DevFaculdade<br>email: dev@universidade.edu.br<br>chave: id_github_faculdade<br>alias: github-faculdade<br>URL: git@github-faculdade:DevFaculdade/repo.git</p>
+     </div>
+    </div>
+   </div>
+
+   <div style="text-align:center;margin-top:14px">
+    <p style="font-size:1.05rem;font-weight:600;color:var(--dk)">Múltiplas contas configuradas! Sem conflito de identidade. 🔑✅</p>
+    <p style="font-size:.92rem;color:var(--gy);margin-top:6px;font-style:italic">"A chave SSH abre a porta — o alias no config escolhe qual porta abrir." ⚙️</p>
+   </div>
+  </div>
+ </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="nav">
+ <button class="nb" id="PB" onclick="nav(-1)">← Anterior</button>
+ <span class="ctr" id="CTR">1 / 11</span>
+ <button class="nb" id="NB" onclick="nav(1)">Próximo →</button>
+</div>
+
+<script>
+ let cur=0;
+ const slides=document.querySelectorAll('.slide'),tot=slides.length,dotsEl=document.getElementById('DOTS');
+ for(let i=0;i<tot;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>show(i);dotsEl.appendChild(d)}
+ function show(n){
+  slides.forEach(s=>s.classList.remove('active'));
+  cur=(n+tot)%tot; slides[cur].classList.add('active');
+  document.getElementById('CTR').textContent=`${cur+1} / ${tot}`;
+  document.getElementById('PB').disabled=cur===0;
+  document.getElementById('NB').disabled=cur===tot-1;
+  document.getElementById('PF').style.width=((cur+1)/tot*100)+'%';
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  slides[cur].querySelectorAll('.box,.hi,.big,.yel,.tli,.sc,.qz,.cblk,.trtbl,.ct,.flow-row').forEach(el=>{
+   el.style.animation='none';el.style.opacity='0';void el.offsetWidth;el.style.animation='';
+  });
+  slides[cur].querySelectorAll('.ct').forEach(ct=>{
+   const b=ct.querySelectorAll('.ct-btn'),p=ct.querySelectorAll('.ct-panel');
+   b.forEach(x=>x.classList.remove('active'));p.forEach(x=>x.classList.remove('active'));
+   if(b[0])b[0].classList.add('active');if(p[0])p[0].classList.add('active');
+  });
+ }
+ function nav(d){const n=cur+d;if(n>=0&&n<tot)show(n)}
+ function sw(btn,lang,grp){
+  const t=btn.closest('.ct');
+  t.querySelectorAll('.ct-btn').forEach(b=>b.classList.remove('active'));
+  t.querySelectorAll('.ct-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const p=document.getElementById(grp+'-'+lang);if(p)p.classList.add('active');
+ }
+ function chk(qid,correct,ok,no){
+  const sel=document.querySelector(`input[name="${qid}"]:checked`);
+  const fb=document.getElementById(`${qid}-fb`);
+  if(!sel){fb.className='fb no';fb.textContent='⚠️ Selecione uma alternativa.';return}
+  fb.className=sel.value===correct?'fb ok':'fb no';
+  fb.textContent=sel.value===correct?ok:no;
+  document.querySelectorAll(`input[name="${qid}"]`).forEach(i=>i.disabled=true);
+  document.querySelector(`#${qid} .chk`).disabled=true;
+ }
+ document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')nav(-1);if(e.key==='ArrowRight')nav(1)});
+ let tx=0;
+ document.addEventListener('touchstart',e=>tx=e.changedTouches[0].screenX);
+ document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-tx;if(dx<-50)nav(1);if(dx>50)nav(-1)});
+ show(0);
+</script>
+</body>
+</html>

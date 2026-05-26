@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Múltiplas Contas GitHub com SSH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ===========================
+           RESET & BASE
+        =========================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f1117;
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===========================
+           NAVIGATION
+        =========================== */
+        .navigation {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 28px;
+            background: #161b27;
+            border-bottom: 1px solid #1e2a3d;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            background: #1e3a5f;
+            color: #7eb8f7;
+            border: 1px solid #2d5a8a;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { background: #2d5a8a; color: #fff; }
+        .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .slide-counter {
+            font-size: 13px;
+            color: #7eb8f7;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+        }
+
+        /* ===========================
+           PROGRESS BAR
+        =========================== */
+        .progress-bar {
+            height: 3px;
+            background: #1e2a3d;
+            flex-shrink: 0;
+        }
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            transition: width 0.4s ease;
+            width: 6.67%;
+        }
+
+        /* ===========================
+           SLIDES CONTAINER
+        =========================== */
+        .slides-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            height: 100%;
+            padding: 28px 48px;
+            overflow-y: auto;
+            animation: fadeIn 0.35s ease;
+        }
+        .slide.active { display: flex; align-items: flex-start; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-content {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ===========================
+           SLIDE TITLE
+        =========================== */
+        .slide-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #1e3a5f;
+            position: relative;
+        }
+        .slide-title::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: -2px;
+            width: 60px; height: 2px;
+            background: #3b82f6;
+        }
+
+        /* ===========================
+           TITLE SLIDE (SLIDE 1)
+        =========================== */
+        .title-slide {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 100%;
+            padding: 40px 0;
+        }
+
+        .title-logo {
+            width: 120px;
+            margin-bottom: 28px;
+        }
+
+        .main-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #f1f5f9;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 22px;
+            font-weight: 400;
+            color: #7eb8f7;
+            margin-bottom: 24px;
+        }
+        .title-decoration {
+            width: 80px; height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            margin: 0 auto 20px;
+            border-radius: 2px;
+        }
+        .course-info {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 6px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .professor-info {
+            font-size: 16px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* ===========================
+           AGENDA SLIDE
+        =========================== */
+        .agenda-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .agenda-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 16px 20px;
+            animation: slideIn 0.4s ease both;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-16px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .agenda-number {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3b82f6;
+            min-width: 36px;
+        }
+        .agenda-text h3 { font-size: 15px; font-weight: 600; color: #f1f5f9; }
+        .agenda-text p  { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+        /* ===========================
+           TWO COLUMN
+        =========================== */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 18px;
+        }
+        .column {
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 18px 20px;
+        }
+        .column h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7eb8f7;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* ===========================
+           FEATURE / PROS / CONS LISTS
+        =========================== */
+        .feature-list, .pros-list, .cons-list, ul.team-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .feature-list li::before { content: "→ "; color: #3b82f6; font-weight: 600; }
+        .pros-list li::before   { content: "✓ "; color: #22c55e; font-weight: 600; }
+        .cons-list li::before   { content: "⚠ "; color: #f59e0b; font-weight: 600; }
+        .feature-list li, .pros-list li, .cons-list li {
+            font-size: 13.5px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        /* ===========================
+           DEFINITION BOX
+        =========================== */
+        .definition-box {
+            background: #0d1f3c;
+            border-left: 4px solid #3b82f6;
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        .definition-text {
+            font-size: 15px;
+            color: #cbd5e1;
+            line-height: 1.7;
+        }
+        .definition-text strong { color: #7eb8f7; }
+
+        /* ===========================
+           CODE EXAMPLE
+        =========================== */
+        .code-example {
+            background: #0d1117;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-top: 16px;
+        }
+        .code-example h4 {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+        .code-example pre {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-example pre .comment { color: #4b6a8d; }
+        .code-example pre .key     { color: #60a5fa; }
+        .code-example pre .val     { color: #34d399; }
+        .code-example pre .cmd     { color: #f59e0b; }
+        .code-example pre .host    { color: #c084fc; }
+
+        /* ===========================
+           INFO CARDS
+        =========================== */
+        .info-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 18px;
+        }
+        .info-card {
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+        .info-card h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #7eb8f7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .info-card p  { font-size: 13px; color: #94a3b8; margin-bottom: 10px; line-height: 1.6; }
+        .info-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .info-card ul li { font-size: 13px; color: #cbd5e1; }
+        .info-card ul li::before { content: "• "; color: #3b82f6; }
+
+        /* ===========================
+           LAYERS DIAGRAM
+        =========================== */
+        .layers-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            margin: 16px 0;
+        }
+        .layer {
+            width: 100%;
+            max-width: 700px;
+            padding: 14px 20px;
+            text-align: center;
+            border-radius: 8px;
+        }
+        .layer h3 { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+        .layer p  { font-size: 12px; color: #94a3b8; margin-top: 3px; }
+        .layer-1  { background: #1e3a5f; border: 1px solid #2d5a8a; }
+        .layer-2  { background: #1a3350; border: 1px solid #264d73; }
+        .layer-3  { background: #162b40; border: 1px solid #1e3a5f; }
+        .layer-4  { background: #0f1e2e; border: 1px solid #162b40; }
+        .layer-arrow {
+            font-size: 18px;
+            color: #3b82f6;
+            line-height: 1.4;
+        }
+
+        /* ===========================
+           SSH FLOW DIAGRAM
+        =========================== */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 14px 18px;
+            min-width: 130px;
+            text-align: center;
+        }
+        .step-number {
+            width: 30px; height: 30px;
+            background: #1e3a5f;
+            color: #7eb8f7;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .flow-step h4 { font-size: 13px; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; }
+        .flow-step p  { font-size: 11px; color: #64748b; }
+        .flow-arrow   { font-size: 20px; color: #3b82f6; padding: 0 8px; }
+
+        /* ===========================
+           MVC / ACCOUNT BOXES
+        =========================== */
+        .mvc-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 16px 0;
+        }
+        .mvc-box {
+            padding: 16px 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 160px;
+        }
+        .mvc-box h3 { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+        .mvc-box p  { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .mvc-arrow  { font-size: 22px; color: #3b82f6; padding: 0 10px; }
+
+        .account-box-1 { background: #0d1f3c; border: 1px solid #1e3a5f; }
+        .account-box-2 { background: #0d2418; border: 1px solid #14532d; }
+        .account-box-3 { background: #1a0d2e; border: 1px solid #3b1f5e; }
+
+        .accounts-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .account-card {
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+        }
+        .account-card .acct-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        .account-card h3 { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+        .account-card .email { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+        .account-card .key-file {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #60a5fa;
+        }
+
+        /* ===========================
+           CONFIG FILE VISUAL
+        =========================== */
+        .config-visual {
+            background: #0d1117;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 16px;
+        }
+        .config-header-bar {
+            background: #161b27;
+            padding: 8px 16px;
+            font-size: 11px;
+            color: #64748b;
+            font-family: 'Courier New', monospace;
+            border-bottom: 1px solid #1e2a3d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .config-header-bar::before {
+            content: '📄';
+            font-size: 13px;
+        }
+        .config-body {
+            padding: 16px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 2;
+            color: #e2e8f0;
+        }
+        .config-block { margin-bottom: 8px; }
+        .cfg-comment { color: #4b6a8d; }
+        .cfg-key     { color: #60a5fa; }
+        .cfg-val     { color: #34d399; }
+        .cfg-indent  { color: #94a3b8; }
+
+        /* ===========================
+           TEST CARDS
+        =========================== */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 16px;
+        }
+        .test-card {
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .test-cmd {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #f59e0b;
+            margin-bottom: 8px;
+        }
+        .test-result {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #0d2418;
+            border: 1px solid #14532d;
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #22c55e;
+            line-height: 1.6;
+        }
+
+        /* ===========================
+           COMPARISON TABLE
+        =========================== */
+        .comparison-table { overflow-x: auto; margin-top: 16px; }
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .comparison-table th {
+            background: #1e3a5f;
+            color: #7eb8f7;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .comparison-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #1e2a3d;
+            color: #cbd5e1;
+        }
+        .comparison-table tr:hover td { background: #161b27; }
+
+        /* ===========================
+           WARNING / TIP BOXES
+        =========================== */
+        .tip-box {
+            background: #0d1f3c;
+            border-left: 4px solid #3b82f6;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 16px;
+            margin-top: 14px;
+            font-size: 13px;
+            color: #7eb8f7;
+            line-height: 1.6;
+        }
+        .warn-box {
+            background: #1c1500;
+            border-left: 4px solid #f59e0b;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 16px;
+            margin-top: 14px;
+            font-size: 13px;
+            color: #fbbf24;
+            line-height: 1.6;
+        }
+        .success-box {
+            background: #0d2418;
+            border-left: 4px solid #22c55e;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 16px;
+            margin-top: 14px;
+            font-size: 13px;
+            color: #4ade80;
+            line-height: 1.6;
+        }
+
+        /* ===========================
+           CHARACTERISTICS BOX
+        =========================== */
+        .characteristics-box {
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-top: 16px;
+        }
+        .characteristics-box h4 {
+            font-size: 13px;
+            color: #7eb8f7;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .characteristics-box ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .characteristics-box li { font-size: 13px; color: #cbd5e1; line-height: 1.6; }
+        .characteristics-box li::before { content: "→ "; color: #3b82f6; font-weight: 600; }
+
+        /* ===========================
+           DECISION CARDS
+        =========================== */
+        .decision-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .decision-card {
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+        .decision-card h3 { font-size: 15px; font-weight: 600; color: #f1f5f9; margin-bottom: 8px; }
+        .decision-card h4 { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+        .decision-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        .decision-card li { font-size: 13px; color: #cbd5e1; }
+        .decision-card li::before { content: "• "; color: #3b82f6; }
+        .decision-card .example { font-size: 12px; color: #4b6a8d; margin-top: 8px; font-style: italic; }
+
+        /* ===========================
+           CONCLUSION SLIDE
+        =========================== */
+        .key-takeaways h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #7eb8f7;
+            margin-bottom: 16px;
+        }
+        .takeaway-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .takeaway-card {
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .takeaway-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3b82f6;
+            min-width: 28px;
+        }
+        .takeaway-card p { font-size: 13px; color: #cbd5e1; line-height: 1.6; }
+        .takeaway-card strong { color: #f1f5f9; }
+
+        .next-steps { margin-bottom: 24px; }
+        .next-steps h3 { font-size: 15px; font-weight: 600; color: #7eb8f7; margin-bottom: 10px; }
+        .next-steps ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+        .next-steps li { font-size: 13px; color: #cbd5e1; }
+        .next-steps li::before { content: "→ "; color: #3b82f6; font-weight: 600; }
+
+        .thank-you {
+            text-align: center;
+            padding: 20px;
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+        }
+        .thank-you h2 { font-size: 28px; color: #7eb8f7; margin-bottom: 6px; }
+        .thank-you p  { font-size: 15px; color: #64748b; }
+
+        /* ===========================
+           LOGO SVG PLACEHOLDER
+        =========================== */
+        .logo-svg {
+            width: 120px;
+            margin-bottom: 28px;
+        }
+
+        /* ===========================
+           QUICK REF TABLE
+        =========================== */
+        .quick-ref-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 16px;
+        }
+        .qr-card {
+            background: #161b27;
+            border: 1px solid #1e2a3d;
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .qr-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #3b82f6;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .qr-value {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.8;
+        }
+
+        /* scrollbar */
+        .slide::-webkit-scrollbar { width: 6px; }
+        .slide::-webkit-scrollbar-track { background: transparent; }
+        .slide::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVEGAÇÃO -->
+    <div class="navigation">
+        <button id="prevBtn" class="nav-btn" onclick="changeSlide(-1)">← Anterior</button>
+        <span id="slideCounter" class="slide-counter">1 / 15</span>
+        <button id="nextBtn" class="nav-btn" onclick="changeSlide(1)">Próximo →</button>
+    </div>
+
+    <!-- BARRA DE PROGRESSO -->
+    <div class="progress-bar">
+        <div id="progress" class="progress"></div>
+    </div>
+
+    <!-- CONTAINER DOS SLIDES -->
+    <div class="slides-container">
+
+        <!-- SLIDE 1: TÍTULO -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-content title-slide">
+                <!-- Logo UniFil (SVG inline) -->
+                <svg class="logo-svg" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="220" height="60" rx="6" fill="#1e3a5f"/>
+                    <text x="110" y="38" font-family="Inter,sans-serif" font-weight="700" font-size="22" fill="#7eb8f7" text-anchor="middle" dominant-baseline="middle">UniFil</text>
+                </svg>
+                <h1 class="main-title">Múltiplas Contas GitHub</h1>
+                <h2 class="subtitle">Configuração com Chaves SSH</h2>
+                <div class="title-decoration"></div>
+                <p class="course-info">Gerência de Configuração · Controle de Versão · Entrega Contínua</p>
+                <p class="professor-info">Prof. Tiago Galvão</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: AGENDA -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2 class="slide-title">Agenda da Aula</h2>
+                <div class="agenda-container">
+                    <div class="agenda-item" style="animation-delay:0.1s">
+                        <div class="agenda-number">01</div>
+                        <div class="agenda-text">
+                            <h3>O Problema: Múltiplas Identidades</h3>
+                            <p>Por que precisamos separar as contas e o que acontece se não fizermos</p>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="animation-delay:0.2s">
+                        <div class="agenda-number">02</div>
+                        <div class="agenda-text">
+                            <h3>Fundamentos do SSH</h3>
+                            <p>Criptografia assimétrica, par de chaves, como o GitHub autentica</p>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="animation-delay:0.3s">
+                        <div class="agenda-number">03</div>
+                        <div class="agenda-text">
+                            <h3>Configuração Passo a Passo</h3>
+                            <p>Gerar chaves, ssh-agent, cadastro no GitHub, arquivo ~/.ssh/config</p>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="animation-delay:0.4s">
+                        <div class="agenda-number">04</div>
+                        <div class="agenda-text">
+                            <h3>Uso no Dia a Dia</h3>
+                            <p>Aliases nas URLs, identidade dos commits, múltiplos e-mails</p>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="animation-delay:0.5s">
+                        <div class="agenda-number">05</div>
+                        <div class="agenda-text">
+                            <h3>Referência Rápida</h3>
+                            <p>Tabela resumo das 3 contas e checklist de boas práticas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: O PROBLEMA -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h2 class="slide-title">O Problema: Múltiplas Identidades</h2>
+                <div class="definition-box">
+                    <p class="definition-text">
+                        Quando um desenvolvedor possui contas GitHub distintas — pessoal, empresa, docência —
+                        o Git precisa saber <strong>qual chave usar</strong> para cada repositório, sob pena de
+                        autenticar com a conta errada ou falhar com <em>Permission denied (publickey)</em>.
+                    </p>
+                </div>
+                <div class="two-column">
+                    <div class="column">
+                        <h3>Nossas 3 Contas</h3>
+                        <ul class="feature-list">
+                            <li><strong>tdggalvao</strong> — conta pessoal</li>
+                            <li><strong>tdggaltra</strong> — GALTRA empresa</li>
+                            <li><strong>TiagoUnifil</strong> — docência UniFil</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>O que pode dar errado</h3>
+                        <ul class="cons-list">
+                            <li>Push para repo errado</li>
+                            <li>Commits assinados com e-mail incorreto</li>
+                            <li>Permission denied ao clonar</li>
+                            <li>Confusão no histórico de contribuições</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="warn-box">
+                    ⚠️ <strong>Atenção:</strong> Se você tiver apenas uma chave SSH genérica (<code>id_rsa</code>), o GitHub sempre vai autenticar como a conta que tem essa chave cadastrada — independente do repositório.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: O QUE É SSH -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2 class="slide-title">Fundamentos do SSH</h2>
+                <div class="definition-box">
+                    <p class="definition-text">
+                        <strong>SSH (Secure Shell)</strong> usa criptografia assimétrica: um par de chaves
+                        matematicamente relacionadas — <strong>chave privada</strong> (fica no seu computador)
+                        e <strong>chave pública</strong> (cadastrada no GitHub). Apenas quem possui a chave
+                        privada consegue provar identidade.
+                    </p>
+                </div>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <h4>Seu Mac</h4>
+                        <p>Chave privada<br><code style="font-size:10px;color:#60a5fa">~/.ssh/id_*</code></p>
+                    </div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <h4>git push</h4>
+                        <p>SSH handshake<br>desafio criptográfico</p>
+                    </div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <h4>GitHub</h4>
+                        <p>Valida com<br>chave pública</p>
+                    </div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <h4>Acesso</h4>
+                        <p>Autorizado para<br>a conta correta</p>
+                    </div>
+                </div>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <h4>Algoritmo Recomendado</h4>
+                        <p>Use <strong>ed25519</strong> — mais moderno, seguro e com chaves menores que o RSA.</p>
+                        <ul>
+                            <li>Curva elíptica (ECC)</li>
+                            <li>Resistente a ataques modernos</li>
+                            <li>Padrão atual do GitHub</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h4>SSH vs HTTPS</h4>
+                        <ul>
+                            <li>SSH: sem senha a cada push</li>
+                            <li>SSH: mais seguro em CI/CD</li>
+                            <li>HTTPS: exige token (PAT)</li>
+                            <li>SSH: ideal para múltiplas contas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: NOSSAS CONTAS -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h2 class="slide-title">Mapeamento das Contas</h2>
+                <div class="accounts-grid-3">
+                    <div class="account-card account-box-1">
+                        <div class="acct-label">Conta 1 — Pessoal</div>
+                        <h3>tdggalvao</h3>
+                        <div class="email">tdggalvao@gmail.com</div>
+                        <div class="key-file">id_github_pessoal</div>
+                    </div>
+                    <div class="account-card account-box-2">
+                        <div class="acct-label">Conta 2 — GALTRA</div>
+                        <h3>tdggaltra</h3>
+                        <div class="email">tdggalvao1@gmail.com</div>
+                        <div class="key-file">id_github_galtra</div>
+                    </div>
+                    <div class="account-card account-box-3">
+                        <div class="acct-label">Conta 3 — UniFil</div>
+                        <h3>TiagoUnifil</h3>
+                        <div class="email">tdggalvao2@gmail.com</div>
+                        <div class="key-file">id_github_unifil</div>
+                    </div>
+                </div>
+                <div class="characteristics-box" style="margin-top:20px">
+                    <h4>Regra de nomenclatura das chaves</h4>
+                    <ul>
+                        <li>Nome explícito: <code style="color:#60a5fa">id_github_&lt;contexto&gt;</code> — nunca use <code>id_rsa</code> genérico</li>
+                        <li>Flag <code>-f</code> define o caminho e nome do arquivo gerado</li>
+                        <li>Flag <code>-C</code> é apenas um comentário — use o e-mail da conta</li>
+                        <li>Cada conta no GitHub recebe <strong>apenas a sua</strong> chave pública (.pub)</li>
+                    </ul>
+                </div>
+                <div class="tip-box">
+                    💡 <strong>Dica:</strong> Mantenha uma planilha ou README privado mapeando conta ↔ chave ↔ e-mail. Com o tempo é fácil perder o controle.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: PASSO 1 - VERIFICAR -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 1 — Verificar Chaves Existentes</h2>
+                <p style="font-size:14px;color:#94a3b8;margin-bottom:16px;">
+                    Antes de gerar novas chaves, verifique o que já existe para não sobrescrever acidentalmente.
+                </p>
+                <div class="code-example">
+                    <h4>Terminal</h4>
+                    <pre><span class="cmd">ls -al ~/.ssh</span>
+
+<span class="comment"># Saída típica se já houver chaves:</span>
+-rw-------  1 tiago  staff  411  id_github_pessoal
+-rw-r--r--  1 tiago  staff  104  id_github_pessoal.pub
+-rw-------  1 tiago  staff  411  id_github_galtra
+-rw-r--r--  1 tiago  staff  104  id_github_galtra.pub</pre>
+                </div>
+                <div class="two-column" style="margin-top:20px">
+                    <div class="column">
+                        <h3>Arquivo Privado</h3>
+                        <ul class="feature-list">
+                            <li>Sem extensão: <code style="color:#f59e0b">id_github_pessoal</code></li>
+                            <li>Permissão <code>600</code> (somente dono lê)</li>
+                            <li>Nunca compartilhe ou exponha</li>
+                            <li>Fica apenas no seu computador</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Arquivo Público</h3>
+                        <ul class="feature-list">
+                            <li>Extensão <code style="color:#34d399">.pub</code></li>
+                            <li>Permissão <code>644</code></li>
+                            <li>É o que você cola no GitHub</li>
+                            <li>Pode ser compartilhado sem risco</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="warn-box">
+                    ⚠️ Se existir um <code>id_rsa</code> ou <code>id_ed25519</code> genérico (sem nome de conta), não apague — apenas crie as novas chaves nomeadas nos próximos passos.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: PASSO 2 - GERAR CHAVES -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 2 — Gerar uma Chave por Conta</h2>
+                <p style="font-size:14px;color:#94a3b8;margin-bottom:16px;">
+                    Execute um comando para cada conta. A flag <code style="color:#60a5fa">-f</code> nomeia o arquivo,
+                    <code style="color:#60a5fa">-t ed25519</code> define o algoritmo e <code style="color:#60a5fa">-C</code> é o comentário (e-mail).
+                </p>
+                <div class="code-example">
+                    <h4>Terminal — gerar as 3 chaves</h4>
+                    <pre><span class="comment"># Conta pessoal — tdggalvao</span>
+<span class="cmd">ssh-keygen</span> -t ed25519 -C <span class="val">"tdggalvao@gmail.com"</span> -f ~/.ssh/<span class="key">id_github_pessoal</span>
+
+<span class="comment"># Conta GALTRA — tdggaltra</span>
+<span class="cmd">ssh-keygen</span> -t ed25519 -C <span class="val">"tdggalvao1@gmail.com"</span> -f ~/.ssh/<span class="key">id_github_galtra</span>
+
+<span class="comment"># Conta UniFil — TiagoUnifil</span>
+<span class="cmd">ssh-keygen</span> -t ed25519 -C <span class="val">"tdggalvao2@gmail.com"</span> -f ~/.ssh/<span class="key">id_github_unifil</span></pre>
+                </div>
+                <div class="tip-box" style="margin-top:16px">
+                    💡 Cada comando pedirá uma <strong>passphrase</strong> (senha da chave). Em ambiente de desenvolvimento controlado pode deixar vazia pressionando Enter. Em produção/CI, configure a passphrase.
+                </div>
+                <div class="characteristics-box" style="margin-top:14px">
+                    <h4>Resultado — arquivos gerados</h4>
+                    <ul>
+                        <li><code style="color:#f59e0b">~/.ssh/id_github_pessoal</code> &nbsp;&amp;&nbsp; <code style="color:#34d399">id_github_pessoal.pub</code></li>
+                        <li><code style="color:#f59e0b">~/.ssh/id_github_galtra</code> &nbsp;&amp;&nbsp; <code style="color:#34d399">id_github_galtra.pub</code></li>
+                        <li><code style="color:#f59e0b">~/.ssh/id_github_unifil</code> &nbsp;&amp;&nbsp; <code style="color:#34d399">id_github_unifil.pub</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: PASSO 3 - SSH-AGENT -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 3 — Adicionar ao ssh-agent</h2>
+                <div class="definition-box">
+                    <p class="definition-text">
+                        O <strong>ssh-agent</strong> é um processo em segundo plano que armazena as chaves
+                        descriptografadas em memória, evitando que você redigite a passphrase a cada operação Git.
+                    </p>
+                </div>
+                <div class="code-example">
+                    <h4>Terminal</h4>
+                    <pre><span class="comment"># 1. Iniciar o agente (se não estiver rodando)</span>
+<span class="cmd">eval "$(ssh-agent -s)"</span>
+<span class="comment"># Saída esperada: Agent pid 12345</span>
+
+<span class="comment"># 2. Adicionar as três chaves</span>
+<span class="cmd">ssh-add</span> ~/.ssh/<span class="key">id_github_pessoal</span>
+<span class="cmd">ssh-add</span> ~/.ssh/<span class="key">id_github_galtra</span>
+<span class="cmd">ssh-add</span> ~/.ssh/<span class="key">id_github_unifil</span>
+
+<span class="comment"># 3. Confirmar que as 3 foram carregadas</span>
+<span class="cmd">ssh-add -l</span></pre>
+                </div>
+                <div class="two-column" style="margin-top:16px">
+                    <div class="column">
+                        <h3>macOS — persistência</h3>
+                        <ul class="feature-list">
+                            <li>Use <code>--apple-use-keychain</code></li>
+                            <li>Salva no Keychain do sistema</li>
+                            <li>Persiste após reinicialização</li>
+                            <li>Configure em <code>~/.ssh/config</code> com <code>AddKeysToAgent yes</code></li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Comandos úteis</h3>
+                        <ul class="feature-list">
+                            <li><code>ssh-add -l</code> — listar chaves</li>
+                            <li><code>ssh-add -D</code> — remover todas</li>
+                            <li><code>ssh-add -d arquivo</code> — remover uma</li>
+                            <li><code>ssh-agent -k</code> — matar o agente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: PASSO 4 - CADASTRAR NO GITHUB -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 4 — Cadastrar no GitHub</h2>
+                <p style="font-size:14px;color:#94a3b8;margin-bottom:16px;">
+                    Repita para cada uma das 3 contas. Copie a chave pública e adicione em
+                    <strong>Settings → SSH and GPG keys → New SSH key</strong>.
+                </p>
+                <div class="code-example">
+                    <h4>Copiar a chave pública de cada conta</h4>
+                    <pre><span class="comment"># Copiar para o terminal (cole no GitHub)</span>
+<span class="cmd">cat</span> ~/.ssh/id_github_pessoal.pub  <span class="comment">  # → logue como tdggalvao</span>
+<span class="cmd">cat</span> ~/.ssh/id_github_galtra.pub   <span class="comment">  # → logue como tdggaltra</span>
+<span class="cmd">cat</span> ~/.ssh/id_github_unifil.pub   <span class="comment">  # → logue como TiagoUnifil</span>
+
+<span class="comment"># macOS: copiar direto para a área de transferência</span>
+<span class="cmd">pbcopy</span> &lt; ~/.ssh/id_github_galtra.pub</pre>
+                </div>
+                <div class="layers-diagram" style="margin-top:16px">
+                    <div class="layer layer-1"><h3>① Faça login na conta GitHub correta</h3><p>github.com → seu avatar → Settings</p></div>
+                    <div class="layer-arrow">↓</div>
+                    <div class="layer layer-2"><h3>② Acesse SSH and GPG keys</h3><p>Menu lateral → SSH and GPG keys → New SSH key</p></div>
+                    <div class="layer-arrow">↓</div>
+                    <div class="layer layer-3"><h3>③ Cole a chave pública (.pub)</h3><p>Dê um título descritivo, ex: "MacBook Pro Tiago 2025"</p></div>
+                    <div class="layer-arrow">↓</div>
+                    <div class="layer layer-4"><h3>④ Clique em Add SSH key</h3><p>Repita para as outras 2 contas</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: PASSO 5 - CONFIG -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 5 — Criar o ~/.ssh/config</h2>
+                <div class="definition-box">
+                    <p class="definition-text">
+                        Este é o <strong>coração da solução</strong>. O arquivo <code>config</code> define
+                        <em>aliases</em> para o GitHub: cada alias aponta para uma chave SSH diferente.
+                        Quando o Git usa a URL <code>git@alias-aqui:...</code>, o SSH sabe exatamente qual
+                        chave (e portanto qual conta) usar.
+                    </p>
+                </div>
+                <div class="config-visual">
+                    <div class="config-header-bar">~/.ssh/config</div>
+                    <div class="config-body">
+                        <div class="config-block">
+                            <span class="cfg-comment"># ── Conta pessoal — tdggalvao ──────────────────</span><br>
+                            <span class="cfg-key">Host</span> <span class="cfg-val">github-pessoal</span><br>
+                            &nbsp;&nbsp;<span class="cfg-indent">HostName</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;github.com<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">User</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;git<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">IdentityFile</span>&nbsp;~/.ssh/id_github_pessoal<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">AddKeysToAgent</span> yes
+                        </div>
+                        <div class="config-block" style="margin-top:12px">
+                            <span class="cfg-comment"># ── Conta GALTRA — tdggaltra ────────────────────</span><br>
+                            <span class="cfg-key">Host</span> <span class="cfg-val">github-galtra</span><br>
+                            &nbsp;&nbsp;<span class="cfg-indent">HostName</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;github.com<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">User</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;git<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">IdentityFile</span>&nbsp;~/.ssh/id_github_galtra<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">AddKeysToAgent</span> yes
+                        </div>
+                        <div class="config-block" style="margin-top:12px">
+                            <span class="cfg-comment"># ── Conta UniFil — TiagoUnifil ──────────────────</span><br>
+                            <span class="cfg-key">Host</span> <span class="cfg-val">github-unifil</span><br>
+                            &nbsp;&nbsp;<span class="cfg-indent">HostName</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;github.com<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">User</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;git<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">IdentityFile</span>&nbsp;~/.ssh/id_github_unifil<br>
+                            &nbsp;&nbsp;<span class="cfg-indent">AddKeysToAgent</span> yes
+                        </div>
+                    </div>
+                </div>
+                <div class="tip-box" style="margin-top:14px">
+                    💡 O campo <strong>Host</strong> é um apelido livre. O <strong>HostName</strong> é sempre <code>github.com</code>. A mágica é que cada alias usa um <code>IdentityFile</code> diferente.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: PASSO 6 - TESTAR -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 6 — Testar as Conexões</h2>
+                <p style="font-size:14px;color:#94a3b8;margin-bottom:16px;">
+                    Cada teste deve autenticar com o usuário correto da conta correspondente.
+                </p>
+                <div class="code-example">
+                    <h4>Terminal — testar os 3 aliases</h4>
+                    <pre><span class="cmd">ssh -T</span> git@<span class="host">github-pessoal</span>
+<span class="cmd">ssh -T</span> git@<span class="host">github-galtra</span>
+<span class="cmd">ssh -T</span> git@<span class="host">github-unifil</span></pre>
+                </div>
+                <div class="test-grid">
+                    <div class="test-card">
+                        <div class="test-cmd">ssh -T git@github-pessoal</div>
+                        <div class="test-result">Hi tdggalvao!<br>You've successfully<br>authenticated...</div>
+                    </div>
+                    <div class="test-card">
+                        <div class="test-cmd">ssh -T git@github-galtra</div>
+                        <div class="test-result">Hi tdggaltra!<br>You've successfully<br>authenticated...</div>
+                    </div>
+                    <div class="test-card">
+                        <div class="test-cmd">ssh -T git@github-unifil</div>
+                        <div class="test-result">Hi TiagoUnifil!<br>You've successfully<br>authenticated...</div>
+                    </div>
+                </div>
+                <div class="warn-box" style="margin-top:14px">
+                    ⚠️ Se aparecer o usuário errado ou <em>Permission denied (publickey)</em>, volte ao Passo 3 e verifique se a chave correta foi adicionada ao ssh-agent. Use <code>ssh-add -l</code> para inspecionar.
+                </div>
+                <div class="tip-box" style="margin-top:10px">
+                    💡 Na primeira conexão o terminal perguntará sobre a autenticidade do host. Digite <strong>yes</strong> para aceitar e adicionar <code>github.com</code> ao <code>known_hosts</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: PASSO 7 - USAR ALIAS NAS URLS -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 7 — Usar o Alias nas URLs</h2>
+                <div class="definition-box">
+                    <p class="definition-text">
+                        A regra é simples: na URL do repositório, substitua <code>github.com</code>
+                        pelo alias definido no <code>config</code>. O Git vai usar o alias para
+                        rotear para a chave e conta corretas.
+                    </p>
+                </div>
+                <div class="code-example">
+                    <h4>Clonar repositórios</h4>
+                    <pre><span class="comment"># Repo pessoal</span>
+<span class="cmd">git clone</span> git@<span class="host">github-pessoal</span>:tdggalvao/meu-projeto.git
+
+<span class="comment"># Repo GALTRA</span>
+<span class="cmd">git clone</span> git@<span class="host">github-galtra</span>:tdggaltra/crmpro.git
+
+<span class="comment"># Repo UniFil</span>
+<span class="cmd">git clone</span> git@<span class="host">github-unifil</span>:TiagoUnifil/aulas.git</pre>
+                </div>
+                <div class="code-example" style="margin-top:14px">
+                    <h4>Corrigir remote em repositório já existente</h4>
+                    <pre><span class="comment"># Ver a URL atual</span>
+<span class="cmd">git remote -v</span>
+
+<span class="comment"># Trocar para o alias correto</span>
+<span class="cmd">git remote set-url</span> origin git@<span class="host">github-galtra</span>:tdggaltra/crmpro.git
+
+<span class="comment"># Verificar</span>
+<span class="cmd">git remote -v</span></pre>
+                </div>
+                <div class="tip-box" style="margin-top:14px">
+                    💡 <strong>Padrão da URL:</strong> <code>git@&lt;ALIAS&gt;:&lt;usuario&gt;/&lt;repositorio&gt;.git</code> — o <code>ALIAS</code> substitui <code>github.com</code>, o resto permanece igual.
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: PASSO 8 - IDENTIDADE DOS COMMITS -->
+        <div class="slide" data-slide="13">
+            <div class="slide-content">
+                <h2 class="slide-title">Passo 8 — Identidade dos Commits</h2>
+                <div class="definition-box">
+                    <p class="definition-text">
+                        A chave SSH autentica o <strong>acesso</strong>, mas o nome e e-mail do commit são
+                        metadados separados. Configure-os <strong>por repositório</strong> (sem <code>--global</code>)
+                        para garantir que cada commit seja assinado com a identidade correta.
+                    </p>
+                </div>
+                <div class="code-example">
+                    <h4>Configurar identidade por repositório</h4>
+                    <pre><span class="comment"># Dentro do repo da GALTRA</span>
+<span class="cmd">git config</span> user.name  <span class="val">"Tiago Galvão"</span>
+<span class="cmd">git config</span> user.email <span class="val">"tdggalvao1@gmail.com"</span>
+
+<span class="comment"># Dentro do repo da UniFil</span>
+<span class="cmd">git config</span> user.name  <span class="val">"Prof. Tiago Galvão"</span>
+<span class="cmd">git config</span> user.email <span class="val">"tdggalvao2@gmail.com"</span>
+
+<span class="comment"># Verificar a configuração local</span>
+<span class="cmd">git config --list --local</span></pre>
+                </div>
+                <div class="two-column" style="margin-top:16px">
+                    <div class="column">
+                        <h3>Config local vs global</h3>
+                        <ul class="feature-list">
+                            <li><code>--local</code>: só para o repo atual</li>
+                            <li><code>--global</code>: padrão para todos os repos</li>
+                            <li>Local <strong>sobrepõe</strong> o global</li>
+                            <li>Arquivo: <code>.git/config</code></li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>⚠️ Evite --global</h3>
+                        <ul class="cons-list">
+                            <li>Define um e-mail padrão global</li>
+                            <li>Pode vazar para repos da conta errada</li>
+                            <li>Commits aparecem no perfil incorreto</li>
+                            <li>Difícil auditar depois</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: BÔNUS - MÚLTIPLOS E-MAILS -->
+        <div class="slide" data-slide="14">
+            <div class="slide-content">
+                <h2 class="slide-title">Bônus — Múltiplos E-mails em uma Conta</h2>
+                <div class="definition-box">
+                    <p class="definition-text">
+                        O GitHub permite associar <strong>vários e-mails</strong> a uma única conta.
+                        Isso serve para que commits feitos com e-mails diferentes ainda apareçam
+                        vinculados ao seu perfil.
+                    </p>
+                </div>
+                <div class="layers-diagram">
+                    <div class="layer layer-1"><h3>E-mail primário</h3><p>tdggalvao@gmail.com — recebe notificações, é exibido no perfil público</p></div>
+                    <div class="layer-arrow">+</div>
+                    <div class="layer layer-2"><h3>E-mails secundários</h3><p>tiago@galtra.com.br, tiago@codingtoyou.com — apenas associam commits ao perfil</p></div>
+                    <div class="layer-arrow">↓</div>
+                    <div class="layer layer-3"><h3>Resultado</h3><p>Commits de qualquer e-mail vinculado aparecem no seu histórico de contribuições</p></div>
+                </div>
+                <div class="two-column" style="margin-top:16px">
+                    <div class="column">
+                        <h3>Como adicionar</h3>
+                        <ul class="feature-list">
+                            <li>GitHub → Settings → Emails</li>
+                            <li>Add email address</li>
+                            <li>Confirme pelo link enviado</li>
+                            <li>Marque como verificado</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>O que muda</h3>
+                        <ul class="feature-list">
+                            <li>Commits do e-mail alternativo aparecem no perfil</li>
+                            <li>A <strong>chave SSH</strong> ainda define qual conta faz o push</li>
+                            <li>O e-mail do commit é só metadado</li>
+                            <li>Útil para projetos open source pessoais</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: CONCLUSÃO -->
+        <div class="slide" data-slide="15">
+            <div class="slide-content conclusion-slide">
+                <h2 class="slide-title">Conclusão</h2>
+                <div class="key-takeaways">
+                    <h3>Principais Pontos:</h3>
+                    <div class="takeaway-grid">
+                        <div class="takeaway-card">
+                            <div class="takeaway-number">01</div>
+                            <p>Cada conta precisa de uma <strong>chave SSH nomeada</strong> — nunca use <code>id_rsa</code> genérico para múltiplas contas</p>
+                        </div>
+                        <div class="takeaway-card">
+                            <div class="takeaway-number">02</div>
+                            <p>O <strong>~/.ssh/config</strong> é o coração da solução — define aliases que roteiam para a chave correta</p>
+                        </div>
+                        <div class="takeaway-card">
+                            <div class="takeaway-number">03</div>
+                            <p>Substitua <code>github.com</code> pelo <strong>alias</strong> nas URLs — isso é tudo que muda no uso diário</p>
+                        </div>
+                        <div class="takeaway-card">
+                            <div class="takeaway-number">04</div>
+                            <p><strong>SSH autentica o acesso</strong> · <strong>git config user.email</strong> assina o commit — são camadas independentes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="next-steps">
+                    <h3>Referência rápida das 3 contas:</h3>
+                    <div class="quick-ref-grid">
+                        <div class="qr-card">
+                            <div class="qr-label">tdggalvao · pessoal</div>
+                            <div class="qr-value">git@github-pessoal:<br>tdggalvao/repo.git<br><br>E-mail: tdggalvao@gmail.com</div>
+                        </div>
+                        <div class="qr-card">
+                            <div class="qr-label">tdggaltra · galtra</div>
+                            <div class="qr-value">git@github-galtra:<br>tdggaltra/repo.git<br><br>E-mail: tdggalvao1@gmail.com</div>
+                        </div>
+                        <div class="qr-card">
+                            <div class="qr-label">TiagoUnifil · unifil</div>
+                            <div class="qr-value">git@github-unifil:<br>TiagoUnifil/repo.git<br><br>E-mail: tdggalvao2@gmail.com</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="thank-you" style="margin-top:20px">
+                    <h2>Obrigado!</h2>
+                    <p>Dúvidas?</p>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- fim slides-container -->
+
+    <script>
+        const totalSlides = 15;
+        let currentSlide = 1;
+
+        function changeSlide(dir) {
+            const next = currentSlide + dir;
+            if (next < 1 || next > totalSlides) return;
+            document.querySelector(`.slide[data-slide="${currentSlide}"]`).classList.remove('active');
+            currentSlide = next;
+            document.querySelector(`.slide[data-slide="${currentSlide}"]`).classList.add('active');
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('slideCounter').textContent = `${currentSlide} / ${totalSlides}`;
+            document.getElementById('progress').style.width = `${(currentSlide / totalSlides) * 100}%`;
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+            if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>

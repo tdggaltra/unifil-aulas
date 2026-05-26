@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 05 – Transformações Lineares II | Tópicos em Álgebra Linear</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+    <style>
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --orange:#FF8C00; --accent:#FF6B35;
+            --dark:#1e1e2e;   --light:#f5f5f5;
+            --white:#ffffff;  --green:#27ae60;
+            --blue:#2980b9;   --red:#e74c3c;
+            --yellow:#f39c12; --purple:#8e44ad;
+            --teal:#16a085;   --code-bg:#1a1a2e;
+        }
+        ::-webkit-scrollbar{width:6px;height:6px;}
+        ::-webkit-scrollbar-track{background:#1e1e2e;}
+        ::-webkit-scrollbar-thumb{background:var(--orange);border-radius:3px;}
+
+        body{
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:linear-gradient(135deg,var(--dark) 0%,#12121e 100%);
+            overflow:hidden; color:var(--dark);
+        }
+        .katex{font-size:1.05em;}
+        .katex-display{margin:.35em 0 !important;overflow-x:auto;}
+
+        /* ── CALC BLOCK ── */
+        .calc-block{
+            background:#f6f6fa; border-left:5px solid var(--orange);
+            border-radius:10px; padding:14px 20px;
+            line-height:2.2; font-size:.94rem; overflow-x:auto;
+        }
+        .calc-block p{margin:0;}
+        .calc-block.green{border-color:var(--green);background:#eafaf1;}
+        .calc-block.blue {border-color:var(--blue); background:#e8f4fd;}
+        .calc-block.purple{border-color:var(--purple);background:#f5eef8;}
+
+        /* ── PIPELINE (A → [T]_B) ── */
+        .pipeline{
+            display:flex; align-items:center; gap:10px;
+            background:var(--code-bg); border-radius:12px;
+            padding:16px 22px; overflow-x:auto;
+            border-left:5px solid var(--orange);
+            color:#e0e0f0; flex-wrap:wrap;
+        }
+        .pipeline .step-box{
+            background:#2a2a3e; border:1px solid #3a3a5e;
+            border-radius:8px; padding:10px 16px;
+            text-align:center; font-size:.88rem; line-height:1.6;
+            flex-shrink:0;
+        }
+        .pipeline .step-box .label{
+            font-size:.7rem; color:var(--orange); text-transform:uppercase;
+            letter-spacing:.5px; margin-bottom:4px;
+        }
+        .pipeline .arrow{color:var(--orange);font-size:1.4rem;font-weight:700;flex-shrink:0;}
+
+        /* ── SLIDE SYSTEM ── */
+        .presentation{width:100vw;height:100vh;position:relative;}
+        .slide{
+            width:100%;height:100%; position:absolute;top:0;left:0;
+            display:none;opacity:0;transform:translateX(60px);
+            transition:opacity .5s ease,transform .5s ease;
+        }
+        .slide.active{display:flex;opacity:1;transform:translateX(0);}
+        .slide-content{
+            background:var(--white); width:92%;max-width:1280px;height:88%;
+            margin:auto; border-radius:20px;
+            box-shadow:0 24px 70px rgba(0,0,0,.5);
+            display:flex;flex-direction:column;overflow:hidden;
+        }
+
+        /* ── HEADER ── */
+        .slide-header{
+            background:linear-gradient(135deg,var(--orange) 0%,var(--accent) 100%);
+            padding:22px 48px 28px;color:white;position:relative;flex-shrink:0;
+        }
+        .slide-header::after{
+            content:'';position:absolute;bottom:-18px;left:0;right:0;height:36px;
+            background:linear-gradient(135deg,var(--orange),var(--accent));
+            clip-path:polygon(0 0,100% 0,100% 100%,0 0);z-index:1;
+        }
+        .slide-header h2{font-size:1.6rem;font-weight:600;margin-top:4px;}
+        .slide-header p{font-size:1rem;opacity:.9;margin-top:4px;}
+        .slide-header .tag{
+            display:inline-block;background:rgba(255,255,255,.25);
+            border:1px solid rgba(255,255,255,.4);border-radius:20px;
+            padding:3px 14px;font-size:.82rem;margin-bottom:6px;
+        }
+
+        /* ── BODY ── */
+        .slide-body{
+            padding:42px 48px 24px;flex:1;overflow-y:auto;
+            display:flex;flex-direction:column;gap:14px;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+        .anim{opacity:0;}
+        .slide.active .anim{animation:fadeInUp .5s ease forwards;}
+        .slide.active .d1{animation-delay:.08s;} .slide.active .d2{animation-delay:.18s;}
+        .slide.active .d3{animation-delay:.28s;} .slide.active .d4{animation-delay:.38s;}
+        .slide.active .d5{animation-delay:.48s;}
+
+        /* ── UTILITIES ── */
+        .hi {color:var(--orange);font-weight:700;} .grn{color:var(--green); font-weight:700;}
+        .red{color:var(--red);   font-weight:700;} .blu{color:var(--blue);  font-weight:700;}
+        .pur{color:var(--purple);font-weight:700;} .tel{color:var(--teal);  font-weight:700;}
+
+        /* ── BOXES ── */
+        .box{background:#fff8f0;border-left:5px solid var(--orange);border-radius:10px;padding:15px 20px;font-size:.97rem;line-height:1.75;}
+        .box.blue  {background:#e8f4fd;border-color:var(--blue);}
+        .box.green {background:#eafaf1;border-color:var(--green);}
+        .box.red   {background:#fdf2f2;border-color:var(--red);}
+        .box.yellow{background:#fef9e7;border-color:var(--yellow);}
+        .box.purple{background:#f5eef8;border-color:var(--purple);}
+        .box.teal  {background:#e8f8f5;border-color:var(--teal);}
+
+        /* ── CARDS ── */
+        .cards{display:flex;gap:14px;flex-wrap:wrap;}
+        .card{
+            flex:1;min-width:180px;background:var(--light);
+            border-radius:14px;padding:16px 14px;border-top:4px solid var(--orange);
+            box-shadow:0 4px 14px rgba(0,0,0,.07);font-size:.92rem;line-height:1.65;
+        }
+        .card h4{color:var(--orange);font-size:.98rem;margin-bottom:7px;}
+        .card.blue  {border-color:var(--blue);}  .card.blue h4  {color:var(--blue);}
+        .card.green {border-color:var(--green);} .card.green h4 {color:var(--green);}
+        .card.red   {border-color:var(--red);}   .card.red h4   {color:var(--red);}
+        .card.yellow{border-color:var(--yellow);}.card.yellow h4{color:var(--yellow);}
+        .card.purple{border-color:var(--purple);}.card.purple h4{color:var(--purple);}
+        .card.teal  {border-color:var(--teal);}  .card.teal h4  {color:var(--teal);}
+
+        /* ── LAYOUTS ── */
+        .two-col  {display:grid;grid-template-columns:1fr 1fr;    gap:18px;}
+        .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+        /* ── TABLE ── */
+        .tbl{width:100%;border-collapse:collapse;font-size:.92rem;}
+        .tbl th{background:var(--orange);color:white;padding:10px 14px;text-align:left;}
+        .tbl td{padding:8px 14px;border-bottom:1px solid #eee;vertical-align:middle;}
+        .tbl tr:nth-child(even) td{background:#fdf6ec;}
+        .tbl tr:hover td{background:#fff0d0;}
+
+        /* ── STEPS ── */
+        .steps{counter-reset:step;display:flex;flex-direction:column;gap:10px;}
+        .step{counter-increment:step;display:flex;align-items:flex-start;gap:13px;font-size:.94rem;line-height:1.7;}
+        .step::before{
+            content:counter(step);background:var(--orange);color:white;
+            width:27px;height:27px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:.84rem;flex-shrink:0;margin-top:2px;
+        }
+
+        /* ── FORMULA (dark) ── */
+        .formula{
+            background:linear-gradient(135deg,#1a1a2e,#2a2a3e);
+            border:2px solid var(--orange);border-radius:14px;
+            padding:18px 24px;text-align:center;color:#f0f0ff;
+        }
+        .formula .title{color:var(--orange);font-size:.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:700;}
+        .formula .katex{color:#f0f0ff;}
+        .formula.blue  {border-color:var(--blue);}   .formula.blue .title  {color:#7fb3d3;}
+        .formula.green {border-color:var(--green);}  .formula.green .title {color:#7dcea0;}
+        .formula.purple{border-color:var(--purple);} .formula.purple .title{color:#c39bd3;}
+        .formula.teal  {border-color:var(--teal);}   .formula.teal .title  {color:#76d7c4;}
+
+        /* ── LISTS ── */
+        ul.custom{list-style:none;padding:0;}
+        ul.custom li{padding:5px 0 5px 28px;position:relative;font-size:.94rem;line-height:1.65;}
+        ul.custom li::before{content:'▸';position:absolute;left:0;color:var(--orange);top:7px;}
+        ul.custom li.check::before{content:'✓';color:var(--green);}
+        ul.custom li.key::before  {content:'▸';color:var(--orange);font-weight:700;}
+        ul.custom li.warn::before {content:'▲';color:var(--yellow);font-weight:700;}
+
+        /* ── SECTION TITLE ── */
+        .section-title{display:flex;align-items:center;gap:10px;font-size:1.05rem;font-weight:700;color:var(--dark);}
+        .section-title::before{content:'';width:6px;height:22px;background:var(--orange);border-radius:3px;}
+        .divider{height:2px;background:linear-gradient(90deg,var(--orange),transparent);border-radius:2px;}
+
+        /* ── COVER ── */
+        .cover .slide-content{
+            background:linear-gradient(155deg,#1e1e2e 0%,#2d1a00 60%,#1e1e2e 100%);
+            justify-content:center;align-items:center;text-align:center;
+            position:relative;overflow:hidden;
+        }
+        .cover .slide-content::before{content:'';position:absolute;top:-80px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,140,0,.18) 0%,transparent 70%);}
+        .cover .slide-content::after {content:'';position:absolute;bottom:-60px;left:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,53,.14) 0%,transparent 70%);}
+        .cover-inner{z-index:2;padding:40px;}
+        .cover-badge{background:rgba(255,140,0,.2);border:1px solid rgba(255,140,0,.5);color:var(--orange);border-radius:30px;padding:6px 22px;font-size:.9rem;letter-spacing:1px;display:inline-block;margin-bottom:24px;}
+        .cover h1{font-size:3rem;font-weight:800;color:white;line-height:1.2;margin-bottom:12px;}
+        .cover h1 span{color:var(--orange);}
+        .cover h2{font-size:1.5rem;color:rgba(255,255,255,.75);font-weight:400;margin-bottom:32px;}
+        .cover-meta{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;}
+        .cover-meta-item{color:rgba(255,255,255,.6);font-size:.92rem;}
+        .cover-meta-item strong{color:var(--orange);display:block;font-size:1rem;}
+
+        /* ── NAV ── */
+        .progress-bar{position:fixed;bottom:0;left:0;height:4px;background:linear-gradient(90deg,var(--orange),var(--accent));transition:width .4s ease;z-index:100;}
+        .slide-counter{position:fixed;bottom:14px;right:20px;color:rgba(255,255,255,.55);font-size:.82rem;font-family:'Courier New',monospace;z-index:100;}
+        .slide-counter span{color:var(--orange);font-weight:700;}
+        .nav-btn{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,140,0,.18);border:1px solid rgba(255,140,0,.4);color:var(--orange);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:background .2s;z-index:100;user-select:none;}
+        .nav-btn:hover{background:rgba(255,140,0,.35);}
+        #btn-prev{left:14px;} #btn-next{right:14px;}
+    </style>
+</head>
+<body>
+<div class="presentation">
+
+<!-- ══════ SLIDE 1 — CAPA ══════ -->
+<div class="slide cover active" id="slide-1">
+    <div class="slide-content">
+        <div class="cover-inner">
+            <div class="cover-badge anim d1">📐 Ensino Superior · Engenharia</div>
+            <h1 class="anim d2">Tópicos em<br><span>Álgebra Linear</span></h1>
+            <h2 class="anim d3">Aula 05 · Transformações Lineares II</h2>
+            <div class="cover-meta anim d4">
+                <div class="cover-meta-item"><strong>📅 Data</strong>26 de maio de 2026</div>
+                <div class="cover-meta-item"><strong>⏱ Carga</strong>3 horas-aula</div>
+                <div class="cover-meta-item"><strong>📚 Bloco</strong>2 de 5 · Transformações</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 2 — GABARITO AULA 04 ══════ -->
+<div class="slide" id="slide-2">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Revisão · Aula 04</div>
+            <h2>Gabarito — Tarefa de Transformações Lineares I</h2>
+            <p>Representação matricial, núcleo e Teorema da Dimensão</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div>
+                    <div class="section-title">(a) \(T(x,y)=(3x-y,\;2x+y)\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p><strong>Matriz via imagens da base canônica:</strong></p>
+                        <p>\(T(\mathbf{e}_1)=T(1,0)=(3,2)\) → col. 1</p>
+                        <p>\(T(\mathbf{e}_2)=T(0,1)=(-1,1)\) → col. 2</p>
+                        <p>$$A=\begin{bmatrix}3&-1\\2&1\end{bmatrix}$$</p>
+                        <p><strong>Cálculo de \(T(2,1)\) — dois caminhos:</strong></p>
+                        <p>Direto: \((3\cdot2-1,\;2\cdot2+1)={\color{#FF8C00}(5,5)}\)</p>
+                        <p>Via matriz: \(\begin{bmatrix}3&-1\\2&1\end{bmatrix}\begin{bmatrix}2\\1\end{bmatrix}=\begin{bmatrix}6-1\\4+1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}5\\5\end{bmatrix}}\) ✓</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-title">(b) \(T(x,y)=(x+y,\;2x-y,\;x)\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>\(B=\begin{bmatrix}1&1\\2&-1\\1&0\end{bmatrix}\in\mathbb{R}^{3\times2},\quad\text{posto}(B)=2\)</p>
+                        <p><strong>Núcleo:</strong> resolva \(B\mathbf{x}=\mathbf{0}\):</p>
+                        <p>\(\det\begin{bmatrix}1&1\\2&-1\end{bmatrix}=-3\neq0\) → colunas LI</p>
+                        <p>\(\ker(T)=\{\mathbf{0}\}\), \(\dim\ker=0\) → \(T\) é injetora ✓</p>
+                        <p><strong>Imagem:</strong> \(\dim\,\text{Im}=\text{posto}(B)=2\)</p>
+                        <p><strong>Teorema da Dimensão:</strong> \(0+2=2=n\) ✓</p>
+                    </div>
+                </div>
+            </div>
+            <div class="box blue anim d2">
+                🎯 <strong>Hoje:</strong> se a representação matricial de \(T\) depende da base escolhida, <em>qual é a melhor base para trabalhar?</em> A resposta é o conceito de <span class="blu">mudança de base</span> e <span class="blu">matrizes semelhantes</span> — que nos levará, ao final, à motivação dos autovalores.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 3 — COORDENADAS EM UMA BASE ══════ -->
+<div class="slide" id="slide-3">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Mudança de Base</div>
+            <h2>Coordenadas em uma Base</h2>
+            <p>O mesmo vetor, representações diferentes — dependendo de quem olha</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Definição — Coordenadas na Base \(\mathcal{B}\)</div>
+                Se \(\mathcal{B}=\{\mathbf{b}_1,\mathbf{b}_2,\ldots,\mathbf{b}_n\}\) é base de \(\mathbb{R}^n\), todo vetor \(\mathbf{v}\) se escreve de forma <strong>única</strong> como:
+                $$\mathbf{v} = c_1\mathbf{b}_1 + c_2\mathbf{b}_2 + \cdots + c_n\mathbf{b}_n$$
+                O vetor de coordenadas na base \(\mathcal{B}\) é \([\mathbf{v}]_\mathcal{B} = \begin{bmatrix}c_1\\c_2\\\vdots\\c_n\end{bmatrix}\)
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Exemplo concreto em \(\mathbb{R}^2\)</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>Base \(\mathcal{B}=\{\mathbf{b}_1,\mathbf{b}_2\}=\left\{\begin{bmatrix}1\\1\end{bmatrix},\begin{bmatrix}1\\-1\end{bmatrix}\right\}\)</p>
+                        <p>Expresse \(\mathbf{v}=\begin{bmatrix}3\\1\end{bmatrix}\) na base \(\mathcal{B}\):</p>
+                        <p>Resolva \(c_1\mathbf{b}_1+c_2\mathbf{b}_2=\mathbf{v}\):</p>
+                        <p>$$\begin{bmatrix}1&1\\1&-1\end{bmatrix}\begin{bmatrix}c_1\\c_2\end{bmatrix}=\begin{bmatrix}3\\1\end{bmatrix}$$</p>
+                        <p>\(c_1+c_2=3\) e \(c_1-c_2=1\) → \(c_1={\color{#FF8C00}2},\;c_2={\color{#FF8C00}1}\)</p>
+                        <p>Portanto: \([\mathbf{v}]_\mathcal{B}=\begin{bmatrix}2\\1\end{bmatrix}\)</p>
+                        <p>Verificação: \(2\begin{bmatrix}1\\1\end{bmatrix}+1\begin{bmatrix}1\\-1\end{bmatrix}=\begin{bmatrix}3\\1\end{bmatrix}\) ✓</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="box">
+                        <strong>Interpretação:</strong> na base canônica \(\mathcal{E}\), o vetor é \(\begin{bmatrix}3\\1\end{bmatrix}\). Na base \(\mathcal{B}\), o <em>mesmo ponto</em> tem coordenadas \(\begin{bmatrix}2\\1\end{bmatrix}\). São descrições diferentes do <strong>mesmo objeto geométrico</strong>.
+                    </div>
+                    <div class="box blue">
+                        <strong>Analogia:</strong> é como descrever a localização de Londrina — em coordenadas cartesianas globais ou em coordenadas relativas ao campus da UniFil. O ponto é o mesmo; o sistema de referência muda.
+                    </div>
+                    <div class="box yellow">
+                        <strong>Caso especial:</strong> na base canônica \(\mathcal{E}=\{\mathbf{e}_1,\mathbf{e}_2\}\), as coordenadas de \(\mathbf{v}\) são sempre as suas componentes: \([\mathbf{v}]_\mathcal{E}=\mathbf{v}\).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 4 — MATRIZ DE MUDANÇA DE BASE ══════ -->
+<div class="slide" id="slide-4">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Mudança de Base</div>
+            <h2>Matriz de Mudança de Base</h2>
+            <p>A ferramenta que converte coordenadas entre dois sistemas de referência</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Matriz de Mudança de Base \(P\)</div>
+                $$P = \bigl[\,\mathbf{b}_1 \;\big|\; \mathbf{b}_2 \;\big|\; \cdots \;\big|\; \mathbf{b}_n\,\bigr]$$
+                Colunas de \(P\) = vetores da nova base \(\mathcal{B}\) escritos em coordenadas canônicas.
+                $$\mathbf{v} = P\,[\mathbf{v}]_\mathcal{B} \qquad \Longleftrightarrow \qquad [\mathbf{v}]_\mathcal{B} = P^{-1}\mathbf{v}$$
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">Cálculo com o exemplo anterior</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>\(\mathcal{B}=\left\{\begin{bmatrix}1\\1\end{bmatrix},\begin{bmatrix}1\\-1\end{bmatrix}\right\}\)</p>
+                        <p>$$P=\begin{bmatrix}1&1\\1&-1\end{bmatrix},\quad\det(P)=-2$$</p>
+                        <p>$$P^{-1}=\frac{1}{-2}\begin{bmatrix}-1&-1\\-1&1\end{bmatrix}=\begin{bmatrix}\frac{1}{2}&\frac{1}{2}\\\frac{1}{2}&-\frac{1}{2}\end{bmatrix}$$</p>
+                        <p>Convertendo \(\mathbf{v}=\begin{bmatrix}3\\1\end{bmatrix}\):</p>
+                        <p>$$[\mathbf{v}]_\mathcal{B}=P^{-1}\mathbf{v}=\begin{bmatrix}\frac{1}{2}&\frac{1}{2}\\\frac{1}{2}&-\frac{1}{2}\end{bmatrix}\begin{bmatrix}3\\1\end{bmatrix}=\begin{bmatrix}2\\1\end{bmatrix}$$ ✓</p>
+                        <p>Voltando: \(P\begin{bmatrix}2\\1\end{bmatrix}=\begin{bmatrix}1&1\\1&-1\end{bmatrix}\begin{bmatrix}2\\1\end{bmatrix}=\begin{bmatrix}3\\1\end{bmatrix}\) ✓</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="three-col" style="gap:10px;">
+                        <div class="card green">
+                            <h4>\(\mathcal{B}\to\mathcal{E}\)</h4>
+                            Multiplica por \(P\):<br>
+                            \(\mathbf{v}=P[\mathbf{v}]_\mathcal{B}\)
+                        </div>
+                        <div class="card blue">
+                            <h4>\(\mathcal{E}\to\mathcal{B}\)</h4>
+                            Multiplica por \(P^{-1}\):<br>
+                            \([\mathbf{v}]_\mathcal{B}=P^{-1}\mathbf{v}\)
+                        </div>
+                        <div class="card purple">
+                            <h4>\(\mathcal{B}_1\to\mathcal{B}_2\)</h4>
+                            \([v]_{\mathcal{B}_2}=P_2^{-1}P_1[v]_{\mathcal{B}_1}\)
+                        </div>
+                    </div>
+                    <div class="box yellow">
+                        <strong>Condição:</strong> \(P\) é invertível \(\Leftrightarrow\) os vetores \(\mathbf{b}_1,\ldots,\mathbf{b}_n\) são linearmente independentes \(\Leftrightarrow\) formam uma base. Sempre verificar que \(\det(P)\neq0\) antes de prosseguir!
+                    </div>
+                    <div class="box">
+                        <strong>Número de colunas e linhas:</strong> \(P\in\mathbb{R}^{n\times n}\) quando a nova base tem \(n\) vetores em \(\mathbb{R}^n\) — ou seja, sempre que bases do mesmo espaço.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 5 — [T]_B = P⁻¹AP ══════ -->
+<div class="slide" id="slide-5">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Mudança de Base</div>
+            <h2>Representação de \(T\) em uma Nova Base</h2>
+            <p>A fórmula \([T]_\mathcal{B} = P^{-1}AP\) — o mesmo operador, lentes diferentes</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Teorema da Mudança de Base para Transformações</div>
+                Se \(A\) é a matriz de \(T\) na base canônica e \(P\) é a matriz de mudança para a base \(\mathcal{B}\), então a matriz de \(T\) <strong>na base \(\mathcal{B}\)</strong> é:
+                $$[T]_\mathcal{B} = P^{-1}AP$$
+            </div>
+            <div class="anim d2">
+                <div class="pipeline">
+                    <div class="step-box">
+                        <div class="label">Entrada em \(\mathcal{B}\)</div>
+                        \([\mathbf{x}]_\mathcal{B}\)
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step-box" style="border-color:var(--orange);">
+                        <div class="label">Converte para \(\mathcal{E}\)</div>
+                        \(\mathbf{x}=P\,[\mathbf{x}]_\mathcal{B}\)
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step-box" style="border-color:var(--blue);">
+                        <div class="label">Aplica \(T\) em \(\mathcal{E}\)</div>
+                        \(A\mathbf{x}=AP\,[\mathbf{x}]_\mathcal{B}\)
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step-box" style="border-color:var(--green);">
+                        <div class="label">Converte para \(\mathcal{B}\)</div>
+                        \(P^{-1}AP\,[\mathbf{x}]_\mathcal{B}\)
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step-box" style="border-color:var(--green);">
+                        <div class="label">Saída em \(\mathcal{B}\)</div>
+                        \([T(\mathbf{x})]_\mathcal{B}\)
+                    </div>
+                </div>
+            </div>
+            <div class="two-col anim d3">
+                <div class="box">
+                    <strong>Por que isso importa?</strong><br><br>
+                    A mesma transformação \(T\) pode ter matrizes muito diferentes dependendo da base escolhida. Algumas bases revelam a <em>estrutura essencial</em> de \(T\) — matrizes diagonais, triangulares, ou com blocos simples. A escolha certa da base <strong>simplifica radicalmente</strong> os cálculos.
+                </div>
+                <div class="box blue">
+                    <strong>Pergunta-chave:</strong><br><br>
+                    Existe alguma base \(\mathcal{B}\) em que \([T]_\mathcal{B}\) seja <strong>diagonal</strong>?<br><br>
+                    Sim — quando os vetores da base são os <span class="blu">autovetores</span> de \(T\). Essa é a ponte para o Bloco 3!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 6 — EXEMPLO COMPLETO [T]_B ══════ -->
+<div class="slide" id="slide-6">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Mudança de Base</div>
+            <h2>Exemplo Completo — \([T]_\mathcal{B} = P^{-1}AP\)</h2>
+            <p>De matriz densa a diagonal: a base certa simplifica tudo</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Seja \(T:\mathbb{R}^2\to\mathbb{R}^2\) com matriz \(A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\) na base canônica.
+                Calcule \([T]_\mathcal{B}\) na base \(\mathcal{B}=\left\{\mathbf{b}_1=\begin{bmatrix}1\\1\end{bmatrix},\;\mathbf{b}_2=\begin{bmatrix}1\\-1\end{bmatrix}\right\}\).
+            </div>
+            <div class="two-col anim d2">
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Monte \(P\) com as colunas \(\mathbf{b}_1\) e \(\mathbf{b}_2\):</strong>
+                            $$P=\begin{bmatrix}1&1\\1&-1\end{bmatrix},\quad\det(P)=-2\neq0\;\checkmark$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Calcule \(P^{-1}\) (fórmula \(2\times2\)):</strong>
+                            $$P^{-1}=\frac{1}{-2}\begin{bmatrix}-1&-1\\-1&1\end{bmatrix}=\begin{bmatrix}\tfrac{1}{2}&\tfrac{1}{2}\\\tfrac{1}{2}&-\tfrac{1}{2}\end{bmatrix}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Calcule \(AP\):</strong>
+                            $$AP=\begin{bmatrix}2&1\\1&2\end{bmatrix}\begin{bmatrix}1&1\\1&-1\end{bmatrix}=\begin{bmatrix}3&1\\3&-1\end{bmatrix}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Calcule \([T]_\mathcal{B}=P^{-1}(AP)\):</strong>
+                            $$\begin{bmatrix}\tfrac{1}{2}&\tfrac{1}{2}\\\tfrac{1}{2}&-\tfrac{1}{2}\end{bmatrix}\begin{bmatrix}3&1\\3&-1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}3&0\\0&1\end{bmatrix}}$$
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="box green">
+                        <strong>Resultado extraordinário!</strong><br>
+                        $$A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\;\xrightarrow{P^{-1}(\cdot)P}\;[T]_\mathcal{B}=\begin{bmatrix}{\color{#FF8C00}3}&0\\0&{\color{#FF8C00}1}\end{bmatrix}$$
+                        Na base \(\mathcal{B}\), \(T\) é simplesmente uma <strong>dilatação</strong>: escala por 3 na direção de \(\mathbf{b}_1\) e por 1 na direção de \(\mathbf{b}_2\).
+                    </div>
+                    <div class="box blue">
+                        <strong>Por que ficou diagonal?</strong><br>
+                        Porque \(\mathbf{b}_1=(1,1)\) e \(\mathbf{b}_2=(1,-1)\) são os <em>autovetores</em> de \(A\), com autovalores 3 e 1:
+                        <br>
+                        \(A\mathbf{b}_1=\begin{bmatrix}3\\3\end{bmatrix}=3\mathbf{b}_1\) ✓
+                        &nbsp;&nbsp;
+                        \(A\mathbf{b}_2=\begin{bmatrix}1\\-1\end{bmatrix}=1\cdot\mathbf{b}_2\) ✓
+                    </div>
+                    <div class="box yellow">
+                        Os valores 3 e 1 na diagonal são os <span class="hi">autovalores</span> de \(A\) — o tema central do Bloco 3!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 7 — MATRIZES SEMELHANTES ══════ -->
+<div class="slide" id="slide-7">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Bloco 2 · Matrizes Semelhantes</div>
+            <h2>Matrizes Semelhantes</h2>
+            <p>Diferentes representações da mesma transformação linear — e o que elas preservam</p>
+        </div>
+        <div class="slide-body">
+            <div class="formula anim d1">
+                <div class="title">Definição — Matrizes Semelhantes</div>
+                \(A\) e \(B\) são <strong>semelhantes</strong> se existe matriz invertível \(P\) tal que:
+                $$B = P^{-1}AP$$
+                Escrevemos \(A\sim B\). Matrizes semelhantes representam a <em>mesma transformação linear</em> em bases diferentes.
+            </div>
+            <div class="anim d2">
+                <table class="tbl">
+                    <thead><tr><th>Invariante</th><th>Significado</th><th>Verificação no exemplo</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>\(\det(A)=\det(B)\)</strong></td>
+                            <td>O determinante não depende da base</td>
+                            <td>\(\det\begin{bmatrix}2&1\\1&2\end{bmatrix}=3=\det\begin{bmatrix}3&0\\0&1\end{bmatrix}\) ✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>\(\text{tr}(A)=\text{tr}(B)\)</strong></td>
+                            <td>A soma dos elementos da diagonal é invariante</td>
+                            <td>\(2+2=4=3+1\) ✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Autovalores iguais</strong></td>
+                            <td>O polinômio característico é o mesmo</td>
+                            <td>Ambas têm \(\lambda_1=3,\;\lambda_2=1\) ✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>\(\text{posto}(A)=\text{posto}(B)\)</strong></td>
+                            <td>A dimensão da imagem é invariante</td>
+                            <td>Ambas têm posto 2 (matrizes invertíveis) ✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>\(A^n\sim B^n\)</strong></td>
+                            <td>Potências de matrizes semelhantes são semelhantes</td>
+                            <td>\(A^n = P B^n P^{-1}\) — computa-se via diagonal!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="two-col anim d3">
+                <div class="box green">
+                    <strong>Potência via diagonal:</strong><br>
+                    Se \(A\sim D\) (diagonal), então \(A^n = P D^n P^{-1}\), e \(D^n\) é simplesmente a diagonal elevada elemento a elemento:
+                    $$\begin{bmatrix}3&0\\0&1\end{bmatrix}^n=\begin{bmatrix}3^n&0\\0&1^n\end{bmatrix}=\begin{bmatrix}3^n&0\\0&1\end{bmatrix}$$
+                    Calcular \(A^{100}\) pela diagonal custa \(\mathcal{O}(n)\) — sem nenhuma multiplicação de matrizes!
+                </div>
+                <div class="box red">
+                    <strong>Atenção — o que NÃO é invariante:</strong><br>
+                    Os elementos individuais de \(A\) mudam com a base. Em particular:
+                    <ul style="margin-top:8px;padding-left:16px;line-height:1.9;">
+                        <li>Os vetores da base canônica não são preservados</li>
+                        <li>A soma das linhas não é invariante</li>
+                        <li>A simetria pode ser perdida (\(A\) simétrica, \(B=P^{-1}AP\) não necessariamente)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 8 — EXEMPLO: R90° EM BASE B ══════ -->
+<div class="slide" id="slide-8">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Prática · Mudança de Base</div>
+            <h2>Rotação \(90°\) em Outra Base</h2>
+            <p>A mesma transformação geométrica, lida por um observador diferente</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Calcule a representação da rotação \(R_{90°}\) na base \(\mathcal{B}=\left\{\begin{bmatrix}1\\1\end{bmatrix},\begin{bmatrix}1\\-1\end{bmatrix}\right\}\).
+            </div>
+            <div class="two-col anim d2">
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Dados já conhecidos:</strong>
+                            $$R_{90°}=\begin{bmatrix}0&-1\\1&0\end{bmatrix},\quad P=\begin{bmatrix}1&1\\1&-1\end{bmatrix},\quad P^{-1}=\begin{bmatrix}\tfrac{1}{2}&\tfrac{1}{2}\\\tfrac{1}{2}&-\tfrac{1}{2}\end{bmatrix}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Calcule \(R_{90°}\cdot P\):</strong>
+                            $$\begin{bmatrix}0&-1\\1&0\end{bmatrix}\begin{bmatrix}1&1\\1&-1\end{bmatrix}=\begin{bmatrix}-1&1\\1&1\end{bmatrix}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Calcule \([R_{90°}]_\mathcal{B}=P^{-1}(R_{90°}P)\):</strong>
+                            $$\begin{bmatrix}\tfrac{1}{2}&\tfrac{1}{2}\\\tfrac{1}{2}&-\tfrac{1}{2}\end{bmatrix}\begin{bmatrix}-1&1\\1&1\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}0&1\\-1&0\end{bmatrix}}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Verificação dos invariantes:</strong>
+                            <div class="calc-block" style="margin-top:6px;font-size:.88rem;">
+                                <p>\(\det(R_{90°})=0\cdot0-(-1)\cdot1=1\)</p>
+                                <p>\(\det([R_{90°}]_\mathcal{B})=0\cdot0-1\cdot(-1)=1\) ✓</p>
+                                <p>\(\text{tr}(R_{90°})=0+0=0=\text{tr}([R_{90°}]_\mathcal{B})\) ✓</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:14px;">
+                    <div class="box green">
+                        <strong>Interpretação:</strong>
+                        $$R_{90°}=\begin{bmatrix}0&-1\\1&0\end{bmatrix}\;\sim\;\begin{bmatrix}0&1\\-1&0\end{bmatrix}=[R_{90°}]_\mathcal{B}$$
+                        O observador na base \(\mathcal{B}\) vê a mesma rotação de \(90°\) mas com uma matriz diferente — pois seus eixos de referência são \(\mathbf{b}_1=(1,1)\) e \(\mathbf{b}_2=(1,-1)\) em vez de \(\mathbf{e}_1\) e \(\mathbf{e}_2\).
+                    </div>
+                    <div class="box blue">
+                        <strong>Nota importante:</strong><br>
+                        \(R_{90°}\) <em>não</em> se diagonaliza sobre \(\mathbb{R}\) — ela não tem autovalores reais (seus autovalores são \(\pm i\), complexos). Por isso, qualquer base real produz uma matriz que <em>não é diagonal</em> — apenas semelhante à original.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 9 — POTÊNCIA DE MATRIZES VIA DIAGONAL ══════ -->
+<div class="slide" id="slide-9">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Aplicação · Matrizes Semelhantes</div>
+            <h2>Potência de Matrizes via Diagonalização</h2>
+            <p>Calcular \(A^n\) eficientemente — aplicação em modelos dinâmicos</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1">
+                Usando \(A=\begin{bmatrix}2&1\\1&2\end{bmatrix}\sim D=\begin{bmatrix}3&0\\0&1\end{bmatrix}\) via \(P=\begin{bmatrix}1&1\\1&-1\end{bmatrix}\), calcule \(A^3\).
+            </div>
+            <div class="two-col anim d2">
+                <div class="steps">
+                    <div class="step">
+                        <div>
+                            <strong>Fórmula geral para potência:</strong>
+                            $$A^n = P\,D^n\,P^{-1}$$
+                            <div class="calc-block" style="margin-top:6px;font-size:.88rem;">
+                                <p>Demonstração: \(A=PDP^{-1}\)</p>
+                                <p>\(A^2=PDP^{-1}\cdot PDP^{-1}=PD^2P^{-1}\)</p>
+                                <p>\(A^3=PD^2P^{-1}\cdot PDP^{-1}=PD^3P^{-1}\quad\blacksquare\)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Calcule \(D^3\) — basta elevar a diagonal:</strong>
+                            $$D^3=\begin{bmatrix}3^3&0\\0&1^3\end{bmatrix}=\begin{bmatrix}27&0\\0&1\end{bmatrix}$$
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Monte \(A^3=P D^3 P^{-1}\):</strong>
+                            <div class="calc-block" style="margin-top:6px;font-size:.88rem;">
+                                <p>\(P D^3=\begin{bmatrix}1&1\\1&-1\end{bmatrix}\begin{bmatrix}27&0\\0&1\end{bmatrix}=\begin{bmatrix}27&1\\27&-1\end{bmatrix}\)</p>
+                                <p>\(A^3=\begin{bmatrix}27&1\\27&-1\end{bmatrix}\begin{bmatrix}\frac{1}{2}&\frac{1}{2}\\\frac{1}{2}&-\frac{1}{2}\end{bmatrix}={\color{#FF8C00}\begin{bmatrix}14&13\\13&14\end{bmatrix}}\)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div>
+                            <strong>Verificação direta \(A^2\cdot A\):</strong>
+                            <div class="calc-block" style="margin-top:6px;font-size:.88rem;">
+                                <p>\(A^2=\begin{bmatrix}2&1\\1&2\end{bmatrix}^2=\begin{bmatrix}5&4\\4&5\end{bmatrix}\)</p>
+                                <p>\(A^3=A^2\cdot A=\begin{bmatrix}5&4\\4&5\end{bmatrix}\begin{bmatrix}2&1\\1&2\end{bmatrix}=\begin{bmatrix}14&13\\13&14\end{bmatrix}\) ✓</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="box green">
+                        <strong>Eficiência computacional:</strong><br>
+                        Calcular \(A^{100}\) diretamente exigiria 99 multiplicações de matrizes.<br>
+                        Via diagonal: eleva-se 3 e 1 à potência 100 — \(\mathcal{O}(1)\) — e faz-se apenas 2 multiplicações de matrizes!<br><br>
+                        $$A^{100}=P\begin{bmatrix}3^{100}&0\\0&1\end{bmatrix}P^{-1}$$
+                    </div>
+                    <div class="box blue">
+                        <strong>Aplicação em Engenharia:</strong><br>
+                        Modelos de vibração estrutural descrevem o estado de um sistema no instante \(n\) como \(\mathbf{x}_n=A^n\mathbf{x}_0\). Com diagonalização, o estado em qualquer instante futuro é calculado analiticamente — sem iterar passo a passo.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 10 — MOTIVAÇÃO AUTOVALORES ══════ -->
+<div class="slide" id="slide-10">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Ponte para o Bloco 3</div>
+            <h2>Quando \([T]_\mathcal{B}\) é Diagonal? — Motivação para Autovalores</h2>
+            <p>A pergunta fundamental que abre o próximo bloco</p>
+        </div>
+        <div class="slide-body">
+            <div class="box anim d1" style="font-size:1.05rem;">
+                <strong>Pergunta central:</strong> dada \(T:\mathbb{R}^n\to\mathbb{R}^n\), existe uma base \(\mathcal{B}\) tal que \([T]_\mathcal{B}\) seja diagonal?<br>
+                Resposta: sim, se e somente se existem \(n\) vetores LI que \(T\) apenas <em>escala</em> — sem rotacionar.
+            </div>
+            <div class="two-col anim d2">
+                <div>
+                    <div class="section-title">A condição geométrica</div>
+                    <div class="calc-block" style="margin-top:10px;">
+                        <p>Um vetor \(\mathbf{v}\neq\mathbf{0}\) é <strong>autovetor</strong> de \(T\) se:</p>
+                        <p>$$T(\mathbf{v})=\lambda\,\mathbf{v}\quad\text{para algum escalar }\lambda$$</p>
+                        <p>O escalar \(\lambda\) é o correspondente <strong>autovalor</strong>.</p>
+                        <p style="margin-top:8px;">No exemplo da Aula 04:</p>
+                        <p>\(A\mathbf{b}_1=\begin{bmatrix}2&1\\1&2\end{bmatrix}\begin{bmatrix}1\\1\end{bmatrix}=\begin{bmatrix}3\\3\end{bmatrix}={\color{#FF8C00}3}\begin{bmatrix}1\\1\end{bmatrix}\)</p>
+                        <p>→ \(\mathbf{b}_1=(1,1)\) é autovetor com autovalor \(\lambda_1={\color{#FF8C00}3}\)</p>
+                        <p style="margin-top:6px;">\(A\mathbf{b}_2=\begin{bmatrix}2&1\\1&2\end{bmatrix}\begin{bmatrix}1\\-1\end{bmatrix}=\begin{bmatrix}1\\-1\end{bmatrix}={\color{#FF8C00}1}\begin{bmatrix}1\\-1\end{bmatrix}\)</p>
+                        <p>→ \(\mathbf{b}_2=(1,-1)\) é autovetor com autovalor \(\lambda_2={\color{#FF8C00}1}\)</p>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div class="box green">
+                        <strong>Conclusão:</strong> quando os vetores da base \(\mathcal{B}\) são <em>autovetores</em> de \(T\), a fórmula \([T]_\mathcal{B}=P^{-1}AP\) produz a <strong>diagonal dos autovalores</strong>:
+                        $$[T]_\mathcal{B}=\begin{bmatrix}\lambda_1&0&\cdots&0\\0&\lambda_2&\cdots&0\\\vdots&&\ddots&\vdots\\0&0&\cdots&\lambda_n\end{bmatrix}$$
+                    </div>
+                    <div class="cards" style="gap:10px;">
+                        <div class="card blue">
+                            <h4>Próxima aula</h4>
+                            Como encontrar os autovalores \(\lambda\) e autovetores \(\mathbf{v}\) para qualquer matriz?
+                        </div>
+                        <div class="card">
+                            <h4>Equação característica</h4>
+                            \(\det(A-\lambda I)=0\)<br>
+                            Um polinômio de grau \(n\) em \(\lambda\).
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 11 — CONSOLIDAÇÃO ══════ -->
+<div class="slide" id="slide-11">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Consolidação · Bloco 2</div>
+            <h2>Visão Geral do Bloco 2 — Transformações Lineares</h2>
+            <p>Os conceitos encadeados das Aulas 04 e 05</p>
+        </div>
+        <div class="slide-body">
+            <div class="anim d1">
+                <table class="tbl">
+                    <thead><tr><th>Conceito</th><th>Definição / Fórmula</th><th>Aula</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Transformação Linear</strong></td><td>\(T(\alpha\mathbf{u}+\beta\mathbf{v})=\alpha T(\mathbf{u})+\beta T(\mathbf{v})\)</td><td>04</td></tr>
+                        <tr><td><strong>Representação Matricial</strong></td><td>\(T(\mathbf{x})=A\mathbf{x}\), colunas de \(A\)=imagens da base canônica</td><td>04</td></tr>
+                        <tr><td><strong>Núcleo e Imagem</strong></td><td>\(\ker(T)=\{A\mathbf{x}=\mathbf{0}\}\), \(\,\text{Im}(T)=\text{col}(A)\)</td><td>04</td></tr>
+                        <tr><td><strong>Teorema da Dimensão</strong></td><td>\(\dim\ker(T)+\dim\text{Im}(T)=n\)</td><td>04</td></tr>
+                        <tr><td><strong>Mudança de Base</strong></td><td>\([\mathbf{v}]_\mathcal{B}=P^{-1}\mathbf{v}\), \(\;\mathbf{v}=P[\mathbf{v}]_\mathcal{B}\)</td><td>05</td></tr>
+                        <tr><td><strong>TL em nova base</strong></td><td>\([T]_\mathcal{B}=P^{-1}AP\)</td><td>05</td></tr>
+                        <tr><td><strong>Matrizes Semelhantes</strong></td><td>\(A\sim B\;\Leftrightarrow\; B=P^{-1}AP\) — mesmos autovalores, traço e det</td><td>05</td></tr>
+                        <tr><td><strong>Potência eficiente</strong></td><td>\(A^n=PD^nP^{-1}\) quando \(A\) é diagonalizável</td><td>05</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="box blue anim d2" style="font-size:.97rem;">
+                <strong>A cadeia lógica dos 5 blocos do curso:</strong><br>
+                <span style="font-family:'Courier New',monospace;font-size:.88rem;color:#2980b9;">
+                Determinantes (01–02) → Inversa (03) → TL + Bases (04–05) → Autovalores (07–08) → Diagonalização (09–10)
+                </span><br><br>
+                Cada bloco usa diretamente os resultados do anterior. A Avaliação 1 (próxima aula) cobre os blocos 1 e 2.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════ SLIDE 12 — RESUMO + PRÓXIMA AULA ══════ -->
+<div class="slide" id="slide-12">
+    <div class="slide-content">
+        <div class="slide-header">
+            <div class="tag">Encerramento</div>
+            <h2>Resumo da Aula 05</h2>
+            <p>O que aprendemos hoje — e o que vem a seguir</p>
+        </div>
+        <div class="slide-body">
+            <div class="two-col anim d1">
+                <div>
+                    <div class="section-title">Conquistas de Hoje ✅</div>
+                    <ul class="custom" style="margin-top:10px;">
+                        <li class="check">Coordenadas na base \(\mathcal{B}\) — o mesmo vetor em diferentes referenciais</li>
+                        <li class="check">Matriz de mudança de base \(P\) — colunas = vetores de \(\mathcal{B}\)</li>
+                        <li class="check">Conversões: \(\mathbf{v}=P[\mathbf{v}]_\mathcal{B}\) e \([\mathbf{v}]_\mathcal{B}=P^{-1}\mathbf{v}\)</li>
+                        <li class="check">Representação de \(T\) em nova base: \([T]_\mathcal{B}=P^{-1}AP\)</li>
+                        <li class="check">Exemplo completo: \(A\) densa → diagonal via base de autovetores</li>
+                        <li class="check">Matrizes semelhantes: invariantes (det, traço, autovalores, posto)</li>
+                        <li class="check">Potência \(A^n=PD^nP^{-1}\) — aplicação em modelos dinâmicos</li>
+                        <li class="check">Motivação para autovalores: base que diagonaliza \(T\)</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="section-title">Próxima Aula — 02/06 ⚠️</div>
+                    <div class="box red" style="margin-top:10px;">
+                        <strong>Avaliação 1 — Blocos 1 e 2</strong><br><br>
+                        Conteúdo coberto:<br>
+                        · Determinantes: Sarrus, Laplace, propriedades<br>
+                        · Regra de Cramer<br>
+                        · Matriz Inversa: adjunta e Gauss-Jordan<br>
+                        · Transformações Lineares: definição, representação matricial, núcleo e imagem<br>
+                        · Mudança de base e matrizes semelhantes<br><br>
+                        <strong>Formato:</strong> questões dissertativas com cálculo completo.
+                    </div>
+                    <div class="box" style="margin-top:12px;">
+                        📚 <strong>Tarefa de revisão:</strong><br>
+                        (a) Seja \(T(x,y)=(x-y,\;x+y)\). Encontre \([T]_\mathcal{B}\) para \(\mathcal{B}=\{(1,0),(1,1)\}\).<br>
+                        (b) Se \(A\sim B\) e \(\det(A)=6\), \(\text{tr}(A)=5\), quais são \(\det(B)\) e \(\text{tr}(B)\)?
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /presentation -->
+
+<div class="progress-bar" id="progress"></div>
+<div class="slide-counter">Slide <span id="cur">1</span> / <span id="tot"></span></div>
+<div class="nav-btn" id="btn-prev">&#8592;</div>
+<div class="nav-btn" id="btn-next">&#8594;</div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const total  = slides.length;
+    let   cur    = 0;
+    document.getElementById('tot').textContent = total;
+
+    function goTo(n) {
+        slides[cur].classList.remove('active');
+        cur = (n + total) % total;
+        slides[cur].classList.add('active');
+        document.getElementById('cur').textContent = cur + 1;
+        document.getElementById('progress').style.width = ((cur+1)/total*100) + '%';
+    }
+    document.getElementById('btn-next').addEventListener('click', () => goTo(cur+1));
+    document.getElementById('btn-prev').addEventListener('click', () => goTo(cur-1));
+    document.addEventListener('keydown', e => {
+        if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') goTo(cur+1);
+        if (e.key==='ArrowLeft' ||e.key==='ArrowUp')                  goTo(cur-1);
+    });
+    let tx=0;
+    document.addEventListener('touchstart', e => tx=e.touches[0].clientX);
+    document.addEventListener('touchend',   e => {
+        const dx=e.changedTouches[0].clientX-tx;
+        if(Math.abs(dx)>40) goTo(cur+(dx<0?1:-1));
+    });
+    document.getElementById('progress').style.width = (1/total*100)+'%';
+
+    renderMathInElement(document.body, {
+        delimiters: [
+            { left: '$$',  right: '$$',  display: true  },
+            { left: '\\[', right: '\\]', display: true  },
+            { left: '$',   right: '$',   display: false },
+            { left: '\\(', right: '\\)', display: false }
+        ],
+        throwOnError: false
+    });
+</script>
+</body>
+</html>
